@@ -46,7 +46,7 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
-                <span class="fab-label">Ask ${BOT_NAME}</span>
+                <span class="fab-label">Ask Me</span>
                 <span class="fab-dot"></span>
             </button>
             <button id="chat-fab-dismiss" aria-label="Hide PrepBot button" title="Hide">
