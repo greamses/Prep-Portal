@@ -1,3 +1,4 @@
+/* ======== The rest of your CSS code below is unmodified ======== */
 #prepbot,
 #prepbot *,
 #chat-fab-wrap,
@@ -136,7 +137,6 @@
 }
 
 @keyframes pulse-dot {
-
     0%,
     100% {
         opacity: 1;
