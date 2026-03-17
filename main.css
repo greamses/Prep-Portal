@@ -687,7 +687,6 @@ body.active .card {
     height: 3px;
     background: var(--blue);
     z-index: 3;
-    color: var(--app-bg);
 }
 
 /* flood-fill */
@@ -709,6 +708,7 @@ body.active .card {
 
 .writing-card:hover::after {
     transform: translateY(0);
+    
 }
 
 .writing-card:hover .writing-card-inner {
@@ -724,7 +724,7 @@ body.active .card {
 }
 
 .writing-card:hover .writing-card p {
-    color: rgba(255, 255, 255, .6);
+    color: var(--app-bg);
 }
 
 .writing-card-inner {
@@ -762,6 +762,10 @@ body.active .card {
     color: var(--muted);
     flex: 1;
     transition: color .25s;
+}
+
+.writing-card:hover p {
+    color: var(--app-bg);
 }
 
 .wc-arrow {
