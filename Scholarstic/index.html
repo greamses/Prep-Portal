@@ -5,1167 +5,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scholastic Prep | Prep Portal 2026</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
-    
-    
-    <style>
-        :root {
-            --bg: #f4f1ea;
-            --ink: #0f0f0f;
-            --blue: #0b57d0;
-            --muted: #6b6860;
-            --rule: #d0ccc3;
-            --cb: cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        /* ── RESET + OVERFLOW FIX ── */
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        /* THE key fix: both html AND body, no position:relative on body */
-        html {
-            scroll-behavior: smooth;
-            -webkit-text-size-adjust: 100%;
-            overflow-x: hidden;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--ink);
-            overflow-x: hidden;
-            /* Do NOT set position:relative — that creates a new stacking context
-               and can let fixed children exceed viewport width */
-        }
-        
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-        
-        button {
-            border: none;
-            background: none;
-            cursor: pointer;
-            font: inherit;
-        }
-        
-        /* ── LOADER ── */
-        #loader {
-            position: fixed;
-            inset: 0;
-            background: var(--ink);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: .5rem;
-            transition: opacity .5s ease .15s, visibility .5s ease .15s;
-        }
-        
-        #loader.done {
-            opacity: 0;
-            visibility: hidden;
-        }
-        
-        .lw {
-            font-family: 'Syne', sans-serif;
-            font-weight: 900;
-            font-size: clamp(2rem, 10vw, 5.5rem);
-            line-height: .9;
-            color: var(--bg);
-            letter-spacing: .06em;
-            text-transform: uppercase;
-            overflow: hidden;
-        }
-        
-        .lw span {
-            display: inline-block;
-            transform: translateY(110%);
-            animation: liftUp .65s var(--cb) forwards;
-        }
-        
-        .lw:nth-child(2) span {
-            animation-delay: .08s;
-            color: var(--blue);
-        }
-        
-        .lbar {
-            width: clamp(80px, 25vw, 160px);
-            height: 2px;
-            background: #333;
-            margin-top: 1.2rem;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .lbar::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: var(--blue);
-            animation: barLoad .85s var(--cb) forwards .1s;
-        }
-        
-        @keyframes liftUp {
-            to {
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes barLoad {
-            to {
-                left: 0;
-            }
-        }
-        
-        /* ── NAV ── */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 200;
-            height: 52px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            /* Use padding not width — prevents any overflow */
-            padding: 0 clamp(.8rem, 4vw, 2rem);
-            background: var(--bg);
-            border-bottom: 2px solid var(--ink);
-            /* overflow:hidden on nav itself clips nothing useful and can hide
-               the mobile drawer — leave it off, fix is on html/body */
-        }
-        
-        .nav-logo {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: clamp(.8rem, 2.5vw, 1rem);
-            letter-spacing: .08em;
-            color: var(--ink);
-            flex-shrink: 0;
-        }
-        
-        .nav-logo em {
-            font-style: normal;
-            color: var(--blue);
-        }
-        
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 0;
-            list-style: none;
-        }
-        
-        .nav-links a {
-            display: block;
-            padding: 0 clamp(.5rem, 1.5vw, .9rem);
-            height: 52px;
-            line-height: 52px;
-            font-family: 'Inter', sans-serif;
-            font-size: clamp(.6rem, 1.5vw, .7rem);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            color: var(--muted);
-            border-left: 1px solid var(--rule);
-            transition: color .15s, background .15s;
-            white-space: nowrap;
-        }
-        
-        .nav-links a:hover {
-            color: var(--ink);
-            background: rgba(0, 0, 0, .04);
-        }
-        
-        .nav-cta {
-            background: var(--ink) !important;
-            color: var(--bg) !important;
-            border-left-color: var(--ink) !important;
-            font-family: 'Syne', sans-serif !important;
-            font-weight: 800 !important;
-        }
-        
-        .nav-cta:hover {
-            background: var(--blue) !important;
-        }
-        
-        .nav-toggle {
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            gap: 5px;
-            width: 36px;
-            height: 36px;
-            padding: 8px;
-            flex-shrink: 0;
-        }
-        
-        .nav-toggle span {
-            display: block;
-            width: 100%;
-            height: 2px;
-            background: var(--ink);
-            transition: transform .3s, opacity .3s;
-        }
-        
-        .nav-toggle.open span:nth-child(1) {
-            transform: translateY(7px) rotate(45deg);
-        }
-        
-        .nav-toggle.open span:nth-child(2) {
-            opacity: 0;
-        }
-        
-        .nav-toggle.open span:nth-child(3) {
-            transform: translateY(-7px) rotate(-45deg);
-        }
-        
-        @media (max-width: 640px) {
-            .nav-links {
-                flex-direction: column;
-                position: fixed;
-                top: 52px;
-                left: 0;
-                right: 0;
-                background: var(--bg);
-                border-bottom: 2px solid var(--ink);
-                transform: translateY(-110%);
-                transition: transform .4s var(--cb);
-                z-index: 190;
-            }
-            
-            .nav-links.open {
-                transform: translateY(0);
-            }
-            
-            .nav-links a {
-                height: 48px;
-                line-height: 48px;
-                border-left: none;
-                border-top: 1px solid var(--rule);
-                padding-left: clamp(.8rem, 4vw, 2rem);
-                font-size: .75rem;
-            }
-            
-            .nav-cta {
-                border-top: 2px solid var(--ink) !important;
-            }
-            
-            .nav-toggle {
-                display: flex;
-            }
-        }
-        
-        /* ── TICKER ── */
-        .ticker {
-            margin-top: 52px;
-            height: 34px;
-            overflow: hidden;
-            background: var(--ink);
-            display: flex;
-            align-items: center;
-            border-bottom: 2px solid var(--ink);
-            /* ticker content is wider than viewport by design — contained by overflow:hidden */
-        }
-        
-        .ticker-track {
-            display: flex;
-            align-items: center;
-            animation: tickScroll 32s linear infinite;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        
-        .ticker-item {
-            font-family: 'Inter', sans-serif;
-            font-size: clamp(.6rem, 1.5vw, .7rem);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .12em;
-            color: #777;
-            padding: 0 1.5rem;
-        }
-        
-        .ticker-item.hot {
-            color: var(--blue);
-        }
-        
-        .ticker-sep {
-            color: #333;
-            font-size: .45rem;
-        }
-        
-        @keyframes tickScroll {
-            0% {
-                transform: translateX(0)
-            }
-            
-            100% {
-                transform: translateX(-50%)
-            }
-        }
-        
-        /* ── HERO ── */
-        .hero {
-            display: grid;
-            /* Right col: never wider than 30% of viewport, never <160px */
-            grid-template-columns: 1fr clamp(160px, 28vw, 300px);
-            border-bottom: 2px solid var(--ink);
-            /* overflow:hidden here contains the absolute bg-num */
-            overflow: hidden;
-        }
-        
-        @media (max-width: 720px) {
-            .hero {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .hero-left {
-            padding: clamp(1.5rem, 5vw, 3.5rem) clamp(.8rem, 4vw, 2rem);
-            border-right: 2px solid var(--ink);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            position: relative;
-            overflow: hidden;
-            /* clips bg-num */
-        }
-        
-        @media (max-width: 720px) {
-            .hero-left {
-                border-right: none;
-            }
-        }
-        
-        .hero-bg-num {
-            position: absolute;
-            top: -.1em;
-            right: -.05em;
-            font-family: 'Syne', sans-serif;
-            font-weight: 900;
-            /* Kept safely small — purely decorative ghost */
-            font-size: clamp(5rem, 18vw, 14rem);
-            line-height: 1;
-            color: rgba(0, 0, 0, .04);
-            pointer-events: none;
-            user-select: none;
-            z-index: 0;
-            /* No overflow needed — parent .hero-left has overflow:hidden */
-        }
-        
-        .hero-eyebrow {
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            font-size: clamp(.6rem, 1.5vw, .68rem);
-            text-transform: uppercase;
-            letter-spacing: .12em;
-            color: var(--muted);
-            margin-bottom: .8rem;
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            gap: .4rem;
-            flex-wrap: wrap;
-        }
-        
-        .hero-eyebrow a {
-            color: var(--blue);
-        }
-        
-        .hero-eyebrow .sep {
-            color: var(--rule);
-        }
-        
-        /* ── TYPING ANIMATION ── */
-        .hero-title {
-            font-family: 'Syne', sans-serif;
-            font-weight: 900;
-            font-size: clamp(2.2rem, 9vw, 6.5rem);
-            line-height: .9;
-            letter-spacing: -.01em;
-            text-transform: uppercase;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .hero-title .line {
-            display: block;
-            overflow: hidden;
-        }
-        
-        .hero-title .line-inner {
-            display: block;
-            transform: translateY(105%);
-            transition: transform .9s var(--cb);
-        }
-        
-        body.loaded .hero-title .line-inner {
-            transform: translateY(0);
-        }
-        
-        body.loaded .hero-title .line:nth-child(2) .line-inner {
-            transition-delay: .1s;
-        }
-        
-        .accent {
-            color: var(--blue);
-        }
-        
-        /* Typing cursor on the tagline */
-        .typing-wrap {
-            position: relative;
-            z-index: 1;
-            margin-top: clamp(.8rem, 2vw, 1.5rem);
-            min-height: 1.4em;
-        }
-        
-        .typing-text {
-            font-family: 'Inter', sans-serif;
-            font-size: clamp(.75rem, 1.8vw, .9rem);
-            color: var(--muted);
-            line-height: 1.6;
-            border-right: 2px solid var(--blue);
-            white-space: nowrap;
-            overflow: hidden;
-            width: 0;
-            animation: typeIn 1.8s steps(60, end) forwards 1.2s,
-                blink .75s step-end infinite 1.2s;
-            display: inline-block;
-            max-width: 100%;
-        }
-        
-        @keyframes typeIn {
-            to {
-                width: 100%;
-            }
-        }
-        
-        @keyframes blink {
-            
-            0%,
-            100% {
-                border-color: var(--blue);
-            }
-            
-            50% {
-                border-color: transparent;
-            }
-        }
-        
-        /* After typing done, stop blinking */
-        .typing-text.done {
-            animation: none;
-            border-right-color: transparent;
-            width: 100%;
-        }
-        
-        /* right stat panel */
-        .hero-right {
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            transform: translateX(16px);
-            transition: opacity .8s var(--cb) .55s, transform .8s var(--cb) .55s;
-        }
-        
-        body.loaded .hero-right {
-            opacity: 1;
-            transform: translateX(0);
-        }
-        
-        @media (max-width: 720px) {
-            .hero-right {
-                flex-direction: row;
-                transform: translateY(12px);
-                border-top: 2px solid var(--ink);
-            }
-            
-            body.loaded .hero-right {
-                transform: translateY(0);
-            }
-        }
-        
-        .hero-stat {
-            flex: 1;
-            padding: clamp(.8rem, 2.5vw, 1.5rem) clamp(.8rem, 3vw, 1.5rem);
-            border-bottom: 1px solid var(--rule);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
-        .hero-stat:last-child {
-            border-bottom: none;
-        }
-        
-        @media (max-width: 720px) {
-            .hero-stat {
-                border-bottom: none;
-                border-right: 1px solid var(--rule);
-            }
-            
-            .hero-stat:last-child {
-                border-right: none;
-            }
-        }
-        
-        .hsv {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: clamp(1.6rem, 4vw, 2.5rem);
-            line-height: 1;
-        }
-        
-        .hsv em {
-            font-style: normal;
-            color: var(--blue);
-        }
-        
-        .hsl {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: clamp(.55rem, 1.3vw, .65rem);
-            text-transform: uppercase;
-            letter-spacing: .1em;
-            color: var(--muted);
-            margin-top: .25rem;
-        }
-        
-        .hero-tagline-side {
-            padding: clamp(.8rem, 2vw, 1.5rem) clamp(.8rem, 3vw, 1.5rem);
-            font-size: clamp(.72rem, 1.5vw, .82rem);
-            color: var(--muted);
-            line-height: 1.6;
-            border-top: 1px solid var(--rule);
-            margin-top: auto;
-        }
-        
-        @media (max-width: 720px) {
-            .hero-tagline-side {
-                display: none;
-            }
-        }
-        
-        /* ── LIVE BAND ── */
-        .live-band {
-            display: flex;
-            align-items: stretch;
-            border-bottom: 2px solid var(--ink);
-            background: var(--blue);
-            /* overflow hidden keeps internal scroll cards contained */
-            overflow: hidden;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity .6s var(--cb), transform .6s var(--cb);
-        }
-        
-        .live-band.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .live-label {
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            padding: 0 clamp(.8rem, 3vw, 1.5rem);
-            border-right: 1px solid rgba(255, 255, 255, .2);
-        }
-        
-        .live-label span {
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            font-size: clamp(.55rem, 1.3vw, .65rem);
-            text-transform: uppercase;
-            letter-spacing: .14em;
-            color: rgba(255, 255, 255, .7);
-            writing-mode: vertical-rl;
-        }
-        
-        @media (max-width: 480px) {
-            .live-label span {
-                writing-mode: horizontal-tb;
-            }
-        }
-        
-        .live-cards {
-            display: flex;
-            overflow-x: auto;
-            scrollbar-width: none;
-            flex: 1;
-        }
-        
-        .live-cards::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .live-card {
-            flex: 0 0 auto;
-            min-width: clamp(120px, 30vw, 180px);
-            padding: clamp(.8rem, 2vw, 1.2rem) clamp(.8rem, 2.5vw, 1.5rem);
-            border-right: 1px solid rgba(255, 255, 255, .15);
-            color: #fff;
-            transition: background .25s;
-        }
-        
-        .live-card:hover {
-            background: rgba(255, 255, 255, .12);
-        }
-        
-        .live-card-badge {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: clamp(.52rem, 1.2vw, .6rem);
-            text-transform: uppercase;
-            letter-spacing: .1em;
-            color: rgba(255, 255, 255, .6);
-            margin-bottom: .4rem;
-            display: block;
-        }
-        
-        .live-card h3 {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: clamp(.8rem, 2vw, 1rem);
-            letter-spacing: .05em;
-            text-transform: uppercase;
-            line-height: 1.2;
-        }
-        
-        .live-card-arrow {
-            margin-top: .5rem;
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: .9rem;
-            opacity: .6;
-            display: block;
-            transition: transform .25s var(--cb), opacity .25s;
-        }
-        
-        .live-card:hover .live-card-arrow {
-            transform: translateX(4px);
-            opacity: 1;
-        }
-        
-        /* ── CATEGORY ROWS ── */
-        .cat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: clamp(.6rem, 1.5vw, .9rem) clamp(.8rem, 4vw, 2rem);
-            border-bottom: 2px solid var(--ink);
-            background: var(--ink);
-            gap: .8rem;
-        }
-        
-        .cat-header h2 {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: clamp(.7rem, 2vw, .85rem);
-            letter-spacing: .14em;
-            text-transform: uppercase;
-            color: var(--bg);
-        }
-        
-        .cat-count {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: clamp(.55rem, 1.3vw, .65rem);
-            text-transform: uppercase;
-            letter-spacing: .1em;
-            color: #555;
-        }
-        
-        .cat-list {
-            border-bottom: 2px solid var(--ink);
-        }
-        
-        .cat-row {
-            /* 40px index | flex middle | right capped */
-            display: grid;
-            grid-template-columns: 40px minmax(0, 1fr) minmax(0, auto);
-            align-items: center;
-            min-height: clamp(60px, 10vw, 88px);
-            border-bottom: 1px solid var(--rule);
-            position: relative;
-            overflow: hidden;
-            opacity: 0;
-            transform: translateX(-16px);
-            transition: opacity .5s var(--cb), transform .5s var(--cb);
-        }
-        
-        .cat-row:last-child {
-            border-bottom: none;
-        }
-        
-        .cat-row.visible {
-            opacity: 1;
-            transform: translateX(0);
-        }
-        
-        .cat-row::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: var(--ink);
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform .32s var(--cb);
-            z-index: 0;
-        }
-        
-        .cat-row.live:hover::before {
-            transform: scaleX(1);
-        }
-        
-        .cat-row.live {
-            cursor: pointer;
-        }
-        
-        .cat-row.live:hover .cat-idx,
-        .cat-row.live:hover .cat-title,
-        .cat-row.live:hover .cat-sub {
-            color: var(--bg);
-        }
-        
-        .cat-row.live:hover .cat-arrow {
-            color: var(--bg);
-            transform: translateX(4px);
-        }
-        
-        .cat-row.live:hover .cat-badge {
-            border-color: var(--blue);
-            color: var(--blue);
-        }
-        
-        .cat-row.live:hover .cat-div {
-            background: #2a2a2a;
-        }
-        
-        .cat-row.dim .cat-title {
-            color: #bbb;
-        }
-        
-        .cat-row.dim .cat-sub {
-            color: #ccc;
-        }
-        
-        .cat-idx {
-            position: relative;
-            z-index: 1;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: clamp(.52rem, 1.2vw, .6rem);
-            color: var(--muted);
-            text-align: center;
-            align-self: stretch;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color .2s;
-        }
-        
-        .cat-div {
-            position: absolute;
-            left: 40px;
-            top: 0;
-            bottom: 0;
-            width: 1px;
-            background: var(--rule);
-            z-index: 1;
-            transition: background .2s;
-        }
-        
-        .cat-body {
-            position: relative;
-            z-index: 1;
-            min-width: 0;
-            padding: clamp(.7rem, 2vw, 1.1rem) clamp(.7rem, 2.5vw, 1.5rem);
-        }
-        
-        .cat-title {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: clamp(.95rem, 2.8vw, 1.6rem);
-            line-height: 1;
-            letter-spacing: .02em;
-            text-transform: uppercase;
-            transition: color .2s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .cat-sub {
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            font-size: clamp(.55rem, 1.3vw, .65rem);
-            color: var(--muted);
-            letter-spacing: .05em;
-            text-transform: uppercase;
-            margin-top: .2rem;
-            transition: color .2s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .cat-right {
-            position: relative;
-            z-index: 1;
-            padding: 0 clamp(.5rem, 1.5vw, 1rem);
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: .35rem;
-            flex-shrink: 0;
-            min-width: 0;
-        }
-        
-        .cat-badge {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: clamp(.5rem, 1.2vw, .6rem);
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            padding: 2px 7px;
-            border: 1.5px solid;
-            white-space: nowrap;
-            transition: border-color .2s, color .2s;
-        }
-        
-        .badge-live {
-            border-color: var(--blue);
-            color: var(--blue);
-        }
-        
-        .badge-soon {
-            border-color: var(--rule);
-            color: var(--muted);
-        }
-        
-        .cat-arrow {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: clamp(.9rem, 2vw, 1.1rem);
-            line-height: 1;
-            color: var(--ink);
-            transition: color .2s, transform .3s var(--cb);
-            display: inline-block;
-        }
-        
-        .cat-coming {
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            font-size: clamp(.5rem, 1.2vw, .58rem);
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            color: #bbb;
-        }
-        
-        /* ── INFO TRIO ── */
-        .info-trio {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            border-bottom: 2px solid var(--ink);
-        }
-        
-        @media (max-width: 680px) {
-            .info-trio {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .info-cell {
-            padding: clamp(1.2rem, 4vw, 2.5rem) clamp(.8rem, 4vw, 2rem);
-            border-right: 1px solid var(--rule);
-            opacity: 0;
-            transform: translateY(16px);
-            transition: opacity .6s var(--cb), transform .6s var(--cb);
-        }
-        
-        .info-cell:last-child {
-            border-right: none;
-        }
-        
-        .info-cell.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        @media (max-width: 680px) {
-            .info-cell {
-                border-right: none;
-                border-bottom: 1px solid var(--rule);
-            }
-            
-            .info-cell:last-child {
-                border-bottom: none;
-            }
-        }
-        
-        .info-tag {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: clamp(.55rem, 1.3vw, .65rem);
-            text-transform: uppercase;
-            letter-spacing: .12em;
-            color: var(--blue);
-            margin-bottom: .6rem;
-        }
-        
-        .info-cell h3 {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: clamp(.9rem, 2.5vw, 1.1rem);
-            letter-spacing: .03em;
-            text-transform: uppercase;
-            margin-bottom: .5rem;
-            line-height: 1.1;
-        }
-        
-        .info-cell p {
-            font-size: clamp(.75rem, 1.8vw, .84rem);
-            color: var(--muted);
-            line-height: 1.65;
-        }
-        
-        /* ── CTA BAND ── */
-        .cta-band {
-            background: var(--ink);
-            padding: clamp(2rem, 6vw, 4rem) clamp(.8rem, 4vw, 2rem);
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-            border-bottom: 2px solid var(--blue);
-            opacity: 0;
-            transform: translateY(14px);
-            transition: opacity .7s var(--cb), transform .7s var(--cb);
-        }
-        
-        .cta-band.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .cta-band h2 {
-            font-family: 'Syne', sans-serif;
-            font-weight: 900;
-            font-size: clamp(1.8rem, 5vw, 4rem);
-            line-height: .92;
-            letter-spacing: -.01em;
-            text-transform: uppercase;
-            color: var(--bg);
-        }
-        
-        .cta-band h2 em {
-            font-style: italic;
-            color: var(--blue);
-        }
-        
-        .cta-btn {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: clamp(.7rem, 1.8vw, .82rem);
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            padding: clamp(.7rem, 2vw, 1rem) clamp(1rem, 3vw, 1.8rem);
-            background: var(--blue);
-            color: #fff;
-            border: 2px solid var(--blue);
-            transition: background .2s, color .2s;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        
-        .cta-btn:hover {
-            background: transparent;
-            color: var(--blue);
-        }
-        
-        /* ── FOOTER ── */
-        footer {
-            background: var(--ink);
-            padding: clamp(1.5rem, 4vw, 3rem) clamp(.8rem, 4vw, 2rem) 1.2rem;
-            color: var(--bg);
-        }
-        
-        .footer-top {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: clamp(1rem, 3vw, 2rem);
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #222;
-        }
-        
-        @media (max-width: 760px) {
-            .footer-top {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        
-        @media (max-width: 440px) {
-            .footer-top {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .footer-brand .logo {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: clamp(.9rem, 2.5vw, 1.1rem);
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: var(--bg);
-            display: block;
-            margin-bottom: .7rem;
-        }
-        
-        .footer-brand .logo em {
-            font-style: normal;
-            color: var(--blue);
-        }
-        
-        .footer-brand p {
-            font-size: clamp(.72rem, 1.6vw, .8rem);
-            color: #888;
-            line-height: 1.6;
-        }
-        
-        .footer-col h4 {
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            font-size: clamp(.55rem, 1.3vw, .62rem);
-            text-transform: uppercase;
-            letter-spacing: .12em;
-            color: #666;
-            margin-bottom: .9rem;
-        }
-        
-        .footer-col ul {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: .5rem;
-        }
-        
-        .footer-col a {
-            font-size: clamp(.72rem, 1.6vw, .8rem);
-            color: #aaa;
-            transition: color .15s;
-        }
-        
-        .footer-col a:hover {
-            color: var(--bg);
-        }
-        
-        .footer-bottom {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            padding-top: 1.2rem;
-            gap: .8rem;
-            flex-wrap: wrap;
-        }
-        
-        .footer-bottom p {
-            font-size: clamp(.62rem, 1.5vw, .72rem);
-            color: #555;
-        }
-        
-        .footer-bottom-links {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        .footer-bottom-links a {
-            font-size: clamp(.62rem, 1.5vw, .72rem);
-            color: #555;
-            transition: color .15s;
-        }
-        
-        .footer-bottom-links a:hover {
-            color: #aaa;
-        }
-        
-        /* ── SCROLL HINT ── */
-        .scroll-hint {
-            writing-mode: vertical-rl;
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            font-size: .55rem;
-            letter-spacing: .14em;
-            text-transform: uppercase;
-            color: var(--muted);
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1rem;
-            opacity: 0;
-            transition: opacity .5s ease 1.5s;
-            z-index: 50;
-            pointer-events: none;
-            display: flex;
-            align-items: center;
-            gap: .4rem;
-        }
-        
-        .scroll-hint::after {
-            content: '';
-            display: block;
-            width: 1px;
-            height: 32px;
-            background: var(--rule);
-        }
-        
-        body.loaded .scroll-hint {
-            opacity: 1;
-        }
-        
-        @media (max-width: 640px) {
-            .scroll-hint {
-                display: none;
-            }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../main.css">
     <link rel="stylesheet" href="../Chatbot/chatbot.css">
-    
-        <!-- MathJax for Math Formatting -->
+
+    <style>
+    /* ═══ LOADER ═══ */
+    #loader {
+        position: fixed;
+        inset: 0;
+        background: #0a0a0a;
+        z-index: 9000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: opacity .5s ease, visibility .5s ease;
+    }
+    #loader.done {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+    .lw {
+        overflow: hidden;
+        line-height: 1;
+    }
+    .lw span {
+        display: block;
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 900;
+        font-size: clamp(32px, 8vw, 72px);
+        color: #ffffff;
+        letter-spacing: -.03em;
+        text-transform: uppercase;
+        transform: translateY(110%);
+        animation: loaderWordIn .7s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .lw:nth-child(2) span {
+        color: #ffe500;
+        animation-delay: .12s;
+    }
+    @keyframes loaderWordIn {
+        to { transform: translateY(0); }
+    }
+    .lbar {
+        width: 0;
+        height: 3px;
+        background: #ffe500;
+        margin-top: 28px;
+        animation: loaderBar .8s cubic-bezier(.16,1,.3,1) .35s forwards;
+    }
+    @keyframes loaderBar {
+        to { width: clamp(160px, 30vw, 280px); }
+    }
+
+    /* ═══ SCROLL HINT ═══ */
+    .scroll-hint {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .22em;
+        color: #0a0a0a;
+        opacity: 0;
+        z-index: 100;
+        transition: opacity .4s ease;
+        pointer-events: none;
+    }
+    body.loaded .scroll-hint { opacity: 1; }
+    </style>
+
+    <!-- MathJax for Math Formatting -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 
 <body>
-    
+
+    <!-- ═══ LOADER ═══ -->
     <div id="loader">
-        <div class="lw"><span>Prep</span></div>
-        <div class="lw"><span>Portal</span></div>
+        <div class="lw"><span>Scholastic</span></div>
+        <div class="lw"><span>Prep.</span></div>
         <div class="lbar"></div>
     </div>
-    
+
     <div class="scroll-hint">Scroll</div>
-    
-    <nav>
-        <a href="../index.html" class="nav-logo">Prep<em>Portal</em></a>
+
+    <!-- ═══ NAV ═══ -->
+    <nav id="site-nav">
+        <a href="../index.html" class="nav-logo">Prep<span>Portal</span></a>
         <ul class="nav-links" id="nav-links">
             <li><a href="../index.html#exams">Exams</a></li>
+            <li><a href="../index.html#writing">Writing</a></li>
             <li><a href="../index.html#about">About</a></li>
             <li><a href="#">Results</a></li>
             <li><a href="#categories" class="nav-cta">Choose Level</a></li>
@@ -1174,86 +115,74 @@
             <span></span><span></span><span></span>
         </button>
     </nav>
-    
+
+    <!-- ═══ TICKER ═══ -->
     <div class="ticker" aria-hidden="true">
         <div class="ticker-track" id="ticker-track"></div>
     </div>
-    
-    <header class="hero">
+
+    <!-- ═══ HERO ═══ -->
+    <header>
         <div class="hero-left">
-            <div class="hero-bg-num">SC</div>
-            <div class="hero-eyebrow">
-                <a href="../index.html">Prep Portal</a>
-                <span class="sep">›</span>
-                <span>Scholastic Prep</span>
-                <span class="sep">·</span>
-                <span>2026</span>
-            </div>
-            <h1 class="hero-title">
-                <span class="line"><span class="line-inner">Scholastic</span></span>
-                <span class="line"><span class="line-inner accent">Prep.</span></span>
-            </h1>
-            <div class="typing-wrap">
-                <span class="typing-text" id="typing-text">Elite competition drills built for students who aim for the top.</span>
-            </div>
+            <h1 id="main-title">Scholastic<br>Prep.</h1>
         </div>
         <div class="hero-right">
-            <div class="hero-stat">
-                <div class="hsv">5</div>
-                <div class="hsl">Categories</div>
-            </div>
-            <div class="hero-stat">
-                <div class="hsv"><em>1</em></div>
-                <div class="hsl">Live Now</div>
-            </div>
-            <div class="hero-stat">
-                <div class="hsv">2026</div>
-                <div class="hsl">Edition</div>
-            </div>
-            <div class="hero-tagline-side">
-                Structured by school level, built for students who aim for the top.
+            <p class="hero-tagline">Elite competition drills structured by school level — built for students who aim for the top.</p>
+            <div class="hero-stat-row">
+                <div class="hero-stat"><strong>5</strong><span>Categories</span></div>
+                <div class="hero-stat"><strong>1</strong><span>Live Now</span></div>
+                <div class="hero-stat"><strong>2026</strong><span>Edition</span></div>
             </div>
         </div>
     </header>
-    
-    <div class="live-band" id="live-band">
-        <div class="live-label"><span>Live&nbsp;Now</span></div>
-        <div class="live-cards" id="live-cards"></div>
+
+    <!-- ═══ FEATURED BAND ═══ -->
+    <div class="featured-band reveal">
+        <div class="featured-label"><span>Live&nbsp;&nbsp;Now</span></div>
+        <div class="featured-cards" id="featured-cards"></div>
     </div>
-    
-    <div class="cat-header" id="categories">
+
+    <!-- ═══ SECTION HEADER ═══ -->
+    <div class="section-header" id="categories">
         <h2>All Categories</h2>
-        <span class="cat-count">5 levels</span>
+        <span>5 levels</span>
     </div>
-    <div class="cat-list" id="cat-list"></div>
-    
-    <div class="info-trio">
-        <div class="info-cell">
-            <div class="info-tag">What is Scholastic?</div>
+
+    <!-- ═══ MAIN GRID ═══ -->
+    <main class="main-content">
+        <div class="grid" id="cat-grid"></div>
+    </main>
+
+    <!-- ═══ INFO STRIP ═══ -->
+    <section class="info-strip" id="about">
+        <div class="info-cell reveal">
+            <div class="label">What is Scholastic?</div>
             <h3>Academic Competition Prep</h3>
             <p>Scholastic Prep covers all school levels — Lower Primary to Senior Secondary — with drills built for high-stakes academic contests.</p>
         </div>
-        <div class="info-cell" style="transition-delay:.12s">
-            <div class="info-tag">How to use it</div>
+        <div class="info-cell reveal" style="transition-delay:.15s">
+            <div class="label">How to use it</div>
             <h3>Pick Your Level. Drill Hard.</h3>
             <p>Select your category, work through the questions, and review your score with full worked solutions to sharpen your edge.</p>
         </div>
-        <div class="info-cell" style="transition-delay:.24s">
-            <div class="info-tag">Coming soon</div>
+        <div class="info-cell reveal" style="transition-delay:.3s">
+            <div class="label">Coming soon</div>
             <h3>More Levels Dropping</h3>
             <p>Lower Primary, Middle Primary, Junior Secondary, and Senior Secondary are in active development. New releases each term.</p>
         </div>
-    </div>
-    
-    <section class="cta-band">
-        <h2>Ready to<br><em>compete<br>at the top?</em></h2>
-        <a href="#categories" class="cta-btn">Start Upper Primary →</a>
     </section>
-    
+
+    <!-- ═══ CTA BAND ═══ -->
+    <section class="cta-band reveal">
+        <h2>Ready to <em>compete at the top?</em></h2>
+        <a href="#categories" class="cta-btn">Start Upper Primary &rarr;</a>
+    </section>
+
+    <!-- ═══ FOOTER ═══ -->
     <footer>
         <div class="footer-top">
             <div class="footer-brand">
-                <span class="logo">Prep<em>Portal</em></span>
+                <span class="logo">Prep<span>Portal</span></span>
                 <p>A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
             </div>
             <div class="footer-col">
@@ -1261,7 +190,7 @@
                 <ul>
                     <li><a href="#">Lower Primary</a></li>
                     <li><a href="#">Middle Primary</a></li>
-                    <li><a href="./upper-primary/index.html">Upper Primary</a></li>
+                    <li><a href="./Upper-Primary/index.html">Upper Primary</a></li>
                     <li><a href="#">Junior Secondary</a></li>
                     <li><a href="#">Senior Secondary</a></li>
                 </ul>
@@ -1285,7 +214,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2026 Prep Portal. All rights reserved.</p>
+            <p>&copy; 2026 Prep Portal. All rights reserved.</p>
             <div class="footer-bottom-links">
                 <a href="#">Terms</a>
                 <a href="#">Privacy</a>
@@ -1293,104 +222,126 @@
             </div>
         </div>
     </footer>
-    
-    
-    <div id="prepbot"></div>
-    
-    
-    <script>
-        const categories = [
-            { id: "01", title: "Lower Primary", desc: "Foundation drills for Primary 1–3 students.", link: "#", live: false },
-            { id: "02", title: "Middle Primary", desc: "Challenge sets for Primary 4–5 students.", link: "#", live: false },
-            { id: "03", title: "Upper Primary", desc: "Intensive prep for Primary 5–6 top placements.", link: "./Upper-Primary/index.html", live: true },
-            { id: "04", title: "Junior Secondary", desc: "Problem sets for JSS1–JSS3 competition entrants.", link: "#", live: false },
-            { id: "05", title: "Senior Secondary", desc: "Advanced modules for SSS academic contest prep.", link: "#", live: false },
-        ];
-        
-        /* TICKER */
-        const tItems = [
-            { t: "Scholastic Prep", h: false }, { t: "Upper Primary", h: true }, { t: "Lower Primary", h: false },
-            { t: "Middle Primary", h: false }, { t: "Junior Secondary", h: false }, { t: "Senior Secondary", h: false },
-            { t: "2026 Edition", h: false }, { t: "Competition Drills", h: false }, { t: "Prep Portal", h: false },
-        ];
-        const track = document.getElementById('ticker-track');
-        [...tItems, ...tItems, ...tItems].forEach(({ t, h }) => {
-            const s = document.createElement('span');
-            s.className = 'ticker-item' + (h ? ' hot' : '');
-            s.innerHTML = t + '<span class="ticker-sep"> ✦ </span>';
-            track.appendChild(s);
-        });
-        
-        /* LIVE BAND */
-        const liveCards = document.getElementById('live-cards');
-        categories.filter(c => c.live).forEach(item => {
-            const a = document.createElement('a');
-            a.href = item.link;
-            a.className = 'live-card';
-            a.innerHTML = `<span class="live-card-badge">Live Now</span><h3>${item.title}</h3><span class="live-card-arrow">→</span>`;
-            liveCards.appendChild(a);
-        });
-        
-        /* CATEGORY ROWS */
-        const list = document.getElementById('cat-list');
-        categories.forEach((item, i) => {
-            const el = document.createElement(item.live ? 'a' : 'div');
-            if (item.live) el.href = item.link;
-            el.className = `cat-row ${item.live?'live':'dim'}`;
-            el.style.transitionDelay = `${i*.07}s`;
-            el.innerHTML = `
-            <div class="cat-idx">${item.id}</div>
-            <div class="cat-div"></div>
-            <div class="cat-body">
-                <div class="cat-title">${item.title}</div>
-                <div class="cat-sub">${item.desc}</div>
-            </div>
-            <div class="cat-right">
-                <span class="cat-badge ${item.live?'badge-live':'badge-soon'}">${item.live?'Live':'Soon'}</span>
-                ${item.live?'<span class="cat-arrow">→</span>':'<span class="cat-coming">Dev</span>'}
-            </div>`;
-            list.appendChild(el);
-        });
-        
-        /* SCROLL REVEAL */
-        const io = new IntersectionObserver(entries => {
-            entries.forEach(e => {
-                if (e.isIntersecting) {
-                    e.target.classList.add('visible');
-                    io.unobserve(e.target);
-                }
-            });
-        }, { threshold: .06 });
-        document.querySelectorAll('.cat-row,.info-cell,.cta-band,.live-band').forEach(el => io.observe(el));
-        
-        /* BOOT */
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('loader').classList.add('done');
-                document.body.classList.add('loaded');
-                /* Mark typing done after animation completes so cursor disappears */
-                setTimeout(() => {
-                    const t = document.getElementById('typing-text');
-                    if (t) t.classList.add('done');
-                }, 1200 + 1800); /* delay + typeIn duration */
-            }, 920);
-        });
-        
-        /* NAV */
-        const toggle = document.getElementById('nav-toggle');
-        const navEl = document.getElementById('nav-links');
-        toggle.addEventListener('click', () => {
-            toggle.classList.toggle('open');
-            navEl.classList.toggle('open');
-        });
-        
-        /* SCROLL HINT */
-        const hint = document.querySelector('.scroll-hint');
-        if (hint) window.addEventListener('scroll', () => {
-            hint.style.opacity = window.scrollY > 60 ? '0' : '1';
-        }, { passive: true });
-    </script>
-    <script src="../Chatbot/chatbot.js"></script>
-</body>
 
+    <!-- ═══ PREPBOT ═══ -->
+    <div id="prepbot"></div>
+    <script src="../Chatbot/chatbot.js"></script>
+
+    <script>
+    /* ══════════════════════════════════════════
+       DATA
+    ══════════════════════════════════════════ */
+    const categories = [
+        { id: "01", title: "Lower Primary",    desc: "Foundation drills for Primary 1–3 students.",              link: "#",                            live: false },
+        { id: "02", title: "Middle Primary",   desc: "Challenge sets for Primary 4–5 students.",                 link: "#",                            live: false },
+        { id: "03", title: "Upper Primary",    desc: "Intensive prep for Primary 5–6 top placements.",           link: "./Upper-Primary/index.html",   live: true  },
+        { id: "04", title: "Junior Secondary", desc: "Problem sets for JSS1–JSS3 competition entrants.",         link: "#",                            live: false },
+        { id: "05", title: "Senior Secondary", desc: "Advanced modules for SSS academic contest prep.",          link: "#",                            live: false },
+    ];
+
+    /* ── TICKER ── */
+    const tickerItems = [
+        "Scholastic Prep", "Upper Primary", "Lower Primary",
+        "Middle Primary", "Junior Secondary", "Senior Secondary",
+        "2026 Edition", "Competition Drills", "Prep Portal"
+    ];
+    const track = document.getElementById('ticker-track');
+    [...tickerItems, ...tickerItems].forEach(t => {
+        const s = document.createElement('span');
+        s.className = 'ticker-item';
+        s.innerHTML = t + '<span class="ticker-dot">✦</span>';
+        track.appendChild(s);
+    });
+
+    /* ── FEATURED BAND ── */
+    const featuredCards = document.getElementById('featured-cards');
+    categories.filter(c => c.live).forEach(item => {
+        const a = document.createElement('a');
+        a.href = item.link;
+        a.className = 'feat-card';
+        a.innerHTML = `<div class="feat-card-inner"><span class="feat-badge">Live</span><h3>${item.title}</h3></div>`;
+        featuredCards.appendChild(a);
+    });
+
+    /* ── CATEGORY GRID ── */
+    const grid = document.getElementById('cat-grid');
+    categories.forEach((item, i) => {
+        const c = document.createElement(item.live ? 'a' : 'div');
+        if (item.live) c.href = item.link;
+        c.className = 'card';
+        c.style.transitionDelay = `${0.4 + i * 0.08}s`;
+        if (!item.live) c.style.opacity = '0.5';
+        c.innerHTML = `
+            <div class="card-inner">
+                <span class="card-num">${item.id}</span>
+                <h2>${item.title}</h2>
+                <p>${item.desc}</p>
+                <span class="card-arrow">${item.live ? '→' : '↳ Soon'}</span>
+            </div>`;
+        grid.appendChild(c);
+    });
+
+    /* ── CHAR SPLIT ANIMATION ── */
+    const splitText = el => {
+        const lines = el.innerHTML.split('<br>');
+        el.innerHTML = '';
+        lines.forEach((line, li) => {
+            const div = document.createElement('div');
+            div.style.display = 'block';
+            line.split('').forEach((char, ci) => {
+                const wrapper = document.createElement('span');
+                wrapper.className = 'char-wrapper';
+                const span = document.createElement('span');
+                span.className = 'char';
+                span.innerHTML = char === ' ' ? '&nbsp;' : char;
+                span.style.transitionDelay = `${li * 0.2 + ci * 0.03}s`;
+                wrapper.appendChild(span);
+                div.appendChild(wrapper);
+            });
+            el.appendChild(div);
+        });
+    };
+    splitText(document.getElementById('main-title'));
+
+    /* ── REVEAL OBSERVER ── */
+    const revealObserver = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                revealObserver.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    /* ── INIT ── */
+    window.onload = () => {
+        setTimeout(() => {
+            document.getElementById('loader').classList.add('done');
+            document.body.classList.add('active', 'loaded');
+        }, 920);
+    };
+
+    /* ── SCROLL HINT ── */
+    const hint = document.querySelector('.scroll-hint');
+    if (hint) window.addEventListener('scroll', () => {
+        hint.style.opacity = window.scrollY > 60 ? '0' : '';
+    }, { passive: true });
+
+    /* ── NAV TOGGLE ── */
+    const toggle = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('nav-links');
+    toggle.addEventListener('click', () => {
+        toggle.classList.toggle('open');
+        navLinks.classList.toggle('open');
+    });
+
+    /* ── NAV SHADOW ON SCROLL ── */
+    window.addEventListener('scroll', () => {
+        document.getElementById('site-nav').style.boxShadow =
+            window.scrollY > 10 ? '0 4px 0 0 #0a0a0a' : 'none';
+    }, { passive: true });
+    </script>
+
+</body>
 </html>
