@@ -26,6 +26,12 @@
 
     *, *::before, *::after { box-sizing: border-box; }
 
+    /* Prevent mobile horizontal scroll from absolute positioned doodles */
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+    }
+
     body {
       font-family: 'DM Sans', sans-serif;
       background: var(--app-bg);
@@ -79,6 +85,7 @@
       padding: clamp(12px,3vw,18px);
       margin-bottom: clamp(16px,3vw,24px);
       box-shadow: 4px 4px 0 #000;
+      transition: opacity 0.3s;
     }
 
     .topic-label {
@@ -151,6 +158,37 @@
     .btn-primary:hover { background: #0947b3; }
     .btn-outline  { background: #fff; color: var(--text); box-shadow: 3px 3px 0 #000; }
     .btn-outline:hover  { background: var(--hover); }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none; justify-content: center; align-items: center;
+      z-index: 1000; padding: 16px;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.active { display: flex; }
+    
+    .modal-content {
+      background: var(--bg);
+      border: var(--border);
+      box-shadow: 8px 8px 0 #000;
+      padding: clamp(20px, 5vw, 32px);
+      width: 100%; max-width: 480px;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 12px; right: 16px;
+      background: transparent; border: none; font-size: 24px; font-weight: bold;
+      cursor: pointer; color: var(--text);
+    }
+    .modal-close:hover { color: var(--red); }
+    
+    .type-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;
+    }
+    @media (max-width: 400px) { .type-grid { grid-template-columns: 1fr; } }
+    .type-btn { justify-content: center; width: 100%; padding: 14px 10px; }
 
     /* ── LOADING ── */
     .loading-overlay {
@@ -240,9 +278,6 @@
 
     /* ════════════════════════════════════════
        PROOFREADING DOODLE MARKS
-       All marks use position:relative + inline-block.
-       Above-text marks use bottom:100% so they
-       anchor to the TOP of the span, not a fixed px.
     ════════════════════════════════════════ */
 
     .doodle {
@@ -251,7 +286,6 @@
       vertical-align: baseline;
     }
 
-    /* Deduction badge — above-right of span */
     .deduction {
       position: absolute;
       bottom: calc(100% + 6px);
@@ -264,207 +298,112 @@
       pointer-events: none; z-index: 10;
     }
 
-    /* ── 1. DELETE — strikethrough + curl ── */
     .doodle-del { color: rgba(0,0,0,.4); }
     .doodle-del::before {
-      content: '';
-      position: absolute;
-      left: -2px; right: -2px; top: 50%;
-      height: 0;
-      border-top: 2.5px solid var(--red);
-      transform: rotate(-1.5deg);
-      pointer-events: none;
+      content: ''; position: absolute; left: -2px; right: -2px; top: 50%;
+      height: 0; border-top: 2.5px solid var(--red);
+      transform: rotate(-1.5deg); pointer-events: none;
     }
     .doodle-del::after {
-      /* The "ℓ" loop at end, as in classic proofreading */
-      content: 'ℓ';
-      position: absolute;
-      right: -14px;
-      top: 50%; transform: translateY(-55%);
-      color: var(--red);
-      font-family: 'Caveat', cursive;
-      font-size: 1.3em; font-style: italic;
-      pointer-events: none;
+      content: 'ℓ'; position: absolute; right: -14px; top: 50%; transform: translateY(-55%);
+      color: var(--red); font-family: 'Caveat', cursive;
+      font-size: 1.3em; font-style: italic; pointer-events: none;
     }
 
-    /* ── 2. INSERT — word above caret, caret below ── */
     .doodle-ins {
       display: inline-block;
       min-width: 6px; padding: 0 2px;
     }
-    /* Insertion word written above in red */
     .doodle-ins::before {
       content: attr(data-fix);
-      position: absolute;
-      bottom: 100%;              /* anchor to span top */
-      margin-bottom: 4px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: var(--red);
-      font-family: 'Caveat', cursive;
+      position: absolute; bottom: 100%; margin-bottom: 4px; left: 50%; transform: translateX(-50%);
+      color: var(--red); font-family: 'Caveat', cursive;
       font-size: 1.05em; font-weight: 700;
-      white-space: nowrap;
+      white-space: pre-wrap; /* allow wrapping to avoid offscreen spill */
+      max-width: 150px;
+      text-align: center;
+      line-height: 1;
       pointer-events: none; z-index: 5;
     }
-    /* Caret ^ below span */
     .doodle-ins::after {
-      content: '∧';
-      position: absolute;
-      top: 100%; margin-top: -4px;
-      left: 50%; transform: translateX(-50%);
-      color: var(--red);
-      font-family: 'Caveat', cursive;
-      font-size: .95em; line-height: .8;
-      pointer-events: none;
+      content: '∧'; position: absolute; top: 100%; margin-top: -4px; left: 50%; transform: translateX(-50%);
+      color: var(--red); font-family: 'Caveat', cursive;
+      font-size: .95em; line-height: .8; pointer-events: none;
     }
 
-    /* ── 3. CAPITALIZE — triple underline (≡) ── */
     .doodle-cap {
       border-bottom: 2px solid var(--red);
       box-shadow: 0 4px 0 var(--red), 0 7px 0 var(--red);
       padding-bottom: 2px;
     }
 
-    /* ── 4. LOWERCASE — diagonal slash through cap ── */
     .doodle-lc { position: relative; }
     .doodle-lc::before {
-      content: '/';
-      position: absolute;
-      left: -1px; top: -.15em;
-      color: var(--red);
-      font-family: 'Caveat', cursive;
-      font-size: 1.5em; font-weight: 700; line-height: 1;
-      pointer-events: none;
+      content: '/'; position: absolute; left: -1px; top: -.15em; color: var(--red);
+      font-family: 'Caveat', cursive; font-size: 1.5em; font-weight: 700; line-height: 1; pointer-events: none;
     }
 
-    /* ── 5. TRANSPOSE — arch over words (horseshoe) ── */
     .doodle-trans { color: rgba(0,0,0,.75); }
     .doodle-trans::before {
-      content: '';
-      position: absolute;
-      left: 0; right: 0;
-      bottom: 100%; /* sits just above span top */
-      height: 13px;
-      border: 2px solid var(--red);
-      border-bottom: none;
-      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-      pointer-events: none;
+      content: ''; position: absolute; left: 0; right: 0; bottom: 100%; height: 13px;
+      border: 2px solid var(--red); border-bottom: none; border-radius: 50% 50% 0 0 / 100% 100% 0 0; pointer-events: none;
     }
 
-    /* ── 6. NEW PARAGRAPH ── */
     .doodle-para { display: inline; }
     .doodle-para::before {
-      content: '¶';
-      color: var(--red); font-size: 1.1em;
-      margin: 0 6px 0 14px;
-      font-family: 'Times New Roman', serif;
-      vertical-align: baseline;
+      content: '¶'; color: var(--red); font-size: 1.1em; margin: 0 6px 0 14px;
+      font-family: 'Times New Roman', serif; vertical-align: baseline;
     }
 
-    /* ── 7. SPELL OUT — circle around word (expand abbreviation) ── */
     .doodle-spell {
-      border: 2.5px solid var(--red);
-      border-radius: 50%;
-      padding: 1px 5px;
+      border: 2.5px solid var(--red); border-radius: 50%; padding: 1px 5px;
     }
 
-    /* ── 8. SPELLING ERROR — wavy underline + "sp" above ── */
     .doodle-sp {
-      text-decoration: underline wavy var(--red);
-      text-decoration-thickness: 2px;
-      text-underline-offset: 4px;
+      text-decoration: underline wavy var(--red); text-decoration-thickness: 2px; text-underline-offset: 4px;
     }
     .doodle-sp::before {
-      content: 'sp';
-      position: absolute;
-      bottom: calc(100% + 3px);
-      left: 50%;
-      transform: translateX(-50%);
-      color: var(--red);
-      font-family: 'Caveat', cursive;
-      font-size: .85em; font-weight: 700;
-      white-space: nowrap;
-      pointer-events: none; z-index: 5;
+      content: 'sp'; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+      color: var(--red); font-family: 'Caveat', cursive; font-size: .85em; font-weight: 700;
+      white-space: nowrap; pointer-events: none; z-index: 5;
     }
 
-    /* ── 9. RUN-ON — double slash mark + label above ── */
     .doodle-run { color: rgba(0,0,0,.8); }
     .doodle-run::before {
-      content: 'run-on';
-      position: absolute;
-      bottom: calc(100% + 3px);
-      right: -4px;
-      color: var(--red);
-      font-family: 'Caveat', cursive;
-      font-size: .82em; font-weight: 700;
-      white-space: nowrap;
-      pointer-events: none; z-index: 5;
+      content: 'run-on'; position: absolute; bottom: calc(100% + 3px); right: -4px;
+      color: var(--red); font-family: 'Caveat', cursive; font-size: .82em; font-weight: 700;
+      white-space: nowrap; pointer-events: none; z-index: 5;
     }
     .doodle-run::after {
-      content: ' //';
-      color: var(--red);
-      font-family: 'Caveat', cursive;
-      font-size: 1.1em; font-weight: 700;
-      pointer-events: none;
+      content: ' //'; color: var(--red); font-family: 'Caveat', cursive; font-size: 1.1em; font-weight: 700; pointer-events: none;
     }
 
-    /* ── 10. FRAGMENT — vertical side bars + "frag" above ── */
     .doodle-frag {
-      border-left: 2.5px solid var(--red);
-      border-right: 2.5px solid var(--red);
-      padding: 0 4px;
+      border-left: 2.5px solid var(--red); border-right: 2.5px solid var(--red); padding: 0 4px;
     }
     .doodle-frag::before {
-      content: 'frag';
-      position: absolute;
-      bottom: calc(100% + 3px);
-      left: 50%;
-      transform: translateX(-50%);
-      color: var(--red);
-      font-family: 'Caveat', cursive;
-      font-size: .85em; font-weight: 700;
-      white-space: nowrap;
-      pointer-events: none; z-index: 5;
+      content: 'frag'; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+      color: var(--red); font-family: 'Caveat', cursive; font-size: .85em; font-weight: 700;
+      white-space: nowrap; pointer-events: none; z-index: 5;
     }
 
-    /* ── 11. PUNCTUATION ERROR — box outline + "?" above ── */
     .doodle-punct {
-      box-shadow: 0 0 0 2px var(--red);
-      border-radius: 2px;
-      padding: 0 3px;
+      box-shadow: 0 0 0 2px var(--red); border-radius: 2px; padding: 0 3px;
     }
     .doodle-punct::before {
-      content: '?';
-      position: absolute;
-      bottom: calc(100% + 4px);
-      left: 50%;
-      transform: translateX(-50%);
-      color: var(--red);
-      font-family: 'Caveat', cursive;
-      font-size: 1em; font-weight: 700;
-      pointer-events: none; z-index: 5;
+      content: '?'; position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+      color: var(--red); font-family: 'Caveat', cursive; font-size: 1em; font-weight: 700; pointer-events: none; z-index: 5;
     }
 
-    /* ── 12. WORD SUBSTITUTE — blue dashed underline ── */
     .sub-word {
-      text-decoration: underline dashed var(--blue);
-      text-decoration-thickness: 2px;
-      text-underline-offset: 3px;
-      color: var(--blue); font-weight: 600;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: background .15s;
+      text-decoration: underline dashed var(--blue); text-decoration-thickness: 2px; text-underline-offset: 3px;
+      color: var(--blue); font-weight: 600; cursor: pointer; border-radius: 2px; transition: background .15s;
     }
     .sub-word:hover { background: rgba(11,87,208,.09); }
 
-    /* ── 13. SENTENCE SUBSTITUTE — amber wavy underline ── */
     .sent-sub {
-      text-decoration: underline wavy var(--amber);
-      text-decoration-thickness: 2px;
-      text-underline-offset: 4px;
-      cursor: pointer;
-      border-radius: 2px;
-      transition: background .15s;
+      text-decoration: underline wavy var(--amber); text-decoration-thickness: 2px; text-underline-offset: 4px;
+      cursor: pointer; border-radius: 2px; transition: background .15s;
     }
     .sent-sub:hover { background: rgba(180,83,9,.07); }
 
@@ -472,7 +411,7 @@
     .annotated-paper {
       font-family: 'DM Serif Display', serif;
       font-size: clamp(15px,3.2vw,18px);
-      line-height: 3.4;               /* generous for marks above/below */
+      line-height: 3.4;
       padding: clamp(20px,5vw,40px) clamp(20px,5vw,52px);
       border: var(--border);
       background: var(--paper);
@@ -485,17 +424,15 @@
       background-size: 100% 3.4em;
       position: relative;
       margin-bottom: 24px;
-      word-wrap: break-word;
-      overflow: visible;           /* marks must not be clipped */
+      
+      /* Essential for containing words properly */
+      overflow-wrap: break-word;
+      word-break: break-word;
+      hyphens: auto;
     }
-    /* Red margin line (left) */
     .annotated-paper::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 50px; bottom: 0;
-      width: 1.5px;
-      background: rgba(192,57,43,.35);
-      pointer-events: none;
+      content: ''; position: absolute; top: 0; left: 50px; bottom: 0; width: 1.5px;
+      background: rgba(192,57,43,.35); pointer-events: none;
     }
 
     /* ── SCORE STAMP ── */
@@ -519,51 +456,38 @@
 
     /* ── POPOVER ── */
     #mark-popover {
-      position: fixed;
-      background: #fff;
-      border: var(--border);
-      box-shadow: 5px 5px 0 #000;
-      padding: 8px;
-      z-index: 999;
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      min-width: 130px;
-      max-width: 300px;
+      position: fixed; background: #fff; border: var(--border); box-shadow: 5px 5px 0 #000;
+      padding: 8px; z-index: 999; display: none; flex-direction: column; gap: 5px;
+      min-width: 130px; max-width: 300px;
     }
     #mark-popover.visible { display: flex; }
 
     .pop-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 9px; font-weight: 800;
-      text-transform: uppercase; letter-spacing: .08em;
-      color: var(--muted);
-      padding-bottom: 6px;
-      border-bottom: 1px solid #eee;
-      margin-bottom: 2px;
-      display: flex; align-items: center; gap: 5px;
+      font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: .08em; color: var(--muted); padding-bottom: 6px; border-bottom: 1px solid #eee;
+      margin-bottom: 2px; display: flex; align-items: center; gap: 5px;
     }
     .pop-opt {
-      background: var(--hover);
-      border: 1px solid #bbb;
-      padding: 8px 10px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px; font-weight: 500;
-      cursor: pointer; text-align: left;
-      line-height: 1.45;
-      transition: background .1s;
+      background: var(--hover); border: 1px solid #bbb; padding: 8px 10px; font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500; cursor: pointer; text-align: left; line-height: 1.45; transition: background .1s;
     }
     .pop-opt:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
 
-    /* ── MOBILE ── */
+    /* ── MOBILE SPECIFIC TWEAKS ── */
     @media (max-width: 600px) {
       .app { box-shadow: 5px 5px 0 #000; }
       .header { flex-direction: column; align-items: flex-start; }
       .footer-controls { flex-direction: column; align-items: stretch; }
       .word-count { text-align: center; }
       .btn { width: 100%; justify-content: center; padding: 14px; }
-      .annotated-paper { padding: 20px 14px; line-height: 3.2; font-size: 15px; }
+      
+      /* Thicker horizontal padding to keep absolute doodles from clipping */
+      .annotated-paper { padding: 30px 24px; line-height: 3.2; font-size: 15px; }
       .annotated-paper::before { left: 28px; }
+      
+      /* Constrain text that pops up */
+      .deduction { right: 0; font-size: 15px; }
+      .doodle-ins::before { max-width: 100px; }
     }
   </style>
 </head>
@@ -578,16 +502,16 @@
       PrepBot Writing
     </div>
     <button class="btn btn-outline" id="new-topic-btn">
-      <i class="fas fa-rotate"></i> New Topic
+      <i class="fas fa-layer-group"></i> Change Topic
     </button>
   </div>
 
   <!-- Topic -->
-  <div class="topic-box">
+  <div class="topic-box" id="topic-box">
     <div class="topic-label">
       <i class="fas fa-pencil"></i> Write About This
     </div>
-    <div class="topic-text" id="topic-display">Loading topic…</div>
+    <div class="topic-text" id="topic-display">Loading topic...</div>
   </div>
 
   <!-- EDITOR -->
@@ -617,72 +541,48 @@
     <!-- Mark Legend -->
     <div class="legend">
       <div class="legend-title">Red Pen Mark Guide</div>
-
       <div class="legend-item">
         <span style="color:rgba(0,0,0,.4);text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px;font-size:13px;">word</span>
-        <span style="color:var(--red);font-family:Caveat,cursive;font-size:15px;margin-left:-4px;">ℓ</span>
-        Delete
+        <span style="color:var(--red);font-family:Caveat,cursive;font-size:15px;margin-left:-4px;">ℓ</span> Delete
       </div>
-
       <div class="legend-item">
         <span style="font-family:Caveat,cursive;color:var(--red);font-size:15px;">word</span>
-        <span style="color:var(--red);font-size:12px;">∧</span>
-        Insert
+        <span style="color:var(--red);font-size:12px;">∧</span> Insert
       </div>
-
       <div class="legend-item">
-        <span style="border-bottom:2px solid var(--red);box-shadow:0 4px 0 var(--red),0 7px 0 var(--red);padding-bottom:2px;font-size:13px;">abc</span>
-        Capitalize (≡)
+        <span style="border-bottom:2px solid var(--red);box-shadow:0 4px 0 var(--red),0 7px 0 var(--red);padding-bottom:2px;font-size:13px;">abc</span> Capitalize (≡)
       </div>
-
       <div class="legend-item">
-        <span style="color:var(--red);font-family:Caveat,cursive;font-size:16px;font-weight:700;">/</span>Abc
-        Lowercase
+        <span style="color:var(--red);font-family:Caveat,cursive;font-size:16px;font-weight:700;">/</span>Abc Lowercase
       </div>
-
       <div class="legend-item">
-        <span style="color:var(--red);font-size:16px;">⌢</span>
-        Transpose
+        <span style="color:var(--red);font-size:16px;">⌢</span> Transpose
       </div>
-
       <div class="legend-item">
-        <span style="color:var(--red);font-size:18px;font-family:'Times New Roman',serif;">¶</span>
-        New Para
+        <span style="color:var(--red);font-size:18px;font-family:'Times New Roman',serif;">¶</span> New Para
       </div>
-
       <div class="legend-item">
-        <span style="border:2.5px solid var(--red);border-radius:50%;padding:0 4px;font-size:12px;">abbr</span>
-        Spell Out
+        <span style="border:2.5px solid var(--red);border-radius:50%;padding:0 4px;font-size:12px;">abbr</span> Spell Out
       </div>
-
       <div class="legend-item">
         <span style="text-decoration:underline wavy var(--red);text-underline-offset:4px;font-size:13px;">word</span>
-        <span style="color:var(--red);font-family:Caveat,cursive;font-size:12px;font-weight:700;">sp</span>
-        Spelling
+        <span style="color:var(--red);font-family:Caveat,cursive;font-size:12px;font-weight:700;">sp</span> Spelling
       </div>
-
       <div class="legend-item">
-        <span style="color:var(--red);font-family:Caveat,cursive;font-size:15px;font-weight:700;">//</span>
-        Run-on
+        <span style="color:var(--red);font-family:Caveat,cursive;font-size:15px;font-weight:700;">//</span> Run-on
       </div>
-
       <div class="legend-item">
         <span style="border-left:2.5px solid var(--red);border-right:2.5px solid var(--red);padding:0 3px;font-size:13px;">sent</span>
-        <span style="color:var(--red);font-family:Caveat,cursive;font-size:12px;font-weight:700;">frag</span>
-        Fragment
+        <span style="color:var(--red);font-family:Caveat,cursive;font-size:12px;font-weight:700;">frag</span> Fragment
       </div>
-
       <div class="legend-item">
         <span style="box-shadow:0 0 0 2px var(--red);border-radius:2px;padding:0 3px;font-size:13px;">.</span>
-        <span style="color:var(--red);font-family:Caveat,cursive;font-size:12px;font-weight:700;">?</span>
-        Punctuation
+        <span style="color:var(--red);font-family:Caveat,cursive;font-size:12px;font-weight:700;">?</span> Punctuation
       </div>
-
       <div class="legend-item">
         <span style="color:var(--blue);text-decoration:underline dashed var(--blue);text-underline-offset:3px;font-size:13px;">word</span>
         Word Sub <i class="fas fa-hand-pointer" style="font-size:10px;color:var(--muted);"></i>
       </div>
-
       <div class="legend-item">
         <span style="text-decoration:underline wavy var(--amber);text-underline-offset:4px;font-size:13px;">sentence</span>
         Rewrite <i class="fas fa-hand-pointer" style="font-size:10px;color:var(--muted);"></i>
@@ -714,7 +614,32 @@
 
 </div><!-- /app -->
 
-<!-- Popover — outside app to avoid clip -->
+<!-- Topic Modal -->
+<div id="topic-modal" class="modal-overlay">
+  <div class="modal-content">
+    <button class="modal-close" id="close-modal">&times;</button>
+    <h3 style="margin-top:0; font-family:'Syne', sans-serif; font-size:18px; text-transform:uppercase;">Select Writing Type</h3>
+    <p style="font-size:14px; color:var(--muted); margin-bottom:12px; line-height:1.5;">
+      Choose a genre below to have the AI instantly generate a fresh, unique writing prompt for you.
+    </p>
+    <div class="type-grid">
+      <button class="btn btn-outline type-btn" data-type="Narrative Story">
+        <i class="fas fa-book-open"></i> Narrative
+      </button>
+      <button class="btn btn-outline type-btn" data-type="Argumentative Essay">
+        <i class="fas fa-balance-scale"></i> Argumentative
+      </button>
+      <button class="btn btn-outline type-btn" data-type="Descriptive Essay">
+        <i class="fas fa-image"></i> Descriptive
+      </button>
+      <button class="btn btn-outline type-btn" data-type="Expository Essay">
+        <i class="fas fa-info-circle"></i> Expository
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Popover -->
 <div id="mark-popover"></div>
 
 <script>
@@ -723,20 +648,9 @@
   const GROQ_KEY = p1+p2+p3+p4;
   const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-  /* ── TOPICS ── */
-  const topics = [
-    "Write a story ending with: '…and that was the last time I ever saw the silver key.'",
-    "Discuss the advantages and disadvantages of online learning compared to traditional classrooms.",
-    "Write a descriptive essay about a crowded bus station on a rainy evening.",
-    "Argue for or against the complete ban of mobile phones in secondary schools.",
-    "Describe an experience that significantly changed your perspective on life.",
-    "Write about a day when everything went wrong but ended up teaching you something valuable.",
-    "Should homework be abolished in secondary schools? Give your opinion with reasons.",
-    "Describe your ideal community and explain what makes it a good place to live.",
-  ];
-
   /* ── DOM ── */
   const $ = id => document.getElementById(id);
+  const elTopicBox  = $('topic-box');
   const elTopic     = $('topic-display');
   const elTextarea  = $('writing-area');
   const elWordCount = $('word-count');
@@ -749,33 +663,37 @@
   const elStamp     = $('score-stamp');
   const elRetryBtn  = $('retry-btn');
   const elPopover   = $('mark-popover');
+  const elModal     = $('topic-modal');
 
   let currentTopic = "";
   let activeEl     = null;
 
-  /* ── TOPIC PICKER ── */
-  function pickTopic() {
-    currentTopic = topics[Math.floor(Math.random() * topics.length)];
-    elTopic.textContent = currentTopic;
-  }
-
+  /* ── EVENT LISTENERS ── */
   elTextarea.addEventListener('input', () => {
     const words = elTextarea.value.trim() ? elTextarea.value.trim().split(/\s+/).length : 0;
     elWordCount.textContent = words;
     elSubmitBtn.disabled = words < 20;
   });
 
-  $('new-topic-btn').addEventListener('click', () => {
-    pickTopic();
-    elTextarea.value = '';
-    elWordCount.textContent = '0';
-    elSubmitBtn.disabled = true;
+  $('new-topic-btn').addEventListener('click', openModal);
+  $('close-modal').addEventListener('click', closeModal);
+
+  // Close modal when clicking outside box
+  elModal.addEventListener('click', (e) => {
+    if(e.target === elModal) closeModal();
+  });
+
+  // Attach listeners to Modal Type Buttons
+  document.querySelectorAll('.type-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      fetchGeneratedTopic(btn.dataset.type);
+    });
   });
 
   elRetryBtn.addEventListener('click', () => {
     elResultsSec.classList.remove('active');
     elEditorSec.style.display = 'block';
-    pickTopic();
+    openModal();
     elTextarea.value = '';
     elWordCount.textContent = '0';
     elSubmitBtn.disabled = true;
@@ -783,7 +701,67 @@
     activeEl = null;
   });
 
-  /* ── SYSTEM PROMPT — strict, marks every error ── */
+  /* ── MODAL LOGIC ── */
+  function openModal() {
+    elModal.classList.add('active');
+  }
+
+  function closeModal() {
+    elModal.classList.remove('active');
+    // Provide a fallback if user closes without picking initially
+    if (!currentTopic) {
+      currentTopic = "Write a descriptive essay about an abandoned place that suddenly comes to life.";
+      elTopic.textContent = currentTopic;
+    }
+  }
+
+  /* ── GENERATE TOPIC VIA API ── */
+  async function fetchGeneratedTopic(type) {
+    elTopicBox.style.opacity = '0.5';
+    elTopic.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating ${type} prompt...`;
+    closeModal();
+
+    try {
+      const res = await fetch(GROQ_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_KEY}`
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: `You are a creative writing teacher. Generate a single, highly engaging secondary-school level writing prompt for the following genre: ${type}. Return ONLY the prompt text. No quotes, no introductions, no extra text.` }
+          ],
+          temperature: 0.8,
+          max_tokens: 150
+        })
+      });
+
+      if (!res.ok) throw new Error(`API ${res.status}`);
+
+      const data = await res.json();
+      let promptText = data.choices?.[0]?.message?.content || "Failed to generate topic.";
+      // Clean off any lingering quotes just in case
+      promptText = promptText.replace(/^["']|["']$/g, '').trim(); 
+      
+      currentTopic = promptText;
+      elTopic.textContent = currentTopic;
+      
+      // Re-validate text area length against new topic
+      const words = elTextarea.value.trim() ? elTextarea.value.trim().split(/\s+/).length : 0;
+      elSubmitBtn.disabled = words < 20;
+
+    } catch (err) {
+      console.error(err);
+      elTopic.textContent = "Error generating topic. Please try again or click 'Change Topic'.";
+      currentTopic = "";
+    } finally {
+      elTopicBox.style.opacity = '1';
+    }
+  }
+
+  /* ── GRADING SYSTEM PROMPT ── */
   function getSystemPrompt() {
     return `You are an uncompromising secondary-school English examiner marking with a red pen. You are NOT generous. Your job is to find and mark EVERY single error.
 
@@ -897,7 +875,7 @@ ANNOTATION RULES:
 - Escape all JSON strings. Do NOT use markdown code fences.`;
   }
 
-  /* ── SUBMIT ── */
+  /* ── SUBMIT GRADING ── */
   elSubmitBtn.addEventListener('click', async () => {
     const userText = elTextarea.value.trim();
     if (!userText) return;
@@ -926,7 +904,6 @@ ANNOTATION RULES:
 
       const data = await res.json();
       let raw = data.choices?.[0]?.message?.content || "";
-      // Strip any accidental markdown fences
       raw = raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```\s*$/,'').trim();
 
       const parsed = JSON.parse(raw);
@@ -939,7 +916,7 @@ ANNOTATION RULES:
     }
   });
 
-  /* ── RENDER ── */
+  /* ── RENDER RESULTS ── */
   function renderResults(data, originalText) {
 
     /* Score stamp */
@@ -1003,7 +980,7 @@ ANNOTATION RULES:
     elResultsSec.classList.add('active');
   }
 
-  /* ── POPOVER ── */
+  /* ── POPOVER LOGIC ── */
   function openPopover(el) {
     activeEl = el;
     const type    = el.dataset.type || 'word';
@@ -1066,8 +1043,8 @@ ANNOTATION RULES:
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  /* Init */
-  pickTopic();
+  /* Init -> Automatically Open Modal on Start */
+  window.addEventListener('DOMContentLoaded', openModal);
 </script>
 </body>
 </html>
