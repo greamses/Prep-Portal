@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════
    PREPBOT — Reusable AI Study Assistant (Groq / Llama 3.1)
    Features: AI Chat, MathJax/LaTeX, Auto-Navigation, Hidden Quiz Context
-   Updated: Strict LaTeX enforcement & Material Symbols
+   Updated: Strict LaTeX, Material Symbols, & Image Attachments
 ═══════════════════════════════════════════════════════════ */
 
 (function() {
@@ -194,6 +194,7 @@
     let recognition = null;
     let pendingNavigation = null;
     let pendingSecretContext = null; 
+    let pendingImage = null; // Stores an image URL if the question has one
     
     /* ── SAFE HTML & LATEX PARSER ── */
     function stripHtmlKeepMath(html) {
@@ -231,6 +232,14 @@
             if (!el) continue;
             const text = stripHtmlKeepMath(el.innerHTML);
             if (text) return text;
+        }
+        return null;
+    }
+
+    function getFallbackQuestionImage() {
+        const el = document.getElementById('question-image');
+        if (el && el.getAttribute('src') && !el.classList.contains('hidden')) {
+            return el.src;
         }
         return null;
     }
@@ -282,6 +291,9 @@
         } else if (q.explanation) {
             officialExplanation = stripHtmlKeepMath(q.explanation);
         }
+
+        // Check if there is an image and stage it for rendering
+        pendingImage = q.image ? q.image : null;
 
         input.value = `Question ${index + 1}: ${rawQ}\n\nOptions:\n${optsText}\n\nPlease explain how to solve this step by step.`;
         
@@ -370,6 +382,10 @@
                 } else {
                     const qNum = getQuestionNumber();
                     const prefix = qNum ? `Question ${qNum}: ` : '';
+                    
+                    // Attach image if visible
+                    pendingImage = getFallbackQuestionImage();
+                    
                     input.value = `${prefix}${fallbackText}\n\nPlease explain how to solve this step by step.`;
                     suggBox.style.display = 'none';
                     sendMessage();
@@ -448,14 +464,21 @@
         clearBar.classList.remove('visible');
     });
     
-    function appendMessage(role, text) {
+    function appendMessage(role, text, imageUrl = null) {
         const wrap = document.createElement('div');
         wrap.className = `msg ${role}`;
         wrap.innerHTML = `<div class="msg-meta">${role === 'user' ? 'You' : BOT_NAME}</div>`;
         
         const bubble = document.createElement('div');
         bubble.className = 'msg-bubble';
-        bubble.innerHTML = formatText(text);
+        
+        // Include the image in the bubble if provided
+        let imgHtml = '';
+        if (imageUrl) {
+            imgHtml = `<img src="${imageUrl}" alt="Question Image" style="max-width: 100%; max-height: 160px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--rule); display: block; object-fit: contain; background: #fff;">`;
+        }
+        
+        bubble.innerHTML = imgHtml + formatText(text);
         wrap.appendChild(bubble);
         
         messages.appendChild(wrap);
@@ -640,11 +663,18 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
         charCounter.textContent = '500';
         charCounter.classList.remove('near-limit');
         
-        // Render ONLY the clean text to the user interface
-        appendMessage('user', text);
+        // Grab the image before clearing it
+        const attachedImage = pendingImage;
+        pendingImage = null;
+
+        // Render clean text + image to the UI
+        appendMessage('user', text, attachedImage);
         
-        // Append the secret context to the prompt if it exists, before saving to history
+        // Build the prompt for the AI
         let textForAI = text;
+        if (attachedImage) {
+            textForAI += "\n\n[SYSTEM NOTE: This question contains an image. Since you are a text model, rely on the provided question text and the official explanation below to understand the visual context.]";
+        }
         if (pendingSecretContext) {
             textForAI += pendingSecretContext;
             pendingSecretContext = null; // reset it
