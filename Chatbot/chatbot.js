@@ -1,6 +1,10 @@
 /* ═══════════════════════════════════════════════════════════
    PREPBOT — Reusable AI Study Assistant (Groq / Llama 3.1)
-   Features: AI Chat, MathJax/LaTeX, Auto-Navigation
+   Features: AI Chat, MathJax/LaTeX, Auto-Navigation, FontAwesome Icons
+   
+   <!-- Make sure to include FontAwesome in your HTML head: -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   
    <link rel="stylesheet" href="../chatbot.css">
    <div id="prepbot"></div>
    <script src="../chatbot.js"></script>
@@ -386,7 +390,7 @@
             const tq = document.createElement('button');
             tq.id = 'chip-this-q';
             tq.className = 'suggestion-chip blue';
-            tq.textContent = '❓ This question';
+            tq.innerHTML = '<i class="fa-solid fa-circle-question" style="margin-right: 5px;"></i> This question';
             tq.addEventListener('click', () => {
                 if (hasQuiz) {
                     askAboutQuestion(window.__prepbotCurrentQuestionIndex, getQuizData());
@@ -405,7 +409,7 @@
             const pq = document.createElement('button');
             pq.id = 'chip-pick-q';
             pq.className = 'suggestion-chip green';
-            pq.textContent = '🔢 Pick a question';
+            pq.innerHTML = '<i class="fa-solid fa-list-ol" style="margin-right: 5px;"></i> Pick a question';
             pq.addEventListener('click', () => {
                 buildQuestionBubbles();
                 suggBox.style.display = 'none';
@@ -511,6 +515,8 @@
             .replace(/\$\$[\s\S]*?\$\$/g, m => { mathChunks.push(m.replace(/^\$\$/, '\\[').replace(/\$\$$/, '\\]')); return ph(mathChunks.length - 1); })
             .replace(/\$[^\$\n]+?\$/g, m => { mathChunks.push(m.replace(/^\$/, '\\(').replace(/\$$/, '\\)')); return ph(mathChunks.length - 1); })
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            // New syntax for injecting font-awesome icons safely after html escape
+            .replace(/\[ICON:([^\]]+)\]/g, '<i class="$1" style="margin-right: 6px;"></i>')
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .replace(/`(.*?)`/g, '<code style="background:#f0f0f0;padding:1px 5px;font-family:monospace;font-size:0.9em">$1</code>')
@@ -596,7 +602,7 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
                 charCounter.textContent = '500';
                 const { url, pageName } = pendingNavigation;
                 pendingNavigation = null;
-                appendMessage('bot', `✅ Navigating you to **${pageName}** now…`);
+                appendMessage('bot', `[ICON:fa-solid fa-circle-check] Navigating you to **${pageName}** now…`);
                 setTimeout(() => { window.location.href = url; }, 1200);
                 return;
             } else if (['no', 'n', 'nope', 'nah', 'cancel', 'stop', 'nevermind', 'never mind', 'dont'].includes(answer)) {
@@ -634,7 +640,7 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
             charCounter.textContent = '500';
             appendMessage('user', text);
             appendMessage('bot',
-                `🤔 I noticed the word **"${synonymKeyword.word}"** in your message. Did you want me to **navigate you** to a page on the site, or were you asking something else?\n\nReply **"yes"** if you meant navigation, or just rephrase your question!`
+                `[ICON:fa-solid fa-circle-info] I noticed the word **"${synonymKeyword.word}"** in your message. Did you want me to **navigate you** to a page on the site, or were you asking something else?\n\nReply **"yes"** if you meant navigation, or just rephrase your question!`
             );
             history.push({ role: 'user', content: text });
             history.push({ role: 'assistant', content: `Clarification asked about synonym "${synonymKeyword.word}".` });
@@ -699,10 +705,10 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
                 const errMsg = errData?.error?.message || `HTTP ${res.status}`;
                 
                 if (res.status === 429) {
-                    appendMessage('bot', "⏳ **Whoa, slow down!** I'm getting too many questions at once. Please wait 15 seconds and try again.");
+                    appendMessage('bot', "[ICON:fa-solid fa-hourglass-half] **Whoa, slow down!** I'm getting too many questions at once. Please wait 15 seconds and try again.");
                     history.pop();
                 } else {
-                    appendMessage('bot', `⚠️ **API error:** ${errMsg}`);
+                    appendMessage('bot', `[ICON:fa-solid fa-triangle-exclamation] **API error:** ${errMsg}`);
                     history.pop();
                 }
             } else {
@@ -722,7 +728,7 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
                     pendingNavigation = { url: urlToNavigate, pageName };
                     
                     const confirmMsg = (reply ? reply + '\n\n' : '') +
-                        `🔗 I'd like to take you to **${pageName}**. Shall I go ahead?\n\nReply **Yes** to navigate or **No** to stay here.`;
+                        `[ICON:fa-solid fa-link] I'd like to take you to **${pageName}**. Shall I go ahead?\n\nReply **Yes** to navigate or **No** to stay here.`;
                     
                     history.push({ role: 'assistant', content: confirmMsg });
                     appendMessage('bot', confirmMsg);
@@ -735,7 +741,7 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
         }
         catch (err) {
             hideTyping();
-            appendMessage('bot', `⚠️ **Connection Error:** Please check your internet and try again.`);
+            appendMessage('bot', `[ICON:fa-solid fa-triangle-exclamation] **Connection Error:** Please check your internet and try again.`);
             history.pop();
         }
         
@@ -769,7 +775,7 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
             micIcon.style.display = on ? 'none' : '';
             micStopIcon.style.display = on ? '' : 'none';
             micBtn.setAttribute('aria-label', on ? 'Stop recording' : 'Voice input');
-            input.placeholder = on ? '🎙️ Listening… speak now' : 'Ask a study question…';
+            input.placeholder = on ? 'Listening… speak now' : 'Ask a study question…';
         }
         
         recognition.addEventListener('result', e => {
@@ -801,12 +807,12 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
         recognition.addEventListener('error', e => {
             setListening(false);
             const msgs = {
-                'not-allowed': '🎙️ Microphone access was denied. Please allow microphone access in your browser settings.',
-                'no-speech': '🎙️ No speech detected. Please try again.',
-                'network': '🎙️ Network error during voice recognition. Please check your connection.',
+                'not-allowed': '[ICON:fa-solid fa-microphone-slash] Microphone access was denied. Please allow microphone access in your browser settings.',
+                'no-speech': '[ICON:fa-solid fa-comment-slash] No speech detected. Please try again.',
+                'network': '[ICON:fa-solid fa-wifi] Network error during voice recognition. Please check your connection.',
                 'aborted': null, // user cancelled — no message needed
             };
-            const msg = msgs[e.error] !== undefined ? msgs[e.error] : `🎙️ Voice error: ${e.error}`;
+            const msg = msgs[e.error] !== undefined ? msgs[e.error] : `[ICON:fa-solid fa-triangle-exclamation] Voice error: ${e.error}`;
             if (msg) appendMessage('bot', msg);
         });
         
@@ -836,3 +842,4 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
     })();
     
 })();
+
