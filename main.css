@@ -751,3 +751,67 @@ footer {
   transform: translateY(0);
 }
 
+
+/* ─── ICONS ─── */
+i {
+  font-size: 1rem;
+  line-height: 1;
+  vertical-align: middle;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+/* Header icons */
+.header i {
+  font-size: 1.1rem;
+}
+
+/* Score icons */
+.score-pill i {
+  margin-right: 6px;
+}
+
+.score-correct i {
+  color: #1e8e3e; /* green */
+}
+
+.score-wrong i {
+  color: #d93025; /* red */
+}
+
+/* Timer icon */
+.timer-badge i {
+  margin-right: 6px;
+  color: var(--muted);
+}
+
+/* Buttons */
+button i {
+  font-size: 0.9rem;
+}
+
+#btn-prev i {
+  margin-right: 6px;
+}
+
+#btn-next i {
+  margin-left: 6px;
+}
+
+/* Hover effects for interactive feel */
+button:hover i {
+  transform: translateX(2px);
+}
+
+#btn-prev:hover i {
+  transform: translateX(-2px);
+}
+
+/* Smooth icon color change on hover */
+.btn:hover i {
+  color: white;
+}
+
+/* Slight emphasis for important icons */
+.fa-graduation-cap {
+  transform: translateY(-1px);
+}
