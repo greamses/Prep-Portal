@@ -1,0 +1,667 @@
+/* =========================================
+   Import Fonts (from reference design)
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Syne:wght@800&display=swap');
+
+/* =========================================
+   Base Styles & Variables
+   ========================================= */
+:root {
+    --primary: #0b57d0;
+    --primary-light: #1a1a1a;
+    --success: #137333;
+    --danger: #c5221f;
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-main: #1a1a1a;
+    --text-muted: #444746;
+    --border-color: #000000;
+    --border-main: 2px solid #000000;
+    --shadow-brutal: 6px 6px 0px #000;
+    --option-hover: #f1f3f4;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.6;
+    padding: 0;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    text-align: center;
+    padding: 2rem 1rem 0.5rem 1rem;
+    border-bottom: var(--border-main);
+}
+
+header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--text-main);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.2rem;
+}
+
+/* =========================================
+   CSS Horizontal Carousel Magic
+   ========================================= */
+.quiz-container {
+    width: 100%;
+    max-width: 100vw;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#questions-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 1rem;
+    padding: 1rem 5vw 2rem 5vw;
+    scrollbar-width: auto;
+    scrollbar-color: #000 transparent;
+}
+
+/* Custom Webkit Scrollbar */
+#questions-grid::-webkit-scrollbar {
+    height: 12px;
+}
+
+#questions-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 0;
+    margin: 0 5vw;
+}
+
+#questions-grid::-webkit-scrollbar-thumb {
+    background-color: #000;
+    border-radius: 0;
+    border: 2px solid var(--bg-color);
+}
+
+.question-card {
+    /* Mobile Card Size */
+    flex: 0 0 90vw;
+    width: 90vw;
+    scroll-snap-align: center;
+
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 0;
+    border: var(--border-main);
+    box-shadow: var(--shadow-brutal);
+
+    display: flex;
+    flex-direction: column;
+}
+
+/* Desktop Centered Carousel */
+@media (min-width: 1000px) {
+    #questions-grid {
+        gap: 2rem;
+        padding: 2rem calc(50vw - 450px) 3rem calc(50vw - 450px);
+    }
+
+    #questions-grid::-webkit-scrollbar-track {
+        margin: 0 calc(50vw - 450px);
+    }
+
+    .question-card {
+        flex: 0 0 900px;
+        width: 900px;
+        padding: 3rem;
+    }
+}
+
+.question-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+    border-bottom: 3px solid #000;
+    padding-bottom: 0.75rem;
+    color: var(--text-main);
+}
+
+/* =========================================
+   Card Internals (Layout & SVGs)
+   ========================================= */
+.card-flex-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex-grow: 1;
+}
+
+.svg-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 0;
+    overflow-x: auto;
+}
+
+.svg-wrapper svg {
+    max-width: 100%;
+    height: auto;
+    user-select: none;
+}
+
+@media (min-width: 900px) {
+    .card-flex-row {
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    .card-flex-row > .svg-wrapper {
+        flex: 1;
+        border-right: 2px solid #000;
+        padding-right: 1.5rem;
+    }
+
+    .card-flex-row > .question-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-left: 1.5rem;
+    }
+}
+
+/* =========================================
+   Inputs and Forms
+   ========================================= */
+.question-group {
+    background: var(--bg-color);
+    padding: 1.25rem;
+    border-radius: 0;
+    border: var(--border-main);
+    margin-top: 1rem;
+}
+
+.input-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    padding: 0.6rem 0.75rem;
+    border: var(--border-main);
+    border-radius: 0;
+    font-size: 1.1rem;
+    width: 100px;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    background: #fff;
+}
+
+input[type="text"] {
+    width: 140px;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 3px 3px 0px var(--primary);
+}
+
+input.correct,
+select.correct {
+    border-color: var(--success);
+    background-color: #e6f4ea;
+    color: var(--success);
+    font-weight: 700;
+    box-shadow: 3px 3px 0px var(--success);
+}
+
+input.incorrect,
+select.incorrect {
+    border-color: var(--danger);
+    background-color: #fce8e6;
+    color: var(--danger);
+    box-shadow: 3px 3px 0px var(--danger);
+}
+
+/* =========================================
+   Submit Area 
+   ========================================= */
+.submit-area {
+    text-align: center;
+    padding: 2rem 1rem 4rem 1rem;
+    margin-top: auto;
+}
+
+button[type="submit"] {
+    background-color: #000;
+    color: #fff;
+    border: var(--border-main);
+    padding: 1.25rem 3rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 0;
+    cursor: pointer;
+    box-shadow: var(--shadow-brutal);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+button[type="submit"]:hover {
+    background-color: var(--primary);
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px #000;
+}
+
+#score-display {
+    margin-top: 1.5rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    min-height: 2.5rem;
+}
+
+/* =========================================
+   Custom Modules (Pictogram, Math Algos)
+   ========================================= */
+
+/* Pictogram */
+.pictogram-container {
+    background: #fff;
+    border: var(--border-main);
+    border-radius: 0;
+    width: 100%;
+    overflow: hidden;
+    box-shadow: 4px 4px 0px #000;
+}
+
+.pictogram-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pictogram-table th,
+.pictogram-table td {
+    border-bottom: 2px solid #000;
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+
+.pictogram-table th {
+    background: #000;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.pictogram-table .fruit-col {
+    width: 30%;
+    border-right: 2px solid #000;
+}
+
+.svg-icons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+    min-height: 30px;
+}
+
+.legend {
+    text-align: center;
+    padding: 0.75rem;
+    background: #f1f3f4;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-top: 2px solid #000;
+    font-family: 'Syne', sans-serif;
+    text-transform: uppercase;
+}
+
+#peaches-dropzone {
+    transition: background-color 0.15s;
+    border: 2px dashed transparent;
+}
+
+#peaches-dropzone.drag-over {
+    background-color: #e8f0fe;
+    border-color: var(--primary);
+    box-shadow: inset 3px 3px 0px var(--primary);
+}
+
+#peaches-dropzone.correct-zone {
+    background-color: #e6f4ea;
+    border: 2px solid var(--success);
+    box-shadow: inset 3px 3px 0px var(--success);
+}
+
+#peaches-dropzone.incorrect-zone {
+    background-color: #fce8e6;
+    border: 2px solid var(--danger);
+    box-shadow: inset 3px 3px 0px var(--danger);
+}
+
+.tools-bank {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 15px;
+    background: #f1f3f4;
+    border-radius: 0;
+    margin-top: 15px;
+    border: var(--border-main);
+}
+
+.draggable-icon {
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    border-radius: 0;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.draggable-icon:hover {
+    background: #e2e8f0;
+    transform: scale(1.1);
+    box-shadow: 2px 2px 0px #000;
+}
+
+.secondary-btn {
+    margin-left: auto;
+    padding: 8px 16px;
+    background: white;
+    border: var(--border-main);
+    border-radius: 0;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    box-shadow: 2px 2px 0px #000;
+}
+
+.secondary-btn:hover {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px #000;
+}
+
+/* Math Algo Grids */
+.missing-num-grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+}
+
+.addition-algo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 1.5rem;
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 0;
+    width: max-content;
+    margin: 0 auto;
+    border: var(--border-main);
+    box-shadow: var(--shadow-brutal);
+}
+
+.algo-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+}
+
+/* Second .addition-algo declaration (kept from source) */
+.addition-algo {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 1.25rem;
+    margin-top: 10px;
+}
+
+/* Second .algo-row declaration (kept from source) */
+.algo-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+}
+
+.algo-row > span,
+.algo-row > input {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 35px;
+    height: 35px;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.algo-row input {
+    width: 45px;
+    height: 45px;
+    text-align: center;
+    font-size: 1.2rem;
+    padding: 0;
+}
+
+.algo-row input[type="number"] {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-align: center;
+    border: var(--border-main);
+    border-radius: 0;
+    background-color: #fff;
+    padding: 0;
+}
+
+.algo-row input[type="number"]:focus {
+    border-color: var(--primary);
+    box-shadow: 2px 2px 0px var(--primary);
+    outline: none;
+}
+
+.algo-row input[type="number"]::-webkit-outer-spin-button,
+.algo-row input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.algo-row input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.algo-divider {
+    width: 100%;
+    height: 3px;
+    background: #000;
+    margin: 0.5rem 0;
+}
+
+/* Second .algo-divider declaration (kept from source) */
+.algo-divider {
+    width: 100%;
+    height: 2px;
+    background-color: #000;
+    margin: 6px 0;
+}
+
+/* Triangle Puzzle */
+.p-shape {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    background: #fff;
+    border: 2px solid #000;
+    z-index: 2;
+}
+
+/* Circle inputs STAY circular */
+.p-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+}
+
+/* Square inputs STAY square */
+.p-square {
+    width: 60px;
+    height: 40px;
+    border-radius: 0;
+}
+
+.p-shape input {
+    width: 80%;
+    height: 80%;
+    border: none;
+    text-align: center;
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 0;
+}
+
+.p-shape input:focus {
+    outline: none;
+}
+
+.p-line-h {
+    width: 40px;
+    height: 2px;
+    background: #000;
+    margin: 0 -25px;
+    z-index: 1;
+}
+
+/* =========================================
+   Interactive UI (Tap to Match, Popups)
+   ========================================= */
+.match-item {
+    padding: 10px 16px;
+    border: var(--border-main);
+    border-radius: 0;
+    background: #fff;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    user-select: none;
+    z-index: 10;
+    box-shadow: 3px 3px 0px #000;
+}
+
+.match-item:hover {
+    background: var(--option-hover);
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0px #000;
+}
+
+.match-active {
+    border-color: var(--primary);
+    background: #e8f0fe;
+    transform: scale(1.05);
+    box-shadow: 4px 4px 0px var(--primary);
+}
+
+.match-connected {
+    border-color: var(--success);
+    background: #e6f4ea;
+    box-shadow: 3px 3px 0px var(--success);
+}
+
+.toggle-group {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.toggle-btn {
+    padding: 10px 20px;
+    border: var(--border-main);
+    border-radius: 0;
+    background: #fff;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    transition: all 0.15s;
+    box-shadow: 3px 3px 0px #000;
+}
+
+.toggle-btn:hover {
+    background: var(--option-hover);
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0px #000;
+}
+
+.toggle-btn.selected {
+    background: #000;
+    color: #fff;
+    border-color: #000;
+    box-shadow: none;
+    transform: translate(3px, 3px);
+}
+
+.q13-marker {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.q13-marker:hover {
+    opacity: 0.7;
+}

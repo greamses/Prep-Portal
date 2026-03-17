@@ -1,0 +1,13 @@
+<svg id="interactive-svg" viewBox="0 0 600 100" width="100%" height="100%" style="cursor: crosshair; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <marker id="arrow-head-rev" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto"><polygon points="10 0, 0 3.5, 10 7" fill="#1e293b"/></marker>
+        <marker id="arrow-head2" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#1e293b"/></marker>
+    </defs>
+    <rect x="0" y="0" width="600" height="100" fill="transparent"/>
+    <line x1="60" y1="60" x2="540" y2="60" stroke="#1e293b" stroke-width="3" marker-start="url(#arrow-head-rev)" marker-end="url(#arrow-head2)"/>
+    <line x1="60" y1="50" x2="60" y2="70" stroke="#1e293b" stroke-width="2"/>
+    <text x="60" y="90" text-anchor="middle" font-size="16" font-weight="bold">0</text>
+    <line x1="540" y1="50" x2="540" y2="70" stroke="#1e293b" stroke-width="2"/>
+    <text x="540" y="90" text-anchor="middle" font-size="16" font-weight="bold">1000</text>
+    <g id="dynamic-marker"></g>
+</svg>
