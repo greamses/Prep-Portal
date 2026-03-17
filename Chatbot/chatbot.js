@@ -22,15 +22,15 @@
     const BOT_NAME = 'PrepBot';
     const YEAR = '2026';
     
-    /* ── SITE MAP FOR AI NAVIGATION ── */
-    // Edit the URLs on the right to match your actual website files/paths!
-    const SITE_MAP = {
-        "Home": "/index.html",
-        "Cambridge": "/Cambridge/index.html",
-        "WAEC": "/WAEC/index.html",
-        "Scholastic": "/Scholarstic/index.html",
-        "Scholastic Upper Primary": "/Scholarstic/Upper-Primary/index.html",
-    };
+const BASE = "/preportal"; // ← CHANGE THIS
+
+const SITE_MAP = {
+    "Home": `${BASE}/index.html`,
+    "Cambridge": `${BASE}/Cambridge/index.html`,
+    "WAEC": `${BASE}/WAEC/index.html`,
+    "Scholastic": `${BASE}/Scholarstic/index.html`,
+    "Scholastic Upper Primary": `${BASE}/Scholarstic/Upper-Primary/index.html`,
+};
     /* ── INJECT HTML ── */
     const mount = document.getElementById('prepbot');
     if (!mount) return;
