@@ -12,6 +12,10 @@
     
     <link rel="stylesheet" href="./main.css">
     <link rel="stylesheet" href="./Chatbot/chatbot.css">
+    
+        <!-- MathJax for Math Formatting -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 
 <body>
@@ -134,88 +138,91 @@
             </div>
         </div>
     </footer>
-
+    
     <!-- ═══ PREPBOT ═══ -->
     <div id="prepbot"></div>
     <script src="./Chatbot/chatbot.js"></script>
-
+    
     
     <script>
-    /* ══════════════════════════════════════════
+        /* ══════════════════════════════════════════
        SITE SCRIPTS (unchanged)
     ══════════════════════════════════════════ */
-    const examData = [
-        { id:"01", title:"Common Entrance",  desc:"National baseline assessments for secondary transition.",         link:"#",                        live:false },
-        { id:"02", title:"Cambridge Exam",   desc:"International standard papers for primary foundation learners.", link:"./Cambridge/index.html",    live:true  },
-        { id:"03", title:"Grade 4 Spring",   desc:"Second term revision modules for Year 4 students.",              link:"./Grade-4-Exam/index.html", live:true  },
-        { id:"04", title:"Grade 5 Spring",   desc:"Intensive preparatory sets for Year 5 promotional exams.",       link:"./Grade-5-Exam/index.html", live:true  },
-        { id:"05", title:"TULIP Questions",  desc:"Exclusive archive for TULIP scholarship entrance.",              link:"#",                        live:false },
-        { id:"06", title:"Scholastic Prep",  desc:"Elite-level competition drills for academic decathlons.",        link:"./Scholarstic/index.html",  live:true  },
-        { id:"07", title:"WAEC",             desc:"West African Senior School Certificate Examination past papers.",link:"./WAEC/index.html",         live:true  },
-    ];
-
-    const tickerItems = ["Common Entrance","Cambridge","Grade 5 Spring","WAEC","TULIP Questions","Scholastic Prep","Grade 4 Spring","2026 Edition","New Papers Added","Interactive Quizzes"];
-    const tickerTrack = document.getElementById('ticker-track');
-    [...tickerItems,...tickerItems].forEach(t => {
-        const s = document.createElement('span');
-        s.className = 'ticker-item';
-        s.innerHTML = t + '<span class="ticker-dot">✦</span>';
-        tickerTrack.appendChild(s);
-    });
-
-    const featuredCards = document.getElementById('featured-cards');
-    examData.filter(e=>e.live).forEach(item => {
-        const a = document.createElement('a');
-        a.href = item.link; a.className = 'feat-card';
-        a.innerHTML = `<div class="feat-card-inner"><span class="feat-badge">Live</span><h3>${item.title}</h3></div>`;
-        featuredCards.appendChild(a);
-    });
-
-    const grid = document.getElementById('exam-grid');
-    examData.forEach((item,i) => {
-        const c = document.createElement('a');
-        c.href = item.link; c.className = 'card';
-        c.style.transitionDelay = `${0.5+i*0.1}s`;
-        c.innerHTML = `<div class="card-inner"><span class="card-num">${item.id}</span><h2>${item.title}</h2><p>${item.desc}</p><span class="card-arrow">→</span></div>`;
-        grid.appendChild(c);
-    });
-
-    const splitText = el => {
-        const lines = el.innerHTML.split('<br>');
-        el.innerHTML = '';
-        lines.forEach((line,li) => {
-            const div = document.createElement('div');
-            div.style.display = 'block';
-            line.split('').forEach((char,ci) => {
-                const wrapper = document.createElement('span');
-                wrapper.className = 'char-wrapper';
-                const span = document.createElement('span');
-                span.className = 'char';
-                span.innerHTML = char === ' ' ? '&nbsp;' : char;
-                span.style.transitionDelay = `${li*0.2+ci*0.03}s`;
-                wrapper.appendChild(span);
-                div.appendChild(wrapper);
-            });
-            el.appendChild(div);
+        const examData = [
+            { id: "01", title: "Common Entrance", desc: "National baseline assessments for secondary transition.", link: "#", live: false },
+            { id: "02", title: "Cambridge Exam", desc: "International standard papers for primary foundation learners.", link: "./Cambridge/index.html", live: true },
+            { id: "03", title: "Grade 4 Spring", desc: "Second term revision modules for Year 4 students.", link: "./Grade-4-Exam/index.html", live: true },
+            { id: "04", title: "Grade 5 Spring", desc: "Intensive preparatory sets for Year 5 promotional exams.", link: "./Grade-5-Exam/index.html", live: true },
+            { id: "05", title: "TULIP Questions", desc: "Exclusive archive for TULIP scholarship entrance.", link: "#", live: false },
+            { id: "06", title: "Scholastic Prep", desc: "Elite-level competition drills for academic decathlons.", link: "./Scholarstic/index.html", live: true },
+            { id: "07", title: "WAEC", desc: "West African Senior School Certificate Examination past papers.", link: "./WAEC/index.html", live: true },
+        ];
+        
+        const tickerItems = ["Common Entrance", "Cambridge", "Grade 5 Spring", "WAEC", "TULIP Questions", "Scholastic Prep", "Grade 4 Spring", "2026 Edition", "New Papers Added", "Interactive Quizzes"];
+        const tickerTrack = document.getElementById('ticker-track');
+        [...tickerItems, ...tickerItems].forEach(t => {
+            const s = document.createElement('span');
+            s.className = 'ticker-item';
+            s.innerHTML = t + '<span class="ticker-dot">✦</span>';
+            tickerTrack.appendChild(s);
         });
-    };
-    splitText(document.getElementById('main-title'));
-
-    const revealObserver = new IntersectionObserver(entries => {
-        entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
-    }, { threshold:0.12 });
-    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-    window.onload = () => document.body.classList.add('active');
-
-    const toggle = document.getElementById('nav-toggle');
-    const navLinks = document.getElementById('nav-links');
-    toggle.addEventListener('click', () => { toggle.classList.toggle('open'); navLinks.classList.toggle('open'); });
-    window.addEventListener('scroll', () => {
-        document.getElementById('site-nav').style.boxShadow = window.scrollY > 10 ? '0 4px 0 0 #1f1f1f' : 'none';
-    }, { passive:true });
-
-
+        
+        const featuredCards = document.getElementById('featured-cards');
+        examData.filter(e => e.live).forEach(item => {
+            const a = document.createElement('a');
+            a.href = item.link;
+            a.className = 'feat-card';
+            a.innerHTML = `<div class="feat-card-inner"><span class="feat-badge">Live</span><h3>${item.title}</h3></div>`;
+            featuredCards.appendChild(a);
+        });
+        
+        const grid = document.getElementById('exam-grid');
+        examData.forEach((item, i) => {
+            const c = document.createElement('a');
+            c.href = item.link;
+            c.className = 'card';
+            c.style.transitionDelay = `${0.5+i*0.1}s`;
+            c.innerHTML = `<div class="card-inner"><span class="card-num">${item.id}</span><h2>${item.title}</h2><p>${item.desc}</p><span class="card-arrow">→</span></div>`;
+            grid.appendChild(c);
+        });
+        
+        const splitText = el => {
+            const lines = el.innerHTML.split('<br>');
+            el.innerHTML = '';
+            lines.forEach((line, li) => {
+                const div = document.createElement('div');
+                div.style.display = 'block';
+                line.split('').forEach((char, ci) => {
+                    const wrapper = document.createElement('span');
+                    wrapper.className = 'char-wrapper';
+                    const span = document.createElement('span');
+                    span.className = 'char';
+                    span.innerHTML = char === ' ' ? '&nbsp;' : char;
+                    span.style.transitionDelay = `${li*0.2+ci*0.03}s`;
+                    wrapper.appendChild(span);
+                    div.appendChild(wrapper);
+                });
+                el.appendChild(div);
+            });
+        };
+        splitText(document.getElementById('main-title'));
+        
+        const revealObserver = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible');
+                    revealObserver.unobserve(e.target); } });
+        }, { threshold: 0.12 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        
+        window.onload = () => document.body.classList.add('active');
+        
+        const toggle = document.getElementById('nav-toggle');
+        const navLinks = document.getElementById('nav-links');
+        toggle.addEventListener('click', () => { toggle.classList.toggle('open');
+            navLinks.classList.toggle('open'); });
+        window.addEventListener('scroll', () => {
+            document.getElementById('site-nav').style.boxShadow = window.scrollY > 10 ? '0 4px 0 0 #1f1f1f' : 'none';
+        }, { passive: true });
     </script>
 </body>
+
 </html>
