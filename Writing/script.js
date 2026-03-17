@@ -720,7 +720,7 @@ async function fetchGeneratedTopic(type) {
   if (elTopicBox) elTopicBox.style.opacity = '0.5';
   const textEl = $('acc-topic-text');
   if (textEl) textEl.textContent = 'Generating prompt...';
-  if (elTopic) elTopic.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Generating ${type} prompt...`;
+  if (elTopic) elTopic.innerHTML = ` Generating ${type} prompt...`;
 
   try {
     const res = await fetch(GROQ_URL, {
@@ -1119,7 +1119,7 @@ function showComment(marker) {
 
   elCommentPop.innerHTML = `
     <div class="comment-pop-label">
-      <i class="fas fa-comment-dots"></i> Examiner's Note ${id}
+       Examiner's Note ${id}
     </div>
     <div class="comment-pop-text">${safe(text)}</div>`;
   elCommentPop.classList.add('visible');
