@@ -1,20 +1,11 @@
 /* ═══════════════════════════════════════════════════════════
    PREPBOT — Reusable AI Study Assistant (Groq / Llama 3.1)
-   Features: AI Chat, MathJax/LaTeX, Auto-Navigation, FontAwesome Icons
-   
-   <!-- Make sure to include FontAwesome in your HTML head: -->
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-   
-   <link rel="stylesheet" href="../chatbot.css">
-   <div id="prepbot"></div>
-   <script src="../chatbot.js"></script>
+   Features: AI Chat, MathJax/LaTeX, Auto-Navigation, Hidden Quiz Context
 ═══════════════════════════════════════════════════════════ */
 
 (function() {
     
     /* ── CONFIG ── */
-    // config.js
-    // We break the key into parts so GitHub doesn't recognize it as a "secret"
     const p1 = "gsk_9sz5p";
     const p2 = "0Vrwv8chiknSBrJW";
     const p3 = "Gdyb3FYnQIifcPYSc9";
@@ -40,6 +31,7 @@
         "Scholastic": `${BASE}/Scholarstic/index.html`,
         "Scholastic Upper Primary": `${BASE}/Scholarstic/Upper-Primary/index.html`,
     };
+
     /* ── INJECT HTML ── */
     const mount = document.getElementById('prepbot');
     if (!mount) return;
@@ -192,51 +184,15 @@
     const qbubblesGrid = document.getElementById('qbubbles-grid');
     const qbubblesClose = document.getElementById('qbubbles-close');
     
-    /* ── NAVIGATION KEYWORDS ── */
-    // Primary keywords that clearly signal navigation intent
-    const NAV_KEYWORDS = [
-        'goto', 'go to', 'moveto', 'move to', 'search', 'open', 'take me to',
-        'navigate', 'navigate to', 'show me', 'visit', 'find', 'bring me to',
-        'head to', 'direct me to', 'launch', 'load', 'switch to', 'jump to page',
-        'take me', 'go', 'redirect', 'redirect me', 'send me to'
-    ];
-    
-    // Synonyms map: if the user's word isn't in NAV_KEYWORDS but matches here,
-    // the bot will ask for clarification before acting
-    const NAV_SYNONYMS = {
-        'proceed': 'go to',
-        'access': 'open',
-        'pull up': 'open',
-        'pull-up': 'open',
-        'bring up': 'open',
-        'route me': 'navigate',
-        'route': 'navigate',
-        'transport': 'take me to',
-        'forward': 'navigate',
-        'look up': 'search',
-        'lookup': 'search',
-        'check out': 'visit',
-        'check': 'visit',
-        'view': 'open',
-        'display': 'open',
-        'show': 'show me',
-        'get me to': 'take me to',
-        'get me': 'take me to',
-        'send me': 'send me to',
-        'lead me': 'navigate',
-        'bring': 'bring me to',
-        'enter': 'open',
-        'pass me to': 'navigate',
-    };
-    
     /* ── STATE ── */
     let isOpen = false;
     let isBusy = false;
-    let history = []; // Groq format: [{ role: 'user', content: '...' }]
+    let history = []; 
     let activeSubject = 'General';
     let isListening = false;
     let recognition = null;
-    let pendingNavigation = null; // { url, pageName, reply } — awaiting user confirmation
+    let pendingNavigation = null;
+    let pendingSecretContext = null; // Used to pass hidden quiz answers to the AI
     
     /* ── SAFE HTML & LATEX PARSER ── */
     function stripHtmlKeepMath(html) {
@@ -310,9 +266,23 @@
         
         const optsText = (q.options || []).map((o, i) =>
             `${optLetters[i]}. ${stripHtmlKeepMath(o)}`
-        ).join('  |  ');
+        ).join('\n');
         
-        input.value = `Question ${index + 1}: ${rawQ}\nOptions: ${optsText}\nPlease explain how to solve this step by step.`;
+        // Extract correct answer and explanation directly from your setupQuiz data structure
+        const correctLetter = (q.correctIndex !== undefined && q.correctIndex !== null) ? optLetters[q.correctIndex] : "Unknown";
+        
+        let officialExplanation = "";
+        if (Array.isArray(q.explanation)) {
+            officialExplanation = q.explanation.map(step => stripHtmlKeepMath(step)).join('\n');
+        } else if (q.explanation) {
+            officialExplanation = stripHtmlKeepMath(q.explanation);
+        }
+
+        // What the user physically sees in the chat bubble (Clean & Simple)
+        input.value = `Question ${index + 1}: ${rawQ}\n\nOptions:\n${optsText}\n\nPlease explain how to solve this step by step.`;
+        
+        // The hidden prompt sent securely to Groq behind the scenes so the AI uses your exact curriculum logic
+        pendingSecretContext = `\n\n[SYSTEM NOTE: The official correct option for this question is **${correctLetter}**.\nOfficial step-by-step logic:\n${officialExplanation || '(No official solution provided. Solve it accurately yourself.)'}\n\nYOUR TASK: Use this official answer/logic as your foundation. Teach the concept to the student in a clear, friendly, and engaging way. Do not just blindly copy-paste the text; explain the steps smoothly and confirm that the correct answer is ${correctLetter}.]`;
         
         qbubblesBar.style.display = 'none';
         suggBox.style.display = 'none';
@@ -397,7 +367,7 @@
                 } else {
                     const qNum = getQuestionNumber();
                     const prefix = qNum ? `Question ${qNum}: ` : '';
-                    input.value = `${prefix}${fallbackText}`;
+                    input.value = `${prefix}${fallbackText}\n\nPlease explain how to solve this step by step.`;
                     suggBox.style.display = 'none';
                     sendMessage();
                 }
@@ -515,7 +485,6 @@
             .replace(/\$\$[\s\S]*?\$\$/g, m => { mathChunks.push(m.replace(/^\$\$/, '\\[').replace(/\$\$$/, '\\]')); return ph(mathChunks.length - 1); })
             .replace(/\$[^\$\n]+?\$/g, m => { mathChunks.push(m.replace(/^\$/, '\\(').replace(/\$$/, '\\)')); return ph(mathChunks.length - 1); })
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            // New syntax for injecting font-awesome icons safely after html escape
             .replace(/\[ICON:([^\]]+)\]/g, '<i class="$1" style="margin-right: 6px;"></i>')
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -573,11 +542,10 @@ Here are the available pages:
 ${siteMapStr}
 
 NAVIGATION RULES — follow these exactly:
-1. Only navigate when the user uses a clear navigation keyword such as: "go to", "goto", "open", "take me to", "navigate", "moveto", "move to", "show me", "visit", "find", "bring me to", "head to", "direct me to", "launch", "load", "switch to", "send me to".
-2. You MUST confirm with the user BEFORE navigating. Acknowledge where they want to go, then include the [NAVIGATE: url] command — the interface will intercept it and ask for confirmation automatically.
-3. If the user uses an ambiguous word (e.g. "check", "view", "show", "access") that might or might not mean navigation, ask: "Did you want me to take you to a page, or were you asking something else?"
+1. Only navigate when the user uses a clear navigation keyword such as: "go to", "goto", "open", "take me to", "navigate".
+2. You MUST confirm with the user BEFORE navigating. Acknowledge where they want to go, then include the [NAVIGATE: url] command.
+3. If the user uses an ambiguous word (e.g. "check", "view", "show", "access"), ask: "Did you want me to take you to a page, or were you asking something else?"
 4. Do NOT invent URLs. Only use the exact URLs listed above.
-5. Do NOT navigate based on a vague question. The user must clearly intend to go somewhere.
 
 Example of correct behaviour:
 User: "Take me to WAEC"
@@ -591,8 +559,7 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
         const text = input.value.trim();
         if (!text || isBusy) return;
         
-        // ── PENDING NAVIGATION CONFIRMATION ──
-        // If we're waiting for Yes/No on a navigation, handle that first
+        // Navigation confirmation logic
         if (pendingNavigation) {
             const answer = text.toLowerCase().replace(/[^a-z]/g, '');
             if (['yes', 'y', 'yeah', 'yep', 'sure', 'ok', 'okay', 'yup', 'go', 'proceed'].includes(answer)) {
@@ -614,13 +581,12 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
                 appendMessage('bot', "No problem! I'll stay right here. What else can I help you with?");
                 return;
             }
-            // If ambiguous, fall through to normal AI handling and keep pendingNavigation
             pendingNavigation = null;
         }
         
-        // ── CLIENT-SIDE KEYWORD PRE-CHECK ──
-        // Detect navigation intent from the user's own message before hitting the API.
-        // This catches cases the AI might miss or handle inconsistently.
+        const NAV_KEYWORDS = ['goto', 'go to', 'moveto', 'move to', 'search', 'open', 'take me to', 'navigate', 'navigate to', 'show me', 'visit', 'find', 'bring me to', 'head to', 'direct me to', 'launch', 'load', 'switch to', 'jump to page', 'take me', 'go', 'redirect', 'redirect me', 'send me to'];
+        const NAV_SYNONYMS = {'proceed': 'go to', 'access': 'open', 'pull up': 'open', 'pull-up': 'open', 'bring up': 'open', 'route me': 'navigate', 'route': 'navigate', 'transport': 'take me to', 'forward': 'navigate', 'look up': 'search', 'lookup': 'search', 'check out': 'visit', 'check': 'visit', 'view': 'open', 'display': 'open', 'show': 'show me', 'get me to': 'take me to', 'get me': 'take me to', 'send me': 'send me to', 'lead me': 'navigate', 'bring': 'bring me to', 'enter': 'open', 'pass me to': 'navigate'};
+        
         const lowerText = text.toLowerCase();
         const detectedKeyword = NAV_KEYWORDS.find(kw => lowerText.includes(kw));
         let synonymKeyword = null;
@@ -633,24 +599,21 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
             }
         }
         
-        // If a synonym (not a primary keyword) was found, ask for clarification
         if (!detectedKeyword && synonymKeyword) {
             input.value = '';
             input.style.height = 'auto';
             charCounter.textContent = '500';
             appendMessage('user', text);
-            appendMessage('bot',
-                `[ICON:fa-solid fa-circle-info] I noticed the word **"${synonymKeyword.word}"** in your message. Did you want me to **navigate you** to a page on the site, or were you asking something else?\n\nReply **"yes"** if you meant navigation, or just rephrase your question!`
-            );
+            appendMessage('bot', `[ICON:fa-solid fa-circle-info] I noticed the word **"${synonymKeyword.word}"** in your message. Did you want me to **navigate you** to a page on the site, or were you asking something else?\n\nReply **"yes"** if you meant navigation, or just rephrase your question!`);
             history.push({ role: 'user', content: text });
             history.push({ role: 'assistant', content: `Clarification asked about synonym "${synonymKeyword.word}".` });
             return;
         }
         
         const qNum = parseQuestionNumber(text);
-        if (qNum !== null) {
+        if (qNum !== null && qNum > 0) {
             const data = getQuizData();
-            if (data && qNum > 0 && qNum <= data.length) {
+            if (data && qNum <= data.length) {
                 input.value = '';
                 input.style.height = 'auto';
                 charCounter.textContent = '500';
@@ -669,9 +632,17 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
         charCounter.textContent = '500';
         charCounter.classList.remove('near-limit');
         
+        // Render ONLY the clean text to the user interface
         appendMessage('user', text);
         
-        history.push({ role: 'user', content: text });
+        // Append the secret context to the prompt if it exists, before saving to history
+        let textForAI = text;
+        if (pendingSecretContext) {
+            textForAI += pendingSecretContext;
+            pendingSecretContext = null; // reset it
+        }
+
+        history.push({ role: 'user', content: textForAI });
         showTyping();
         
         if (history.length > 6) {
@@ -715,16 +686,13 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
                 const data = await res.json();
                 let reply = data.choices?.[0]?.message?.content || "Sorry, I couldn't get a response. Please try again.";
                 
-                // --- NAVIGATION INTERCEPTOR (with confirmation) ---
                 const navMatch = reply.match(/\[NAVIGATE:\s*([^\]]+)\]/i);
                 
                 if (navMatch) {
                     const urlToNavigate = navMatch[1].trim();
-                    // Find page name from SITE_MAP by matching URL
                     const pageName = Object.keys(SITE_MAP).find(k => SITE_MAP[k] === urlToNavigate) || urlToNavigate;
                     reply = reply.replace(navMatch[0], '').trim();
                     
-                    // Store as pending — wait for user confirmation
                     pendingNavigation = { url: urlToNavigate, pageName };
                     
                     const confirmMsg = (reply ? reply + '\n\n' : '') +
@@ -756,7 +724,6 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         
         if (!SpeechRecognition) {
-            // Browser doesn't support speech — hide mic button gracefully
             if (micBtn) micBtn.style.display = 'none';
             return;
         }
@@ -764,7 +731,7 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
         recognition = new SpeechRecognition();
         recognition.continuous = false;
         recognition.interimResults = true;
-        recognition.lang = 'en-GB'; // Nigerian English is closest to en-GB
+        recognition.lang = 'en-GB';
         
         const micIcon = micBtn.querySelector('.mic-icon');
         const micStopIcon = micBtn.querySelector('.mic-stop-icon');
@@ -784,16 +751,13 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
                 .join('');
             input.value = transcript;
             
-            // Update char counter
             const remaining = 500 - input.value.length;
             charCounter.textContent = Math.max(remaining, 0);
             charCounter.classList.toggle('near-limit', remaining < 80);
             
-            // Auto-resize textarea
             input.style.height = 'auto';
             input.style.height = Math.min(input.scrollHeight, 96) + 'px';
             
-            // If this is a final result, send automatically
             if (e.results[e.results.length - 1].isFinal) {
                 setListening(false);
                 setTimeout(() => sendMessage(), 300);
@@ -810,7 +774,7 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
                 'not-allowed': '[ICON:fa-solid fa-microphone-slash] Microphone access was denied. Please allow microphone access in your browser settings.',
                 'no-speech': '[ICON:fa-solid fa-comment-slash] No speech detected. Please try again.',
                 'network': '[ICON:fa-solid fa-wifi] Network error during voice recognition. Please check your connection.',
-                'aborted': null, // user cancelled — no message needed
+                'aborted': null,
             };
             const msg = msgs[e.error] !== undefined ? msgs[e.error] : `[ICON:fa-solid fa-triangle-exclamation] Voice error: ${e.error}`;
             if (msg) appendMessage('bot', msg);
@@ -826,20 +790,16 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
                 try {
                     recognition.start();
                     setListening(true);
-                    // Auto-open chat if closed
                     if (!isOpen) toggleChat(true);
                 } catch (err) {
-                    // Recognition already running — stop and restart
                     recognition.stop();
                     setListening(false);
                 }
             }
         });
         
-        // Stop recognition if chat window closes while listening
         const origToggle = toggleChat;
         window.__prepbotToggle = origToggle;
     })();
     
 })();
-
