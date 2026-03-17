@@ -8,12 +8,12 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="./main.css">
     <link rel="stylesheet" href="./Chatbot/chatbot.css">
     
-        <!-- MathJax for Math Formatting -->
+    <!-- MathJax for Math Formatting -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
@@ -25,13 +25,14 @@
         <a href="#" class="nav-logo">Prep<span>Portal</span></a>
         <ul class="nav-links" id="nav-links">
             <li><a href="#exams">Exams</a></li>
+            <li><a href="#writing">Writing</a></li>
             <li><a href="#about">About</a></li>
             <li><a href="#">Results</a></li>
-            <li><a href="#" class="nav-cta">Start Revising</a></li>
+            <li><a href="#exams" class="nav-cta">Start Revising</a></li>
         </ul>
-        <div class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
             <span></span><span></span><span></span>
-        </div>
+        </button>
     </nav>
     
     <!-- ═══ TICKER ═══ -->
@@ -48,6 +49,7 @@
             <p class="hero-tagline">A curated vault of past papers, worked solutions, and prep kits — built for students who take results seriously.</p>
             <div class="hero-stat-row">
                 <div class="hero-stat"><strong>7</strong><span>Exam Sets</span></div>
+                <div class="hero-stat"><strong>8</strong><span>Writing Types</span></div>
                 <div class="hero-stat"><strong>200+</strong><span>Questions</span></div>
                 <div class="hero-stat"><strong>2026</strong><span>Edition</span></div>
             </div>
@@ -60,16 +62,30 @@
         <div class="featured-cards" id="featured-cards"></div>
     </div>
     
-    <!-- ═══ SECTION HEADER ═══ -->
+    <!-- ═══ EXAM SECTION HEADER ═══ -->
     <div class="section-header" id="exams">
         <h2>All Exam Archives</h2>
         <span>7 collections</span>
     </div>
     
-    <!-- ═══ MAIN GRID ═══ -->
+    <!-- ═══ MAIN EXAM GRID ═══ -->
     <main class="main-content">
         <div class="grid" id="exam-grid"></div>
     </main>
+    
+    <!-- ═══ WRITING SECTION ═══ -->
+    <section class="writing-section" id="writing">
+        <div class="writing-header reveal">
+            <div class="writing-header-text">
+                <p class="writing-eyebrow">English Skills</p>
+                <h2>Writing Practice</h2>
+                <p>Master every writing genre — from formal letters to narrative essays. Each module includes structured prompts, model answers, and marking guides aligned to Common Entrance and WAEC syllabuses.</p>
+            </div>
+            <span class="writing-tag">New Section</span>
+        </div>
+        
+        <div class="writing-grid" id="writing-grid"></div>
+    </section>
     
     <!-- ═══ INFO STRIP ═══ -->
     <section class="info-strip" id="about">
@@ -78,12 +94,12 @@
             <h3>Built for Exam Season</h3>
             <p>A structured study resource covering national and international exam boards — from Common Entrance to WAEC, all in one place.</p>
         </div>
-        <div class="info-cell reveal" style="transition-delay: 0.15s">
+        <div class="info-cell reveal" style="transition-delay:.15s">
             <div class="label">How to use it</div>
             <h3>Click. Practice. Review.</h3>
             <p>Each card opens a full interactive paper. Answer questions, check your score, and review worked solutions immediately.</p>
         </div>
-        <div class="info-cell reveal" style="transition-delay: 0.3s">
+        <div class="info-cell reveal" style="transition-delay:.3s">
             <div class="label">Coming soon</div>
             <h3>More Sets Dropping</h3>
             <p>Grade 4 Spring, TULIP Questions, and Scholastic Prep are in active development. Check back each term for new releases.</p>
@@ -113,17 +129,19 @@
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Resources</h4>
+                <h4>Writing</h4>
                 <ul>
-                    <li><a href="#">Study Guides</a></li>
-                    <li><a href="#">Worked Solutions</a></li>
-                    <li><a href="#">Score Tracker</a></li>
+                    <li><a href="./Writing/essay/index.html">Essay Writing</a></li>
+                    <li><a href="./Writing/formal-letter/index.html">Formal Letter</a></li>
+                    <li><a href="./Writing/narrative/index.html">Narrative</a></li>
+                    <li><a href="./Writing/comprehension/index.html">Comprehension</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h4>Info</h4>
                 <ul>
                     <li><a href="#about">About</a></li>
+                    <li><a href="#">Study Guides</a></li>
                     <li><a href="#">Contact</a></li>
                     <li><a href="#">Privacy</a></li>
                 </ul>
@@ -143,10 +161,9 @@
     <div id="prepbot"></div>
     <script src="./Chatbot/chatbot.js"></script>
     
-    
     <script>
         /* ══════════════════════════════════════════
-       SITE SCRIPTS (unchanged)
+       DATA
     ══════════════════════════════════════════ */
         const examData = [
             { id: "01", title: "Common Entrance", desc: "National baseline assessments for secondary transition.", link: "#", live: false },
@@ -158,7 +175,26 @@
             { id: "07", title: "WAEC", desc: "West African Senior School Certificate Examination past papers.", link: "./WAEC/index.html", live: true },
         ];
         
-        const tickerItems = ["Common Entrance", "Cambridge", "Grade 5 Spring", "WAEC", "TULIP Questions", "Scholastic Prep", "Grade 4 Spring", "2026 Edition", "New Papers Added", "Interactive Quizzes"];
+        const writingData = [
+            { icon: "", title: "Essay Writing", desc: "Structured argument and discursive writing for all levels.", link: "./Writing/essay/index.html", live: true },
+            { icon: "", title: "Formal Letter", desc: "Official correspondence: complaints, applications & requests.", link: "./Writing/formal-letter/index.html", live: true },
+            { icon: "", title: "Informal Letter", desc: "Personal letters to friends, family and pen pals.", link: "./Writing/informal-letter/index.html", live: false },
+            { icon: "", title: "Comprehension", desc: "Reading passages with guided questions and model responses.", link: "./Writing/comprehension/index.html", live: true },
+            { icon: "", title: "Summary Writing", desc: "Condense long passages into precise, accurate summaries.", link: "./Writing/summary/index.html", live: false },
+            { icon: "️", title: "Narrative Writing", desc: "Creative storytelling with character, plot, and descriptive flair.", link: "./Writing/narrative/index.html", live: true },
+            { icon: "️", title: "Speech Writing", desc: "Persuasive speeches with strong openings and rhetorical devices.", link: "./Writing/speech/index.html", live: false },
+            { icon: "", title: "Report Writing", desc: "Factual school and news reports with headings and objectivity.", link: "./Writing/report/index.html", live: false },
+        ];
+        
+        /* ══════════════════════════════════════════
+           TICKER
+        ══════════════════════════════════════════ */
+        const tickerItems = [
+            "Common Entrance", "Cambridge", "Grade 5 Spring", "WAEC",
+            "TULIP Questions", "Scholastic Prep", "Grade 4 Spring",
+            "Essay Writing", "Formal Letters", "Comprehension",
+            "2026 Edition", "New Papers Added", "Interactive Quizzes"
+        ];
         const tickerTrack = document.getElementById('ticker-track');
         [...tickerItems, ...tickerItems].forEach(t => {
             const s = document.createElement('span');
@@ -167,6 +203,9 @@
             tickerTrack.appendChild(s);
         });
         
+        /* ══════════════════════════════════════════
+           FEATURED CARDS
+        ══════════════════════════════════════════ */
         const featuredCards = document.getElementById('featured-cards');
         examData.filter(e => e.live).forEach(item => {
             const a = document.createElement('a');
@@ -176,16 +215,52 @@
             featuredCards.appendChild(a);
         });
         
+        /* ══════════════════════════════════════════
+           EXAM GRID
+        ══════════════════════════════════════════ */
         const grid = document.getElementById('exam-grid');
         examData.forEach((item, i) => {
             const c = document.createElement('a');
             c.href = item.link;
             c.className = 'card';
-            c.style.transitionDelay = `${0.5+i*0.1}s`;
-            c.innerHTML = `<div class="card-inner"><span class="card-num">${item.id}</span><h2>${item.title}</h2><p>${item.desc}</p><span class="card-arrow">→</span></div>`;
+            c.style.transitionDelay = `${0.4 + i * 0.08}s`;
+            c.innerHTML = `
+            <div class="card-inner">
+                <span class="card-num">${item.id}</span>
+                <h2>${item.title}</h2>
+                <p>${item.desc}</p>
+                <span class="card-arrow">→</span>
+            </div>`;
+            if (!item.live) c.style.opacity = '0.5';
             grid.appendChild(c);
         });
         
+        /* ══════════════════════════════════════════
+           WRITING GRID
+        ══════════════════════════════════════════ */
+        const writingGrid = document.getElementById('writing-grid');
+        writingData.forEach((item, i) => {
+            const a = document.createElement('a');
+            a.href = item.link;
+            a.className = 'writing-card reveal';
+            a.style.transitionDelay = `${i * 0.07}s`;
+            a.innerHTML = `
+            <div class="writing-card-inner">
+                <span class="wc-icon">${item.icon}</span>
+                <h3>${item.title}</h3>
+                <p>${item.desc}</p>
+                <span class="wc-arrow">${item.live ? '→' : '↳ Soon'}</span>
+            </div>`;
+            if (!item.live) {
+                a.style.opacity = '0.55';
+                a.style.pointerEvents = 'none';
+            }
+            writingGrid.appendChild(a);
+        });
+        
+        /* ══════════════════════════════════════════
+           CHAR SPLIT ANIMATION (kept exactly)
+        ══════════════════════════════════════════ */
         const splitText = el => {
             const lines = el.innerHTML.split('<br>');
             el.innerHTML = '';
@@ -198,7 +273,7 @@
                     const span = document.createElement('span');
                     span.className = 'char';
                     span.innerHTML = char === ' ' ? '&nbsp;' : char;
-                    span.style.transitionDelay = `${li*0.2+ci*0.03}s`;
+                    span.style.transitionDelay = `${li * 0.2 + ci * 0.03}s`;
                     wrapper.appendChild(span);
                     div.appendChild(wrapper);
                 });
@@ -207,22 +282,39 @@
         };
         splitText(document.getElementById('main-title'));
         
+        /* ══════════════════════════════════════════
+           REVEAL OBSERVER
+        ══════════════════════════════════════════ */
         const revealObserver = new IntersectionObserver(entries => {
-            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible');
-                    revealObserver.unobserve(e.target); } });
-        }, { threshold: 0.12 });
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    revealObserver.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.1 });
         document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
         
+        /* ══════════════════════════════════════════
+           INIT
+        ══════════════════════════════════════════ */
         window.onload = () => document.body.classList.add('active');
         
+        /* ── NAV TOGGLE ── */
         const toggle = document.getElementById('nav-toggle');
         const navLinks = document.getElementById('nav-links');
-        toggle.addEventListener('click', () => { toggle.classList.toggle('open');
-            navLinks.classList.toggle('open'); });
+        toggle.addEventListener('click', () => {
+            toggle.classList.toggle('open');
+            navLinks.classList.toggle('open');
+        });
+        
+        /* ── NAV SHADOW ON SCROLL ── */
         window.addEventListener('scroll', () => {
-            document.getElementById('site-nav').style.boxShadow = window.scrollY > 10 ? '0 4px 0 0 #1f1f1f' : 'none';
+            document.getElementById('site-nav').style.boxShadow =
+                window.scrollY > 10 ? '0 4px 0 0 #0a0a0a' : 'none';
         }, { passive: true });
     </script>
+    
 </body>
 
 </html>
