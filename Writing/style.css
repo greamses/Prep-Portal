@@ -1,0 +1,457 @@
+/* ── USER'S BASE THEME ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Syne:wght@800&display=swap');
+
+:root {
+    --bg-color: #ffffff;
+    --app-bg: #f8f9fa;
+    --primary-blue: #0b57d0;
+    --text-main: #1a1a1a;
+    --text-light: #444746;
+    --border-main: 2px solid #000000;
+    
+    /* High-Contrast Feedback Colors */
+    --correct-bg: #137333;
+    --incorrect-bg: #c5221f;
+    --option-hover: #f1f3f4;
+    --stamp-red: #c5221f;
+    --stamp-green: #137333;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--app-bg);
+    color: var(--text-main);
+    margin: 0;
+    /* Reduced minimum padding to maximize screen real estate on mobile */
+    padding: clamp(8px, 3vw, 40px);
+    display: flex;
+    justify-content: center;
+}
+
+.app-container {
+    background-color: var(--bg-color);
+    /* Calculated width prevents the shadow from causing horizontal scroll on mobile */
+    width: calc(100% - 8px);
+    max-width: 800px;
+    border: var(--border-main);
+    /* Tighter padding on mobile, expands on desktop */
+    padding: clamp(16px, 4vw, 32px);
+    box-sizing: border-box;
+    box-shadow: 8px 8px 0px #000;
+    position: relative;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: var(--border-main);
+    padding-bottom: 16px;
+    margin-bottom: clamp(16px, 3vw, 24px);
+    gap: 12px;
+}
+
+.title-group {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(16px, 4vw, 20px);
+    font-weight: 800;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Footer Buttons */
+.footer-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: clamp(16px, 3vw, 24px);
+    padding-top: 16px;
+    border-top: var(--border-main);
+}
+
+.btn {
+    padding: 10px 20px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid #000;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.1s;
+    box-sizing: border-box;
+}
+
+.btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: none !important;
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    color: #fff;
+    box-shadow: 3px 3px 0px #000;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #0947b3;
+}
+
+.btn-outline {
+    background: #fff;
+    color: var(--text-main);
+    box-shadow: 3px 3px 0px #000;
+}
+
+.btn-outline:hover {
+    background: var(--option-hover);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+/* ── EDITOR SPECIFIC ── */
+.topic-box {
+    background: var(--option-hover);
+    border: var(--border-main);
+    padding: clamp(12px, 3vw, 16px);
+    margin-bottom: clamp(16px, 3vw, 24px);
+    box-shadow: 4px 4px 0px #000;
+}
+
+.topic-label {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 12px;
+    color: var(--primary-blue);
+    margin-bottom: 6px;
+}
+
+.topic-text {
+    font-weight: 600;
+    font-size: clamp(14px, 3.5vw, 16px);
+    line-height: 1.4;
+}
+
+textarea {
+    width: 100%;
+    /* Use viewport height unit so it takes up logical space on mobile, without hardcoding px */
+    min-height: 45vh;
+    padding: clamp(12px, 3vw, 16px);
+    border: var(--border-main);
+    font-family: 'Inter', sans-serif;
+    /* 16px minimum prevents iOS Safari from auto-zooming */
+    font-size: 16px; 
+    line-height: 1.6;
+    resize: vertical;
+    box-sizing: border-box;
+    outline: none;
+    box-shadow: inset 4px 4px 0 rgba(0, 0, 0, 0.03);
+}
+
+textarea:focus {
+    border-color: var(--primary-blue);
+}
+
+.word-count {
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* ── LOADING OVERLAY ── */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border: var(--border-main);
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #000;
+    border-top-color: var(--primary-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── RESULTS SECTION ── */
+.results-section {
+    display: none;
+}
+
+.results-section.active {
+    display: block;
+}
+
+/* Toggleable Rubric */
+details.rubric-container {
+    border: var(--border-main);
+    background: #fff;
+    margin-bottom: clamp(16px, 3vw, 24px);
+    box-shadow: 4px 4px 0px #000;
+}
+
+details.rubric-container summary {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(12px, 3vw, 14px);
+    text-transform: uppercase;
+    padding: clamp(12px, 3vw, 16px);
+    cursor: pointer;
+    background: var(--option-hover);
+    display: flex;
+    align-items: center;
+    list-style: none;
+}
+
+details.rubric-container summary::-webkit-details-marker {
+    display: none;
+}
+
+details.rubric-container summary .material-symbols-outlined {
+    margin-right: 8px;
+}
+
+.rubric-content {
+    padding: clamp(12px, 3vw, 16px);
+    border-top: var(--border-main);
+}
+
+.rubric-row {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #ccc;
+}
+
+.rubric-row:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.rubric-row h4 {
+    margin: 0 0 4px 0;
+    font-size: clamp(13px, 3vw, 14px);
+    display: flex;
+    justify-content: space-between;
+}
+
+.rubric-row p {
+    margin: 0;
+    font-size: clamp(12px, 3vw, 13px);
+    color: var(--text-light);
+    line-height: 1.4;
+}
+
+/* Annotated Paper */
+.annotated-paper {
+    font-family: 'Georgia', serif;
+    font-size: clamp(15px, 4vw, 18px); /* Scales down slightly for mobile */
+    line-height: 2.2;
+    padding: clamp(16px, 4vw, 24px);
+    border: var(--border-main);
+    background: #fff;
+    position: relative;
+    box-shadow: inset 4px 4px 0 rgba(0, 0, 0, 0.02);
+    margin-bottom: 24px;
+    word-wrap: break-word; /* Prevents long words from breaking layout */
+}
+
+/* Annotations: Errors & Deductions */
+.err-word {
+    display: inline-block;
+    position: relative;
+    margin: 0 2px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.err-word del {
+    background: var(--incorrect-bg);
+    color: #fff;
+    text-decoration: line-through;
+    padding: 2px 4px;
+    font-weight: 600;
+}
+
+.err-word ins {
+    background: var(--correct-bg);
+    color: #fff;
+    text-decoration: none;
+    padding: 2px 4px;
+    font-weight: 600;
+    margin-left: 2px;
+}
+
+.deduction {
+    position: absolute;
+    top: -14px;
+    right: -8px;
+    background: #000;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 4px;
+    border-radius: 2px;
+    z-index: 2;
+}
+
+/* Annotations: Interactive Substitutes */
+.sub-word {
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: var(--primary-blue);
+    text-decoration-thickness: 2px;
+    cursor: pointer;
+    color: var(--primary-blue);
+    font-weight: 700;
+    position: relative;
+    transition: background 0.2s;
+}
+
+.sub-word:hover {
+    background: rgba(11, 87, 208, 0.1);
+}
+
+/* Overall Score Stamp */
+.score-stamp {
+    position: absolute;
+    top: clamp(4px, 2vw, 10px);
+    right: clamp(10px, 3vw, 20px);
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(20px, 6vw, 32px); /* Responsive stamp size */
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 24px);
+    border: clamp(2px, 1vw, 4px) solid var(--stamp-green);
+    color: var(--stamp-green);
+    text-transform: uppercase;
+    transform: rotate(15deg);
+    opacity: 0.85;
+    pointer-events: none;
+    box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px var(--stamp-green);
+    background: transparent;
+    z-index: 1; /* Ensures it stays above text */
+}
+
+.score-stamp.low-score {
+    border-color: var(--stamp-red);
+    color: var(--stamp-red);
+    box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px var(--stamp-red);
+}
+
+/* ── INTERACTIVE POPOVER ── */
+#sub-popover {
+    position: absolute;
+    background: #fff;
+    border: var(--border-main);
+    box-shadow: 4px 4px 0px #000;
+    padding: 8px;
+    z-index: 100;
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 120px;
+    max-width: 200px; /* Prevents overflow on tiny screens */
+}
+
+#sub-popover.visible {
+    display: flex;
+}
+
+.popover-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 4px;
+}
+
+.pop-opt-btn {
+    background: var(--option-hover);
+    border: 1px solid #000;
+    padding: 8px 10px; /* Larger tap target for mobile */
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.pop-opt-btn:hover {
+    background: var(--primary-blue);
+    color: #fff;
+}
+
+/* ── AGGRESSIVE MOBILE OPTIMIZATIONS ── */
+@media (max-width: 600px) {
+    .app-container {
+        /* Reduce shadow to save horizontal width on small screens */
+        box-shadow: 4px 4px 0px #000;
+        width: calc(100% - 4px);
+    }
+    
+    .header {
+        flex-wrap: wrap; 
+    }
+    
+    .footer-controls {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+    
+    .word-count {
+        text-align: center;
+        order: -1; /* Puts word count above the button */
+    }
+    
+    .btn {
+        width: 100%; /* Full width buttons for easy tapping */
+        padding: 14px 20px; /* Taller tap target */
+    }
+
+    /* Adjust error block formatting so it doesn't break horribly on narrow screens */
+    .err-word {
+        display: inline;
+        white-space: normal; /* Allows wrapping if the correction is huge */
+    }
+    .err-word del, .err-word ins {
+        display: inline-block; /* Keeps the badges neat when wrapping */
+        margin-bottom: 4px;
+    }
+    .deduction {
+        position: relative;
+        top: -8px;
+        margin-left: -4px;
+    }
+}
