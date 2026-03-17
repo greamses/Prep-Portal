@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════
    PREPBOT — Reusable AI Study Assistant (Groq / Llama 3.1)
    Features: AI Chat, MathJax/LaTeX, Auto-Navigation, Hidden Quiz Context
-   Updated: Uses Material Symbols to match the host application
+   Updated: Strict LaTeX enforcement & Material Symbols
 ═══════════════════════════════════════════════════════════ */
 
 (function() {
@@ -193,7 +193,7 @@
     let isListening = false;
     let recognition = null;
     let pendingNavigation = null;
-    let pendingSecretContext = null; // Used to pass hidden quiz answers to the AI
+    let pendingSecretContext = null; 
     
     /* ── SAFE HTML & LATEX PARSER ── */
     function stripHtmlKeepMath(html) {
@@ -223,7 +223,6 @@
     }
     
     function getFallbackQuestionText() {
-        // If your script exposed the raw latex string, use it directly!
         if (window.__prepbotQuestion) return stripHtmlKeepMath(window.__prepbotQuestion);
         
         const selectors = ['#question-text', '.question-text', '[data-question]'];
@@ -275,7 +274,6 @@
             `${optLetters[i]}. ${stripHtmlKeepMath(o)}`
         ).join('\n');
         
-        // Extract correct answer and explanation directly from your setupQuiz data structure
         const correctLetter = (q.correctIndex !== undefined && q.correctIndex !== null) ? optLetters[q.correctIndex] : "Unknown";
         
         let officialExplanation = "";
@@ -285,10 +283,8 @@
             officialExplanation = stripHtmlKeepMath(q.explanation);
         }
 
-        // What the user physically sees in the chat bubble (Clean & Simple)
         input.value = `Question ${index + 1}: ${rawQ}\n\nOptions:\n${optsText}\n\nPlease explain how to solve this step by step.`;
         
-        // The hidden prompt sent securely to Groq behind the scenes so the AI uses your exact curriculum logic
         pendingSecretContext = `\n\n[SYSTEM NOTE: The official correct option for this question is **${correctLetter}**.\nOfficial step-by-step logic:\n${officialExplanation || '(No official solution provided. Solve it accurately yourself.)'}\n\nYOUR TASK: Use this official answer/logic as your foundation. Teach the concept to the student in a clear, friendly, and engaging way. Do not just blindly copy-paste the text; explain the steps smoothly and confirm that the correct answer is ${correctLetter}.]`;
         
         qbubblesBar.style.display = 'none';
@@ -492,7 +488,6 @@
             .replace(/\$\$[\s\S]*?\$\$/g, m => { mathChunks.push(m.replace(/^\$\$/, '\\[').replace(/\$\$$/, '\\]')); return ph(mathChunks.length - 1); })
             .replace(/\$[^\$\n]+?\$/g, m => { mathChunks.push(m.replace(/^\$/, '\\(').replace(/\$$/, '\\)')); return ph(mathChunks.length - 1); })
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            // Now renders using Material Symbols Outlined mapping
             .replace(/\[ICON:([^\]]+)\]/g, '<span class="material-symbols-outlined" style="margin-right: 6px; font-size: 1.2em; vertical-align: middle;">$1</span>')
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -539,10 +534,15 @@
         const base = `You are ${BOT_NAME}, a friendly AI study assistant on Prep Portal — an exam prep platform for Nigerian and international students.
 Rules:
 - Be clear, concise, and encouraging.
-- Use **bold** for key terms and answers.
+- Use **bold** for key terms and final answers.
 - Use numbered steps for multi-step solutions.
 - Keep responses short enough to read in a chat window.
-- Always format mathematical expressions using LaTeX. Use \\(...\\) for inline math and \\[...\\] for display/block math.
+
+CRITICAL MATH FORMATTING RULES:
+- You MUST use LaTeX for absolutely ALL mathematical content, including single variables, single numbers, fractions, equations, and expressions.
+- Inline math MUST be wrapped in \\(...\\). Example: write "Let \\(x = 5\\)" instead of "Let x = 5". Write "The sum of \\(3\\) and \\(4\\) is \\(7\\)" instead of "The sum of 3 and 4 is 7".
+- Display/block math MUST be wrapped in \\[...\\] on its own line.
+- Do NOT use plain text for math. Only use plain text for normal descriptive language (words).
 
 NAVIGATION INSTRUCTIONS:
 You have the ability to navigate the user to different pages on the website. 
