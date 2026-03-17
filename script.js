@@ -261,10 +261,6 @@ Rules:
   return base + focus;
 }
 
-
-const GEMINI_KEY = 'AIzaSyCQDStgsPo7EQtgqx96QBQdICTUR0Pfqk4';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
-
 /* ── Send message ── */
 async function sendMessage() {
   const text = input.value.trim();
