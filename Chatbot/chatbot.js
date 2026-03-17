@@ -22,7 +22,7 @@
     const BOT_NAME = 'PrepBot';
     const YEAR = '2026';
     
-const BASE = "/preportal"; // ← CHANGE THIS
+const BASE = "/prep-portal"; // ← CHANGE THIS
 
 const SITE_MAP = {
     "Home": `${BASE}/index.html`,
