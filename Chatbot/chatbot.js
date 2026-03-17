@@ -22,15 +22,20 @@
     const BOT_NAME = 'PrepBot';
     const YEAR = '2026';
     
-const BASE = "/prep-portal"; // ← CHANGE THIS
-
-const SITE_MAP = {
-    "Home": `${BASE}/index.html`,
-    "Cambridge": `${BASE}/Cambridge/index.html`,
-    "WAEC": `${BASE}/WAEC/index.html`,
-    "Scholastic": `${BASE}/Scholarstic/index.html`,
-    "Scholastic Upper Primary": `${BASE}/Scholarstic/Upper-Primary/index.html`,
-};
+    const isGitHubPages = location.hostname.includes("github.io");
+    
+    const BASE = isGitHubPages ?
+        "/" + location.pathname.split('/')[1] // repo name
+        :
+        ""; // local dev
+    
+    const SITE_MAP = {
+        "Home": `${BASE}/index.html`,
+        "Cambridge": `${BASE}/Cambridge/index.html`,
+        "WAEC": `${BASE}/WAEC/index.html`,
+        "Scholastic": `${BASE}/Scholarstic/index.html`,
+        "Scholastic Upper Primary": `${BASE}/Scholarstic/Upper-Primary/index.html`,
+    };
     /* ── INJECT HTML ── */
     const mount = document.getElementById('prepbot');
     if (!mount) return;
