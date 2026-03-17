@@ -703,6 +703,7 @@ body.active .card {
 .writing-card:hover {
     transform: translate(-2px, -2px);
     box-shadow: 7px 7px 0 var(--ink);
+    color: var(--app-bg);
 }
 
 .writing-card:hover::after {
