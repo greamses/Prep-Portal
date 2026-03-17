@@ -455,7 +455,7 @@
         }
         
         @keyframes blink {
-
+            
             0%,
             100% {
                 border-color: var(--blue);
@@ -1143,7 +1143,7 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="/Chatbot/chatbot.css">
+    <link rel="stylesheet" href="../Chatbot/chatbot.css">
 </head>
 
 <body>
@@ -1288,9 +1288,9 @@
         </div>
     </footer>
     
-
-   <div id="prepbot"></div>
-
+    
+    <div id="prepbot"></div>
+    
     
     <script>
         const categories = [
@@ -1348,8 +1348,12 @@
         
         /* SCROLL REVEAL */
         const io = new IntersectionObserver(entries => {
-            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible');
-                    io.unobserve(e.target); } });
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    io.unobserve(e.target);
+                }
+            });
         }, { threshold: .06 });
         document.querySelectorAll('.cat-row,.info-cell,.cta-band,.live-band').forEach(el => io.observe(el));
         
@@ -1380,7 +1384,7 @@
             hint.style.opacity = window.scrollY > 60 ? '0' : '1';
         }, { passive: true });
     </script>
-    <script src="/Chatbot/chatbot.js"></script>
+    <script src="../Chatbot/chatbot.js"></script>
 </body>
 
 </html>
