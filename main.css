@@ -569,29 +569,7 @@ body.active .card {
 }
 
 /* animated stripe at top of writing section */
-.writing-section::before {
-    content: '';
-    display: block;
-    height: 4px;
-    margin-bottom: 40px;
-    background: repeating-linear-gradient(90deg,
-            var(--blue) 0px, var(--blue) 36px,
-            var(--ink) 36px, var(--ink) 54px,
-            var(--yellow) 54px, var(--yellow) 90px,
-            var(--ink) 90px, var(--ink) 108px);
-    background-size: 200% 100%;
-    animation: stripeScroll 12s linear infinite;
-}
 
-@keyframes stripeScroll {
-    from {
-        background-position: 0 0;
-    }
-    
-    to {
-        background-position: 200% 0;
-    }
-}
 
 .writing-header {
     display: flex;
@@ -1153,6 +1131,270 @@ footer {
 
 @media (max-width: 360px) {
     .writing-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* ════════════════════════════════════════
+        MATH SECTION
+   ════════════════════════════════════════ */
+
+.math-section {
+    border-top: var(--border);
+    border-bottom: var(--border);
+    background: var(--bg);
+    padding: 56px clamp(18px, 5vw, 56px);
+}
+
+
+
+/* ── Header ── */
+.math-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 32px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+}
+
+.math-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .18em;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.math-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 2px;
+    background: var(--yellow);
+    flex-shrink: 0;
+}
+
+.math-header-text h2 {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: clamp(22px, 4.5vw, 36px);
+    letter-spacing: -.015em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+}
+
+.math-header-text p {
+    font-size: 11.5px;
+    line-height: 1.85;
+    color: var(--muted);
+    max-width: 480px;
+}
+
+.math-tag {
+    flex-shrink: 0;
+    background: var(--yellow);
+    color: var(--ink);
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 8.5px;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    padding: 8px 16px;
+    border: 2px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    height: fit-content;
+    margin-top: 6px;
+    align-self: flex-start;
+}
+
+/* ── Tabs ── */
+.math-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 0;
+    border-bottom: var(--border);
+}
+
+.math-tab {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: 13px 20px;
+    border: none;
+    border-right: var(--border);
+    border-bottom: 3px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: background .15s, color .15s, border-bottom-color .15s;
+    white-space: nowrap;
+}
+
+.math-tab:last-child {
+    border-right: none;
+}
+
+.math-tab:hover {
+    background: var(--off);
+    color: var(--ink);
+}
+
+.math-tab.active {
+    background: var(--ink);
+    color: var(--yellow);
+    border-bottom-color: var(--yellow);
+}
+
+/* ── Panels ── */
+.math-panel {
+    display: none;
+    padding-top: 28px;
+}
+
+.math-panel.active {
+    display: block;
+}
+
+/* ── Card grid ── */
+.math-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+/* ── Individual card ── */
+.math-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: var(--ink);
+    border: var(--border);
+    background: var(--bg);
+    box-shadow: 5px 5px 0 var(--ink);
+    position: relative;
+    overflow: hidden;
+    transition: transform .12s, box-shadow .12s;
+}
+
+/* yellow accent bar at top */
+.math-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--yellow);
+    z-index: 3;
+}
+
+/* flood-fill on hover */
+.math-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--ink);
+    transform: translateY(102%);
+    transition: transform .25s cubic-bezier(.16, 1, .3, 1);
+    z-index: 1;
+}
+
+.math-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 7px 7px 0 var(--ink);
+}
+
+.math-card:hover::after {
+    transform: translateY(0);
+}
+
+.math-card:hover .math-card-inner {
+    color: var(--bg);
+}
+
+.math-card:hover h3 { color: var(--yellow); }
+
+/* ── Card inner ── */
+.math-card-inner {
+    padding: 22px 20px 20px;
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    transition: color .25s;
+    min-height: 150px;
+}
+
+.math-card h3 {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    line-height: 1.4;
+    transition: color .25s;
+}
+
+.math-card p {
+    font-size: 10px;
+    line-height: 1.75;
+    color: var(--muted);
+    flex: 1;
+    transition: color .25s;
+}
+
+.math-card:hover p {
+    color: rgba(255, 255, 255, .85);
+}
+
+.mc-arrow {
+    align-self: flex-end;
+    font-size: 15px;
+    color: var(--ink);
+    transition: color .25s;
+    margin-top: 6px;
+}
+
+.math-card:hover .mc-arrow { color: var(--yellow); }
+
+/* ════════════════════════════════════════
+        MATH RESPONSIVE
+   ════════════════════════════════════════ */
+
+@media (max-width: 720px) {
+    .math-header {
+        flex-direction: column;
+    }
+
+    .math-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .math-tabs::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .math-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 360px) {
+    .math-grid {
         grid-template-columns: 1fr;
     }
 }
