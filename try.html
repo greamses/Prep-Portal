@@ -9,6 +9,7 @@
     padding: 2em 0;
     background: #121212;
   }
+  
   #gm-div-a {
     width: 650px;
     height: 150px;
@@ -18,9 +19,11 @@
     transition: box-shadow 1s;
     transition-delay: 0.5s;
   }
+  
   #gm-div-a.success {
     box-shadow: lightgreen 0 0 12px 3px;
   }
+  
   #gm-div-a .gm-canvas {
     border-radius: 8px;
   }
@@ -29,14 +32,12 @@
 <body>
   <div style="width: 650px; margin: auto">
     <h1 style="margin-bottom: 0; color: #cc8401">Example 1</h1>
-    <div
-      style="
+    <div style="
         text-align: right;
         user-select: none;
         margin-bottom: 1em;
         color: rgba(255, 255, 255, 0.6);
-      "
-    >
+      ">
       <span href="#" style="cursor: pointer" onclick="canvasA.controller.undo()">
         Undo
       </span>
@@ -44,27 +45,13 @@
     <div id="gm-div-a"></div>
     <h1 style="margin-top: 2em; color: #cc8401">Example 2 – Flexible Height</h1>
     <p style="color: rgba(255, 255, 255, 0.87)">
-      <input
-        style="width: 4em"
-        type="number"
-        min="0"
-        value="200"
-        id="minCanvasHeight-auto"
-      />
+      <input style="width: 4em" type="number" min="0" value="200" id="minCanvasHeight-auto" />
       minCanvasHeight
       <input style="margin-left: 2em" type="checkbox" id="mayAdjustFontSize-auto" />
       autoAdjustFontSize
-      <input
-        style="margin-left: 2em; width: 4em"
-        type="number"
-        value="70"
-        id="maxFontSize-auto"
-      />
+      <input style="margin-left: 2em; width: 4em" type="number" value="70" id="maxFontSize-auto" />
       maxFontSize
-      <button
-        style="margin-left: 2em"
-        onclick="layoutB.setOptions(getSettingsForAutoHeight())"
-      >
+      <button style="margin-left: 2em" onclick="layoutB.setOptions(getSettingsForAutoHeight())">
         Apply Settings
       </button>
     </p>
@@ -75,17 +62,9 @@
     <h1 style="margin-top: 2em; color: #cc8401">Example 3 – Fixed Height</h1>
     <p style="color: rgba(255, 255, 255, 0.87)">
       <input type="checkbox" checked id="mayAdjustFontSize-fixed" /> autoAdjustFontSize
-      <input
-        style="margin-left: 2em; width: 4em"
-        type="number"
-        value="70"
-        id="maxFontSize-fixed"
-      />
+      <input style="margin-left: 2em; width: 4em" type="number" value="70" id="maxFontSize-fixed" />
       maxFontSize
-      <button
-        style="margin-left: 2em"
-        onclick="layoutC.setOptions(getSettingsForFixedHeight())"
-      >
+      <button style="margin-left: 2em" onclick="layoutC.setOptions(getSettingsForFixedHeight())">
         Apply Settings
       </button>
     </p>
@@ -109,7 +88,7 @@
       </ul>
     </div>
   </div>
-
+  
   <script>
     function getSettingsForAutoHeight() {
       return {
@@ -119,6 +98,7 @@
         maxFontSize: document.querySelector('#maxFontSize-auto').value,
       };
     }
+    
     function getSettingsForFixedHeight() {
       return {
         mayAdjustCanvasHeight: false,
@@ -127,16 +107,17 @@
       };
     }
     loadGM(initCanvas, { version: 'latest' });
+    
     function initCanvas() {
       // If this line is called after a canvas or derivation is instantiated, then some
       // parts of those things will be the wrong color. (Todo: change that.)
       gmath.setDarkTheme(true);
-
+      
       canvasA = new gmath.Canvas('#gm-div-a', canvasNoToolbarSettings);
       canvasB = new gmath.Canvas('#gm-div-b', canvasSmallToolbarSettings);
       canvasB.controller.set_font_size(30);
       canvasC = new gmath.Canvas('#gm-div-c', canvasSmallToolbarSettings);
-
+      
       const derivation = canvasA.model.createElement('derivation', {
         eq: '1+2+3*4',
         wiggle: ['+:1'],
@@ -148,7 +129,7 @@
       canvasC.model.createElement('derivation', { eq: 'y=1+x' });
       canvasC.model.createElement('derivation', { eq: 'x+2y=5' });
       canvasC.setResetState();
-
+      
       gmath.autoLayout.autoLayoutCanvasForOutlier(canvasA, {
         mayAdjustFontSize: true,
         maxFontSize: 50,
@@ -163,18 +144,18 @@
         canvasC,
         getSettingsForFixedHeight()
       );
-
+      
       function checkIfSolved() {
         const solved = derivation.getLastModel().to_ascii() === '15';
         document
           .querySelector('#gm-div-a')
           .classList[solved ? 'add' : 'remove']('success');
       }
-
+      
       derivation.events.on('change', checkIfSolved);
       derivation.events.on('undo', checkIfSolved);
     }
-
+    
     const canvasSmallToolbarSettings = {
       auto_resize_on_scroll: false,
       use_toolbar: true,
@@ -215,7 +196,7 @@
       fullscreen_toolbar_btn: false,
       vertical_scroll: false,
     };
-
+    
     const singleLineDerivationSettings = {
       h_align: 'center',
       pos: { x: 'center', y: 'center' },
@@ -225,5 +206,7 @@
       collapsed_mode: true,
       show_bg: false,
     };
+    
+    <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vQz8akxkvdVrZt0eaOJYRFDvWJF1auBtI-ALRzLuNXqS9udfA_6ZA9oRlciLsh9MGJJC0tzgSVxXDFk/embed?start=false&loop=false&delayms=3000" frameborder="0" width="1056" height="845" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
   </script>
 </body>

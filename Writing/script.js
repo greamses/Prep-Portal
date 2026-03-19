@@ -3,12 +3,14 @@
    Requires: all other proofreader.*.js files
    Load order:
      1. proofreader.config.js
-     2. proofreader.styles.js
-     3. proofreader.ui.js
-     4. proofreader.api.js
-     5. proofreader.render.js
-     6. proofreader.popover.js
-     7. proofreader.main.js   ← this file
+     2. proofreader.ui.js
+     3. proofreader.api.js
+     4. proofreader.render.js
+     5. proofreader.popover.js
+     6. proofreader.main.js   ← this file
+   Styles:
+     <link rel="stylesheet" href="proofreader.css">
+     (proofreader.styles.js has been removed — CSS is now external)
 ═══════════════════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────────────────
@@ -64,21 +66,27 @@ elTextarea.addEventListener('input', () => {
 elSubmitBtn.addEventListener('click', async () => {
   const userText = elTextarea.value.trim();
   if (!userText) return;
-
+  
   elLoading.classList.add('active');
-
+  
   try {
     const data = await gradeEssay(userText);
     renderResults(data, userText);
   } catch (err) {
-    console.error(err);
-    alert("Grading error — the AI returned unexpected data. Please try again.");
+    console.error("Grading failed:", err);
+    
+    if (err.message.includes('API Error')) {
+      alert("API Connection Error: We've hit a rate limit or key error. Wait a moment and try again.");
+    } else {
+      alert("Grading error — the AI returned unexpected data. Please try again.");
+    }
+    
     elLoading.classList.remove('active');
   }
 });
 
 /* ─────────────────────────────────────────────────────
-   RETRY  — return to editor, reset state
+   RETRY  — return to editor, keep current topic, reset state
 ─────────────────────────────────────────────────────── */
 elRetryBtn?.addEventListener('click', () => {
   elResultsSec.classList.remove('active');
@@ -89,16 +97,31 @@ elRetryBtn?.addEventListener('click', () => {
   commentCounter            = 0;
   commentStore              = {};
 
-  /* Remove stale para-nav from previous submission */
+  /* Remove stale elements */
   document.getElementById('para-nav')?.remove();
+  document.getElementById('rewrite-info-btn')?.remove();
+  document.getElementById('rewrite-info-note')?.remove();
 
-  /* Re-expand topic accordion */
+  /* Reset paragraph nav state */
+  paragraphChunks     = [];
+  currentParagraphIdx = 0;
+  paraNavShowAll      = false;
+
+  /* Clear previous results panels */
+  _clearResultsAccordions();
+
+  /* Re-expand topic accordion and sync topic display */
   const body = $('acc-body-topic');
   if (body) {
     body.style.display = '';
     const chevron = document.querySelector('#acc-topic .acc-chevron');
     if (chevron) chevron.classList.add('open');
   }
+  syncTopicDisplay();
+
+  /* Scroll back to top so editor is fully visible */
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  elTextarea.focus();
 });
 
 /* ─────────────────────────────────────────────────────
@@ -126,10 +149,60 @@ elModal?.addEventListener('click', e => { if (e.target === elModal) closeModal()
    INIT
 ─────────────────────────────────────────────────────── */
 window.addEventListener('DOMContentLoaded', () => {
+  _injectRewriteStyles();
   initEditorAccordions();
   openModal(); /* expand topic accordion on first load */
 });
 
+/* ─────────────────────────────────────────────────────
+   REWRITE STAMP STYLES  — injected once
+─────────────────────────────────────────────────────── */
+function _injectRewriteStyles() {
+  if (document.getElementById('rewrite-injected-css')) return;
+  const s = document.createElement('style');
+  s.id = 'rewrite-injected-css';
+  s.textContent = `
+    .score-stamp.rewrite-stamp {
+      background: #0a0a0a;
+      color: #fff;
+      font-size: clamp(1.4rem, 5vw, 2rem);
+      letter-spacing: .04em;
+      padding: .4em .7em;
+    }
+    .rewrite-stamp-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    #rewrite-info-btn {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 2px solid #0a0a0a;
+      background: #fff;
+      color: #0a0a0a;
+      font-weight: 800;
+      font-size: .85rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 2px 2px 0 #0a0a0a;
+      transition: background .15s, color .15s;
+    }
+    #rewrite-info-btn:hover { background: #0a0a0a; color: #fff; }
+    #rewrite-info-note {
+      margin-top: 10px;
+      padding: 12px 14px;
+      background: #fffbe6;
+      border: 2px solid #0a0a0a;
+      box-shadow: 3px 3px 0 #0a0a0a;
+      font-size: .875rem;
+      line-height: 1.5;
+      max-width: 480px;
+    }
+  `;
+  document.head.appendChild(s);
+}
 
 
 
@@ -231,10 +304,9 @@ function attachAnnotationListeners(container) {
    PARAGRAPH NAV  — build / update UI
 ─────────────────────────────────────────────────────── */
 function buildParagraphNav() {
-  /* Remove existing nav if present */
   document.getElementById('para-nav')?.remove();
 
-  if (paragraphChunks.length <= 1) return; /* no nav needed */
+  if (paragraphChunks.length <= 1) return;
 
   const nav = document.createElement('div');
   nav.id = 'para-nav';
@@ -244,7 +316,6 @@ function buildParagraphNav() {
     <button class="para-nav-btn" id="para-next" ${currentParagraphIdx === paragraphChunks.length - 1 ? 'disabled' : ''}>Next →</button>
     <button class="para-nav-btn show-all" id="para-showall">${paraNavShowAll ? 'Collapse' : 'Show All'}</button>`;
 
-  /* Insert above the annotated text container */
   const paper = elAnnotated.closest('.annotated-paper') || elAnnotated.parentNode;
   paper.parentNode.insertBefore(nav, paper);
 
@@ -264,7 +335,7 @@ function buildParagraphNav() {
     } else {
       showParagraph(currentParagraphIdx);
     }
-    buildParagraphNav(); /* re-render nav to flip button label */
+    buildParagraphNav();
   });
 }
 
@@ -274,14 +345,75 @@ function showParagraph(index) {
   elAnnotated.innerHTML = paragraphChunks[index];
   attachAnnotationListeners(elAnnotated);
   buildParagraphNav();
-  /* Smooth scroll to top of paper */
   elAnnotated.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ─────────────────────────────────────────────────────
+   HELPERS
+─────────────────────────────────────────────────────── */
+function _clearResultsAccordions() {
+  document.getElementById('acc-suggestions')?.remove();
+  document.getElementById('acc-studytips')?.remove();
+  /* Leave the container div itself — it will be reused on next render */
+}
+
+/* Show the REWRITE stamp with a toggleable 'i' info note */
+function _showRewriteStamp(reason) {
+  /* Clear any previous results content */
+  elRubric.innerHTML    = '';
+  elAnnotated.innerHTML = '';
+  _clearResultsAccordions();
+  document.getElementById('para-nav')?.remove();
+
+  /* Stamp */
+  elStamp.textContent = 'REWRITE';
+  elStamp.className   = 'score-stamp rewrite-stamp';
+
+  /* Remove old info elements if retrying off-topic twice */
+  document.getElementById('rewrite-info-btn')?.remove();
+  document.getElementById('rewrite-info-note')?.remove();
+
+  /* Create the info (ℹ) button */
+  const infoBtn = document.createElement('button');
+  infoBtn.id          = 'rewrite-info-btn';
+  infoBtn.textContent = 'i';
+  infoBtn.setAttribute('aria-label', 'Why REWRITE?');
+  infoBtn.title = 'Tap to see why';
+
+  /* Create the hidden note */
+  const infoNote = document.createElement('div');
+  infoNote.id = 'rewrite-info-note';
+  infoNote.textContent = reason || 'Your essay does not address the given writing prompt.';
+  infoNote.hidden = true;
+
+  infoBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    infoNote.hidden = !infoNote.hidden;
+  });
+
+  /* Append next to the stamp */
+  const stampParent = elStamp.parentNode;
+  stampParent.appendChild(infoBtn);
+  stampParent.appendChild(infoNote);
 }
 
 /* ─────────────────────────────────────────────────────
    MAIN RENDER
 ─────────────────────────────────────────────────────── */
 function renderResults(data, originalText) {
+
+  /* ── Off-topic: show REWRITE stamp, skip everything else ── */
+  if (data.offTopic) {
+    _showRewriteStamp(data.offTopicReason || '');
+    elLoading.classList.remove('active');
+    elEditorSec.style.display = 'none';
+    elResultsSec.classList.add('active');
+    return;
+  }
+
+  /* ── Remove any stale REWRITE info elements ── */
+  document.getElementById('rewrite-info-btn')?.remove();
+  document.getElementById('rewrite-info-note')?.remove();
 
   /* ── Score stamp ── */
   const score = Math.min(100, Math.max(0, data.totalScore || 0));
@@ -326,16 +458,13 @@ function renderResults(data, originalText) {
   currentParagraphIdx = 0;
   paraNavShowAll      = false;
 
-  /* Remove any stale para-nav */
   document.getElementById('para-nav')?.remove();
 
   if (paragraphChunks.length > 1) {
-    /* Show first paragraph; nav builds itself */
     elAnnotated.innerHTML = paragraphChunks[0];
     attachAnnotationListeners(elAnnotated);
     buildParagraphNav();
   } else {
-    /* Single paragraph — show everything, no nav */
     elAnnotated.innerHTML = annotatedHtml;
     attachAnnotationListeners(elAnnotated);
   }
@@ -414,20 +543,87 @@ function renderStudyTips(tips) {
 
 
 
-
 /* ═══════════════════════════════════════════════════════
    PREPBOT — CONFIG & CONSTANTS
    Load this file FIRST.
 ═══════════════════════════════════════════════════════ */
 
 /* ── API ── */
-const p1 = "gsk_9sz5p",
-  p2 = "0Vrwv8chiknSBrJW",
-  p3 = "Gdyb3FYnQIifcPYSc9",
-  p4 = "Dhi1tMvB8VmAh";
-const GROQ_KEY   = p1 + p2 + p3 + p4;
-const GROQ_URL   = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+const p1 = 'AIzaSyAvWD'
+const p2 = 'v5YiltSkQV'
+const p3 = 't_5aP1sIxYY'
+const p4 = 'jrZbcq38'
+const GEMINI_KEY = p1 + p2 + p3 + p4;
+
+/*
+ * Model fallback chain — tried in order.
+ * When a model returns 429 (quota) or 503 (overload) the next is tried automatically.
+ * The index of the last working model is remembered across calls so we don't keep
+ * hammering an exhausted model on subsequent requests.
+ */
+const GEMINI_MODELS = [
+  { label: 'Gemini 3.1 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent' },
+  { label: 'Gemini 3.1 Pro',        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent'       },
+  { label: 'Gemini 3 Flash',        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent'        },
+  { label: 'Gemini 2.5 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent'             },
+  { label: 'Gemini 2.5 Flash',      url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent'                  },
+  { label: 'Gemini 2.5 Pro',        url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent'                    },
+];
+
+/* Tracks which model we're currently on so exhausted ones are skipped on the next call */
+let _geminiModelIdx = 0;
+
+/* Status codes that mean "quota / overloaded — try the next model" */
+const _QUOTA_CODES = new Set([429, 503, 529]);
+
+/**
+ * geminiPost(body)
+ * Posts `body` JSON to each model in GEMINI_MODELS starting from _geminiModelIdx.
+ * On quota errors it advances the index and retries the next model silently.
+ * On any other HTTP error (4xx/5xx) it throws immediately.
+ * Returns { res, data } for the first successful response.
+ */
+async function geminiPost(body) {
+  for (let i = _geminiModelIdx; i < GEMINI_MODELS.length; i++) {
+    const model = GEMINI_MODELS[i];
+    let res;
+    try {
+      res = await fetch(`${model.url}?key=${GEMINI_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+    } catch (networkErr) {
+      /* Network-level failure — treat like a transient error and try next model */
+      console.warn(`[Gemini] Network error on ${model.label}:`, networkErr);
+      continue;
+    }
+
+    if (_QUOTA_CODES.has(res.status)) {
+      console.warn(`[Gemini] ${model.label} quota/overload (${res.status}) — trying next model`);
+      _geminiModelIdx = i + 1;   /* remember: skip this model next time too */
+      continue;
+    }
+
+    if (!res.ok) {
+      /* Non-quota error (e.g. 400 bad request) — don't silently swallow it */
+      const errText = await res.text().catch(() => '');
+      throw new Error(`API Error ${res.status} (${model.label}): ${errText}`);
+    }
+
+    /* Success — lock in this model for subsequent calls */
+    if (_geminiModelIdx !== i) {
+      console.info(`[Gemini] Now using: ${model.label}`);
+      _geminiModelIdx = i;
+    }
+    const data = await res.json();
+    return { res, data, label: model.label };
+  }
+
+  /* Every model exhausted */
+  _geminiModelIdx = 0;   /* reset for next page load attempt */
+  throw new Error('API Error: All Gemini models are currently over quota. Please try again later.');
+}
 
 /* ── Error type metadata ── */
 const ERROR_TYPES = {
@@ -461,15 +657,6 @@ const ERROR_TYPES = {
  *  d  showDelete  — word should literally be removed
  *  m  showMove    — content is correct, just in wrong position
  *  c  showCustom  — free-text replacement field
- *
- * Rationale:
- *  del   → Delete only (replacing a deletion is nonsensical)
- *  ins   → nothing extra; the fix-button IS the action
- *  trans → Move only; the words exist, just reorder them
- *  para  → Delete only (dismiss the ¶ suggestion)
- *  rep   → Delete (drop duplicate) OR Custom Replace
- *  sent  → Move (reorder sentence) + Custom Replace
- *  rest  → Custom Replace only
  * ────────────────────────────────────────────────────── */
 const ERROR_ACTIONS = {
   //           d       m      c
@@ -512,9 +699,6 @@ let currentWritingType = 'general';
 
 /* ─────────────────────────────────────────────────────
    WRITING-TYPE SUBSTITUTION GUIDELINES
-   Returns a paragraph injected into the system prompt
-   that tells the model what kind of replacements to
-   suggest based on the genre.
 ─────────────────────────────────────────────────────── */
 function getSubstitutionGuidelines(type) {
   const guides = {
@@ -576,6 +760,28 @@ SUBSTITUTION STYLE — GENERAL:
 ─────────────────────────────────────────────────────── */
 function getSystemPrompt() {
   return `You are an uncompromising secondary-school English examiner marking with a red pen. Find and mark real errors. Also give positive credit where writing is genuinely strong.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OFF-TOPIC DETECTION — CHECK THIS FIRST:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Before marking anything, decide: does this essay address the assigned TOPIC?
+
+Mark offTopic: true if ANY of these apply:
+  • The essay is about a completely different subject (e.g. topic is "describe a market" but student wrote about football).
+  • The essay is a bare restatement of the topic with no real content (under ~30 meaningful words).
+  • The student has written in a different language with only isolated English words.
+  • The essay appears to be random or incoherent text with no connection to the topic.
+
+Mark offTopic: false (proceed to mark normally) if:
+  • The essay attempts the topic, even loosely, imperfectly, or creatively.
+  • The student drifts off-topic in one section but the main thrust addresses the prompt.
+
+When offTopic is true:
+  • Set all rubric scores to 0.
+  • Leave annotatedText as an empty string "".
+  • Leave suggestions and studyTips as empty arrays [].
+  • Provide a brief offTopicReason (1–2 plain sentences explaining why).
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 CALIBRATION:
   Grammar & Mechanics /30:
@@ -657,38 +863,80 @@ CAPITALISATION — DETECTION RULES:
 Use <mark type="cap"> when a word MUST be capitalised but is not.
 Use <mark type="lc"> when a word is capitalised but MUST NOT be.
 
+STEP 1 — SCAN FOR THE PRONOUN "I" FIRST (most missed error):
+  Every single occurrence of the word "i" used as a first-person pronoun must be capitalised.
+  This applies in ALL positions: start, middle, end of sentence.
+    ✗ "Yesterday i went to school."             fix="I"
+    ✗ "She told me that i should come early."   fix="I"
+    ✗ "My friend and i played football."        fix="I"
+    ✗ "i think the answer is correct."          fix="I"
+  NOTE: The letter "i" in words like "is", "in", "it", "if" is NOT this error. Only standalone "i" as pronoun.
+
+STEP 2 — SCAN EVERY SENTENCE OPENING (second most missed error):
+  The first word of every sentence must start with a capital letter.
+  After: full stop (.), question mark (?), exclamation mark (!).
+    ✗ "He opened the door. the room was empty."        → "the" should be "The"
+    ✗ "She ran fast. unfortunately, she missed the bus." → "unfortunately" should be "Unfortunately"
+  ALSO check after dialogue closing punctuation:
+    ✗ '"Come here," he said. she walked over.'         → "she" should be "She"
+
 ALWAYS capitalise (mark cap if lowercase):
-  1. First word of every sentence, including after a full stop, exclamation mark,
-     or question mark. This is the single most common error — check every sentence start.
-  2. The pronoun "I" — every single instance: "i went" → fix="I"
-  3. People's full names and surnames: "adaeze", "mr okafor", "ama" (as a name).
-  4. Title used directly before a name: "president Tinubu", "doctor Obi", "mrs Johnson"
-     → fix="President Tinubu", "Doctor Obi", "Mrs Johnson".
-     (BUT: "the president announced" — no capital, it's a common noun here.)
-  5. Specific places: countries, cities, states, rivers, mountains, landmarks:
-     "nigeria", "lagos", "abuja", "river niger", "aso rock" → capitalise all.
+  3. People's full names and surnames: "adaeze", "mr okafor", "dr aminu" — capitalise every part.
+  4. Titles DIRECTLY before a name (part of the name): 
+       "president Tinubu" → fix="President Tinubu"
+       "doctor Obi" → fix="Doctor Obi"
+       "mrs Johnson" → fix="Mrs Johnson"
+       "chief Emeka" → fix="Chief Emeka"
+       (BUT: "the president announced" — title used generically, no capital.)
+  5. Specific named places — countries, cities, states, rivers, mountains, landmarks:
+       "nigeria", "lagos", "abuja", "river niger", "aso rock", "mount kilimanjaro"
+       → capitalise every word in the specific name.
   6. Nationalities, languages, ethnic groups, religions:
-     "nigerian", "yoruba", "igbo", "hausa", "english", "arabic", "christian", "muslim", "islam".
-  7. Days of the week and months of the year:
-     "monday", "friday", "january", "december" → always capitalise.
-  8. Named institutions, organisations, schools, government bodies:
-     "university of lagos", "federal government", "national assembly" when used as a specific name.
-  9. Titles of books, films, newspapers when cited: "things fall apart", "the punch".
+       "nigerian", "yoruba", "igbo", "hausa", "fulani", "tiv",
+       "english", "french", "arabic", "swahili",
+       "christian", "muslim", "islam", "christianity", "buddhism"
+       — ALL must be capitalised, always, wherever they appear.
+  7. Days of the week and months of the year — always:
+       "monday", "friday", "january", "december" → capitalise.
+       (Seasons do NOT get capitals: harmattan, rainy season, summer.)
+  8. Named institutions, organisations, schools, government bodies when used as specific names:
+       "university of lagos" → "University of Lagos"
+       "federal government of nigeria" → "Federal Government of Nigeria"
+       "national assembly" → "National Assembly" (when referring to the Nigerian body specifically)
+  9. Titles of books, films, newspapers when cited:
+       "things fall apart" → "Things Fall Apart"
+       "the punch" → "The Punch"
+  10. Acronyms and initialisms are always fully uppercase:
+       "un", "waec", "jamb", "ui" (University of Ibadan abbreviation) → "UN", "WAEC", "JAMB"
 
 NEVER capitalise (mark lc if incorrectly uppercased):
-  1. Common nouns used generically: "The Government said..." when referring generally
-     → fix="government" (unless it is "the Federal Government of Nigeria" as a specific body).
-  2. School subjects written generically: "I study mathematics and english"
-     → "mathematics" stays lowercase; "English" stays capitalised (it is a language/nationality).
-  3. Seasons: "harmattan", "rainy season", "summer" — lowercase always.
-  4. Compass directions used generically: "go north", "the south" — lowercase.
-     (BUT "Northern Nigeria", "South-East" as a specific region — capitalise.)
-  5. Family relationship words used generically: "my father said", "her mother left"
-     → lowercase. BUT when used as a title replacing a name: "Father said" (= Dad said) → capital.
+  1. Generic common nouns: "The Government said..." (referring generally)
+       → fix="government" — UNLESS it's "the Federal Government of Nigeria" (specific body).
+  2. School subjects used generically: "I study mathematics, physics, and chemistry"
+       → all lowercase. Exception: "English" (language/nationality) always capitalised;
+       "French" (language) always capitalised.
+  3. Seasons: "harmattan", "rainy season", "dry season", "summer", "winter" — always lowercase.
+  4. Compass directions used generically: "go north", "the south", "head east" — lowercase.
+       (BUT specific regions: "Northern Nigeria", "South-East geopolitical zone" — capitalise.)
+  5. Family relationship words used generically (with a possessive pronoun):
+       "my father", "her mother", "his uncle", "their grandmother" → always lowercase.
+       (BUT when used as a title replacing the name: "Father said", "Mother called" — capital.)
+  6. The word "internet" — now standardly lowercase.
+  7. Generic time references: "in the morning", "last night", "this afternoon" — lowercase.
 
-IMPORTANT: Scan every sentence opening and every "i" pronoun. These are missed most often.
+COMMON NIGERIAN STUDENT CAPITALISATION ERRORS TO CATCH:
+  ✗ "My Father told me..." (father used generically with "My") → fix="father"
+  ✗ "In The Morning" (random mid-sentence caps) → fix="the morning"  
+  ✗ "She is A Teacher" (article/determiner mid-sentence) → fix="a"
+  ✗ "The School is Big" (common noun mid-sentence) → fix="school"
+  ✗ "i and my friend" → fix="I"
+  ✗ "we went to church. afterwards, i played" → "afterwards" cap + "i" cap
+  ✗ "He is an igbo man" → fix="Igbo"
+  ✗ "last monday" → fix="Monday"
 
-fix= attribute: always provide the correctly capitalised (or lowercased) word.
+IMPORTANT: Check EVERY sentence boundary and EVERY standalone "i". These two account for the majority of cap/lc errors in student writing. Do not skip any.
+
+fix= attribute: always provide the correctly capitalised (or lowercased) word or phrase.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -759,6 +1007,8 @@ SUBSTITUTION RULES (apply to every <sub> and <sent> tag):
 RESPOND ONLY WITH VALID JSON. No markdown, no preamble.
 
 {
+  "offTopic": false,
+  "offTopicReason": "",
   "totalScore": <exact sum>,
   "rubric": [
     { "category": "Grammar & Mechanics",  "score": <n>, "outOf": 30, "feedback": "<2 sentences naming specific errors>" },
@@ -835,7 +1085,7 @@ RULES:
    TOPIC GENERATION
 ─────────────────────────────────────────────────────── */
 async function fetchGeneratedTopic(type) {
-  currentWritingType = type; /* store for system prompt */
+  currentWritingType = type;
 
   if (elTopicBox) elTopicBox.style.opacity = '0.5';
   const textEl = document.getElementById('acc-topic-text');
@@ -843,26 +1093,19 @@ async function fetchGeneratedTopic(type) {
   if (elTopic) elTopic.innerHTML = `Generating ${type} prompt...`;
 
   try {
-    const res = await fetch(GROQ_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [{
-          role: "user",
-          content:
-            `Generate ONE original, age-appropriate ${type} writing topic for a Nigerian secondary school student (SS1–SS2, age 13–15). ` +
-            `Engaging, specific, achievable in 200–500 words. Return ONLY the topic text — no quotes, no label, no explanation.`
-        }],
+    const { data } = await geminiPost({
+      contents: [{
+        parts: [{
+          text: `Generate ONE original, age-appropriate ${type} writing topic for a Nigerian secondary school student (SS1–SS2, age 13–15). Engaging, specific, achievable in 200–500 words. Return ONLY the topic text — no quotes, no label, no explanation.`
+        }]
+      }],
+      generationConfig: {
         temperature: 0.9,
-        max_tokens: 130
-      })
+        maxOutputTokens: 130
+      }
     });
 
-    if (!res.ok) throw new Error(`API ${res.status}`);
-
-    const data = await res.json();
-    let text = (data.choices?.[0]?.message?.content || "").trim()
+    let text = (data.candidates?.[0]?.content?.parts?.[0]?.text || "").trim()
       .replace(/^["'"']+|["'"']+$/g, '');
     currentTopic = text || "Write about a memorable experience and what you learned from it.";
     syncTopicDisplay();
@@ -884,29 +1127,34 @@ async function fetchGeneratedTopic(type) {
    ESSAY GRADING  (called by submit handler in main.js)
 ─────────────────────────────────────────────────────── */
 async function gradeEssay(userText) {
-  const res = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: [
-        { role: "system", content: getSystemPrompt() },
-        { role: "user",   content: `WRITING TYPE: ${currentWritingType.toUpperCase()}\nTOPIC: ${currentTopic}\n\nSTUDENT ESSAY:\n${userText}` }
-      ],
+  const { data } = await geminiPost({
+    systemInstruction: {
+      parts: [{ text: getSystemPrompt() }]
+    },
+    contents: [{
+      parts: [{ text: `WRITING TYPE: ${currentWritingType.toUpperCase()}\nTOPIC: ${currentTopic}\n\nSTUDENT ESSAY:\n${userText}` }]
+    }],
+    generationConfig: {
+      responseMimeType: "application/json",
       temperature: 0.1,
-      max_tokens: 5000
-    })
+      maxOutputTokens: 20000
+    }
   });
+  let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-  if (!res.ok) throw new Error(`API ${res.status}`);
+  const jsonStart = raw.indexOf('{');
+  const jsonEnd = raw.lastIndexOf('}');
+  
+  if (jsonStart !== -1 && jsonEnd !== -1) {
+    raw = raw.substring(jsonStart, jsonEnd + 1);
+  } else {
+    throw new Error("No JSON object found in response");
+  }
 
-  const data = await res.json();
-  let raw = data.choices?.[0]?.message?.content || "";
-  raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+  raw = raw.replace(/[\u0000-\u0009\u000B-\u001F]+/g, "");
+
   return JSON.parse(raw);
 }
-
-
 
 
 
@@ -946,12 +1194,9 @@ function positionPopover(el) {
 
 /* ─────────────────────────────────────────────────────
    RED PEN CORRECTION BLOCK
-   Renders the teacher's handwritten-style correction.
-   - For grammar fixes: original → fix  (always 1 option)
-   - For substitutions: original → opt1 / opt2 / opt3
 ─────────────────────────────────────────────────────── */
 function buildRedPenHtml(originalText, fix, optsStr, dataType, type) {
-  const original = originalText.replace(/<[^>]+>/g, '').trim(); /* strip child spans */
+  const original = originalText.replace(/<[^>]+>/g, '').trim();
 
   /* ── Case 1: grammar fix (single correct form) ── */
   if (fix) {
@@ -1008,7 +1253,6 @@ function openAnnotationPopover(el) {
   const dataType    = el.dataset.type || (optsStr && !type ? 'word' : '');
   const lossAttr    = el.dataset.loss || el.querySelector?.('.deduction')?.textContent || '';
 
-  /* Resolve the virtual key for ERROR_ACTIONS */
   const actionKey  = type || dataType || 'word';
   const actions    = ERROR_ACTIONS[actionKey] || { d: false, m: false, c: true };
 
@@ -1019,7 +1263,6 @@ function openAnnotationPopover(el) {
       : 'This word could be stronger. Click a replacement option to upgrade it.'
   };
 
-  /* Badge colour — match the doodle mark */
   const badgeBg = (() => {
     const tmp = document.querySelector(`.doodle-${type}`);
     if (tmp) {
@@ -1030,17 +1273,14 @@ function openAnnotationPopover(el) {
     return type ? '#0a0a0a' : (dataType === 'sent' ? '#e67e00' : '#0055ff');
   })();
 
-  /* Red pen correction block */
   const redPenHtml = buildRedPenHtml(el.textContent, fix, optsStr, dataType, type);
 
-  /* Action buttons — only render the ones that are relevant */
   const actionBtns = [
     actions.d ? `<button class="pop-action-btn danger"  id="pop-act-delete">Delete</button>`        : '',
     actions.m ? `<button class="pop-action-btn move"    id="pop-act-move">Move</button>`            : '',
     actions.c ? `<button class="pop-action-btn success" id="pop-act-custom">Custom Replace</button>` : '',
   ].filter(Boolean).join('');
 
-  /* Only show the actions row if there are any buttons to show */
   const actionsSection = actionBtns ? `
     <div class="pop-divider"></div>
     <div class="pop-section-label">More actions</div>
@@ -1243,386 +1483,6 @@ document.addEventListener('click', e => {
 
 
 
-
-/* ═══════════════════════════════════════════════════════
-   PREPBOT — STYLES
-   Injected once at runtime. Requires: proofreader.config.js
-═══════════════════════════════════════════════════════ */
-
-(function injectStyles() {
-  if (document.getElementById('prepbot-extended-styles')) return;
-
-  const css = `
-
-  /* ── ensure paper text is always horizontal ── */
-  .annotated-paper,
-  #annotated-text {
-    writing-mode: horizontal-tb !important;
-    direction: ltr !important;
-  }
-
-  /* ── SHARED label base — wrap rather than overflow ── */
-  .doodle::before {
-    white-space: normal !important;
-    max-width: 90px;
-    text-align: center;
-    line-height: 1.15;
-    word-break: break-word;
-  }
-
-  /* ── ALL doodle marks are clickable ── */
-  .doodle {
-    cursor: pointer;
-    position: relative;
-  }
-
-  /* ════════ MARK TYPES ════════ */
-
-  .doodle-ww   { background: rgba(220,38,38,.1);   border-bottom: 2.5px double #dc2626; }
-  .doodle-ww::before   { content:'ww';    position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#dc2626; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-agr  { background: rgba(234,88,12,.1);   border-bottom: 2.5px solid #ea580c; }
-  .doodle-agr::before  { content:'agr';   position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#ea580c; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-vt   { background: rgba(124,58,237,.09); border-bottom: 2.5px dashed #7c3aed; }
-  .doodle-vt::before   { content:'vt';    position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#7c3aed; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-art  { background: rgba(2,132,199,.09);  border-bottom: 2.5px dotted #0284c7; }
-  .doodle-art::before  { content:'art';   position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#0284c7; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-prep { background: rgba(219,39,119,.08); border-bottom: 2.5px dotted #db2777; }
-  .doodle-prep::before { content:'prep';  position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#db2777; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-rep  { background: rgba(180,83,9,.12);   border-bottom: 2.5px solid #b45309; }
-  .doodle-rep::before  { content:'rep';   position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#b45309; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-ref  { background: rgba(15,118,110,.09); border-bottom: 2.5px dashed #0f766e; }
-  .doodle-ref::before  { content:'ref?';  position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#0f766e; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-cs   { background: rgba(185,28,28,.08);  outline: 2px dashed #b91c1c; outline-offset: 1px; border-radius: 2px; }
-  .doodle-cs::before   { content:'cs';    position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#b91c1c; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-wo   { background: rgba(99,102,241,.1);  border-bottom: 2.5px wavy #6366f1; text-decoration-thickness: 2px; }
-  .doodle-wo::before   { content:'w/o';   position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#6366f1; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-par  { background: rgba(5,150,105,.08);  border-top: 2.5px solid #059669; border-bottom: 2.5px solid #059669; padding: 2px 0; }
-  .doodle-par::before  { content:'par';   position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#059669; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-del  { background: rgba(220,38,38,.08);  text-decoration: line-through; text-decoration-color: #dc2626; }
-  .doodle-del::before  { content:'del';   position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#dc2626; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-ins  { background: rgba(22,163,74,.08);  border-bottom: 2.5px solid #16a34a; }
-  .doodle-ins::before  { content:'ins';   position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#16a34a; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-cap  { background: rgba(234,88,12,.08);  border-bottom: 2.5px solid #ea580c; text-transform: capitalize; }
-  .doodle-cap::before  { content:'cap';   position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#ea580c; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-lc   { background: rgba(2,132,199,.08);  border-bottom: 2.5px solid #0284c7; }
-  .doodle-lc::before   { content:'lc';    position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#0284c7; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-trans { background: rgba(124,58,237,.08); border-bottom: 2.5px dashed #7c3aed; }
-  .doodle-trans::before { content:'trans'; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#7c3aed; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-para { background: rgba(0,0,0,.06); border-left: 3px solid #0a0a0a; padding-left: 4px; }
-  .doodle-para::before { content:'para';  position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#0a0a0a; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-spell { background: rgba(100,100,100,.08); border-bottom: 2.5px dotted #666; }
-  .doodle-spell::before { content:'sp.o'; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#666; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-sp   { background: rgba(220,38,38,.1);   border-bottom: 2.5px wavy #dc2626; }
-  .doodle-sp::before   { content:'sp';    position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#dc2626; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-run  { background: rgba(185,28,28,.08);  outline: 2px solid #b91c1c; outline-offset: 1px; border-radius: 2px; }
-  .doodle-run::before  { content:'run-on'; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#b91c1c; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-frag { background: rgba(220,38,38,.08);  border-bottom: 2.5px dotted #dc2626; }
-  .doodle-frag::before { content:'frag';  position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#dc2626; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  .doodle-punct { background: rgba(220,38,38,.12); border-bottom: 2.5px solid #dc2626; }
-  .doodle-punct::before { content:'punct'; position:absolute; bottom:calc(100% + 3px); left:50%; transform:translateX(-50%); color:#dc2626; font-family:'Caveat',cursive; font-size:.85em; font-weight:700; pointer-events:none; z-index:5; }
-
-  /* ════════ COLOUR HIGHLIGHTERS ════════ */
-
-  .hl-grammar   { background: rgba(253,224,71,.55); border-radius: 2px; padding: 0 1px; }
-  .hl-vocab     { background: rgba(96,165,250,.3);  border-radius: 2px; padding: 0 1px; }
-  .hl-structure { background: rgba(251,146,60,.3);  border-radius: 2px; padding: 0 1px; }
-  .hl-style     { background: rgba(196,181,253,.45);border-radius: 2px; padding: 0 1px; }
-  .hl-good      { background: rgba(74,222,128,.3);  border-radius: 2px; padding: 0 1px; position: relative; cursor: help; }
-  .hl-good::after {
-    content: 'ok';
-    position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%);
-    color: #16a34a; font-family:'Caveat',cursive; font-size:1em; font-weight:700;
-    pointer-events:none; z-index:5;
-    background: rgba(74,222,128,.2); padding: 0 3px; border-radius: 2px;
-  }
-
-  /* ════════ WORD / SENTENCE SUBSTITUTION MARKS ════════ */
-
-  .sub-word {
-    cursor: pointer; border-bottom: 2px solid #0055ff;
-    color: #0055ff; background: transparent; transition: background .1s;
-  }
-  .sub-word:hover { background: rgba(0,85,255,.08); }
-
-  .sent-sub {
-    cursor: pointer; border-bottom: 2px solid #e67e00;
-    color: #e67e00; background: transparent; transition: background .1s;
-  }
-  .sent-sub:hover { background: rgba(230,126,0,.08); }
-
-  /* ════════ MARGIN COMMENT MARKERS ════════ */
-
-  .margin-comment-marker {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 19px; height: 19px; background: #dc2626; color: #fff;
-    font-family: 'Unbounded','Syne',sans-serif; font-size: 9px; font-weight: 700;
-    border-radius: 50%; border: none; cursor: pointer;
-    position: relative; top: -5px; margin: 0 2px;
-    z-index: 10; flex-shrink: 0; vertical-align: middle;
-    transition: transform .12s, background .12s;
-    box-shadow: 1px 1px 0 rgba(0,0,0,.25);
-  }
-  .margin-comment-marker:hover  { transform: scale(1.25); background: #b91c1c; }
-  .margin-comment-marker.active { background: #7f1d1d; transform: scale(1.15); }
-
-  /* ════════ COMMENT POPOVER ════════ */
-
-  #comment-popover {
-    position: fixed; background: #fff; border: 2.5px solid #dc2626;
-    box-shadow: 5px 5px 0 rgba(220,38,38,.25); padding: 12px 14px;
-    z-index: 2000; max-width: 280px; min-width: 180px;
-    display: none; animation: popIn .2s cubic-bezier(.16,1,.3,1);
-  }
-  #comment-popover.visible { display: block; }
-  .comment-pop-label {
-    font-family: 'Unbounded','Syne',sans-serif; font-size: 8px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .1em; color: #dc2626;
-    margin-bottom: 7px; display: flex; align-items: center; gap: 5px;
-    border-bottom: 1px solid rgba(220,38,38,.2); padding-bottom: 6px;
-  }
-  .comment-pop-text { font-family: 'Caveat',cursive; font-size: 15px; line-height: 1.55; color: #1a1a1a; }
-
-  /* ════════ ANNOTATION POPOVER ════════ */
-
-  #mark-popover {
-    position: fixed; background: #fff; border: 2.5px solid #0a0a0a;
-    box-shadow: 6px 6px 0 #0a0a0a; padding: 14px; z-index: 2000;
-    max-width: 330px; min-width: 240px;
-    display: none; animation: popIn .18s cubic-bezier(.16,1,.3,1);
-  }
-  #mark-popover.visible { display: block; }
-
-  .pop-header { display: flex; align-items: center; gap: 6px; margin-bottom: 9px; padding-bottom: 9px; border-bottom: 1.5px solid #eee; flex-wrap: wrap; }
-  .pop-badge  { font-family: 'JetBrains Mono',monospace; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 2px; background: #0a0a0a; color: #fff; flex-shrink: 0; letter-spacing: .03em; }
-  .pop-error-name { font-family: 'Unbounded','Syne',sans-serif; font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; flex: 1; color: #0a0a0a; line-height: 1.3; }
-  .pop-loss   { font-family: 'JetBrains Mono',monospace; font-size: 11px; font-weight: 700; color: #dc2626; margin-left: auto; flex-shrink: 0; }
-  .pop-desc   { font-size: 12px; line-height: 1.65; color: #444; margin-bottom: 10px; }
-  .pop-divider { height: 1px; background: #eee; margin: 9px 0; }
-
-  /* ════════ RED PEN CORRECTION BLOCK ════════ */
-
-  .pop-redpen {
-    display: flex; align-items: flex-start; flex-wrap: wrap; gap: 6px;
-    background: rgba(220,38,38,.04); border: 1.5px solid rgba(220,38,38,.18);
-    border-left: 3.5px solid #dc2626;
-    padding: 9px 12px; margin: 10px 0;
-    font-family: 'Caveat', cursive;
-  }
-  .pop-redpen--sent {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .pop-redpen--del {
-    align-items: center;
-  }
-  .pop-redpen-original {
-    font-size: 15px; color: #777;
-    text-decoration: line-through;
-    text-decoration-color: #dc2626;
-    flex-shrink: 0; line-height: 1.3;
-  }
-  .pop-redpen-arrow {
-    font-size: 17px; color: #dc2626; font-family: 'Caveat',cursive;
-    flex-shrink: 0; line-height: 1; align-self: center;
-  }
-  .pop-redpen-delete {
-    font-size: 15px; color: #dc2626; font-style: italic;
-    letter-spacing: .02em;
-  }
-  /* Single grammar fix button */
-  .pop-redpen-fix {
-    font-family: 'Caveat', cursive; font-size: 17px; font-weight: 700;
-    color: #dc2626; background: none; border: none; padding: 0;
-    cursor: pointer; line-height: 1.2; text-decoration: underline;
-    text-decoration-style: dotted; text-decoration-color: rgba(220,38,38,.4);
-    transition: color .12s;
-    /* slight hand-written tilt */
-    display: inline-block; transform: rotate(-1deg);
-  }
-  .pop-redpen-fix:hover { color: #b91c1c; text-decoration-style: solid; transform: rotate(-1deg) scale(1.05); }
-  /* Substitution options row */
-  .pop-redpen-opts {
-    display: flex; flex-wrap: wrap; gap: 5px;
-    width: 100%;
-  }
-  .pop-redpen-opt {
-    font-family: 'Caveat', cursive; font-size: 15px; font-weight: 700;
-    color: #dc2626; background: rgba(220,38,38,.06);
-    border: 1.5px dashed rgba(220,38,38,.35);
-    padding: 3px 10px; cursor: pointer; line-height: 1.35;
-    transition: background .1s, border-color .1s, transform .1s;
-    transform: rotate(-0.5deg);
-  }
-  .pop-redpen-opt:nth-child(2) { transform: rotate(0.4deg); }
-  .pop-redpen-opt:nth-child(3) { transform: rotate(-0.8deg); }
-  .pop-redpen-opt:hover { background: rgba(220,38,38,.13); border-color: #dc2626; transform: rotate(0deg) scale(1.04); }
-  /* Sentence rewrite options — full width each */
-  .pop-redpen-opt.sent {
-    width: 100%; text-align: left; font-size: 13px;
-    transform: none; line-height: 1.5;
-    padding: 6px 10px;
-  }
-  .pop-redpen-opt.sent:nth-child(2) { transform: none; }
-  .pop-redpen-opt.sent:nth-child(3) { transform: none; }
-  .pop-redpen-opt.sent:hover        { transform: none; }
-  .pop-section-label { font-family: 'Unbounded','Syne',sans-serif; font-size: 7.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #bbb; margin-bottom: 7px; }
-  .pop-action-row { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
-  .pop-action-btn { flex: 1; min-width: 72px; border: 1.5px solid #0a0a0a; background: #fff; color: #0a0a0a; font-family: 'Unbounded','Syne',sans-serif; font-size: 7.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 7px 4px; cursor: pointer; transition: background .12s; line-height: 1; }
-  .pop-action-btn:hover        { background: #f4f4f4; }
-  .pop-action-btn.danger       { border-color: #dc2626; color: #dc2626; }
-  .pop-action-btn.danger:hover { background: #fee2e2; }
-  .pop-action-btn.move         { border-color: #ff6b00; color: #ff6b00; }
-  .pop-action-btn.move:hover   { background: #fff3e8; }
-  .pop-action-btn.success      { border-color: #16a34a; color: #16a34a; }
-  .pop-action-btn.success:hover{ background: #dcfce7; }
-  .pop-opts-wrap  { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
-  .pop-opt { text-align: left; background: #f8f8f8; border: 1.5px solid #e8e8e8; padding: 7px 10px; font-size: 12.5px; color: #0a0a0a; cursor: pointer; transition: background .1s, border-color .1s; line-height: 1.45; font-family: inherit; }
-  .pop-opt:hover { background: #fffbeb; border-color: #fbbf24; }
-  .pop-custom-wrap  { display: flex; gap: 5px; align-items: stretch; margin-top: 7px; }
-  .pop-custom-input { flex: 1; border: 1.5px solid #ccc; padding: 6px 9px; font-size: 12px; outline: none; font-family: inherit; }
-  .pop-custom-input:focus { border-color: #0055ff; }
-  .pop-custom-apply { border: 1.5px solid #0055ff; background: #0055ff; color: #fff; padding: 6px 12px; font-size: 10px; font-weight: 700; font-family: 'Unbounded','Syne',sans-serif; cursor: pointer; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
-  .pop-custom-apply:hover { background: #003dd9; }
-
-  /* Deduction badge */
-  .deduction { font-family: 'JetBrains Mono',monospace; font-size: .7em; font-weight: 700; color: #dc2626; vertical-align: super; margin-left: 1px; pointer-events: none; }
-
-  /* ════════ LEGEND ════════ */
-  .legend-sep { width: 100%; height: 1px; background: rgba(255,255,255,.1); margin: 4px 0; }
-
-  /* ════════ MOVE MODE ════════ */
-  .move-source { opacity: .4 !important; outline: 2.5px dashed #ff6b00 !important; outline-offset: 3px !important; cursor: copy !important; }
-  #move-instruction { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #0a0a0a; color: #fff; padding: 11px 20px; font-family: 'Unbounded','Syne',sans-serif; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; z-index: 9999; box-shadow: 5px 5px 0 rgba(0,0,0,.4); display: flex; align-items: center; gap: 14px; border: 2px solid #ff6b00; animation: fadeUp .2s ease; white-space: nowrap; }
-  #move-instruction em { font-style: italic; opacity: .7; text-transform: none; font-family: 'Caveat',cursive; font-size: 14px; font-weight: 400; }
-  #cancel-move { background: #dc2626; color: #fff; border: none; padding: 5px 12px; font-size: 8.5px; font-weight: 700; font-family: 'Unbounded','Syne',sans-serif; text-transform: uppercase; cursor: pointer; flex-shrink: 0; }
-  #cancel-move:hover { background: #b91c1c; }
-
-  /* ════════ PARAGRAPH NAV ════════ */
-  #para-nav {
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    padding: 10px 14px; background: #0a0a0a; border-bottom: 2px solid #333;
-    font-family: 'Unbounded','Syne',sans-serif;
-  }
-  #para-nav-label {
-    flex: 1; font-size: 9px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: .1em; color: #fff; white-space: nowrap;
-  }
-  .para-nav-btn {
-    border: 1.5px solid #fff; background: transparent; color: #fff;
-    padding: 5px 14px; font-size: 8px; font-weight: 700;
-    font-family: 'Unbounded','Syne',sans-serif; text-transform: uppercase;
-    letter-spacing: .07em; cursor: pointer; transition: background .12s, color .12s;
-    white-space: nowrap;
-  }
-  .para-nav-btn:hover:not(:disabled) { background: #fff; color: #0a0a0a; }
-  .para-nav-btn:disabled { opacity: .3; cursor: not-allowed; }
-  .para-nav-btn.show-all { border-color: #ffe500; color: #ffe500; }
-  .para-nav-btn.show-all:hover { background: #ffe500; color: #0a0a0a; }
-
-  /* ════════ ACCORDIONS ════════ */
-  #topic-modal { display: none !important; }
-  #editor-accordions { margin-top: 10px; }
-  #results-accordions { margin-top: 0; }
-  .acc-panel { border: 2.5px solid #0a0a0a; background: #fff; margin-bottom: 10px; box-shadow: 4px 4px 0 #0a0a0a; overflow: hidden; }
-  .acc-header { width: 100%; background: #0a0a0a; color: #fff; border: none; padding: 11px 18px; font-family: 'Unbounded','Syne',sans-serif; font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: background .15s; gap: 10px; }
-  .acc-header:hover { background: #1e1e1e; }
-  .acc-header-label { flex: 1; text-align: left; }
-  .acc-count { opacity: .55; font-weight: 400; }
-  .acc-chevron { width: 15px; height: 15px; flex-shrink: 0; transition: transform .22s cubic-bezier(.16,1,.3,1); overflow: visible; }
-  .acc-chevron polyline { stroke: #fff; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
-  .acc-chevron.open { transform: rotate(180deg); }
-  .acc-body { padding: 16px 18px; animation: fadeUp .2s cubic-bezier(.16,1,.3,1) both; }
-
-  /* Topic accordion */
-  .acc-topic-label { font-family: 'Unbounded','Syne',sans-serif; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #aaa; margin: 0 0 7px 0; }
-  .acc-topic-types { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-  .acc-current-topic { background: #f8f8f8; border: 1.5px dashed #bbb; padding: 10px 14px; min-height: 46px; }
-  .acc-topic-text { font-family: 'Caveat',cursive; font-size: 15px; line-height: 1.55; color: #1a1a1a; }
-  .type-btn--active { background: #0a0a0a !important; color: #fff !important; border-color: #0a0a0a !important; }
-
-  /* Color key accordion */
-  .ck-section-title { font-family: 'Unbounded','Syne',sans-serif; font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #999; margin: 0 0 8px 0; }
-  .ck-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px; margin-bottom: 14px; }
-  .ck-item { display: flex; align-items: center; gap: 8px; padding: 5px 8px; border: 1px solid #ebebeb; background: #fafafa; }
-  .ck-code  { font-family: 'JetBrains Mono',monospace; font-size: 9.5px; font-weight: 700; min-width: 36px; }
-  .ck-name  { font-size: 11px; color: #333; flex: 1; line-height: 1.3; }
-  .ck-loss  { font-family: 'JetBrains Mono',monospace; font-size: 9.5px; font-weight: 700; }
-  .ck-hl-grid { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 14px; }
-  .ck-hl-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #333; }
-  .ck-swatch { width: 20px; height: 13px; border-radius: 2px; border: 1px solid rgba(0,0,0,.1); flex-shrink: 0; }
-  .ck-other { display: flex; flex-direction: column; gap: 7px; font-size: 11px; color: #555; border-top: 1px dashed #e8e8e8; padding-top: 10px; }
-  .ck-other > div { display: flex; align-items: center; gap: 7px; }
-  .ck-marker { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; background: #dc2626; color: #fff; font-size: 8px; font-weight: 700; border-radius: 50%; flex-shrink: 0; }
-  .ck-sub-demo  { border-bottom: 2px solid #0055ff; color: #0055ff; font-size: 12px; }
-  .ck-sent-demo { border-bottom: 2px solid #e67e00; color: #e67e00; font-size: 12px; }
-
-  /* Suggestions accordion */
-  .sugg-acc .acc-header { background: #0055ff; }
-  .sugg-acc .acc-header:hover { background: #003dd9; }
-  .sugg-list { padding: 2px 0; }
-  .suggestion-item { display: flex; align-items: flex-start; gap: 14px; padding: 11px 0; border-bottom: 1.5px dashed #f0f0f0; animation: slideLeft .4s cubic-bezier(.16,1,.3,1) both; }
-  .suggestion-item:last-child { border-bottom: none; }
-  .suggestion-num { flex-shrink: 0; width: 22px; height: 22px; background: #0055ff; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Unbounded','Syne',sans-serif; font-size: 8.5px; font-weight: 700; }
-  .suggestion-text { font-size: 13px; line-height: 1.7; color: #333; padding-top: 1px; }
-
-  /* Study tips accordion */
-  .tips-acc .acc-header { background: #ffe500; color: #0a0a0a; }
-  .tips-acc .acc-header:hover { background: #ffd000; }
-  .tips-acc .acc-chevron polyline { stroke: #0a0a0a; }
-  .tips-body-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-  .study-tip-card { background: #0a0a0a; border: 1.5px solid rgba(255,255,255,.07); padding: 14px; animation: fadeUp .5s cubic-bezier(.16,1,.3,1) both; }
-  .study-tip-title { font-family: 'Unbounded','Syne',sans-serif; font-weight: 700; font-size: 9px; text-transform: uppercase; letter-spacing: .09em; color: #ffe500; margin-bottom: 6px; }
-  .study-tip-text  { font-size: 12px; line-height: 1.75; color: rgba(255,255,255,.65); font-family: 'JetBrains Mono','DM Sans',monospace; }
-
-  /* ════════ RUBRIC BAR ════════ */
-  .rubric-bar-track { grid-column: 1/-1; height: 3px; background: #eee; margin-top: 8px; overflow: hidden; }
-  .rubric-bar-fill  { height: 100%; width: 0; transition: width 1.1s cubic-bezier(.16,1,.3,1); }
-
-  /* ════════ ANIMATIONS ════════ */
-  @keyframes fadeUp {
-    from { opacity:0; transform:translateY(14px); }
-    to   { opacity:1; transform:translateY(0); }
-  }
-  @keyframes slideLeft {
-    from { opacity:0; transform:translateX(-12px); }
-    to   { opacity:1; transform:translateX(0); }
-  }
-  @keyframes popIn {
-    from { opacity:0; transform:scale(.9) translateY(4px); }
-    to   { opacity:1; transform:scale(1) translateY(0); }
-  }
-  `;
-
-  const style = document.createElement('style');
-  style.id = 'prepbot-extended-styles';
-  style.textContent = css;
-  document.head.appendChild(style);
-})();
-
-
-
-
-
 /* ═══════════════════════════════════════════════════════
    PREPBOT — UI UTILITIES
    Requires: proofreader.config.js
@@ -1748,14 +1608,10 @@ function initEditorAccordions() {
     elTextarea.parentNode.insertBefore(container, elTextarea.nextSibling);
   }
 
-  /* Attach type-button listeners.
-     When clicked: mark active, store writing type (used by api.js), then fetch topic. */
   container.querySelectorAll('.type-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      /* Visual active state */
       container.querySelectorAll('.type-btn').forEach(b => b.classList.remove('type-btn--active'));
       btn.classList.add('type-btn--active');
-      /* Store type on the textarea so gradeEssay can read it */
       fetchGeneratedTopic(btn.dataset.type);
     });
   });
