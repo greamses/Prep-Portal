@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   THEORY ANALYSER  v6.0
+   THEORY ANALYSER  v6.1
    Multi-question · Auto-gen · Level-calibrated · Print-exact
    ─────────────────────────────────────────────────────
    TheoryAnalyser.init({ geminiKey, subject, level, mountId?, onResult? })
@@ -12,9 +12,9 @@
 
   let _cfg = null, _midx = 0;
 
+  /* NOTE: gemini-3.1-* models do not exist and caused wasted retries.
+     Removed. Valid fallback chain only. */
   const MODELS = [
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent',
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent',
     'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent',
     'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent',
     'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent',
@@ -43,10 +43,26 @@
   function _esc(s) {
     return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
+
+  /* ─── FIX: The original regex skipped \u000A (newline), which is the most
+     common character Gemini puts literally inside JSON string values (especially
+     in annotatedText). Literal newlines inside a JSON string are invalid and
+     cause "Unexpected non-whitespace character after JSON at position N".
+
+     Fix: convert \r\n / \r / \n → the two-character JSON escape sequence \\n
+     BEFORE stripping other control characters. This is safe because properly
+     escaped newlines in the AI output are already written as backslash + "n"
+     (two chars, neither of which is 0x0A), so they pass through untouched. ─── */
   function _parseJSON(raw) {
     const s = raw.indexOf('{'), e = raw.lastIndexOf('}');
     if (s < 0 || e < 0) throw new Error('No JSON in AI response');
-    return JSON.parse(raw.slice(s, e + 1).replace(/[\u0000-\u0009\u000B-\u001F]+/g, ''));
+    const cleaned = raw.slice(s, e + 1)
+      .replace(/\r\n/g, '\\n')          // Windows line endings → JSON escape
+      .replace(/\r/g,   '\\n')          // old Mac line endings → JSON escape
+      .replace(/\n/g,   '\\n')          // Unix newlines (0x0A) → JSON escape
+      .replace(/\t/g,   '\\t')          // literal tabs → JSON escape
+      .replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, ''); // strip remaining control chars
+    return JSON.parse(cleaned);
   }
 
   /* ─────────────────────────────────────────────────────
@@ -205,7 +221,6 @@ MARKING — SS (age 15–19):
 .ta-paper {
   position:relative;
   background-color:var(--paper,#fffef8);
-  /* only the red margin line here; ruled lines are on .ta-annotated */
   background-image:
     linear-gradient(to right, transparent 56px, rgba(255,34,0,.25) 56px, rgba(255,34,0,.25) 58px, transparent 58px);
   border:var(--border,2.5px solid #0a0a0a);
@@ -312,17 +327,13 @@ MARKING — SS (age 15–19):
 .ta-q-stamp-score { font-family:'Unbounded',sans-serif; font-weight:900; font-size:1.15rem; letter-spacing:-.02em; }
 .ta-q-stamp-lbl   { font-family:'JetBrains Mono',monospace; font-size:6.5px; font-weight:600; text-transform:uppercase; letter-spacing:.16em; }
 
-/* annotated answer — student handwriting sits ON the ruled line */
+/* annotated answer */
 .ta-annotated {
-  /* ruled lines live here so we control offset exactly */
   background-image:
     repeating-linear-gradient(to bottom,
       transparent, transparent 31px,
       var(--ruled,#ece8df) 31px, var(--ruled,#ece8df) 32px);
   background-position: 0 0;
-  /* padding-top pushes first Caveat baseline onto the 31px line
-     Caveat at 1.14rem ≈ 18.24px — baseline sits ~23px into first line-height=32px
-     so 32 - 23 = 9px top nudge needed                                        */
   padding: 9px 24px 32px 68px;
   font-family:'Caveat',cursive; font-size:1.14rem; font-weight:500;
   line-height:32px; color:#1a1a2e;
@@ -330,7 +341,7 @@ MARKING — SS (age 15–19):
   -webkit-print-color-adjust:exact; print-color-adjust:exact;
 }
 
-/* ── Teacher notes (missed points + improvements on paper) ── */
+/* ── Teacher notes ── */
 .ta-teacher-notes {
   padding: 10px 24px 18px 68px;
   border-top: 1px dashed rgba(255,34,0,.2);
@@ -559,7 +570,6 @@ MARKING — SS (age 15–19):
       const qbk = (d.band||'Average').toLowerCase().replace(/\s+/g,'-');
       const annotated = _parseAnnotated(d.annotatedText || '');
 
-      // Teacher notes: missed points + improvements as red pen
       const missedItems = (d.missedPoints || []).filter(Boolean);
       const imprItems   = (d.improvements || []).filter(Boolean);
       const teacherNotes = (missedItems.length || imprItems.length) ? `
@@ -604,7 +614,6 @@ MARKING — SS (age 15–19):
     /* ── Build cards (screen only) ── */
     let cardsHtml = `<div class="ta-cards-section">`;
 
-    /* Notices */
     results.forEach((r, i) => {
       const d = r.data; if (!d) return;
       if (d.isAgeMismatch) cardsHtml += `
@@ -621,7 +630,6 @@ MARKING — SS (age 15–19):
         </div>`;
     });
 
-    /* Summary */
     cardsHtml += `
     <div class="ta-summary-card">
       <div class="ta-card-hd">Overall Score <span class="ta-hd-pill">${totalScore} / ${totalMax}</span></div>
@@ -633,7 +641,6 @@ MARKING — SS (age 15–19):
       <div class="ta-feedback">${_esc(combined.overallFeedback || '')}</div>
     </div>`;
 
-    /* Per-question cards */
     results.forEach((r, i) => {
       const d = r.data; if (!d) return;
       const ptRows = (d.awardedPoints||[]).map(p =>
@@ -653,7 +660,6 @@ MARKING — SS (age 15–19):
       </div>`;
     });
 
-    /* Overall improvements + study tips */
     const oi = combined.overallImprovements || [];
     if (oi.length) cardsHtml += `<div class="ta-card"><div class="ta-card-hd">Overall Improvements</div><ul class="ta-list impr">${oi.map(p=>`<li>${_esc(p)}</li>`).join('')}</ul></div>`;
 
@@ -727,7 +733,11 @@ PROOFREAD & ANNOTATE every student answer — return the exact student text with
 
 ANNOTATION RULES: Only mark errors you are certain about. Wrap ALL valid/partial content with ok/weak. Preserve original wording inside tags. Paragraph breaks as \\n\\n. Escape all JSON strings.
 
-RESPOND ONLY WITH VALID JSON — no preamble, no markdown fences:
+CRITICAL JSON RULES:
+- Return ONLY valid JSON — no markdown fences, no preamble, no text after the closing brace.
+- ALL string values must have newlines escaped as \\n, never literal newline characters.
+- Escape any double-quotes inside string values as \\".
+
 {
   "totalScore"        : <exact sum of all question scores>,
   "totalMax"          : <exact sum of all question maxMarks>,
@@ -749,7 +759,7 @@ RESPOND ONLY WITH VALID JSON — no preamble, no markdown fences:
       "missedPoints"  : ["<important correct point not made>"],
       "feedback"      : "<1–2 sentence examiner comment for this question>",
       "improvements"  : ["<specific improvement>","<specific improvement>"],
-      "annotatedText" : "<full student answer with all XML tags>"
+      "annotatedText" : "<full student answer with all XML tags — newlines as \\n>"
     }
   ]
 }`;
@@ -776,7 +786,7 @@ RULES:
 - Suggest a mark value between 5 and 10 per question.
 - ${avoid}
 
-RESPOND ONLY WITH VALID JSON:
+Return ONLY valid JSON — no markdown fences, no extra text:
 {
   "questions": [
     { "text": "<question text>", "suggestedMarks": <5-10> }
@@ -839,7 +849,6 @@ RESPOND ONLY WITH VALID JSON:
         const text = raw.candidates?.[0]?.content?.parts?.[0]?.text || '';
         const combined = _parseJSON(text);
 
-        // Shape data to match _renderAll expectations
         const results = (combined.questions || []).map((q, i) => ({
           question  : questionsArr[i]?.text || `Question ${i+1}`,
           compulsory: questionsArr[i]?.compulsory || false,

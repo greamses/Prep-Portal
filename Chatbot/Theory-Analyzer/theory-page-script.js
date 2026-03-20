@@ -60,9 +60,9 @@ document.getElementById('apikey-input').addEventListener('input', function () {
 });
 
 document.getElementById('apikey-toggle').addEventListener('click', function () {
-  const inp   = document.getElementById('apikey-input');
+  const inp    = document.getElementById('apikey-input');
   const hidden = inp.type === 'password';
-  inp.type       = hidden ? 'text' : 'password';
+  inp.type         = hidden ? 'text' : 'password';
   this.textContent = hidden ? 'Hide' : 'Show';
 });
 
@@ -80,7 +80,7 @@ document.getElementById('apikey-verify-btn').addEventListener('click', async fun
   txt.textContent  = 'Verifying key with Gemini…';
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${encodeURIComponent(key)}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${encodeURIComponent(key)}`;
     const res = await fetch(url, {
       method : 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -233,7 +233,7 @@ const CURRICULUM = {
     },
     'Agricultural Science': { 'General': ['Importance of agriculture', 'Farm tools and their uses', 'Types of farming', 'Crop production steps', 'Animal husbandry (poultry, livestock)', 'Soil fertility and management'] },
     'Computer Studies': {
-      'ICT':     ['Parts of a computer — detailed', 'Operating systems', 'File management', 'Internet safety and ethics', 'Introduction to coding (Scratch)', 'Digital citizenship'],
+      'ICT': ['Parts of a computer — detailed', 'Operating systems', 'File management', 'Internet safety and ethics', 'Introduction to coding (Scratch)', 'Digital citizenship'],
     },
     'Social Studies': { 'General': ['Citizenship and civic responsibilities', 'Nigeria — states and capitals', 'African countries', 'Trade and commerce', 'Human rights', 'Conflict resolution'] },
   },
@@ -248,20 +248,20 @@ const CURRICULUM = {
     },
     'Mathematics': {
       'Algebra':    ['Introduction to algebra', 'Like and unlike terms', 'Solving linear equations', 'Substitution', 'Expanding brackets', 'Factorisation (simple)', 'Word problems using algebra', 'Number bases'],
-      'Geometry':   ['Angles on a line and at a point', 'Angles in a triangle', 'Parallel lines and transversals', "Pythagoras theorem (introduction)", 'Construction (using ruler and compass)', 'Coordinates and the number plane', 'Transformation — reflection, translation, rotation'],
+      'Geometry':   ['Angles on a line and at a point', 'Angles in a triangle', 'Parallel lines and transversals', 'Pythagoras theorem (introduction)', 'Construction (using ruler and compass)', 'Coordinates and the number plane', 'Transformation — reflection, translation, rotation'],
       'Statistics': ['Data collection methods', 'Frequency tables', 'Mean, median, mode', 'Range', 'Pie charts and bar charts', 'Probability (introduction)'],
       'Arithmetic': ['Integers — directed numbers', 'Fractions, decimals, percentages — operations', 'Ratio and proportion', 'Profit and loss', 'Simple interest', 'Rates (speed, distance, time)', 'Taxes and discounts'],
     },
     'Basic Science': {
       'Basic Biology':   ['The cell — structure and functions', 'Levels of organisation (cell → organ → system)', 'Nutrition in plants (photosynthesis in detail)', 'Nutrition in animals — digestive system', 'Respiration — aerobic and anaerobic', 'Reproduction — sexual and asexual', 'Genetics — introduction', 'Ecology — ecosystem and food web'],
-      'Basic Physics':   ['Measurement — SI units, instruments', 'Motion — speed, velocity, acceleration', "Forces — types, Newton's Laws", 'Pressure in solids, liquids, gases', 'Work, energy, and power', 'Heat — temperature vs heat, thermometers', 'Light — reflection and refraction', 'Sound — properties and transmission'],
+      'Basic Physics':   ['Measurement — SI units, instruments', 'Motion — speed, velocity, acceleration', 'Forces — types, Newton\'s Laws', 'Pressure in solids, liquids, gases', 'Work, energy, and power', 'Heat — temperature vs heat, thermometers', 'Light — reflection and refraction', 'Sound — properties and transmission'],
       'Basic Chemistry': ['Matter — definition, states, properties', 'Elements, compounds, mixtures', 'Symbols and formulae (common)', 'Physical and chemical changes', 'Acids, bases, and salts — introduction', 'Water — properties and purification', 'Metals and non-metals', 'Simple chemical reactions'],
     },
     'Agricultural Science': { 'General': ['Types of agriculture', 'Farm planning', 'Crop cultivation', 'Animal production', 'Soil science', 'Fertilisers', 'Irrigation and drainage', 'Agricultural pests'] },
     'Business Studies':     { 'General': ['Introduction to business', 'Entrepreneurship', 'Business documents', 'Commerce — trade and transportation', 'Banking basics', 'Consumer rights', 'Advertising and marketing'] },
     'Home Economics':       { 'General': ['Nutrients and their functions', 'Meal planning', 'Food preparation and preservation', 'Textile — fibres and fabrics', 'Clothing construction basics', 'Family resources management'] },
     'Computer Studies': {
-      'ICT':     ['Programming concepts — variables, loops, conditionals', 'Scratch and Python introduction', 'Problem solving with algorithms', 'Networks and the internet', 'Cybersecurity basics', 'Digital footprint and online safety'],
+      'ICT': ['Programming concepts — variables, loops, conditionals', 'Scratch and Python introduction', 'Problem solving with algorithms', 'Networks and the internet', 'Cybersecurity basics', 'Digital footprint and online safety'],
     },
     'Social Studies': { 'General': ['Nigerian history — pre-colonial, colonial, post-independence', 'Government — types and levels', 'Human rights and civic responsibilities', 'Environmental issues', 'Globalisation', 'Population and development'] },
     'Civic Education': { 'General': ['Democracy and democratic values', 'Rule of law', 'Citizenship', 'National values', 'Electoral process', 'Human rights in Nigeria', 'Conflict resolution'] },
@@ -281,17 +281,17 @@ const CURRICULUM = {
       'Calculus':   ['Limits and continuity', 'Differentiation — rules (product, quotient, chain)', 'Applications of differentiation — tangents, normals, max/min', 'Integration — basic rules, definite integrals', 'Applications of integration — area under a curve'],
       'Statistics': ['Frequency distributions — cumulative frequency, ogive', 'Measures of central tendency (grouped)', 'Measures of dispersion — variance, standard deviation', 'Probability — independent and mutually exclusive events', 'Permutations and combinations', 'Correlation and regression'],
     },
-    'Physics': { 'General': ['Measurements and units', 'Linear motion', "Newton's Laws", 'Work, energy, power', 'Waves', 'Light — reflection, refraction, lenses', 'Electrostatics', 'Current electricity', 'Electromagnetic induction', 'Atomic and nuclear physics'] },
+    'Physics':   { 'General': ['Measurements and units', 'Linear motion', 'Newton\'s Laws', 'Work, energy, power', 'Waves', 'Light — reflection, refraction, lenses', 'Electrostatics', 'Current electricity', 'Electromagnetic induction', 'Atomic and nuclear physics'] },
     'Chemistry': { 'General': ['Atomic structure and periodic table', 'Chemical bonding', 'Stoichiometry and mole concept', 'Energy changes in reactions', 'Equilibrium', 'Acids, bases, salts', 'Redox reactions and electrochemistry', 'Rates of reaction', 'Organic chemistry', 'Metals — extraction, reactivity series'] },
-    'Biology': { 'General': ['Cell biology', 'Genetics — Mendelian inheritance', 'Evolution', 'Ecology — energy flow', 'Human physiology', 'Nervous system and hormones', 'Reproduction', 'Biotechnology', 'Classification of living things', 'Diseases and immune system'] },
+    'Biology':   { 'General': ['Cell biology', 'Genetics — Mendelian inheritance', 'Evolution', 'Ecology — energy flow', 'Human physiology', 'Nervous system and hormones', 'Reproduction', 'Biotechnology', 'Classification of living things', 'Diseases and immune system'] },
     'Computer Science': {
       'Data Analysis':       ['Descriptive statistics in Python/Excel', 'Data visualisation', 'Data cleaning and wrangling', 'Regression and trend analysis'],
       'Python Programming':  ['Variables, data types, input/output', 'Control structures', 'Functions', 'Lists, tuples, dictionaries', 'File handling', 'OOP — classes and objects', 'Libraries — NumPy, Pandas, Matplotlib'],
       'Web Development':     ['HTML5 — semantic elements, forms', 'CSS3 — selectors, box model, Flexbox, Grid', 'Responsive design', 'JavaScript — DOM manipulation, events', 'HTTP and how the web works'],
       'Database Management': ['Relational database concepts', 'Entity-relationship diagrams', 'SQL — SELECT, INSERT, UPDATE, DELETE', 'JOIN operations', 'Normalisation', 'NoSQL — introduction'],
     },
-    'Geography':   { 'General': ['Physical geography — landforms, rivers, climate', 'Nigeria — physical and human geography', 'Map reading', 'Population geography', 'Economic geography', 'Environmental problems'] },
-    'Economics':   { 'General': ['Demand and supply', 'Theory of the firm', 'National income accounting', 'Money and banking', 'Inflation', 'International trade', 'Development economics'] },
+    'Geography': { 'General': ['Physical geography — landforms, rivers, climate', 'Nigeria — physical and human geography', 'Map reading', 'Population geography', 'Economic geography', 'Environmental problems'] },
+    'Economics': { 'General': ['Demand and supply', 'Theory of the firm', 'National income accounting', 'Money and banking', 'Inflation', 'International trade', 'Development economics'] },
     'Agricultural Science': { 'General': ['Crop physiology', 'Soil chemistry and fertility', 'Pest and disease management', 'Farm mechanisation', 'Agricultural economics', 'Animal husbandry', 'Fisheries and aquaculture'] },
   },
 
@@ -467,9 +467,8 @@ const clsSel = new CSelect('csel-class', {
       populateSubjects(level);
     }
 
-    // Reset topic picker and hide question panel
     selectedTopics = [];
-    document.getElementById('topic-picker-row').style.display  = 'none';
+    document.getElementById('topic-picker-row').style.display   = 'none';
     document.getElementById('question-panel-row').style.display = 'none';
     document.getElementById('done-subject').classList.remove('show');
     rebuildSlots();
@@ -507,7 +506,6 @@ const subjectSel = new CSelect('csel-subject', {
     st.subject = val;
     document.getElementById('done-subject').classList.add('show');
 
-    // Reset topic picker then build it for the new subject
     selectedTopics = [];
     document.getElementById('question-panel-row').style.display = 'none';
     buildTopicPicker(st.subjectKey, val);
@@ -536,9 +534,9 @@ let selectedTopics = [];
 function getTopicKey(subTopic, topic) { return `${subTopic}::${topic}`; }
 
 function buildTopicPicker(classKey, subject) {
-  const pickerRow  = document.getElementById('topic-picker-row');
-  const groupsEl   = document.getElementById('topic-groups');
-  const subEl      = document.getElementById('topic-picker-sub');
+  const pickerRow = document.getElementById('topic-picker-row');
+  const groupsEl  = document.getElementById('topic-groups');
+  const subEl     = document.getElementById('topic-picker-sub');
 
   selectedTopics = [];
   groupsEl.innerHTML = '';
@@ -588,7 +586,6 @@ function buildTopicPicker(classKey, subject) {
           chip.classList.add('checked');
         }
         updateTopicUI();
-        // Re-evaluate qcount whenever topic count changes
         updateQcountTiles();
         checkReady();
       });
@@ -603,9 +600,9 @@ function buildTopicPicker(classKey, subject) {
 }
 
 function updateTopicUI() {
-  const count   = selectedTopics.length;
+  const count = selectedTopics.length;
   document.getElementById('topic-count').textContent = count;
-  const badge   = document.getElementById('topic-count-badge');
+  const badge = document.getElementById('topic-count-badge');
   badge.style.borderColor = count === MAX_TOPICS ? 'var(--red)' : '';
 
   document.querySelectorAll('.topic-chip').forEach(chip => {
@@ -615,7 +612,7 @@ function updateTopicUI() {
   });
 
   const hint = document.getElementById('topic-footer-hint');
-  if (count === 0)            hint.textContent = 'Select topics or skip to cover the full subject';
+  if (count === 0)             hint.textContent = 'Select topics or skip to cover the full subject';
   else if (count < MAX_TOPICS) hint.textContent = `${count} topic${count > 1 ? 's' : ''} selected — ${MAX_TOPICS - count} more allowed`;
   else                         hint.textContent = `Maximum ${MAX_TOPICS} topics reached`;
 }
@@ -656,7 +653,6 @@ function showQuestionPanel() {
 
 /* ════════════════════════════════════════
    QUESTION COUNT TILES
-   — Disable tiles < selectedTopics.length
 ════════════════════════════════════════ */
 document.getElementById('qcount-row').addEventListener('click', e => {
   const tile = e.target.closest('.qcount-tile');
@@ -671,22 +667,17 @@ document.getElementById('qcount-row').addEventListener('click', e => {
 
 function updateQcountTiles() {
   const minCount = selectedTopics.length || 1;
-  // Clamp current count up to minCount if needed
-  if (st.count < minCount) {
-    st.count = minCount;
-  }
+  if (st.count < minCount) st.count = minCount;
   document.querySelectorAll('.qcount-tile').forEach(tile => {
-    const n = parseInt(tile.dataset.n);
+    const n        = parseInt(tile.dataset.n);
     const disabled = n < minCount;
     tile.classList.toggle('tile-disabled', disabled);
-    tile.style.opacity     = disabled ? '0.3' : '';
-    tile.style.cursor      = disabled ? 'not-allowed' : '';
+    tile.style.opacity      = disabled ? '0.3' : '';
+    tile.style.cursor       = disabled ? 'not-allowed' : '';
     tile.style.pointerEvents = disabled ? 'none' : '';
-    // Ensure active reflects current st.count
     if (n === st.count) tile.classList.add('active');
     else if (!disabled) tile.classList.remove('active');
   });
-  // If currently active tile is now below minCount, move active to minCount
   const activeTile = document.querySelector(`.qcount-tile[data-n="${st.count}"]`);
   if (activeTile) {
     document.querySelectorAll('.qcount-tile').forEach(t => t.classList.remove('active'));
@@ -702,7 +693,6 @@ function rebuildSlots() {
   const container = document.getElementById('slots-container');
   const agBtn     = document.getElementById('autogen-all-btn');
 
-  // Preserve existing data
   const existing = [];
   container.querySelectorAll('.q-slot').forEach((slot, i) => {
     existing[i] = {
@@ -766,8 +756,8 @@ function buildSlot(i, { text = '', marks = '', compulsory = false } = {}) {
 document.getElementById('autogen-all-btn').addEventListener('click', async () => {
   if (!st.cls || !st.subject) return;
   const btn = document.getElementById('autogen-all-btn');
-  btn.disabled    = true;
-  btn.innerHTML   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg> Generating…`;
+  btn.disabled  = true;
+  btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg> Generating…`;
 
   TheoryAnalyser.init({
     geminiKey: GEMINI_KEY,
@@ -858,7 +848,6 @@ function getSlotData() {
 
 /* ════════════════════════════════════════
    VALIDATION
-   Question panel must be visible before Begin is enabled
 ════════════════════════════════════════ */
 function checkReady() {
   const qPanelVisible = document.getElementById('question-panel-row').style.display !== 'none';
@@ -870,14 +859,14 @@ function checkReady() {
   document.getElementById('begin-btn').disabled = !ok;
 
   const s = document.getElementById('setup-status');
-  if (!KEY_VERIFIED)  { s.textContent = 'Paste and verify your Gemini API key to continue'; s.className = 'setup-status'; }
-  else if (!st.name)  { s.textContent = 'Enter your name to continue';                       s.className = 'setup-status'; }
-  else if (!st.cls)   { s.textContent = 'Select your class';                                 s.className = 'setup-status'; }
-  else if (needsTrack){ s.textContent = 'Select your SS track (Science / Arts / Commercial)'; s.className = 'setup-status'; }
-  else if (!st.subject){ s.textContent = 'Choose a subject';                                 s.className = 'setup-status'; }
+  if (!KEY_VERIFIED)   { s.textContent = 'Paste and verify your Gemini API key to continue'; s.className = 'setup-status'; }
+  else if (!st.name)   { s.textContent = 'Enter your name to continue';                       s.className = 'setup-status'; }
+  else if (!st.cls)    { s.textContent = 'Select your class';                                 s.className = 'setup-status'; }
+  else if (needsTrack) { s.textContent = 'Select your SS track (Science / Arts / Commercial)'; s.className = 'setup-status'; }
+  else if (!st.subject){ s.textContent = 'Choose a subject';                                  s.className = 'setup-status'; }
   else if (!qPanelVisible) { s.textContent = 'Select topics or skip, then proceed to questions'; s.className = 'setup-status'; }
-  else if (!allQsFilled) { s.textContent = `Enter or auto-gen all ${st.count} question(s)`;  s.className = 'setup-status'; }
-  else                { s.textContent = '✓ Ready — click Begin Practice';                    s.className = 'setup-status ready'; }
+  else if (!allQsFilled)   { s.textContent = `Enter or auto-gen all ${st.count} question(s)`;   s.className = 'setup-status'; }
+  else                     { s.textContent = '✓ Ready — click Begin Practice';                  s.className = 'setup-status ready'; }
 }
 
 /* ════════════════════════════════════════
@@ -998,14 +987,14 @@ function showPhase(phase) {
    WORD COUNT
 ════════════════════════════════════════ */
 function updateWC() {
-  const all   = document.getElementById('exam-paper').querySelectorAll('.paper-ta');
-  let total   = 0;
+  const all = document.getElementById('exam-paper').querySelectorAll('.paper-ta');
+  let total = 0;
   all.forEach(ta => { if (ta.value.trim()) total += ta.value.trim().split(/\s+/).length; });
   document.getElementById('wc').textContent = total;
 
-  const slots           = getSlotData();
-  const compulsory      = slots.filter(s => s.compulsory);
-  const compulsoryDone  = compulsory.every((_, i) => {
+  const slots          = getSlotData();
+  const compulsory     = slots.filter(s => s.compulsory);
+  const compulsoryDone = compulsory.every((_, i) => {
     const ci = slots.indexOf(compulsory[i]);
     const ta = document.querySelector(`.paper-ta[data-qidx="${ci}"]`);
     return ta && ta.value.trim().length > 3;
@@ -1046,26 +1035,29 @@ document.getElementById('print-btn').addEventListener('click', () => {
   window.print();
 });
 
-
 /* ════════════════════════════════════════
    VIDEO / RESOURCE GENERATION
-   Triggered on-demand when user clicks
-   "Watch Video" under a question.
 ════════════════════════════════════════ */
 
 /* Cache so repeated clicks don't re-fetch */
 const _videoCache = {};
 
+/* Fallback model chain — all v1beta to avoid 400s */
+const _VIDEO_MODELS = [
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent',
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent',
+];
+
 function _isMathSubject(subject) {
   return /math|maths|further math/i.test(subject);
 }
 
-/* Single Gemini call that returns structured resource suggestions */
 async function _fetchVideoResources(questionText, subject, level) {
   const cacheKey = `${level}::${subject}::${questionText.slice(0, 80)}`;
   if (_videoCache[cacheKey]) return _videoCache[cacheKey];
 
-  const isMath   = _isMathSubject(subject);
+  const isMath    = _isMathSubject(subject);
   const mathExtra = isMath ? `
 INTERACTIVE TOOLS (for Mathematics):
 Return up to 3 interactive practice resources appropriate for ${level}.
@@ -1090,7 +1082,7 @@ TASK:
      Use specific, targeted search terms (e.g. "photosynthesis explained JSS Nigeria" not just "photosynthesis").
    - If you know a specific high-quality video exists on a channel, you may use its direct URL.
 ${mathExtra}
-RESPOND ONLY WITH VALID JSON:
+RESPOND ONLY WITH VALID JSON — no markdown fences, no preamble:
 {
   "topicLabel": "<short topic name, e.g. 'Photosynthesis' or 'Quadratic Equations'>",
   "videos": [
@@ -1112,27 +1104,46 @@ RESPOND ONLY WITH VALID JSON:
   "manipulative": ${isMath ? `"<one sentence describing a physical hands-on activity that reinforces this topic without a screen>"` : 'null'}
 }`;
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${encodeURIComponent(GEMINI_KEY)}`,
-    {
-      method : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body   : JSON.stringify({
-        systemInstruction: { parts: [{ text: prompt }] },
-        contents: [{ parts: [{ text: `Find resources for: ${questionText}` }] }],
-        generationConfig : { responseMimeType: 'application/json', temperature: 0.2, maxOutputTokens: 800 },
-      }),
-    }
-  );
+  const body = {
+    systemInstruction: { parts: [{ text: prompt }] },
+    contents: [{ parts: [{ text: `Find resources for: ${questionText}` }] }],
+    generationConfig : { responseMimeType: 'application/json', temperature: 0.2, maxOutputTokens: 800 },
+  };
 
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const raw  = await res.json();
-  const text = raw.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  const s = text.indexOf('{'), e = text.lastIndexOf('}');
-  if (s < 0 || e < 0) throw new Error('No JSON in response');
-  const data = JSON.parse(text.slice(s, e + 1));
-  _videoCache[cacheKey] = data;
-  return data;
+  let lastErr;
+  for (const modelUrl of _VIDEO_MODELS) {
+    try {
+      const res = await fetch(`${modelUrl}?key=${encodeURIComponent(GEMINI_KEY)}`, {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify(body),
+      });
+
+      if (res.status === 429 || res.status === 503) {
+        lastErr = new Error(`Quota on ${modelUrl.split('/models/')[1].split(':')[0]}`);
+        continue;
+      }
+      if (!res.ok) {
+        const msg = await res.text().catch(() => '');
+        lastErr = new Error(`HTTP ${res.status}: ${msg}`);
+        continue;
+      }
+
+      const raw  = await res.json();
+      const text = raw.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const s = text.indexOf('{'), e = text.lastIndexOf('}');
+      if (s < 0 || e < 0) throw new Error('No JSON in response');
+      const data = JSON.parse(text.slice(s, e + 1));
+      _videoCache[cacheKey] = data;
+      return data;
+
+    } catch (err) {
+      lastErr = err;
+      // network / parse error — try next model
+    }
+  }
+
+  throw lastErr || new Error('All models failed for video resources');
 }
 
 /* Render the resource panel into the video row */
@@ -1188,14 +1199,12 @@ function _renderVideoPanel(row, data, isMath) {
 
 /* Main click handler */
 async function handleVideoBtn(btn) {
-  const row       = btn.closest('.paper-video-row');
+  const row = btn.closest('.paper-video-row');
   if (!row) return;
-  const qIdx      = parseInt(btn.dataset.qidx ?? row.id?.replace('video-row-', '') ?? '0');
-  const qTextEl   = row.closest('.paper-q-block')?.querySelector('.paper-q-text');
+  const qTextEl      = row.closest('.paper-q-block')?.querySelector('.paper-q-text');
   const questionText = qTextEl?.textContent?.trim() || btn.dataset.qtext || '';
-  const isMath    = _isMathSubject(st.subject);
+  const isMath       = _isMathSubject(st.subject);
 
-  // Show loading state
   row.innerHTML = `<div class="pvr-loading"><span class="pvr-spinner"></span>Finding resources…</div>`;
 
   try {
@@ -1208,10 +1217,8 @@ async function handleVideoBtn(btn) {
         <button class="paper-video-btn pvr-retry-btn" type="button">Retry</button>
       </div>`;
     row.querySelector('.pvr-retry-btn').addEventListener('click', () => {
-      // Re-inject original button then trigger click
       row.innerHTML = `<button class="paper-video-btn" type="button">▶ Watch Video</button>`;
       const newBtn = row.querySelector('.paper-video-btn');
-      // carry qtext
       if (questionText) newBtn.dataset.qtext = questionText;
       newBtn.addEventListener('click', () => handleVideoBtn(newBtn));
       handleVideoBtn(newBtn);
