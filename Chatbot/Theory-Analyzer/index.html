@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Theory Practice — Prep Portal 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=Caveat:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav id="site-nav">
+    <a class="nav-logo" href="#">Prep<span>Portal</span></a>
+    <div class="nav-right">
+      <a class="nav-link active" href="#">Theory</a>
+      <a class="nav-link" href="#">Writing</a>
+    </div>
+  </nav>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-track" id="ticker-track"></div>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div class="pg-header">
+    <div class="ph-left">
+      <div class="pg-eyebrow">AI Marking Engine</div>
+      <div class="pg-title">THEORY<br><em>PRACTICE</em></div>
+    </div>
+    <div class="ph-right">
+      <p>Enter your name, pick your class, subject and questions — or let the AI generate them. Submit your answers for instant marking, proofreading, and a printable answer sheet.</p>
+      <div class="ph-stats">
+        <div class="ph-stat"><strong>1–5</strong><span>Questions</span></div>
+        <div class="ph-stat"><strong>All</strong><span>Subjects</span></div>
+        <div class="ph-stat"><strong>Pry–SS</strong><span>All Levels</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <section class="setup-section">
+    <div class="setup-eyebrow">Get Started</div>
+    <h2>Set Up Your Practice</h2>
+    <div class="setup-box" id="setup-box">
+
+      <!-- Row 0: API Key -->
+      <div class="setup-row full" style="border-bottom:var(--border)">
+        <div class="setup-cell" style="border-right:none">
+          <div class="step-label">
+            <span class="step-num" style="background:var(--blue)">★</span>
+            <span class="step-title">Gemini API Key</span>
+            <span class="step-done" id="done-key">✓ Key saved</span>
+          </div>
+          <div class="apikey-row">
+            <input class="apikey-input" id="apikey-input" type="password"
+              placeholder="Paste your Gemini API key here…"
+              autocomplete="off" spellcheck="false">
+            <button class="apikey-toggle" id="apikey-toggle" type="button">Show</button>
+            <button class="apikey-verify-btn" id="apikey-verify-btn" type="button" disabled>
+              Verify →
+            </button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:6px">
+            <div class="apikey-status">
+              <span class="apikey-dot" id="apikey-dot"></span>
+              <span id="apikey-status-text">Paste your key, then click Verify</span>
+            </div>
+            <a class="apikey-link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/>
+                <line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+              Get a free key at Google AI Studio →
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 1: Name + Class -->
+      <div class="setup-row">
+        <div class="setup-cell">
+          <div class="step-label">
+            <span class="step-num">1</span>
+            <span class="step-title">Your Name</span>
+            <span class="step-done" id="done-name">✓</span>
+          </div>
+          <input class="name-input" id="name-input" type="text"
+            placeholder="Write your name here…"
+            autocomplete="off" spellcheck="false">
+          <div class="step-sub">Your name will appear on the answer sheet</div>
+        </div>
+        <div class="setup-cell">
+          <div class="step-label">
+            <span class="step-num">2</span>
+            <span class="step-title">Select Class</span>
+            <span class="step-done" id="done-class">✓</span>
+          </div>
+          <div class="csel" id="csel-class">
+            <button class="csel-btn" type="button">
+              <span class="csel-placeholder" id="csel-class-val">— Choose your class —</span>
+              <svg class="csel-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="csel-panel" id="csel-class-panel"></div>
+          </div>
+          <!-- SS track selector — revealed by JS -->
+          <div class="track-row" id="track-row">
+            <div class="track-lbl">Your stream / track</div>
+            <div class="csel" id="csel-track">
+              <button class="csel-btn" type="button">
+                <span class="csel-placeholder" id="csel-track-val">— Choose track —</span>
+                <svg class="csel-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="csel-panel" id="csel-track-panel">
+                <div class="csel-item" data-val="science"><span>Science</span></div>
+                <div class="csel-item" data-val="arts"><span>Arts</span></div>
+                <div class="csel-item" data-val="commercial"><span>Commercial</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="step-sub" id="class-sub">Select your class level above</div>
+        </div>
+      </div>
+
+      <!-- Row 2: Subject (full width) -->
+      <div class="setup-row full">
+        <div class="setup-cell" style="border-right:none">
+          <div class="step-label">
+            <span class="step-num">3</span>
+            <span class="step-title">Select Subject</span>
+            <span class="step-done" id="done-subject">✓</span>
+          </div>
+          <div class="csel" id="csel-subject">
+            <button class="csel-btn" type="button" disabled>
+              <span class="csel-placeholder" id="csel-subject-val">— Select class first —</span>
+              <svg class="csel-arrow" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="csel-panel" id="csel-subject-panel"></div>
+          </div>
+          <div class="step-sub" id="subject-sub">Subjects appear after selecting class</div>
+        </div>
+      </div>
+
+      <!-- Row 3: Topic Picker — revealed by JS after subject chosen -->
+      <div class="setup-row full" id="topic-picker-row" style="display:none;padding:0">
+        <div class="topic-picker" id="topic-picker">
+          <div class="topic-picker-hdr">
+            <div>
+              <span class="topic-picker-title">Topics for Practice</span>
+              <span class="topic-picker-sub" id="topic-picker-sub">Pick up to 5 topics to focus your questions on</span>
+            </div>
+            <div class="topic-count-badge" id="topic-count-badge">
+              <span id="topic-count">0</span> / 5
+            </div>
+          </div>
+          <div class="topic-groups" id="topic-groups"></div>
+          <div class="topic-footer">
+            <span class="topic-footer-hint" id="topic-footer-hint">Select topics or skip to cover the full subject</span>
+            <button class="topic-clear-btn" id="topic-clear-btn" type="button">Clear all</button>
+          </div>
+          <div class="topic-actions">
+            <button class="btn btn-ghost" id="skip-topics-btn" type="button">
+              Skip — Cover full subject
+            </button>
+            <button class="btn btn-primary" id="proceed-to-questions-btn" type="button">
+              Proceed to Questions →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: Question Panel — revealed by JS after topics step -->
+      <div class="setup-row full" id="question-panel-row" style="display:none;padding:0">
+
+        <!-- Step 4: Question count -->
+        <div class="setup-cell" style="border-right:none;border-bottom:var(--border)">
+          <div class="step-label">
+            <span class="step-num">4</span>
+            <span class="step-title">Number of Questions</span>
+            <span class="step-done" id="done-count">✓</span>
+          </div>
+          <div class="qcount-row" id="qcount-row">
+            <div class="qcount-tile active" data-n="1"><span>1</span></div>
+            <div class="qcount-tile" data-n="2"><span>2</span></div>
+            <div class="qcount-tile" data-n="3"><span>3</span></div>
+            <div class="qcount-tile" data-n="4"><span>4</span></div>
+            <div class="qcount-tile" data-n="5"><span>5</span></div>
+          </div>
+          <div class="step-sub" id="qcount-sub">1 to 5 questions — minimum matches your selected topics</div>
+        </div>
+
+        <!-- Step 5: Question builder -->
+        <div style="padding:0">
+          <div class="qbuilder" id="qbuilder">
+            <div class="qbuilder-header">
+              <span class="qbuilder-title">Questions</span>
+              <button class="autogen-all-btn" id="autogen-all-btn" type="button" disabled>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                Auto-generate All
+              </button>
+            </div>
+            <div id="slots-container"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Setup footer -->
+      <div class="setup-footer">
+        <button class="btn btn-yellow" id="begin-btn" disabled>Begin Practice →</button>
+        <span class="setup-status" id="setup-status">Fill in all fields to begin</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MODAL -->
+  <div class="modal-bd" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-wrap">
+
+      <div class="modal-hdr">
+        <div class="mhdr-seg"><span class="mhdr-subject" id="mhdr-sub"></span></div>
+        <div class="mhdr-seg"><span class="mhdr-class"   id="mhdr-cls"></span></div>
+        <div class="mhdr-seg"><span class="mhdr-name"    id="mhdr-name"></span></div>
+        <div class="mhdr-seg"><span class="mhdr-phase"   id="mhdr-phase">Write</span></div>
+        <button class="mhdr-close" id="modal-close">✕</button>
+      </div>
+
+      <div class="modal-body" id="modal-body">
+
+        <!-- Write phase -->
+        <div id="phase-write">
+          <div class="exam-paper" id="exam-paper">
+            <!-- paper-hdr and paper-q-blocks injected by JS -->
+          </div>
+        </div>
+
+        <!-- Results phase -->
+        <div id="phase-results" style="display:none">
+          <div class="results-phase">
+            <div id="theory-results"></div>
+            <div class="results-actions">
+              <button class="btn btn-ghost" id="try-again-btn">← Try Again</button>
+              <div style="flex:1"></div>
+              <button class="btn btn-blue" id="print-btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="6 9 6 2 18 2 18 9"/>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                  <rect x="6" y="14" width="12" height="8"/>
+                </svg>
+                Print Answer Sheet
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-ftr">
+        <div class="mftr-inner" id="ftr-write">
+          <div class="mftr-wc">Words: <span id="wc">0</span></div>
+          <div class="mftr-space"></div>
+          <button class="btn btn-ghost" id="cancel-btn">Cancel</button>
+          <button class="btn btn-primary" id="submit-btn" disabled>Submit for Marking</button>
+        </div>
+        <div class="mftr-inner" id="ftr-results" style="display:none">
+          <span class="mftr-hint">Scroll up to see your marked answer sheet</span>
+          <div class="mftr-space"></div>
+          <button class="btn btn-ghost" id="new-q-btn">New Session</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Print sheet (hidden; populated before print) -->
+  <div id="print-sheet"></div>
+
+  <script src="./theory-analyser.js"></script>
+  <script src="./theory-page-script.js"></script>
+
+</body>
+
+</html>
