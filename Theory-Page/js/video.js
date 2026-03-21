@@ -303,27 +303,54 @@ function _getChannels(subject, level) {
 /* ════════════════════════════════════════
    GEMINI TOPIC PLANNING
 ════════════════════════════════════════ */
-async function _fetchTopicData(questionText, subject, level) {
+async function _fetchTopicData(questionText, subject, level, channels) {
   const isMath    = _isMathSubject(subject);
   const mathExtra = isMath
     ? `\nAlso return up to 3 interactive math tools (Khan Academy, GeoGebra, Desmos, Mathway, Brilliant, CK-12) with direct URLs and 1 hands-on activity.`
     : '';
-  const prompt = `You are an educational resource planner for Nigerian school students.
+
+  /* Pass the top 4 channel names so Gemini crafts a query per channel */
+  const chNames = channels.slice(0, 4).map(c => c.name);
+  const chList  = chNames.map((n, i) => `Channel ${i + 1}: ${n}`).join('\n');
+
+  const prompt = `You are an educational video relevance expert for Nigerian school students.
 LEVEL: ${level}
 SUBJECT: ${subject}
-QUESTION: ${questionText}
+EXAM QUESTION: "${questionText}"
 
-Return a short topic label and 2 targeted YouTube search queries at ${level} level.${mathExtra}
+TASK 1 — Identify the single precise concept being tested.
+Examples of precision:
+  BAD: "fractions"        GOOD: "adding fractions with unlike denominators"
+  BAD: "photosynthesis"   GOOD: "light-dependent reactions in photosynthesis"
+  BAD: "grammar"          GOOD: "past perfect tense formation"
+  BAD: "economics"        GOOD: "price elasticity of demand"
 
-Return ONLY valid JSON:
+TASK 2 — Extract 4-6 MUST-MATCH keywords from that concept.
+These will be used to filter YouTube results. Any video whose title does NOT contain
+at least one of these words will be rejected as irrelevant.
+Keep them simple: individual words or short 2-word phrases.
+
+TASK 3 — Write one search query per suggested channel (channels are suggestions, not restrictions).
+Each query should start with the channel name, then the precise concept.
+If a different well-known educational channel would clearly have a better video on this
+specific concept, you may substitute it.
+
+Suggested channels:
+${chList}
+${mathExtra}
+
+Return ONLY valid JSON — no markdown:
 {
-  "topicLabel": "<short topic>",
+  "topicLabel": "<precise concept, max 6 words>",
+  "mustMatchTerms": ["<keyword1>", "<keyword2>", "<keyword3>", "<keyword4>"],
   "searches": [
-    { "query": "<specific search query>", "angle": "<aspect covered>" },
-    { "query": "<specific search query>", "angle": "<aspect covered>" }
+    { "query": "<Channel> <precise concept>", "channel": "<Channel>", "angle": "<what this teaches>" },
+    { "query": "<Channel> <precise concept>", "channel": "<Channel>", "angle": "<what this teaches>" },
+    { "query": "<Channel> <precise concept>", "channel": "<Channel>", "angle": "<what this teaches>" },
+    { "query": "<Channel> <precise concept>", "channel": "<Channel>", "angle": "<what this teaches>" }
   ]${isMath ? `,
   "interactive": [{ "name": "<tool>", "url": "<url>", "type": "practice|visualiser|game", "description": "<one sentence>" }],
-  "manipulative": "<one sentence hands-on activity>"` : ''}
+  "manipulative": "<one sentence hands-on physical activity>"` : ''}
 }`;
 
   for (const modelUrl of _VIDEO_MODELS) {
@@ -333,8 +360,8 @@ Return ONLY valid JSON:
         headers: { 'Content-Type': 'application/json' },
         body   : JSON.stringify({
           systemInstruction: { parts: [{ text: prompt }] },
-          contents: [{ parts: [{ text: `Plan resources for: ${questionText}` }] }],
-          generationConfig : { responseMimeType: 'application/json', temperature: 0.2, maxOutputTokens: 600 },
+          contents: [{ parts: [{ text: `Plan channel-specific video resources for: ${questionText}` }] }],
+          generationConfig : { responseMimeType: 'application/json', temperature: 0.3, maxOutputTokens: 800 },
         }),
       });
       if (res.status === 429 || res.status === 503 || !res.ok) continue;
@@ -355,13 +382,48 @@ Return ONLY valid JSON:
 /* ════════════════════════════════════════
    YOUTUBE DATA API
 ════════════════════════════════════════ */
-async function _ytSearch(query) {
-  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(query)}&relevanceLanguage=en&key=${encodeURIComponent(state.YT_KEY)}`;
+
+/* Score how many of the must-match keywords appear in a video title */
+function _scoreTitle(title, keywords) {
+  if (!keywords?.length) return 1; /* no filter — pass everything */
+  const t = title.toLowerCase();
+  return keywords.filter(kw => t.includes(kw.toLowerCase())).length;
+}
+
+async function _ytSearch(query, keywords, isPrimary) {
+  /* medium (4-20 min) for lesson-length videos; any for primary short clips */
+  const duration = isPrimary ? 'any' : 'medium';
+
+  const url = [
+    'https://www.googleapis.com/youtube/v3/search',
+    '?part=snippet',
+    '&type=video',
+    '&maxResults=5',           /* fetch 5, pick the most relevant */
+    '&videoEmbeddable=true',
+    '&safeSearch=strict',
+    `&videoDuration=${duration}`,
+    '&relevanceLanguage=en',
+    `&q=${encodeURIComponent(query)}`,
+    `&key=${encodeURIComponent(state.YT_KEY)}`,
+  ].join('');
+
   const res  = await fetch(url);
   if (!res.ok) throw new Error(`YouTube API ${res.status}`);
   const data = await res.json();
-  const item = data.items?.[0];
-  if (!item) return null;
+  if (!data.items?.length) return null;
+
+  /* Score all results — return highest-scoring one above threshold */
+  const scored = data.items.map(item => ({
+    item,
+    score: _scoreTitle(item.snippet.title, keywords),
+  }));
+
+  /* Sort descending by score, then pick top — must score at least 1 */
+  scored.sort((a, b) => b.score - a.score);
+  const best = scored[0];
+  if (best.score < 1) return null; /* nothing matched — skip this slot */
+
+  const item = best.item;
   return {
     videoId  : item.id.videoId,
     title    : item.snippet.title,
@@ -377,51 +439,82 @@ async function _fetchVideoResources(questionText, subject, level) {
   const cacheKey = `${level}::${subject}::${questionText.slice(0, 80)}`;
   if (_videoCache[cacheKey]) return _videoCache[cacheKey];
 
-  const channels = _getChannels(subject, level);
+  const isLowerPrim = /primary [123]|pry [123]/i.test(level);
+  const isUpperPrim = /primary [456]|pry [456]/i.test(level);
+  const isPrimary   = isLowerPrim || isUpperPrim;
 
+  const channels    = _getChannels(subject, level);
+  const topChannels = channels.slice(0, 4);
+
+  /* Ask Gemini for 4 channel-specific queries — silent fallback on failure */
   let topicData = null;
-  try { topicData = await _fetchTopicData(questionText, subject, level); } catch (_) {}
+  try { topicData = await _fetchTopicData(questionText, subject, level, channels); } catch (_) {}
 
   const topicLabel = topicData?.topicLabel || subject;
-  const searches   = topicData?.searches?.length
-    ? topicData.searches
-    : [
-        { query: `${questionText.slice(0, 60)} ${level}`,   angle: subject },
-        { query: `${topicLabel} explained ${level} Nigeria`, angle: `${subject} — exam focus` },
-      ];
+
+  /* Keywords used to filter YouTube results — prefer Gemini's, fall back to topic words */
+  const mustMatchTerms = topicData?.mustMatchTerms?.length
+    ? topicData.mustMatchTerms
+    : topicLabel
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .split(/\s+/)
+        .filter(w => w.length > 3); /* strip common short words */
+
+  /* Build up to 4 searches — prefer Gemini's, fall back to channel-name-prefixed queries */
+  const questionCore = questionText.length > 80
+    ? questionText.slice(0, 80).replace(/\s+\S*$/, '')
+    : questionText;
+
+  const searches = topicData?.searches?.length >= 4
+    ? topicData.searches.slice(0, 4)
+    : topChannels.map((ch, i) => {
+        const geminiQ = topicData?.searches?.[i];
+        return {
+          query  : geminiQ?.query || `${ch.name} ${questionCore}`,
+          channel: geminiQ?.channel || ch.name,
+          angle  : geminiQ?.angle   || ch.name,
+        };
+      });
 
   let videos = [];
 
   if (state.YT_KEY_VERIFIED && state.YT_KEY) {
-    for (let i = 0; i < Math.min(2, searches.length); i++) {
+    for (let i = 0; i < searches.length; i++) {
       try {
-        const result = await _ytSearch(searches[i].query);
-        if (result) videos.push({
-          mode    : 'embed',
-          videoId : result.videoId,
-          title   : result.title,
-          channel : result.channel,
-          angle   : searches[i].angle || '',
-          thumb   : result.thumbnail,
-          watchUrl: `https://www.youtube.com/watch?v=${result.videoId}`,
-          embedUrl: `https://www.youtube.com/embed/${result.videoId}?rel=0&modestbranding=1`,
-        });
-      } catch (_) { /* skip */ }
+        /* Pass keywords so _ytSearch can filter irrelevant results */
+        const result = await _ytSearch(searches[i].query, mustMatchTerms, isPrimary);
+
+        /* Deduplicate by videoId — only push if relevant and not already seen */
+        if (result && !videos.some(v => v.videoId === result.videoId)) {
+          videos.push({
+            mode    : 'embed',
+            videoId : result.videoId,
+            title   : result.title,
+            channel : result.channel,
+            angle   : searches[i].angle || searches[i].channel || '',
+            thumb   : result.thumbnail,
+            watchUrl: `https://www.youtube.com/watch?v=${result.videoId}`,
+            embedUrl: `https://www.youtube.com/embed/${result.videoId}?rel=0&modestbranding=1`,
+          });
+        }
+        /* No else — if null, this slot is simply skipped. We may end up with 1, 2, or 3 videos. */
+      } catch (_) { /* skip this slot on error */ }
     }
   }
 
   if (!videos.length) {
-    videos = channels.slice(0, 4).map((ch, i) => {
-      const si = i < searches.length ? i : 0;
-      return {
-        mode     : 'search',
-        channel  : ch.name,
-        handle   : ch.handle,
-        angle    : (searches[si] || searches[0]).angle || '',
-        searchUrl: `https://www.youtube.com/@${ch.handle}/search?query=${encodeURIComponent((searches[si] || searches[0]).query)}`,
-        query    : (searches[si] || searches[0]).query,
-      };
-    });
+    /* No API key — show channel search cards using the topic-specific queries */
+    videos = searches.map((s, i) => ({
+      mode     : 'search',
+      channel  : s.channel || topChannels[i]?.name || s.query.split(' ')[0],
+      handle   : topChannels[i]?.handle || '',
+      angle    : s.angle || s.channel || '',
+      searchUrl: topChannels[i]?.handle
+        ? `https://www.youtube.com/@${topChannels[i].handle}/search?query=${encodeURIComponent(s.query)}`
+        : `https://www.youtube.com/results?search_query=${encodeURIComponent(s.query)}`,
+      query    : s.query,
+    }));
   }
 
   const result = { topicLabel, videos, interactive: topicData?.interactive || null, manipulative: topicData?.manipulative || null };
