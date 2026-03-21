@@ -2,10 +2,10 @@
    main.js — entry point
    <script type="module" src="main.js"></script>
 ════════════════════════════════════════ */
-import { initGeminiKey, initYTKey, clearKeysOnUnload } from './keys.js';
-import { initTicker } from './ui-helpers.js';
-import { initSetupForm, rebuildSlots, checkReady } from './setup-form.js';
-import { initModal } from './modal.js';
+import { initGeminiKey, initYTKey, clearKeysOnUnload } from './js/keys.js';
+import { initTicker } from './js/ui-helpers.js';
+import { initSetupForm, rebuildSlots, checkReady } from './js/setup-form.js';
+import { initModal } from './js/modal.js';
 
 initTicker();
 initGeminiKey();

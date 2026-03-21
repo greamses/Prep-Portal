@@ -1,7 +1,7 @@
 /* ════════════════════════════════════════
    video.js
 ════════════════════════════════════════ */
-import { state } from './state.js';
+import { state } from '../state.js';
 
 const _videoCache = {};
 

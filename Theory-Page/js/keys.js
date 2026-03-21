@@ -1,7 +1,7 @@
 /* ════════════════════════════════════════
    keys.js
 ════════════════════════════════════════ */
-import { state } from './state.js';
+import { state } from '../state.js';
 import { checkReady } from './setup-form.js';
 
 /* ── Gemini key ── */

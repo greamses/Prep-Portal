@@ -1,8 +1,8 @@
 /* ════════════════════════════════════════
    setup-form.js
 ════════════════════════════════════════ */
-import { state } from './state.js';
-import { SUBJECTS, CURRICULUM } from './curriculum-data.js';
+import { state } from '../state.js';
+import { SUBJECTS, CURRICULUM } from '../curriculum-data.js';
 import { autoResize, CSelect } from './ui-helpers.js';
 
 /* ── Topic state (module-private) ── */

@@ -1,7 +1,7 @@
 /* ════════════════════════════════════════
    modal.js
 ════════════════════════════════════════ */
-import { state } from './state.js';
+import { state } from '../state.js';
 import { getSlotData, getSelectedTopicLabels } from './setup-form.js';
 import { handleVideoBtn } from './video.js';
 
