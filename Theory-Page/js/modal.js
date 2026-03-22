@@ -4,6 +4,8 @@
 import { state } from '../state.js';
 import { getSlotData, getSelectedTopicLabels } from './setup-form.js';
 import { handleVideoBtn } from './video.js';
+import { initTextFormatting } from './ui-helpers.js';
+
 
 export function initModal() {
   document.getElementById('begin-btn').addEventListener('click', _openModal);
@@ -38,6 +40,8 @@ export function initModal() {
       document.getElementById('print-sheet').innerHTML = `<div class="ta-root">${paper.outerHTML}</div>`;
     window.print();
   });
+  
+  initTextFormatting();
 }
 
 function _openModal() {

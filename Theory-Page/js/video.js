@@ -48,6 +48,7 @@ function _getChannels(subject, level) {
     { name: 'Smile and Learn',              handle: 'smileandlearn'                },
     { name: 'Numberphile',                  handle: 'numberphile'                  },
     { name: 'Khan Academy',                 handle: 'khanacademy'                  },
+    { name: 'Khan Academy',                 handle: 'sumsofanarchy'                  },
   ];
   if (/math/i.test(subject) && isJSS) return [
     { name: 'Math Antics',                  handle: 'mathantics'                   },
