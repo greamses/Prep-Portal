@@ -28,8 +28,11 @@ export function initModal() {
   });
   
   document.getElementById('submit-btn').addEventListener('click', async function() {
+    // Inside _openModal in modal.js:
+    RichTextEngine.init();
+    
+    // When Submit is clicked:
     const answers = [];
-    // Use innerHTML to preserve bold/italic/math for the AI analyzer
     document.querySelectorAll('.paper-editable').forEach((ed, i) => {
       answers[i] = ed.innerHTML;
     });

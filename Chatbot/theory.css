@@ -1,0 +1,382 @@
+/* --- FONTS --- */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;700&family=JetBrains+Mono:wght@400;600;800&family=Unbounded:wght@700;900&display=swap');
+
+/* --- CORE LAYOUT --- */
+.ta-root {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--ink, #0a0a0a);
+}
+
+.ta-root * {
+  box-sizing: border-box;
+}
+
+/* Loading State */
+.ta-loading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px;
+  border: var(--border, 2.5px solid #0a0a0a);
+  background: var(--bg, #fff);
+  box-shadow: 5px 5px 0 var(--ink, #0a0a0a);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--muted, #777);
+}
+
+.ta-spinner {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 2.5px solid var(--ruled, #ece8df);
+  border-top-color: var(--ink, #0a0a0a);
+  border-radius: 50%;
+  animation: ta-spin .7s linear infinite;
+}
+
+@keyframes ta-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Errors */
+.ta-error {
+  padding: 20px 24px;
+  border: var(--border, 2.5px solid #0a0a0a);
+  border-left: 5px solid var(--red, #ff2200);
+  background: var(--bg, #fff);
+  box-shadow: 5px 5px 0 var(--ink, #0a0a0a);
+  font-size: 11px;
+}
+
+.ta-error strong {
+  display: block;
+  margin-bottom: 6px;
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--red, #ff2200);
+}
+
+/* Notices */
+.ta-mismatch,
+.ta-outstanding {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px 20px;
+  border: var(--border, 2.5px solid #0a0a0a);
+  margin-bottom: 14px;
+  box-shadow: 4px 4px 0 var(--ink, #0a0a0a);
+}
+
+.ta-mismatch {
+  border-left: 5px solid var(--amber, #e67e00);
+  background: rgba(230, 126, 0, .07);
+}
+
+.ta-outstanding {
+  border-left: 5px solid var(--yellow, #ffe500);
+  background: rgba(255, 229, 0, .1);
+  position: relative;
+  overflow: hidden;
+}
+
+.ta-outstanding::before {
+  content: '★';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 5rem;
+  opacity: .05;
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.ta-notice-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.ta-notice-title {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 700;
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-bottom: 5px;
+}
+
+.ta-mismatch .ta-notice-title {
+  color: var(--amber, #e67e00);
+}
+
+.ta-outstanding .ta-notice-title {
+  color: var(--ink, #0a0a0a);
+}
+
+.ta-notice-body {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  line-height: 1.75;
+}
+
+/* --- THE ANSWER PAPER --- */
+.ta-paper {
+  position: relative;
+  background-color: var(--paper, #fffef8);
+  background-image: linear-gradient(to right, transparent 56px, rgba(255, 34, 0, .25) 56px, rgba(255, 34, 0, .25) 58px, transparent 58px);
+  border: var(--border, 2.5px solid #0a0a0a);
+  box-shadow: 6px 6px 0 var(--ink, #0a0a0a);
+  margin-bottom: 22px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.ta-sheet-hdr {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: start;
+  padding: 14px 20px 12px 68px;
+  border-bottom: 2px solid var(--ruled, #ece8df);
+  background: rgba(255, 254, 248, .96);
+}
+
+.ta-sheet-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+}
+
+.ta-sheet-field {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--muted, #777);
+}
+
+.ta-sheet-field span {
+  color: var(--ink, #0a0a0a);
+  margin-left: 4px;
+  font-family: 'Caveat', cursive;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Stamps */
+.ta-stamp {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 9px 14px;
+  border-width: 3px;
+  border-style: solid;
+  box-shadow: inset 0 0 0 1px currentColor;
+  transform: rotate(-8deg);
+  opacity: .88;
+  line-height: 1;
+  background: rgba(255, 254, 248, .85);
+  min-width: 76px;
+  text-align: center;
+}
+
+.ta-stamp-score {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 900;
+  font-size: 1.8rem;
+  letter-spacing: -.02em;
+}
+
+.ta-stamp-band {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+}
+
+.ta-s-excellent {
+  color: var(--green, #00a550);
+  border-color: var(--green, #00a550);
+}
+
+.ta-s-good {
+  color: var(--blue, #0055ff);
+  border-color: var(--blue, #0055ff);
+}
+
+.ta-s-average {
+  color: var(--amber, #e67e00);
+  border-color: var(--amber, #e67e00);
+}
+
+.ta-s-weak {
+  color: var(--amber, #e67e00);
+  border-color: var(--amber, #e67e00);
+}
+
+.ta-s-very-weak {
+  color: var(--red, #ff2200);
+  border-color: var(--red, #ff2200);
+}
+
+/* Question Blocks */
+.ta-q-block {
+  border-top: 1px dashed rgba(0, 0, 0, .12);
+  position: relative;
+}
+
+.ta-q-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px 6px 68px;
+}
+
+.ta-q-num {
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 900;
+  font-size: 9px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.ta-q-qtext {
+  padding: 4px 20px 8px 68px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.65;
+}
+
+/* Annotated Handwriting Area */
+.ta-annotated {
+  background-image: repeating-linear-gradient(to bottom, transparent, transparent 31px, var(--ruled, #ece8df) 31px, var(--ruled, #ece8df) 32px);
+  padding: 9px 24px 32px 68px;
+  font-family: 'Caveat', cursive;
+  font-size: 1.14rem;
+  font-weight: 500;
+  line-height: 32px;
+  color: #1a1a2e;
+  word-wrap: break-word;
+  min-height: 96px;
+}
+
+/* Red Pen Markup */
+.rp-wrap {
+  display: inline-block;
+  vertical-align: bottom;
+  position: relative;
+  padding-top: 1.5em;
+  line-height: 1.4;
+}
+
+.rp-above {
+  position: absolute;
+  bottom: calc(100% - 1.5em);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Caveat', cursive;
+  font-size: 1em;
+  font-weight: 700;
+  color: var(--red, #ff2200);
+  white-space: nowrap;
+}
+
+.rp-err {
+  text-decoration: underline wavy var(--red, #ff2200);
+  text-decoration-thickness: 1.5px;
+}
+
+.rp-del {
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  color: var(--red, #ff2200);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.rp-ok {
+  background: rgba(0, 165, 80, .14);
+  border-radius: 2px;
+  padding: 0 2px;
+  outline: 1.5px solid rgba(0, 165, 80, .3);
+}
+
+.rp-tick {
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  color: var(--green, #00a550);
+  margin-right: 1px;
+}
+
+/* Legend & Summary Cards (Screen Only) */
+.ta-summary-card,
+.ta-card {
+  border: var(--border, 2.5px solid #0a0a0a);
+  background: var(--bg, #fff);
+  box-shadow: 5px 5px 0 var(--ink, #0a0a0a);
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.ta-card-hd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  background: var(--ink, #0a0a0a);
+  color: var(--bg, #fff);
+  font-family: 'Unbounded', sans-serif;
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.ta-feedback {
+  padding: 18px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  line-height: 1.9;
+  border-left: 5px solid var(--yellow, #ffe500);
+}
+
+@media (max-width:580px) {
+
+  .ta-sheet-hdr,
+  .ta-annotated,
+  .ta-q-label,
+  .ta-q-qtext {
+    padding-left: 20px;
+  }
+}
+
+@media print {
+
+  .ta-cards-section,
+  .ta-mismatch,
+  .ta-outstanding {
+    display: none !important;
+  }
+  
+  .ta-paper {
+    box-shadow: none !important;
+    border: 1.5px solid #ccc !important;
+  }
+}
