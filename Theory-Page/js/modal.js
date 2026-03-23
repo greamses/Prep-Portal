@@ -4,7 +4,7 @@
 import { state } from '../state.js';
 import { getSlotData, getSelectedTopicLabels } from './setup-form.js';
 import { handleVideoBtn } from './video.js';
-import { RichTextEngine, initTextFormatting, initMathJax } from './ui-helpers.js';
+import { initTextFormatting, initMathJax } from './ui-helpers.js';
 
 let mathTimeout = null;
 
@@ -28,12 +28,7 @@ export function initModal() {
   });
   
   document.getElementById('submit-btn').addEventListener('click', async function() {
-    
-    paper.innerHTML = html;
-    
-    // INITIALIZE THE TOOLBAR
-    RichTextEngine.init();
-    // When Submit is clicked:
+    // Get answers from all editors
     const answers = [];
     document.querySelectorAll('.paper-editable').forEach((ed, i) => {
       answers[i] = ed.innerHTML;
@@ -83,26 +78,28 @@ function _openModal() {
   let html = `
     <div class="paper-hdr">
       <div class="paper-info">
-        <span class="paper-field">Name:<span class="paper-field-val">${state.st.name}</span></span>
-        <span class="paper-field">Subject:<span class="paper-field-val">${state.st.subject}</span></span>
-        <span class="paper-field">Class:<span class="paper-field-val">${state.st.cls}${trackLabel}</span></span>
-        <span class="paper-field">Date:<span class="paper-field-val">${state.submissionDate}</span></span>
+        <span class="paper-field">Name:<span class="paper-field-val">${escapeHtml(state.st.name)}</span></span>
+        <span class="paper-field">Subject:<span class="paper-field-val">${escapeHtml(state.st.subject)}</span></span>
+        <span class="paper-field">Class:<span class="paper-field-val">${escapeHtml(state.st.cls)}${escapeHtml(trackLabel)}</span></span>
+        <span class="paper-field">Date:<span class="paper-field-val">${escapeHtml(state.submissionDate)}</span></span>
       </div>
     </div>`;
   
   slots.forEach((q, i) => {
-    /* Inside _openModal template loop */
+    // Don't escape math content - preserve $ signs for MathJax
+    const questionText = q.text;
+    const marksText = q.marks ? `${q.marks} marks` : '';
+    
     html += `
   <div class="paper-q-block" data-qidx="${i}">
     <div class="paper-q-label">
       <span class="paper-q-num">Question ${i + 1}</span>
       ${q.compulsory ? `<span class="paper-q-compulsory">★ Compulsory</span>` : `<span class="paper-field">Optional</span>`}
-      ${q.marks ? `<span style="margin-left:auto" class="paper-field">${q.marks} marks</span>` : ''}
+      ${marksText ? `<span style="margin-left:auto" class="paper-field">${escapeHtml(marksText)}</span>` : ''}
     </div>
-    <div class="paper-q-text">${q.text}</div>
+    <div class="paper-q-text">${questionText}</div>
     <div class="paper-q-prompt">Answer:</div>
     
-    <!-- This div replaces your old paper-ta -->
     <div class="paper-editable" 
          id="editor-${i}" 
          contenteditable="true" 
@@ -112,7 +109,7 @@ function _openModal() {
 
     <div class="paper-video-row" id="video-row-${i}">
       <button class="paper-video-btn" data-qidx="${i}"
-        data-qtext="${q.text.replace(/"/g, '&quot;')}" type="button">▶ Watch Video</button>
+        data-qtext="${escapeHtml(q.text)}" type="button">▶ Watch Video</button>
     </div>
   </div>`;
   });
@@ -128,14 +125,29 @@ function _openModal() {
       clearTimeout(mathTimeout);
       mathTimeout = setTimeout(() => {
         if (window.MathJax && window.MathJax.typesetPromise) {
-          window.MathJax.typesetPromise([ed]).catch((err) => console.log(err.message));
+          window.MathJax.typesetPromise([ed]).catch((err) => console.log('MathJax error:', err.message));
         }
       }, 1500);
+    });
+    
+    // Also trigger MathJax on focus
+    ed.addEventListener('focus', () => {
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise([ed]).catch(console.warn);
+      }
     });
   });
   
   paper.querySelectorAll('.paper-video-btn').forEach(btn =>
     btn.addEventListener('click', () => handleVideoBtn(btn)));
+  
+  // Trigger MathJax on question text
+  setTimeout(() => {
+    const questionElements = paper.querySelectorAll('.paper-q-text');
+    if (window.MathJax && window.MathJax.typesetPromise) {
+      window.MathJax.typesetPromise(Array.from(questionElements)).catch(console.warn);
+    }
+  }, 100);
   
   _updateWC();
   _showPhase('write');
@@ -208,4 +220,54 @@ function _updateWC() {
   
   // Enable submit if word count >= 5 and all compulsory questions are answered
   document.getElementById('submit-btn').disabled = !(total >= 5 && (compulsoryIndices.length === 0 || compulsoryDone));
+}
+
+// Helper function to escape HTML but preserve MathJax delimiters
+function escapeHtml(str) {
+  if (!str) return '';
+  // Don't escape content between $ signs for MathJax
+  let result = '';
+  let inMath = false;
+  let currentSegment = '';
+  
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    
+    if (char === '$' && !inMath) {
+      // Start of math mode
+      if (currentSegment) {
+        result += escapeHtmlText(currentSegment);
+        currentSegment = '';
+      }
+      inMath = true;
+      currentSegment = '$';
+    } else if (char === '$' && inMath) {
+      // End of math mode
+      currentSegment += '$';
+      result += currentSegment; // Don't escape math content
+      currentSegment = '';
+      inMath = false;
+    } else {
+      currentSegment += char;
+    }
+  }
+  
+  if (currentSegment) {
+    if (inMath) {
+      result += currentSegment; // Don't escape if still in math (incomplete)
+    } else {
+      result += escapeHtmlText(currentSegment);
+    }
+  }
+  
+  return result;
+}
+
+function escapeHtmlText(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

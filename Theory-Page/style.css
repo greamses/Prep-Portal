@@ -3022,56 +3022,6 @@ body {
   text-underline-offset: 3px;
 }
 
-/* Toolbar - Positioned to stay visible */
-#text-format-toolbar {
-  position: absolute;
-  /* Changed to absolute for better scroll behavior */
-  display: none;
-  background: #1a1a1a;
-  border: 2px solid var(--ink);
-  border-radius: 4px;
-  box-shadow: 4px 4px 0 var(--ink);
-  padding: 4px;
-  gap: 4px;
-  z-index: 99999;
-  flex-direction: row;
-  pointer-events: auto;
-}
-
-#text-format-toolbar button {
-  background: #333;
-  border: 1px solid #444;
-  color: #fff;
-  padding: 5px 10px;
-  cursor: pointer;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  font-weight: bold;
-}
-
-#text-format-toolbar button:hover {
-  background: var(--yellow);
-  color: #000;
-}
-
-/* --- Advanced Formatting Classes --- */
-.u-double {
-  text-decoration: underline double !important;
-  text-underline-offset: 3px;
-}
-
-.f-circle {
-  border: 2px solid var(--red);
-  border-radius: 50%;
-  padding: 0 4px;
-  display: inline-block;
-}
-
-.f-box {
-  border: 2px solid var(--blue);
-  padding: 0 4px;
-  display: inline-block;
-}
 
 /* --- Rich Text Toolbars --- */
 #text-format-toolbar {
@@ -3190,4 +3140,63 @@ body {
   padding: 0 6px;
   display: inline-block;
   line-height: 1;
+}
+
+/* Add to your style.css to debug MathJax */
+mjx-container {
+  display: inline-block !important;
+  background: rgba(0, 85, 255, 0.1) !important;
+  padding: 0 2px !important;
+}
+
+
+/* Contenteditable question editor */
+.q-slot-editor {
+  min-height: 120px;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  background: var(--off);
+  border: var(--border);
+  outline: none;
+  transition: background 0.15s, box-shadow 0.2s;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  cursor: text;
+}
+
+.q-slot-editor:focus {
+  background: var(--bg);
+  box-shadow: 0 0 0 3px var(--yellow);
+}
+
+.q-slot-editor:empty::before {
+  content: attr(data-placeholder);
+  color: rgba(0, 0, 0, 0.28);
+  pointer-events: none;
+  font-size: 14px;
+}
+
+.q-slot-editor.autofilled {
+  background: #f0fff4;
+  border-color: var(--green);
+  animation: shimmerFlash 0.5s ease;
+}
+
+/* MathJax rendering inside editor */
+.q-slot-editor mjx-container {
+  display: inline-block;
+  font-size: 1rem;
+  background: rgba(0, 85, 255, 0.05);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* Make display math stand out */
+.q-slot-editor mjx-container[jax="CHTML"][display="true"] {
+  display: block;
+  margin: 8px 0;
+  text-align: center;
+  background: rgba(0, 85, 255, 0.03);
+  padding: 8px;
 }

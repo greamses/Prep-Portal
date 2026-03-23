@@ -50,7 +50,52 @@
     const s = raw.indexOf('{'),
       e = raw.lastIndexOf('}');
     if (s < 0 || e < 0) throw new Error('No JSON in AI response');
-    return JSON.parse(raw.slice(s, e + 1).replace(/[\u0000-\u0009\u000B-\u001F]+/g, ''));
+    
+    let jsonStr = raw.slice(s, e + 1).replace(/[\u0000-\u0009\u000B-\u001F]+/g, '');
+    
+    // Clean up math delimiters in the entire JSON string
+    // Replace \( with $ and \) with $
+    jsonStr = jsonStr.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
+    
+    // Fix cases like $(2x)$ to $2x$
+    jsonStr = jsonStr.replace(/\$\(([^)]+)\)\$/g, '$$1$');
+    
+    // Fix cases like $ $(2x)$ $ to $2x$
+    jsonStr = jsonStr.replace(/\$\s*\$\(([^)]+)\)\$\s*\$/g, '$$1$');
+    
+    // Remove double dollar signs
+    jsonStr = jsonStr.replace(/\$\$/g, '$');
+    
+    const parsed = JSON.parse(jsonStr);
+    
+    // Clean up each question's text
+    if (parsed.questions) {
+      parsed.questions = parsed.questions.map(q => ({
+        ...q,
+        text: cleanMathDelimiters(q.text)
+      }));
+    }
+    
+    return parsed;
+  }
+  
+  // Helper function to clean math delimiters in text
+  function cleanMathDelimiters(text) {
+    if (!text) return text;
+    
+    // Replace \( and \) with $
+    let cleaned = text.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
+    
+    // Fix cases like $(2x + 5)$ -> $2x + 5$
+    cleaned = cleaned.replace(/\$\(([^)]+)\)\$/g, '$$1$');
+    
+    // Fix cases like $ (2x + 5) $ -> $2x + 5$
+    cleaned = cleaned.replace(/\$\s*\(([^)]+)\)\s*\$/g, '$$1$');
+    
+    // Remove spaces inside math delimiters
+    cleaned = cleaned.replace(/\$\s+([^$]+?)\s+\$/g, '$$1$');
+    
+    return cleaned;
   }
   
   /* ─────────────────────────────────────────────────────
@@ -582,10 +627,12 @@ MARKING — SS (age 15–19):
       if (!d) return;
       const qbk = (d.band || 'Average').toLowerCase().replace(/\s+/g, '-');
       
-      // Preserve student HTML formatting (circles, boxes, mathjax) in annotation view
-      const annotated = _parseAnnotated(d.annotatedText || '');
+      // Clean the annotated text from any malformed math
+      let annotatedText = d.annotatedText || '';
+      annotatedText = cleanMalformedMath(annotatedText);
+      const annotated = _parseAnnotated(annotatedText);
       
-      // Teacher notes: missed points + improvements as red pen
+      // Teacher notes
       const missedItems = (d.missedPoints || []).filter(Boolean);
       const imprItems = (d.improvements || []).filter(Boolean);
       const teacherNotes = (missedItems.length || imprItems.length) ? `
@@ -627,28 +674,26 @@ MARKING — SS (age 15–19):
   </div>
 </div>`;
     
-    /* ── Build cards (screen only) ── */
+    // Cards HTML
     let cardsHtml = `<div class="ta-cards-section">`;
     
-    /* Notices */
     results.forEach((r, i) => {
       const d = r.data;
       if (!d) return;
       if (d.isAgeMismatch) cardsHtml += `
-        <div class="ta-mismatch">
-          <div class="ta-notice-icon">⚠️</div>
-          <div><div class="ta-notice-title">Q${i+1}: Advanced Question</div>
-          <div class="ta-notice-body">${_esc(d.ageMismatchNote)}</div></div>
-        </div>`;
+      <div class="ta-mismatch">
+        <div class="ta-notice-icon">⚠️</div>
+        <div><div class="ta-notice-title">Q${i+1}: Advanced Question</div>
+        <div class="ta-notice-body">${_esc(d.ageMismatchNote)}</div></div>
+      </div>`;
       if (d.isOutstanding) cardsHtml += `
-        <div class="ta-outstanding">
-          <div class="ta-notice-icon">🌟</div>
-          <div><div class="ta-notice-title">Q${i+1}: Outstanding Performance!</div>
-          <div class="ta-notice-body">${_esc(d.outstandingNote)}</div></div>
-        </div>`;
+      <div class="ta-outstanding">
+        <div class="ta-notice-icon">🌟</div>
+        <div><div class="ta-notice-title">Q${i+1}: Outstanding Performance!</div>
+        <div class="ta-notice-body">${_esc(d.outstandingNote)}</div></div>
+      </div>`;
     });
     
-    /* Summary */
     cardsHtml += `
     <div class="ta-summary-card">
       <div class="ta-card-hd">Overall Score <span class="ta-hd-pill">${totalScore} / ${totalMax}</span></div>
@@ -660,7 +705,6 @@ MARKING — SS (age 15–19):
       <div class="ta-feedback">${_esc(combined.overallFeedback || '')}</div>
     </div>`;
     
-    /* Per-question cards */
     results.forEach((r, i) => {
       const d = r.data;
       if (!d) return;
@@ -681,7 +725,6 @@ MARKING — SS (age 15–19):
       </div>`;
     });
     
-    /* Overall improvements + study tips */
     const oi = combined.overallImprovements || [];
     if (oi.length) cardsHtml += `<div class="ta-card"><div class="ta-card-hd">Overall Improvements</div><ul class="ta-list impr">${oi.map(p=>`<li>${_esc(p)}</li>`).join('')}</ul></div>`;
     
@@ -693,12 +736,35 @@ MARKING — SS (age 15–19):
     
     el.innerHTML = `<div class="ta-root">${paperHtml}${cardsHtml}</div>`;
     
-    // Trigger MathJax rendering on the results immediately
-    if (window.MathJax && window.MathJax.typesetPromise) {
+    // SAFE MathJax rendering - check if function exists
+    if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
       window.MathJax.typesetPromise([el]).catch(err => console.warn('[TA] MathJax failed:', err.message));
+    } else if (window.MathJax && typeof window.MathJax.Hub === 'object') {
+      // Legacy MathJax
+      window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, el]);
     }
     
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  
+  // Helper function to clean malformed math
+  function cleanMalformedMath(text) {
+    if (!text) return text;
+    
+    // Fix \cdot 1x -> just x (or proper math)
+    text = text.replace(/\\cdot\s*1([a-zA-Z])/g, '$1');
+    text = text.replace(/\\cdot\s*1/g, '');
+    
+    // Fix \cdot x -> x
+    text = text.replace(/\\cdot\s*([a-zA-Z])/g, '$1');
+    
+    // Fix malformed multiplication like )x or ) x
+    text = text.replace(/\)\s*([a-zA-Z])/g, ')$1');
+    
+    // Remove stray 1x patterns
+    text = text.replace(/(\d)1([a-zA-Z])/g, '$1$2');
+    
+    return text;
   }
   
   /* ─────────────────────────────────────────────────────
@@ -706,6 +772,11 @@ MARKING — SS (age 15–19):
   ─────────────────────────────────────────────────────── */
   function _combinedPrompt(questionsArr, answersArr) {
     const profile = _levelProfile(_cfg.level || '');
+    
+    const isMathSci = /math|physics|chemistry|science/i.test(_cfg.subject);
+    const mathInstruction = isMathSci ?
+      `- The student may use MathJax syntax with $...$ delimiters in their answers.
+     - When outputting annotatedText, preserve ALL $...$ math expressions exactly as they appear.` : '';
     
     const qBlocks = questionsArr.map((q, i) => {
       const ml = q.marks ?
@@ -721,6 +792,7 @@ ${(answersArr[i] || '').trim() || '[No answer provided]'}`;
     const _topicLine = (_cfg.topics && _cfg.topics.length) ?
       `\nFOCUS TOPICS: ${_cfg.topics.join(' | ')}\nAssess all content within the context of these specific topics.\n` :
       '';
+    
     return `You are a ${_cfg.subject} examiner marking a ${profile.label} student (age ${profile.age}) in Nigeria.
 Mark ALL questions below as one combined exam paper and compute a single cumulative score.${_topicLine}
 
@@ -733,7 +805,7 @@ ${profile.calibration}
 MARKING RULES (apply to every question):
 - Award marks only for statements that are factually correct AND directly answer the question.
 - Accept clear paraphrases. Reject irrelevant padding and factual errors.
-- If the student uses visual formatting (circles, boxes, underlines) or MathJax $...$ formulas, treat the text as valid content. Do not output the raw HTML tags in your awardedPoints text, but preserve them in the annotatedText.
+- ${mathInstruction}
 - Same idea repeated in one answer = award once. Never exceed marks for that question.
 - missedPoints per question: correct points the question expected that the student omitted.
 - improvements per question: 2-3 specific, actionable suggestions for that answer.
@@ -760,7 +832,7 @@ PROOFREAD & ANNOTATE every student answer — return the exact student text (pre
   <ok>text earning marks</ok>                           valid point
   <weak>vague or incomplete point</weak>                partial
 
-ANNOTATION RULES: Only mark errors you are certain about. Wrap ALL valid/partial content with ok/weak. Preserve original wording inside tags. Paragraph breaks as \\n\\n. Escape all JSON strings.
+ANNOTATION RULES: Only mark errors you are certain about. Wrap ALL valid/partial content with ok/weak. Preserve original wording inside tags, including ALL $...$ math expressions. Paragraph breaks as \\n\\n. Escape all JSON strings.
 
 RESPOND ONLY WITH VALID JSON — no preamble, no markdown fences:
 {
@@ -784,7 +856,7 @@ RESPOND ONLY WITH VALID JSON — no preamble, no markdown fences:
       "missedPoints"  : ["<important correct point not made>"],
       "feedback"      : "<1–2 sentence examiner comment for this question>",
       "improvements"  : ["<specific improvement>","<specific improvement>"],
-      "annotatedText" : "<full student answer with all XML tags preserved along with student formatting tags>"
+      "annotatedText" : "<full student answer with all XML tags preserved along with student formatting tags and $...$ math expressions>"
     }
   ]
 }`;
@@ -793,29 +865,51 @@ RESPOND ONLY WITH VALID JSON — no preamble, no markdown fences:
   /* ─────────────────────────────────────────────────────
      AUTO-GEN QUESTIONS PROMPT
   ─────────────────────────────────────────────────────── */
+  /* ─────────────────────────────────────────────────────
+   AUTO-GEN QUESTIONS PROMPT
+─────────────────────────────────────────────────────── */
+  /* ─────────────────────────────────────────────────────
+   AUTO-GEN QUESTIONS PROMPT
+─────────────────────────────────────────────────────── */
   function _genPrompt(count, existingTopics) {
     const profile = _levelProfile(_cfg.level || '');
     const avoid = existingTopics.length ? `Avoid topics already covered: ${existingTopics.join(', ')}.` : '';
     const topicFocus = (_cfg.topics && _cfg.topics.length) ?
       `Focus questions on these specific topics ONLY: ${_cfg.topics.join(', ')}.` :
       'Cover a range of appropriate topics for this subject.';
+    
+    const isMathSci = /math|physics|chemistry|science|mathematics/i.test(_cfg.subject);
+    
     return `You are a ${_cfg.subject} teacher writing exam questions for ${profile.label} students (age ${profile.age}) in Nigeria.
 
 Generate exactly ${count} theory question(s) appropriate for this level.
 
+CRITICAL FORMATTING RULES:
+${isMathSci ? `
+- Use ONLY single dollar signs for math: $ ... $
+- NEVER use \\( or \\)
+- NEVER use \\cdot 1x - just write x or 2x directly
+- Correct examples:
+  * "Solve $3x + 5 = 14$ for $x$"
+  * "Calculate $\\frac{3}{4} + \\frac{2}{3}$"
+  * "Find $x$ in $2x^2 + 3x - 5 = 0$"
+- Variables should be in math mode: $x$ not x alone
+- Do NOT add extra $ signs inside the math
+` : ''}
+
 RULES:
 - ${topicFocus}
-- If the subject is Math, Physics, or Chemistry, ensure the question text uses MathJax $...$ syntax for formulas.
-- Each question must be answerable in 3–10 sentences at this level.
-- Questions must be specific, testable, and unambiguous.
-- Vary the question types (explain, describe, state, compare, give examples, etc.)
-- Suggest a mark value between 5 and 10 per question.
-- ${avoid}
+- Each question must be answerable in 3-10 sentences
+- Questions must be specific and unambiguous
+- Vary question types (explain, describe, state, compare, give examples)
+- Suggest mark value between 5 and 10
+
+${avoid}
 
 RESPOND ONLY WITH VALID JSON:
 {
   "questions": [
-    { "text": "<question text>", "suggestedMarks": <5-10> }
+    { "text": "<question text with $math$ syntax>", "suggestedMarks": <5-10> }
   ]
 }`;
   }
@@ -903,3 +997,28 @@ RESPOND ONLY WITH VALID JSON:
   
   global.TheoryAnalyser = TheoryAnalyser;
 })(typeof window !== 'undefined' ? window : global);
+
+/* ─────────────────────────────────────────────────────
+   CLEAN MALFORMED MATH
+─────────────────────────────────────────────────────── */
+function cleanMalformedMath(text) {
+  if (!text) return text;
+  
+  // Fix \cdot 1x -> just x (or proper math)
+  let cleaned = text.replace(/\\cdot\s*1([a-zA-Z])/g, '$1');
+  cleaned = cleaned.replace(/\\cdot\s*1/g, '');
+  
+  // Fix \cdot x -> x
+  cleaned = cleaned.replace(/\\cdot\s*([a-zA-Z])/g, '$1');
+  
+  // Fix malformed multiplication like )x or ) x
+  cleaned = cleaned.replace(/\)\s*([a-zA-Z])/g, ')$1');
+  
+  // Remove stray 1x patterns
+  cleaned = cleaned.replace(/(\d)1([a-zA-Z])/g, '$1$2');
+  
+  // Fix \cdot without space
+  cleaned = cleaned.replace(/\\cdot([a-zA-Z])/g, '$1');
+  
+  return cleaned;
+}
