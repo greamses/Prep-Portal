@@ -191,89 +191,51 @@ export function initMathJax() {
    ui-helpers.js (Upgraded)
 ════════════════════════════════════════ */
 
+/* ════════════════════════════════════════
+   ui-helpers.js (Rich Text & Math)
+════════════════════════════════════════ */
+
 export class RichTextEngine {
   static init() {
-    if (document.getElementById('text-format-toolbar')) return;
-    const tb = document.createElement('div');
+    let tb = document.getElementById('text-format-toolbar');
+    if (tb) return;
+    
+    tb = document.createElement('div');
     tb.id = 'text-format-toolbar';
     tb.innerHTML = `
-      <button data-cmd="bold">B</button>
-      <button data-cmd="italic">I</button>
-      <button data-cmd="underline">U</button>
-      <button data-cmd="doubleUnderline">U2</button>
-      <button data-cmd="circle">◯</button>
-      <button data-cmd="box">▢</button>
-      <button data-cmd="math" style="color:var(--blue); font-weight:900">∑</button>
-      <select id="ts-color" title="Text Color">
-        <option value="inherit">Color</option>
-        <option value="#ff2200">Red</option>
-        <option value="#0055ff">Blue</option>
-        <option value="#00a550">Green</option>
-      </select>
-      <select id="ts-bg" title="Highlight">
-        <option value="transparent">Highlt</option>
-        <option value="#ffe500">Yellow</option>
-        <option value="#ffcfcf">Pink</option>
-        <option value="#cfffcf">Mint</option>
-      </select>
-      <button data-cmd="sizeUp">+</button>
-      <button data-cmd="sizeDown">-</button>
+      <button data-cmd="bold" title="Bold">B</button>
+      <button data-cmd="italic" title="Italic">I</button>
+      <button data-cmd="underline" title="Underline">U</button>
+      <button data-cmd="double" title="Double Underline" style="text-decoration:underline double">U2</button>
+      <button data-cmd="circle" title="Circle Point">◯</button>
+      <button data-cmd="box" title="Box Point">▢</button>
+      <button data-cmd="math" title="Math Equation" style="color:var(--blue);font-weight:900">∑</button>
+      <button data-cmd="fontSize" data-val="5" title="Increase Size">+</button>
+      <button data-cmd="fontSize" data-val="3" title="Decrease Size">-</button>
     `;
     document.body.appendChild(tb);
+    
     this.attachListeners(tb);
   }
   
-  static toggleWrapper(className, tag = 'span') {
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return;
-    const range = sel.getRangeAt(0);
-    const parent = sel.anchorNode.parentElement;
-    
-    if (parent && parent.classList.contains(className)) {
-      // Toggle OFF: Unwrap
-      const text = document.createTextNode(parent.textContent);
-      parent.parentNode.replaceChild(text, parent);
-    } else {
-      // Toggle ON: Wrap
-      const wrapper = document.createElement(tag);
-      wrapper.className = className;
-      range.surroundContents(wrapper);
-    }
-  }
-  
-  static changeStyle(prop, val) {
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return;
-    const range = sel.getRangeAt(0);
-    const span = document.createElement('span');
-    span.style[prop] = val;
-    range.surroundContents(span);
-  }
-  
   static attachListeners(tb) {
-    tb.addEventListener('mousedown', e => {
+    tb.addEventListener('mousedown', (e) => {
       const btn = e.target.closest('button');
       if (!btn) return;
-      e.preventDefault();
-      const cmd = btn.dataset.cmd;
+      e.preventDefault(); // Stay focused on editor
       
-      if (cmd === 'doubleUnderline') this.toggleWrapper('u-double');
-      else if (cmd === 'circle') this.toggleWrapper('f-circle');
-      else if (cmd === 'box') this.toggleWrapper('f-box');
+      const cmd = btn.dataset.cmd;
+      const val = btn.dataset.val;
+      
+      if (cmd === 'double') this.toggleWrap('u-double');
+      else if (cmd === 'circle') this.toggleWrap('f-circle');
+      else if (cmd === 'box') this.toggleWrap('f-box');
       else if (cmd === 'math') MathEditor.open();
-      else if (cmd === 'sizeUp') document.execCommand('fontSize', false, '4');
-      else if (cmd === 'sizeDown') document.execCommand('fontSize', false, '2');
+      else if (cmd === 'fontSize') document.execCommand('fontSize', false, val);
       else document.execCommand(cmd, false, null);
       
-      this.refreshUI();
-    });
-    
-    tb.querySelector('#ts-color').addEventListener('change', (e) => {
-      this.changeStyle('color', e.target.value);
-    });
-    
-    tb.querySelector('#ts-bg').addEventListener('change', (e) => {
-      this.changeStyle('backgroundColor', e.target.value);
+      // Trigger word count update
+      document.activeElement.dispatchEvent(new Event('input', { bubbles: true }));
     });
     
     document.addEventListener('selectionchange', () => this.positionToolbar());
@@ -282,20 +244,30 @@ export class RichTextEngine {
   static positionToolbar() {
     const sel = window.getSelection();
     const tb = document.getElementById('text-format-toolbar');
-    if (sel.isCollapsed || !sel.anchorNode.parentElement.closest('.paper-editable')) {
-      tb.style.display = 'none';
+    if (!sel.rangeCount || sel.isCollapsed || !sel.anchorNode.parentElement.closest('.paper-editable')) {
+      if (tb) tb.style.display = 'none';
       return;
     }
+    
     const rect = sel.getRangeAt(0).getBoundingClientRect();
     tb.style.display = 'flex';
-    tb.style.left = `${rect.left + (rect.width/2) - (tb.offsetWidth/2)}px`;
-    tb.style.top = `${rect.bottom + window.scrollY + 15}px`;
+    tb.style.left = `${rect.left + rect.width / 2 - tb.offsetWidth / 2}px`;
+    tb.style.top = `${rect.bottom + window.scrollY + 10}px`;
   }
   
-  static refreshUI() {
-    const active = document.activeElement;
-    if (active.classList.contains('paper-editable')) {
-      active.dispatchEvent(new Event('input', { bubbles: true }));
+  static toggleWrap(className) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const parent = sel.anchorNode.parentElement;
+    
+    if (parent && parent.classList.contains(className)) {
+      const text = document.createTextNode(parent.textContent);
+      parent.parentNode.replaceChild(text, parent);
+    } else {
+      const span = document.createElement('span');
+      span.className = className;
+      range.surroundContents(span);
     }
   }
 }
@@ -308,31 +280,27 @@ export class MathEditor {
       m.id = 'math-modal';
       m.innerHTML = `
         <div class="math-kb-wrap">
-          <div class="math-kb-header"><span>EQUATION EDITOR</span><button id="math-close">✕</button></div>
-          <div class="math-kb-preview" id="math-preview">Type...</div>
-          <textarea id="math-input" style="width:100%; height:60px; padding:10px; border:none; outline:none; font-family:monospace" placeholder="Latex code here..."></textarea>
+          <div class="math-kb-header"><span>MATH KEYBOARD</span><button id="math-close">✕</button></div>
+          <div class="math-kb-preview" id="math-preview">$...$</div>
+          <textarea id="math-input" placeholder="Type LaTeX or use buttons..."></textarea>
           <div class="math-kb-grid">
-            <button class="math-btn" data-latex="\\sqrt{x}">√</button>
-            <button class="math-btn" data-latex="^{2}">x²</button>
-            <button class="math-btn" data-latex="_{n}">xₙ</button>
-            <button class="math-btn" data-latex="\\frac{a}{b}">½</button>
-            <button class="math-btn" data-latex="\\pi">π</button>
-            <button class="math-btn" data-latex="\\theta">θ</button>
-            <button class="math-btn" data-latex="\\pm">±</button>
-            <button class="math-btn" data-latex="\\sin">sin</button>
-            <button class="math-btn" data-latex="\\infty">∞</button>
-            <button class="math-btn" data-latex="\\Delta">Δ</button>
+            <button data-latex="\\frac{x}{y}">x/y</button>
+            <button data-latex="\\sqrt{x}">√x</button>
+            <button data-latex="^{2}">x²</button>
+            <button data-latex="_{n}">xₙ</button>
+            <button data-latex="\\pi">π</button>
+            <button data-latex="\\pm">±</button>
+            <button data-latex="\\sin">sin</button>
+            <button data-latex="\\Delta">Δ</button>
           </div>
-          <div class="math-kb-footer">
-            <button class="btn btn-primary" id="math-insert" style="flex:1">INSERT EQUATION</button>
-          </div>
+          <button id="math-insert">INSERT EQUATION</button>
         </div>
       `;
       document.body.appendChild(m);
       this.initEvents();
     }
     m.style.display = 'flex';
-    this.target = window.getSelection().getRangeAt(0);
+    this.savedRange = window.getSelection().getRangeAt(0);
   }
   
   static initEvents() {
@@ -340,12 +308,12 @@ export class MathEditor {
     const input = document.getElementById('math-input');
     const preview = document.getElementById('math-preview');
     
-    input.addEventListener('input', () => {
+    input.oninput = () => {
       preview.textContent = `$${input.value}$`;
       if (window.MathJax) window.MathJax.typesetPromise([preview]);
-    });
+    };
     
-    m.querySelectorAll('.math-btn').forEach(btn => {
+    m.querySelectorAll('.math-kb-grid button').forEach(btn => {
       btn.onclick = () => {
         input.value += btn.dataset.latex;
         input.dispatchEvent(new Event('input'));
@@ -354,13 +322,12 @@ export class MathEditor {
     
     document.getElementById('math-close').onclick = () => m.style.display = 'none';
     document.getElementById('math-insert').onclick = () => {
-      const latex = `$${input.value}$`;
-      const node = document.createTextNode(latex);
-      this.target.deleteContents();
-      this.target.insertNode(node);
+      const node = document.createTextNode(`$${input.value}$`);
+      this.savedRange.deleteContents();
+      this.savedRange.insertNode(node);
       m.style.display = 'none';
       input.value = '';
-      window.MathJax.typesetPromise();
+      if (window.MathJax) window.MathJax.typesetPromise();
     };
   }
 }

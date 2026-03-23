@@ -4,7 +4,7 @@
 import { state } from '../state.js';
 import { getSlotData, getSelectedTopicLabels } from './setup-form.js';
 import { handleVideoBtn } from './video.js';
-import { initTextFormatting, initMathJax } from './ui-helpers.js';
+import { RichTextEngine, initTextFormatting, initMathJax } from './ui-helpers.js';
 
 let mathTimeout = null;
 
@@ -28,9 +28,11 @@ export function initModal() {
   });
   
   document.getElementById('submit-btn').addEventListener('click', async function() {
-    // Inside _openModal in modal.js:
-    RichTextEngine.init();
     
+    paper.innerHTML = html;
+    
+    // INITIALIZE THE TOOLBAR
+    RichTextEngine.init();
     // When Submit is clicked:
     const answers = [];
     document.querySelectorAll('.paper-editable').forEach((ed, i) => {

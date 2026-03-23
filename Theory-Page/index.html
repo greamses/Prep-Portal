@@ -8,6 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=Caveat:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  
+  <!-- MathJax for Math Formatting -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 
 <body>
@@ -59,7 +63,7 @@
           <div class="apikey-row">
             <input class="apikey-input" id="apikey-input" type="password" placeholder="Paste your Gemini API key here…" autocomplete="off" spellcheck="false">
             <button class="apikey-toggle" id="apikey-toggle" type="button">Show</button>
-
+            
           </div>
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-top:6px">
             <div class="apikey-status">
@@ -77,9 +81,9 @@
           </div>
         </div>
         <div class="setup-cell" style="border: none;">
-            <button class="apikey-verify-btn" id="apikey-verify-btn" type="button" disabled>
-              Verify →
-            </button>
+          <button class="apikey-verify-btn" id="apikey-verify-btn" type="button" disabled>
+            Verify →
+          </button>
         </div>
         
       </div>

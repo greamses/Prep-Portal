@@ -3073,7 +3073,37 @@ body {
   display: inline-block;
 }
 
-/* --- Math Keyboard Modal --- */
+/* --- Rich Text Toolbars --- */
+#text-format-toolbar {
+  position: absolute;
+  display: none;
+  background: #1a1a1a;
+  padding: 5px;
+  border-radius: 6px;
+  z-index: 10000;
+  gap: 4px;
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0 #000;
+}
+
+#text-format-toolbar button {
+  background: #333;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono';
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 3px;
+}
+
+#text-format-toolbar button:hover {
+  background: var(--yellow);
+  color: #000;
+}
+
+/* --- Math Modal --- */
 #math-modal {
   position: fixed;
   inset: 0;
@@ -3086,68 +3116,78 @@ body {
 
 .math-kb-wrap {
   background: #fff;
-  width: 90%;
-  max-width: 500px;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  border: 2.5px solid #000;
+  width: 350px;
+  border: 3px solid #000;
+  box-shadow: 10px 10px 0 #000;
 }
 
 .math-kb-header {
   background: #000;
   color: #fff;
-  padding: 12px;
-  font-family: 'Unbounded';
-  font-size: 10px;
+  padding: 10px;
   display: flex;
   justify-content: space-between;
 }
 
 .math-kb-preview {
-  min-height: 80px;
-  padding: 20px;
-  background: #f9f9f9;
-  border-bottom: 1px solid #ddd;
+  min-height: 60px;
+  background: #f0f0f0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
+}
+
+#math-input {
+  width: 100%;
+  height: 50px;
+  padding: 10px;
+  border: none;
+  border-bottom: 2px solid #000;
+  outline: none;
 }
 
 .math-kb-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 5px;
-  padding: 10px;
-  background: #eee;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  padding: 5px;
+  background: #ddd;
 }
 
-.math-btn {
-  background: #fff;
+.math-kb-grid button {
+  padding: 10px;
   border: 1px solid #ccc;
-  padding: 10px;
   cursor: pointer;
-  font-family: 'JetBrains Mono';
-  font-size: 14px;
-  border-radius: 4px;
 }
 
-.math-btn:hover {
-  background: var(--yellow);
-}
-
-.math-kb-footer {
-  padding: 10px;
-  display: flex;
-  gap: 10px;
-}
-
-/* --- Toolbar Upgrades --- */
-#text-format-toolbar select {
-  background: #333;
+#math-insert {
+  width: 100%;
+  padding: 15px;
+  background: var(--blue);
   color: #fff;
   border: none;
-  font-size: 10px;
-  padding: 2px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* --- THE ACTUAL RENDERING STYLES --- */
+.u-double {
+  text-decoration: underline double !important;
+  text-underline-offset: 3px;
+}
+
+.f-circle {
+  border: 2.5px solid #ff2200;
+  border-radius: 50%;
+  padding: 0 6px;
+  display: inline-block;
+  line-height: 1;
+}
+
+.f-box {
+  border: 2.5px solid #0055ff;
+  padding: 0 6px;
+  display: inline-block;
+  line-height: 1;
 }
