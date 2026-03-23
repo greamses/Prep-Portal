@@ -1,3 +1,8 @@
+import { TheoryAnalyser } from '../Chatbot/TheoryAnalyser.js';
+
+
+// Generate and then Analyse as before.
+
 /* ════════════════════════════════════════
    API KEY — sessionStorage only (clears on tab close)
 ════════════════════════════════════════ */

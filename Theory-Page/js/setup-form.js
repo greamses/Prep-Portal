@@ -1,6 +1,7 @@
 /* ════════════════════════════════════════
    setup-form.js
 ════════════════════════════════════════ */
+
 import { state } from '../state.js';
 import { SUBJECTS, CURRICULUM } from '../curriculum-data.js';
 import { autoResize, CSelect } from './ui-helpers.js';
@@ -8,6 +9,51 @@ import { autoResize, CSelect } from './ui-helpers.js';
 /* ── Topic state (module-private) ── */
 const MAX_TOPICS = 5;
 let _selectedTopics = [];
+
+/* ── Clean malformed math function ── */
+function cleanMalformedMath(text) {
+  if (!text) return text;
+  
+  // Fix \cdot 1x -> just x (or proper math)
+  let cleaned = text.replace(/\\cdot\s*1([a-zA-Z])/g, '$1');
+  cleaned = cleaned.replace(/\\cdot\s*1/g, '');
+  
+  // Fix \cdot x -> x
+  cleaned = cleaned.replace(/\\cdot\s*([a-zA-Z])/g, '$1');
+  
+  // Fix malformed multiplication like )x or ) x
+  cleaned = cleaned.replace(/\)\s*([a-zA-Z])/g, ')$1');
+  
+  // Remove stray 1x patterns
+  cleaned = cleaned.replace(/(\d)1([a-zA-Z])/g, '$1$2');
+  
+  // Fix \cdot without space
+  cleaned = cleaned.replace(/\\cdot([a-zA-Z])/g, '$1');
+  
+  // Fix \ [ \] to $$ for display math
+  cleaned = cleaned.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
+  
+  return cleaned;
+}
+
+// Clean math delimiters for display
+function cleanMathForDisplay(text) {
+  if (!text) return text;
+  
+  // Replace \( and \) with $
+  let cleaned = text.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
+  
+  // Fix cases like $(2x + 5)$ -> $2x + 5$
+  cleaned = cleaned.replace(/\$\(([^)]+)\)\$/g, '$$1$');
+  
+  // Fix cases like $ (2x + 5) $ -> $2x + 5$
+  cleaned = cleaned.replace(/\$\s*\(([^)]+)\)\s*\$/g, '$$1$');
+  
+  // Fix cases like \ [ \] to $$ for display math
+  cleaned = cleaned.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
+  
+  return cleaned;
+}
 
 /* ── Exported helpers ── */
 export function getSelectedTopicLabels() {
@@ -21,8 +67,8 @@ export function getSlotData() {
   const slots = [];
   document.querySelectorAll('.q-slot').forEach(slot => {
     slots.push({
-      text: slot.querySelector('.q-slot-editor').innerHTML.trim(),
-      marks: parseInt(slot.querySelector('.marks-input').value) || null,
+      text      : slot.querySelector('.q-slot-editor').innerHTML.trim(),
+      marks     : parseInt(slot.querySelector('.marks-input').value) || null,
       compulsory: slot.querySelector('input[type=checkbox]').checked,
     });
   });
@@ -31,40 +77,32 @@ export function getSlotData() {
 
 export function checkReady() {
   const qPanelVisible = document.getElementById('question-panel-row').style.display !== 'none';
-  const slots = qPanelVisible ? getSlotData() : [];
-  const needsTrack = state.st.level === 'ss' && !state.st.track;
-  const allQsFilled = qPanelVisible && slots.length > 0 && slots.every(s => s.text.length >= 6);
-  const ok = state.KEY_VERIFIED && state.st.name && state.st.cls && state.st.subject && !needsTrack && allQsFilled;
-  
+  const slots         = qPanelVisible ? getSlotData() : [];
+  const needsTrack    = state.st.level === 'ss' && !state.st.track;
+  const allQsFilled   = qPanelVisible && slots.length > 0 && slots.every(s => s.text.length >= 6);
+  const ok            = state.KEY_VERIFIED && state.st.name && state.st.cls && state.st.subject && !needsTrack && allQsFilled;
+
   document.getElementById('begin-btn').disabled = !ok;
-  
+
   const s = document.getElementById('setup-status');
-  if (!state.KEY_VERIFIED) { s.textContent = 'Paste and verify your Gemini API key to continue';
-    s.className = 'setup-status'; }
-  else if (!state.st.name) { s.textContent = 'Enter your name to continue';
-    s.className = 'setup-status'; }
-  else if (!state.st.cls) { s.textContent = 'Select your class';
-    s.className = 'setup-status'; }
-  else if (needsTrack) { s.textContent = 'Select your SS track (Science / Arts / Commercial)';
-    s.className = 'setup-status'; }
-  else if (!state.st.subject) { s.textContent = 'Choose a subject';
-    s.className = 'setup-status'; }
-  else if (!qPanelVisible) { s.textContent = 'Select topics or skip, then proceed to questions';
-    s.className = 'setup-status'; }
-  else if (!allQsFilled) { s.textContent = `Enter or auto-gen all ${state.st.count} question(s)`;
-    s.className = 'setup-status'; }
-  else { s.textContent = '✓ Ready — click Begin Practice';
-    s.className = 'setup-status ready'; }
+  if (!state.KEY_VERIFIED)    { s.textContent = 'Paste and verify your Gemini API key to continue'; s.className = 'setup-status'; }
+  else if (!state.st.name)    { s.textContent = 'Enter your name to continue';                       s.className = 'setup-status'; }
+  else if (!state.st.cls)     { s.textContent = 'Select your class';                                 s.className = 'setup-status'; }
+  else if (needsTrack)        { s.textContent = 'Select your SS track (Science / Arts / Commercial)'; s.className = 'setup-status'; }
+  else if (!state.st.subject) { s.textContent = 'Choose a subject';                                  s.className = 'setup-status'; }
+  else if (!qPanelVisible)    { s.textContent = 'Select topics or skip, then proceed to questions';  s.className = 'setup-status'; }
+  else if (!allQsFilled)      { s.textContent = `Enter or auto-gen all ${state.st.count} question(s)`; s.className = 'setup-status'; }
+  else                        { s.textContent = '✓ Ready — click Begin Practice';                    s.className = 'setup-status ready'; }
 }
 
 export function rebuildSlots() {
   const container = document.getElementById('slots-container');
-  const agBtn = document.getElementById('autogen-all-btn');
-  const existing = [];
+  const agBtn     = document.getElementById('autogen-all-btn');
+  const existing  = [];
   container.querySelectorAll('.q-slot').forEach((slot, i) => {
     existing[i] = {
-      text: slot.querySelector('.q-slot-editor')?.innerHTML || '',
-      marks: slot.querySelector('.marks-input')?.value || '',
+      text      : slot.querySelector('.q-slot-editor')?.innerHTML || '',
+      marks     : slot.querySelector('.marks-input')?.value || '',
       compulsory: slot.querySelector('input[type=checkbox]')?.checked ?? (i === 0),
     };
   });
@@ -89,22 +127,22 @@ function _populateSubjects(key) {
 
 function _buildTopicPicker(classKey, subject) {
   const pickerRow = document.getElementById('topic-picker-row');
-  const groupsEl = document.getElementById('topic-groups');
-  const subEl = document.getElementById('topic-picker-sub');
+  const groupsEl  = document.getElementById('topic-groups');
+  const subEl     = document.getElementById('topic-picker-sub');
   _selectedTopics = [];
   groupsEl.innerHTML = '';
-  
-  const classData = CURRICULUM[classKey];
+
+  const classData   = CURRICULUM[classKey];
   if (!classData) { pickerRow.style.display = 'none'; return; }
   const subjectData = classData[subject];
   if (!subjectData) { pickerRow.style.display = 'none'; return; }
-  
+
   const subTopics = Object.keys(subjectData);
   subTopics.forEach(subTopic => {
     const items = subjectData[subTopic];
     const grpEl = document.createElement('div');
     grpEl.className = 'topic-group';
-    
+
     if (items === '__WRITING_LINK__') {
       grpEl.innerHTML = `
         <div class="topic-group-label writing-link-lbl">Writing Practice</div>
@@ -116,24 +154,22 @@ function _buildTopicPicker(classKey, subject) {
       groupsEl.appendChild(grpEl);
       return;
     }
-    
+
     grpEl.innerHTML = `<div class="topic-group-label">${subTopic}</div><div class="topic-chips" data-subtopic="${subTopic}"></div>`;
     const chipsEl = grpEl.querySelector('.topic-chips');
     items.forEach(topic => {
-      const key = `${subTopic}::${topic}`;
+      const key  = `${subTopic}::${topic}`;
       const chip = document.createElement('div');
-      chip.className = 'topic-chip';
+      chip.className   = 'topic-chip';
       chip.dataset.key = key;
-      chip.innerHTML = `<div class="topic-chip-check"></div><span>${topic}</span>`;
+      chip.innerHTML   = `<div class="topic-chip-check"></div><span>${topic}</span>`;
       chip.addEventListener('click', () => {
         if (chip.classList.contains('disabled-max')) return;
         const idx = _selectedTopics.indexOf(key);
-        if (idx >= 0) { _selectedTopics.splice(idx, 1);
-          chip.classList.remove('checked'); }
+        if (idx >= 0) { _selectedTopics.splice(idx, 1); chip.classList.remove('checked'); }
         else {
           if (_selectedTopics.length >= MAX_TOPICS) return;
-          _selectedTopics.push(key);
-          chip.classList.add('checked');
+          _selectedTopics.push(key); chip.classList.add('checked');
         }
         _updateTopicUI();
         _updateQcountTiles();
@@ -143,7 +179,7 @@ function _buildTopicPicker(classKey, subject) {
     });
     groupsEl.appendChild(grpEl);
   });
-  
+
   _updateTopicUI();
   pickerRow.style.display = '';
   subEl.textContent = `${subject} — ${subTopics.filter(s => subjectData[s] !== '__WRITING_LINK__').length} sub-topics available`;
@@ -159,23 +195,23 @@ function _updateTopicUI() {
     chip.classList.toggle('disabled-max', !checked && count >= MAX_TOPICS);
   });
   const hint = document.getElementById('topic-footer-hint');
-  if (count === 0) hint.textContent = 'Select topics or skip to cover the full subject';
+  if (count === 0)             hint.textContent = 'Select topics or skip to cover the full subject';
   else if (count < MAX_TOPICS) hint.textContent = `${count} topic${count > 1 ? 's' : ''} selected — ${MAX_TOPICS - count} more allowed`;
-  else hint.textContent = `Maximum ${MAX_TOPICS} topics reached`;
+  else                         hint.textContent = `Maximum ${MAX_TOPICS} topics reached`;
 }
 
 function _updateQcountTiles() {
   const minCount = _selectedTopics.length || 1;
   if (state.st.count < minCount) state.st.count = minCount;
   document.querySelectorAll('.qcount-tile').forEach(tile => {
-    const n = parseInt(tile.dataset.n);
+    const n        = parseInt(tile.dataset.n);
     const disabled = n < minCount;
     tile.classList.toggle('tile-disabled', disabled);
-    tile.style.opacity = disabled ? '0.3' : '';
-    tile.style.cursor = disabled ? 'not-allowed' : '';
+    tile.style.opacity       = disabled ? '0.3' : '';
+    tile.style.cursor        = disabled ? 'not-allowed' : '';
     tile.style.pointerEvents = disabled ? 'none' : '';
     if (n === state.st.count) tile.classList.add('active');
-    else if (!disabled) tile.classList.remove('active');
+    else if (!disabled)       tile.classList.remove('active');
   });
   const activeTile = document.querySelector(`.qcount-tile[data-n="${state.st.count}"]`);
   if (activeTile) {
@@ -193,32 +229,14 @@ function _showQuestionPanel() {
   checkReady();
 }
 
-// Clean math delimiters for display
-function cleanMathForDisplay(text) {
-  if (!text) return text;
-  
-  // Replace \( and \) with $
-  let cleaned = text.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
-  
-  // Fix cases like $(2x + 5)$ -> $2x + 5$
-  cleaned = cleaned.replace(/\$\(([^)]+)\)\$/g, '$$1$');
-  
-  // Fix cases like $ (2x + 5) $ -> $2x + 5$
-  cleaned = cleaned.replace(/\$\s*\(([^)]+)\)\s*\$/g, '$$1$');
-  
-  // Fix cases like \ [ \] to $$ for display math
-  cleaned = cleaned.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
-  
-  return cleaned;
-}
-
 function _buildSlot(i, { text = '', marks = '', compulsory = false } = {}) {
   const div = document.createElement('div');
-  div.className = 'q-slot';
+  div.className   = 'q-slot';
   div.dataset.idx = i;
   
   // Clean the text for display
-  const cleanText = cleanMathForDisplay(text);
+  let cleanText = cleanMathForDisplay(text);
+  cleanText = cleanMalformedMath(cleanText);
   
   div.innerHTML = `
     <div class="q-slot-hd">
@@ -294,24 +312,22 @@ async function _autoGenOne(idx) {
   const slot = document.querySelector(`.q-slot[data-idx="${idx}"]`);
   if (!slot) return;
   const btn = slot.querySelector('.q-autogen-btn');
-  btn.disabled = true;
-  btn.classList.add('loading');
-  btn.textContent = '⚡ Generating…';
-  
+  btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⚡ Generating…';
+
   const existing = [];
   document.querySelectorAll('.q-slot-editor').forEach(ed => {
     const text = ed.innerText.trim();
     if (text) existing.push(text.slice(0, 80));
   });
-  
+
   TheoryAnalyser.init({
     geminiKey: state.GEMINI_KEY,
-    subject: state.st.subject,
-    level: state.st.cls + (state.st.track ? ` (${state.st.track})` : ''),
-    topics: getSelectedTopicLabels(),
-    mountId: 'theory-results',
+    subject  : state.st.subject,
+    level    : state.st.cls + (state.st.track ? ` (${state.st.track})` : ''),
+    topics   : getSelectedTopicLabels(),
+    mountId  : 'theory-results',
   });
-  
+
   try {
     const [q] = await TheoryAnalyser.generateQuestions(1, existing);
     if (q) {
@@ -319,10 +335,8 @@ async function _autoGenOne(idx) {
       const mi = slot.querySelector('.marks-input');
       
       // Clean the question text for display
-      // Clean the question text before displaying
       let cleanQuestion = cleanMathForDisplay(q.text);
-      cleanQuestion = cleanMalformedMath(cleanQuestion); // Add this line
-      editor.innerHTML = cleanQuestion;
+      cleanQuestion = cleanMalformedMath(cleanQuestion);
       editor.innerHTML = cleanQuestion;
       editor.classList.add('autofilled');
       
@@ -334,10 +348,12 @@ async function _autoGenOne(idx) {
       if (q.suggestedMarks) mi.value = q.suggestedMarks;
       checkReady();
     }
-  } catch (err) { alert('Auto-gen failed: ' + err.message); }
-  
-  btn.disabled = false;
-  btn.classList.remove('loading');
+  } catch (err) { 
+    alert('Auto-gen failed: ' + err.message);
+    console.error(err);
+  }
+
+  btn.disabled = false; btn.classList.remove('loading');
   btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Auto-gen`;
 }
 
@@ -346,20 +362,17 @@ let trackSel, subjectSel;
 
 export function initSetupForm() {
   /* Name */
-  document.getElementById('name-input').addEventListener('input', function() {
+  document.getElementById('name-input').addEventListener('input', function () {
     state.st.name = this.value.trim();
     document.getElementById('done-name').classList.toggle('show', !!state.st.name);
     checkReady();
   });
-  
+
   /* Class */
   const clsSel = new CSelect('csel-class', {
     onSelect(val) {
       const [label, level] = val.split('|');
-      state.st.cls = label;
-      state.st.level = level;
-      state.st.track = '';
-      state.st.subject = '';
+      state.st.cls = label; state.st.level = level; state.st.track = ''; state.st.subject = '';
       document.getElementById('done-class').classList.add('show');
       document.getElementById('class-sub').textContent = `Selected: ${label}`;
       const isss = level === 'ss';
@@ -375,7 +388,7 @@ export function initSetupForm() {
         _populateSubjects(level);
       }
       _selectedTopics = [];
-      document.getElementById('topic-picker-row').style.display = 'none';
+      document.getElementById('topic-picker-row').style.display   = 'none';
       document.getElementById('question-panel-row').style.display = 'none';
       document.getElementById('done-subject').classList.remove('show');
       rebuildSlots();
@@ -383,25 +396,24 @@ export function initSetupForm() {
     },
   });
   clsSel.setItems([
-    { label: 'Primary (Lower)', items: [{ val: 'Primary 1|primary-lower', label: 'Primary 1' }, { val: 'Primary 2|primary-lower', label: 'Primary 2' }, { val: 'Primary 3|primary-lower', label: 'Primary 3' }] },
-    { label: 'Primary (Upper)', items: [{ val: 'Primary 4|primary-upper', label: 'Primary 4' }, { val: 'Primary 5|primary-upper', label: 'Primary 5' }, { val: 'Primary 6|primary-upper', label: 'Primary 6' }] },
+    { label: 'Primary (Lower)',  items: [{ val: 'Primary 1|primary-lower', label: 'Primary 1' }, { val: 'Primary 2|primary-lower', label: 'Primary 2' }, { val: 'Primary 3|primary-lower', label: 'Primary 3' }] },
+    { label: 'Primary (Upper)',  items: [{ val: 'Primary 4|primary-upper', label: 'Primary 4' }, { val: 'Primary 5|primary-upper', label: 'Primary 5' }, { val: 'Primary 6|primary-upper', label: 'Primary 6' }] },
     { label: 'Junior Secondary', items: [{ val: 'JSS 1|jss', label: 'JSS 1' }, { val: 'JSS 2|jss', label: 'JSS 2' }, { val: 'JSS 3|jss', label: 'JSS 3' }] },
     { label: 'Senior Secondary', items: [{ val: 'SS 1|ss', label: 'SS 1' }, { val: 'SS 2|ss', label: 'SS 2' }, { val: 'SS 3|ss', label: 'SS 3' }] },
   ]);
-  
+
   /* Track */
   trackSel = new CSelect('csel-track', {
     onSelect(val) {
-      state.st.track = val;
-      state.st.subjectKey = `ss-${val}`;
+      state.st.track = val; state.st.subjectKey = `ss-${val}`;
       _populateSubjects(`ss-${val}`);
       _selectedTopics = [];
-      document.getElementById('topic-picker-row').style.display = 'none';
+      document.getElementById('topic-picker-row').style.display   = 'none';
       document.getElementById('question-panel-row').style.display = 'none';
       checkReady();
     },
   });
-  
+
   /* Subject */
   subjectSel = new CSelect('csel-subject', {
     onSelect(val) {
@@ -414,21 +426,16 @@ export function initSetupForm() {
     },
   });
   subjectSel.disable();
-  
+
   /* Topic actions */
   document.getElementById('topic-clear-btn').addEventListener('click', () => {
-    _selectedTopics = [];
-    _updateTopicUI();
-    _updateQcountTiles();
-    checkReady();
+    _selectedTopics = []; _updateTopicUI(); _updateQcountTiles(); checkReady();
   });
   document.getElementById('proceed-to-questions-btn').addEventListener('click', _showQuestionPanel);
   document.getElementById('skip-topics-btn').addEventListener('click', () => {
-    _selectedTopics = [];
-    _updateTopicUI();
-    _showQuestionPanel();
+    _selectedTopics = []; _updateTopicUI(); _showQuestionPanel();
   });
-  
+
   /* Q-count tiles */
   document.getElementById('qcount-row').addEventListener('click', e => {
     const tile = e.target.closest('.qcount-tile');
@@ -437,22 +444,21 @@ export function initSetupForm() {
     tile.classList.add('active');
     state.st.count = parseInt(tile.dataset.n);
     document.getElementById('done-count').classList.add('show');
-    rebuildSlots();
-    checkReady();
+    rebuildSlots(); checkReady();
   });
-  
+
   /* Auto-gen all */
   document.getElementById('autogen-all-btn').addEventListener('click', async () => {
     if (!state.st.cls || !state.st.subject) return;
     const btn = document.getElementById('autogen-all-btn');
-    btn.disabled = true;
+    btn.disabled  = true;
     btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg> Generating…`;
     TheoryAnalyser.init({
       geminiKey: state.GEMINI_KEY,
-      subject: state.st.subject,
-      level: state.st.cls + (state.st.track ? ` (${state.st.track})` : ''),
-      topics: getSelectedTopicLabels(),
-      mountId: 'theory-results',
+      subject  : state.st.subject,
+      level    : state.st.cls + (state.st.track ? ` (${state.st.track})` : ''),
+      topics   : getSelectedTopicLabels(),
+      mountId  : 'theory-results',
     });
     try {
       const questions = await TheoryAnalyser.generateQuestions(state.st.count);
@@ -463,7 +469,8 @@ export function initSetupForm() {
         const mi = slot.querySelector('.marks-input');
         
         // Clean the question text
-        const cleanQuestion = cleanMathForDisplay(q.text);
+        let cleanQuestion = cleanMathForDisplay(q.text);
+        cleanQuestion = cleanMalformedMath(cleanQuestion);
         editor.innerHTML = cleanQuestion;
         editor.classList.add('autofilled');
         
@@ -475,8 +482,11 @@ export function initSetupForm() {
         if (q.suggestedMarks) mi.value = q.suggestedMarks;
       });
       checkReady();
-    } catch (err) { alert('Auto-generate failed: ' + err.message); }
-    btn.disabled = false;
+    } catch (err) { 
+      alert('Auto-generate failed: ' + err.message);
+      console.error(err);
+    }
+    btn.disabled  = false;
     btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Auto-generate All`;
   });
 }
