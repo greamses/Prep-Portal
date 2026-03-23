@@ -145,21 +145,19 @@
      CLEAN MALFORMED MATH
   ─────────────────────────────────────────────────────── */
   function cleanMalformedMath(text) {
-    if (!text) return text;
-    
-    let cleaned = stripMathJaxXML(text);
-    
-    cleaned = cleaned.replace(/\\cdot\s*1([a-zA-Z])/g, '$1');
-    cleaned = cleaned.replace(/\\cdot\s*1/g, '');
-    cleaned = cleaned.replace(/\\cdot\s*([a-zA-Z])/g, '$1');
-    cleaned = cleaned.replace(/\\cdot([a-zA-Z])/g, '$1');
-    cleaned = cleaned.replace(/\)\s*([a-zA-Z])/g, ')$1');
-    cleaned = cleaned.replace(/(\d)1([a-zA-Z])/g, '$1$2');
-    cleaned = cleaned.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
-    cleaned = cleaned.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
-    
-    return cleaned;
+  if (!text) return text;
+  
+  // If the text already contains standard $ math delimiters, 
+  // do NOT run the aggressive XML stripper on it.
+  if (text.includes('$')) {
+    return text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$').replace(/\\\(/g, '$').replace(/\\\)/g, '$');
   }
+  
+  // Otherwise, only perform light cleaning
+  let cleaned = stripMathJaxXML(text);
+  cleaned = cleaned.replace(/\\cdot\s*1([a-zA-Z])/g, '$1');
+  return cleaned;
+}
   
   function _parseJSON(raw) {
     let cleaned = stripMathJaxXML(raw);
@@ -169,6 +167,8 @@
     if (s < 0 || e < 0) throw new Error('No JSON in AI response');
     
     
+    
+    // TO THIS (Safe preservation of \n and \r):
     let jsonStr = cleaned.slice(s, e + 1).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]+/g, '');
     
     jsonStr = jsonStr.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
@@ -267,47 +267,31 @@ MARKING — SS (age 15–19):
   function _parseAnnotated(raw) {
     if (!raw) return '';
     
-    // First, ensure we preserve the original line breaks
-    let h = raw;
+    // 1. Handle escaped newlines from the JSON response
+    let h = raw.replace(/\\n/g, '\n');
     
-    // Replace escaped newlines with actual newlines
-    h = h.replace(/\\n/g, '\n');
+    // 2. Process all XML tags on the ENTIRE block first (not line-by-line)
+    // This prevents tags that span multiple lines from breaking the layout.
+    h = h.replace(
+      /<mark\s+type=['"]([^'"]+)['"]\s*(?:fix=['"]([^'"]*?)['"])?\s*>([\s\S]*?)<\/mark>/gi,
+      (_, type, fix, content) => {
+        if (type === 'del') return `<span class="rp-del" title="Delete">${content}</span>`;
+        if (type === 'ins') return `<span class="rp-ins"><span class="rp-caret">&#x2038;</span><span class="rp-ins-w">${_esc(fix||'')}</span></span>`;
+        if (fix) return `<span class="rp-wrap"><span class="rp-above">${_esc(fix)}</span><span class="rp-err">${content}</span></span>`;
+        return `<span class="rp-err" title="${_esc(type)}">${content}</span>`;
+      }
+    );
     
-    // Split into lines and process each line
-    const lines = h.split('\n');
-    const processedLines = lines.map(line => {
-      let processed = line;
-      
-      // Replace mark tags
-      processed = processed.replace(
-        /<mark\s+type=['"]([^'"]+)['"]\s*(?:fix=['"]([^'"]*?)['"])?\s*>([\s\S]*?)<\/mark>/gi,
-        (_, type, fix, content) => {
-          if (type === 'del') return `<span class="rp-del" title="Delete">${content}</span>`;
-          if (type === 'ins') return `<span class="rp-ins"><span class="rp-caret">&#x2038;</span><span class="rp-ins-w">${_esc(fix||'')}</span></span>`;
-          if (fix) return `<span class="rp-wrap"><span class="rp-above">${_esc(fix)}</span><span class="rp-err">${content}</span></span>`;
-          return `<span class="rp-err" title="${_esc(type)}">${content}</span>`;
-        }
-      );
-      
-      // Replace ok and weak tags
-      processed = processed.replace(/<ok>([\s\S]*?)<\/ok>/gi,
-        (_, c) => `<span class="rp-ok"><span class="rp-tick">&#10003;</span>${c}</span>`);
-      processed = processed.replace(/<weak>([\s\S]*?)<\/weak>/gi,
-        (_, c) => `<span class="rp-weak">${c}</span>`);
-      
-      return processed;
-    });
+    h = h.replace(/<ok>([\s\S]*?)<\/ok>/gi,
+      (_, c) => `<span class="rp-ok"><span class="rp-tick">&#10003;</span>${c}</span>`);
+    h = h.replace(/<weak>([\s\S]*?)<\/weak>/gi,
+      (_, c) => `<span class="rp-weak">${c}</span>`);
     
-    // Join lines with <br> tags
-    h = processedLines.join('<br>');
+    // 3. NOW convert actual newlines into HTML line breaks
+    // Use trim to remove leading/trailing whitespace that might cause extra gaps
+    h = h.split('\n').map(line => line.trim()).filter(l => l !== "").join('<br>');
     
-    // Handle double newlines as paragraph breaks
-    h = h.replace(/<br><br>/g, '</p><p>');
-    h = '<p>' + h + '</p>';
-    h = h.replace(/<p><\/p>/g, '');
-    h = h.replace(/<p><br><\/p>/g, '');
-    
-    return h;
+    return `<p>${h}</p>`;
   }
   
   /* ─────────────────────────────────────────────────────
