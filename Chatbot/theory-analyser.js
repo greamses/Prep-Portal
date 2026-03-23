@@ -129,18 +129,16 @@
   ─────────────────────────────────────────────────────── */
   function stripMathJaxXML(text) {
     if (!text) return text;
-    
     let cleaned = text;
     
-    cleaned = cleaned.replace(/<mjx-container[^>]*>[\s\S]*?<\/mjx-container>/g, '');
-    cleaned = cleaned.replace(/<mjx-math[^>]*>[\s\S]*?<\/mjx-math>/g, '');
-    cleaned = cleaned.replace(/<mjx-assistive-mml[^>]*>[\s\S]*?<\/mjx-assistive-mml>/g, '');
-    cleaned = cleaned.replace(/<mjx-[^>]+>/g, '');
-    cleaned = cleaned.replace(/<\/mjx-[^>]+>/g, '');
-    cleaned = cleaned.replace(/<[^>]+>/g, '');
+    // Instead of deleting the whole container, just strip the HTML tags 
+    // but leave the text (which usually contains the raw LaTeX in assistive-mml)
+    cleaned = cleaned.replace(/<[^>]+>/g, ' ');
+    
+    // Clean up HTML entities
     cleaned = cleaned.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"');
     
-    return cleaned;
+    return cleaned.trim();
   }
   
   /* ─────────────────────────────────────────────────────
@@ -170,12 +168,13 @@
       e = cleaned.lastIndexOf('}');
     if (s < 0 || e < 0) throw new Error('No JSON in AI response');
     
-    let jsonStr = cleaned.slice(s, e + 1).replace(/[\u0000-\u0009\u000B-\u001F]+/g, '');
+    
+    let jsonStr = cleaned.slice(s, e + 1).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]+/g, '');
     
     jsonStr = jsonStr.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
     jsonStr = jsonStr.replace(/\$\(([^)]+)\)\$/g, '$$1$');
     jsonStr = jsonStr.replace(/\$\s*\$\(([^)]+)\)\$\s*\$/g, '$$1$');
-    jsonStr = jsonStr.replace(/\$\$/g, '$');
+    // jsonStr = jsonStr.replace(/\$\$/g, '$');
     
     const parsed = JSON.parse(jsonStr);
     
@@ -592,7 +591,14 @@ RESPOND ONLY WITH VALID JSON - DO NOT include any MathJax XML tags:
   "questions": [
     { "text": "<question text with $math$ syntax>", "suggestedMarks": <5-10> }
   ]
-}`;
+}
+
+
+- MANDATORY: Wrap every single math symbol or equation in single dollar signs.
+- Example: "Solve $4(x - 2) + 3 = 2(x + 5)$" 
+- Use \n for line breaks between steps in the "annotatedText".
+- DO NOT use any HTML tags or complex LaTeX environments like \begin{equation}.
+`;
   }
   
   /* ─────────────────────────────────────────────────────
