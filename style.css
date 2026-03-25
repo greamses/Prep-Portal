@@ -1,8 +1,8 @@
 /* ── FONTS ── */
-@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=DM+Serif+Display&display=swap');
 
 /* ════════════════════════════════════════
-        TOKENS
+        TOKENS (merged from theme)
    ════════════════════════════════════════ */
 :root {
     --bg: #ffffff;
@@ -15,6 +15,8 @@
     --amber: #e67e00;
     --muted: #777;
     --off: #f7f4ee;
+    --paper: #fffef8;
+    --ruled: #ece8df;
     --border: 2.5px solid #0a0a0a;
     
     /* quiz-specific feedback */
@@ -41,7 +43,7 @@ body {
 }
 
 /* ════════════════════════════════════════
-        BODY
+        BODY (themed)
    ════════════════════════════════════════ */
 body {
     font-family: 'JetBrains Mono', monospace;
@@ -58,7 +60,7 @@ body {
 }
 
 /* ════════════════════════════════════════
-        APP CONTAINER
+        APP CONTAINER (themed)
    ════════════════════════════════════════ */
 .app-container {
     background: var(--bg);
@@ -85,20 +87,6 @@ body {
     }
 }
 
-/* animated stripe at the very top */
-.app-container::before {
-    content: '';
-    display: block;
-    height: 5px;
-    background: repeating-linear-gradient(90deg,
-            var(--yellow) 0px, var(--yellow) 36px,
-            var(--ink) 36px, var(--ink) 72px,
-            var(--blue) 72px, var(--blue) 108px,
-            var(--ink) 108px, var(--ink) 144px);
-    background-size: 200% 100%;
-    animation: stripeScroll 10s linear infinite;
-}
-
 @keyframes stripeScroll {
     from {
         background-position: 0 0;
@@ -116,7 +104,7 @@ body {
 }
 
 /* ════════════════════════════════════════
-        HEADER
+        HEADER (themed)
    ════════════════════════════════════════ */
 .header {
     background: var(--ink);
@@ -220,14 +208,14 @@ input[type=number] {
 }
 
 /* ════════════════════════════════════════
-        DOT NAVIGATION
+        DOT NAVIGATION (themed)
    ════════════════════════════════════════ */
 .unanswered-dots-container {
     display: flex;
     gap: 6px;
     overflow-x: auto;
     padding: 14px clamp(18px, 4vw, 36px);
-    border-bottom: 1px solid #e0ddd7;
+    border-bottom: 1px solid var(--ruled);
     scrollbar-width: none;
 }
 
@@ -267,7 +255,7 @@ input[type=number] {
 }
 
 /* ════════════════════════════════════════
-        QUESTION AREA
+        QUESTION AREA (themed)
    ════════════════════════════════════════ */
 .question-area {
     padding: 24px clamp(18px, 4vw, 36px) 0;
@@ -281,7 +269,7 @@ input[type=number] {
     color: var(--yellow);
     line-height: 1;
     margin-bottom: 6px;
-    /* yellow on white is inaccessible — add ink text-shadow */
+    /* improved contrast */
     text-shadow: 1px 1px 0 var(--ink);
 }
 
@@ -306,7 +294,7 @@ input[type=number] {
 }
 
 /* ════════════════════════════════════════
-        OPTIONS
+        OPTIONS (themed)
    ════════════════════════════════════════ */
 .options-container {
     display: flex;
@@ -356,7 +344,7 @@ input[type=number] {
     line-height: 1.6;
 }
 
-/* ── Feedback states ── */
+/* ── Feedback states (themed) ── */
 .feedback-box {
     display: none;
     margin-top: 12px;
@@ -400,7 +388,7 @@ input[type=number] {
 }
 
 /* ════════════════════════════════════════
-        HINT
+        HINT (themed)
    ════════════════════════════════════════ */
 .hint-container {
     margin: 20px clamp(18px, 4vw, 36px);
@@ -458,7 +446,7 @@ input[type=number] {
 }
 
 /* ════════════════════════════════════════
-        FOOTER CONTROLS
+        FOOTER CONTROLS (themed)
    ════════════════════════════════════════ */
 .footer-controls {
     display: flex;
@@ -513,7 +501,7 @@ input[type=number] {
 }
 
 /* ════════════════════════════════════════
-        RESPONSIVE
+        RESPONSIVE (themed adjustments)
    ════════════════════════════════════════ */
 @media (max-width: 480px) {
     .header {
