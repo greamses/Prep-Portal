@@ -9,33 +9,34 @@ function setupQuiz(quizData, timeLimitSeconds = 3600) {
   let wrongCount = 0;
   let timerInterval = null;
   
-  const elQuestionText      = document.getElementById('question-text');
-  const elQuestionImage     = document.getElementById('question-image');
-  const elOptionsContainer  = document.getElementById('options-container');
-  const elQNumDisplay       = document.getElementById('q-number-display');
-  const elCurrentQText      = document.getElementById('current-q-text');
-  const elTotalQText        = document.getElementById('total-q-text');
-  const elBtnPrev           = document.getElementById('btn-prev');
-  const elBtnNext           = document.getElementById('btn-next');
-  const elSlider            = document.getElementById('q-slider');
-  const elInput             = document.getElementById('q-input');
-  const elHintContainer     = document.getElementById('hint-container');
-  const elHintText          = document.getElementById('hint-text');
-  const elHintContent       = document.getElementById('hint-content');
-  const elTimer             = document.getElementById('timer-display');
-  const elCorrectCount      = document.getElementById('correct-count');
-  const elWrongCount        = document.getElementById('wrong-count');
-  const elUnansweredDots    = document.getElementById('unanswered-dots');
+  const elQuestionText = document.getElementById('question-text');
+  const elQuestionImage = document.getElementById('question-image');
+  const elOptionsContainer = document.getElementById('options-container');
+  const elQNumDisplay = document.getElementById('q-number-display');
+  const elCurrentQText = document.getElementById('current-q-text');
+  const elTotalQText = document.getElementById('total-q-text');
+  const elBtnPrev = document.getElementById('btn-prev');
+  const elBtnNext = document.getElementById('btn-next');
+  const elSlider = document.getElementById('q-slider');
+  const elInput = document.getElementById('q-input');
+  const elHintContainer = document.getElementById('hint-container');
+  const elHintText = document.getElementById('hint-text');
+  const elHintContent = document.getElementById('hint-content');
+  const elTimer = document.getElementById('timer-display');
+  const elCorrectCount = document.getElementById('correct-count');
+  const elWrongCount = document.getElementById('wrong-count');
+  const elUnansweredDots = document.getElementById('unanswered-dots');
+  
   
   function init() {
     const total = quizData.length;
     if (elTotalQText) elTotalQText.innerText = total;
-    if (elSlider)     elSlider.max = total;
-    if (elInput)      elInput.max  = total;
+    if (elSlider) elSlider.max = total;
+    if (elInput) elInput.max = total;
     
     // Expose data to PrepBot so it can read the page live
-    window.__prepbotQuizData            = quizData;
-    window.__prepbotJumpToQuestion      = jumpToQuestion;
+    window.__prepbotQuizData = quizData;
+    window.__prepbotJumpToQuestion = jumpToQuestion;
     
     if (elSlider) elSlider.addEventListener('input', (e) => jumpToQuestion(e.target.value - 1));
     if (elInput) {
@@ -46,8 +47,8 @@ function setupQuiz(quizData, timeLimitSeconds = 3600) {
       });
     }
     
-    if (elBtnPrev)      elBtnPrev.addEventListener('click', () => changeQuestion(-1));
-    if (elBtnNext)      elBtnNext.addEventListener('click', () => changeQuestion(1));
+    if (elBtnPrev) elBtnPrev.addEventListener('click', () => changeQuestion(-1));
+    if (elBtnNext) elBtnNext.addEventListener('click', () => changeQuestion(1));
     if (elHintContainer) elHintContainer.addEventListener('click', toggleHint);
     
     loadQuestion();
@@ -63,9 +64,9 @@ function setupQuiz(quizData, timeLimitSeconds = 3600) {
         hasUnanswered = true;
         const dot = document.createElement('div');
         dot.className = `nav-dot ${index === currentQuestionIndex ? 'active' : ''}`;
-        dot.id        = `nav-dot-${index}`;
+        dot.id = `nav-dot-${index}`;
         dot.innerText = index + 1;
-        dot.onclick   = () => jumpToQuestion(index);
+        dot.onclick = () => jumpToQuestion(index);
         elUnansweredDots.appendChild(dot);
       }
     });
@@ -75,16 +76,16 @@ function setupQuiz(quizData, timeLimitSeconds = 3600) {
   function loadQuestion() {
     const qData = quizData[currentQuestionIndex];
     
-    if (elQNumDisplay)   elQNumDisplay.innerText  = currentQuestionIndex + 1;
-    if (elCurrentQText)  elCurrentQText.innerText = currentQuestionIndex + 1;
-    if (elSlider)        elSlider.value            = currentQuestionIndex + 1;
-    if (elInput)         elInput.value             = currentQuestionIndex + 1;
+    if (elQNumDisplay) elQNumDisplay.innerText = currentQuestionIndex + 1;
+    if (elCurrentQText) elCurrentQText.innerText = currentQuestionIndex + 1;
+    if (elSlider) elSlider.value = currentQuestionIndex + 1;
+    if (elInput) elInput.value = currentQuestionIndex + 1;
     
     if (elQuestionText) elQuestionText.innerHTML = qData.question;
     
     // Let PrepBot know exactly what question we are on right now
     window.__prepbotCurrentQuestionIndex = currentQuestionIndex;
-    window.__prepbotQuestion             = qData.question;
+    window.__prepbotQuestion = qData.question;
     
     if (elQuestionImage) {
       if (qData.image) {
@@ -96,11 +97,11 @@ function setupQuiz(quizData, timeLimitSeconds = 3600) {
       }
     }
     
-    if (elHintContent)   elHintContent.classList.add('hidden');
+    if (elHintContent) elHintContent.classList.add('hidden');
     if (elHintContainer) elHintContainer.classList.remove('open');
-    if (elHintText)      elHintText.innerHTML = qData.hint;
+    if (elHintText) elHintText.innerHTML = qData.hint;
     if (elHintContainer) elHintContainer.style.display =
-        (answers[currentQuestionIndex] !== null) ? 'none' : 'block';
+      (answers[currentQuestionIndex] !== null) ? 'none' : 'block';
     
     renderUnansweredDots();
     
@@ -111,26 +112,26 @@ function setupQuiz(quizData, timeLimitSeconds = 3600) {
       qData.options.forEach((optText, index) => {
         const isAnswered = answers[currentQuestionIndex] !== null;
         const isSelected = answers[currentQuestionIndex] === index;
-        const isCorrect  = index === qData.correctIndex;
+        const isCorrect = index === qData.correctIndex;
         
         let cardClass = 'option-card';
         if (isAnswered) {
           cardClass += ' disabled';
-          if (isCorrect)                 cardClass += ' correct';
-          if (isSelected && !isCorrect)  cardClass += ' incorrect';
+          if (isCorrect) cardClass += ' correct';
+          if (isSelected && !isCorrect) cardClass += ' incorrect';
         }
         
         let feedbackTitle = isCorrect ? 'Correct' : 'Incorrect';
-        let feedbackDesc  = '';
-
+        let feedbackDesc = '';
+        
         if (isCorrect) {
           feedbackDesc = qData.explanation
             .map(step => `<div class="math-step">${step}</div>`)
             .join('');
         } else {
-          feedbackDesc = (qData.wrongFeedback && qData.wrongFeedback[index])
-            ? `<div class="math-step">${qData.wrongFeedback[index]}</div>`
-            : `<div class="math-step">This option is incorrect. See the right answer for the full working.</div>`;
+          feedbackDesc = (qData.wrongFeedback && qData.wrongFeedback[index]) ?
+            `<div class="math-step">${qData.wrongFeedback[index]}</div>` :
+            `<div class="math-step">This option is incorrect. See the right answer for the full working.</div>`;
         }
         
         const cardHtml = `
@@ -144,16 +145,16 @@ function setupQuiz(quizData, timeLimitSeconds = 3600) {
               <div class="feedback-desc">${feedbackDesc}</div>
             </div>
           </div>`;
-
+        
         elOptionsContainer.insertAdjacentHTML('beforeend', cardHtml);
         document.getElementById(`opt-card-${index}`)
           .addEventListener('click', () => selectOption(index));
       });
     }
     
-    if (elBtnPrev) elBtnPrev.disabled    = currentQuestionIndex === 0;
-    if (elBtnNext) elBtnNext.innerText   =
-        currentQuestionIndex === quizData.length - 1 ? 'Finish' : 'Next';
+    if (elBtnPrev) elBtnPrev.disabled = currentQuestionIndex === 0;
+    if (elBtnNext) elBtnNext.innerText =
+      currentQuestionIndex === quizData.length - 1 ? 'Finish' : 'Next';
     
     if (window.MathJax) MathJax.typesetPromise();
   }
@@ -184,7 +185,7 @@ function setupQuiz(quizData, timeLimitSeconds = 3600) {
     const options = document.querySelectorAll('.option-card');
     options.forEach((opt, idx) => {
       opt.classList.add('disabled');
-      if (idx === qData.correctIndex)                         opt.classList.add('correct');
+      if (idx === qData.correctIndex) opt.classList.add('correct');
       if (idx === selectedIndex && idx !== qData.correctIndex) opt.classList.add('incorrect');
     });
     
@@ -235,14 +236,14 @@ function setupQuiz(quizData, timeLimitSeconds = 3600) {
   }
   
   init();
-
+  
   return {
     jumpToQuestion,
     changeQuestion,
-    stopTimer:  () => clearInterval(timerInterval),
+    stopTimer: () => clearInterval(timerInterval),
     getResults: () => ({ correctCount, wrongCount, answers })
   };
 }
 
-
+console.log('loaded')
 export default setupQuiz;
