@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════
-   video.js
+   video.js (Updated for English-Only Results)
 ════════════════════════════════════════ */
 import { state } from '../state.js';
 
@@ -305,36 +305,26 @@ function _getChannels(subject, level) {
    GEMINI TOPIC PLANNING
 ════════════════════════════════════════ */
 async function _fetchTopicData(questionText, subject, level, channels) {
-  const isMath    = _isMathSubject(subject);
-  const mathExtra = isMath
-    ? `\nAlso return up to 3 interactive math tools (Khan Academy, GeoGebra, Desmos, Mathway, Brilliant, CK-12) with direct URLs and 1 hands-on activity.`
-    : '';
-
-  /* Pass the top 4 channel names so Gemini crafts a query per channel */
+  const isMath = _isMathSubject(subject);
+  const mathExtra = isMath ?
+    `\nAlso return up to 3 interactive math tools (Khan Academy, GeoGebra, Desmos, Mathway, Brilliant, CK-12) with direct URLs and 1 hands-on activity.` :
+    '';
+  
   const chNames = channels.slice(0, 4).map(c => c.name);
-  const chList  = chNames.map((n, i) => `Channel ${i + 1}: ${n}`).join('\n');
-
+  const chList = chNames.map((n, i) => `Channel ${i + 1}: ${n}`).join('\n');
+  
+  // UPDATED PROMPT: Explicitly demanding English and excluding Hindi content
   const prompt = `You are an educational video relevance expert for Nigerian school students.
 LEVEL: ${level}
 SUBJECT: ${subject}
 EXAM QUESTION: "${questionText}"
 
+CRITICAL: All content must be in ENGLISH. Do not suggest channels or queries that would lead to Hindi, Urdu, or other non-English language videos.
+
 TASK 1 — Identify the single precise concept being tested.
-Examples of precision:
-  BAD: "fractions"        GOOD: "adding fractions with unlike denominators"
-  BAD: "photosynthesis"   GOOD: "light-dependent reactions in photosynthesis"
-  BAD: "grammar"          GOOD: "past perfect tense formation"
-  BAD: "economics"        GOOD: "price elasticity of demand"
-
-TASK 2 — Extract 4-6 MUST-MATCH keywords from that concept.
-These will be used to filter YouTube results. Any video whose title does NOT contain
-at least one of these words will be rejected as irrelevant.
-Keep them simple: individual words or short 2-word phrases.
-
-TASK 3 — Write one search query per suggested channel (channels are suggestions, not restrictions).
-Each query should start with the channel name, then the precise concept.
-If a different well-known educational channel would clearly have a better video on this
-specific concept, you may substitute it.
+TASK 2 — Extract 4-6 MUST-MATCH keywords.
+TASK 3 — Write one search query per suggested channel. 
+IMPORTANT: Append the word "English" or "Lesson" to the queries to ensure language accuracy.
 
 Suggested channels:
 ${chList}
@@ -345,93 +335,42 @@ Return ONLY valid JSON — no markdown:
   "topicLabel": "<precise concept, max 6 words>",
   "mustMatchTerms": ["<keyword1>", "<keyword2>", "<keyword3>", "<keyword4>"],
   "searches": [
-    { "query": "<Channel> <precise concept>", "channel": "<Channel>", "angle": "<what this teaches>" },
-    { "query": "<Channel> <precise concept>", "channel": "<Channel>", "angle": "<what this teaches>" },
-    { "query": "<Channel> <precise concept>", "channel": "<Channel>", "angle": "<what this teaches>" },
-    { "query": "<Channel> <precise concept>", "channel": "<Channel>", "angle": "<what this teaches>" }
+    { "query": "<Channel> <precise concept> English lesson", "channel": "<Channel>", "angle": "<what this teaches>" },
+    { "query": "<Channel> <precise concept> English lesson", "channel": "<Channel>", "angle": "<what this teaches>" },
+    { "query": "<Channel> <precise concept> English lesson", "channel": "<Channel>", "angle": "<what this teaches>" },
+    { "query": "<Channel> <precise concept> English lesson", "channel": "<Channel>", "angle": "<what this teaches>" }
   ]${isMath ? `,
   "interactive": [{ "name": "<tool>", "url": "<url>", "type": "practice|visualiser|game", "description": "<one sentence>" }],
   "manipulative": "<one sentence hands-on physical activity>"` : ''}
 }`;
-
+  
   for (const modelUrl of _VIDEO_MODELS) {
     try {
       const res = await fetch(`${modelUrl}?key=${encodeURIComponent(state.GEMINI_KEY)}`, {
-        method : 'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body   : JSON.stringify({
+        body: JSON.stringify({
           systemInstruction: { parts: [{ text: prompt }] },
-          contents: [{ parts: [{ text: `Plan channel-specific video resources for: ${questionText}` }] }],
-          generationConfig : { responseMimeType: 'application/json', temperature: 0.3, maxOutputTokens: 800 },
+          contents: [{ parts: [{ text: `Plan English-language video resources for: ${questionText}` }] }],
+          generationConfig: { responseMimeType: 'application/json', temperature: 0.3, maxOutputTokens: 800 },
         }),
       });
       if (res.status === 429 || res.status === 503 || !res.ok) continue;
-      const raw  = await res.json();
+      const raw = await res.json();
       const text = raw.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      const s = text.indexOf('{'), e = text.lastIndexOf('}');
+      const s = text.indexOf('{'),
+        e = text.lastIndexOf('}');
       if (s < 0 || e < 0) continue;
       return JSON.parse(
         text.slice(s, e + 1)
-          .replace(/\r\n/g,'\\n').replace(/\r/g,'\\n').replace(/\n/g,'\\n')
-          .replace(/\t/g,'\\t').replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g,'')
+        .replace(/\r\n/g, '\\n').replace(/\r/g, '\\n').replace(/\n/g, '\\n')
+        .replace(/\t/g, '\\t').replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, '')
       );
     } catch (_) { /* try next model */ }
   }
   return null;
 }
 
-/* ════════════════════════════════════════
-   YOUTUBE DATA API
-════════════════════════════════════════ */
-
-/* Score how many of the must-match keywords appear in a video title */
-function _scoreTitle(title, keywords) {
-  if (!keywords?.length) return 1; /* no filter — pass everything */
-  const t = title.toLowerCase();
-  return keywords.filter(kw => t.includes(kw.toLowerCase())).length;
-}
-
-async function _ytSearch(query, keywords, isPrimary) {
-  /* medium (4-20 min) for lesson-length videos; any for primary short clips */
-  const duration = isPrimary ? 'any' : 'medium';
-
-  const url = [
-    'https://www.googleapis.com/youtube/v3/search',
-    '?part=snippet',
-    '&type=video',
-    '&maxResults=5',           /* fetch 5, pick the most relevant */
-    '&videoEmbeddable=true',
-    '&safeSearch=strict',
-    `&videoDuration=${duration}`,
-    '&relevanceLanguage=en',
-    `&q=${encodeURIComponent(query)}`,
-    `&key=${encodeURIComponent(state.YT_KEY)}`,
-  ].join('');
-
-  const res  = await fetch(url);
-  if (!res.ok) throw new Error(`YouTube API ${res.status}`);
-  const data = await res.json();
-  if (!data.items?.length) return null;
-
-  /* Score all results — return highest-scoring one above threshold */
-  const scored = data.items.map(item => ({
-    item,
-    score: _scoreTitle(item.snippet.title, keywords),
-  }));
-
-  /* Sort descending by score, then pick top — must score at least 1 */
-  scored.sort((a, b) => b.score - a.score);
-  const best = scored[0];
-  if (best.score < 1) return null; /* nothing matched — skip this slot */
-
-  const item = best.item;
-  return {
-    videoId  : item.id.videoId,
-    title    : item.snippet.title,
-    channel  : item.snippet.channelTitle,
-    thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '',
-  };
-}
 
 /* ════════════════════════════════════════
    FETCH RESOURCES
@@ -642,3 +581,63 @@ export async function handleVideoBtn(btn) {
     });
   }
 }
+
+
+/* ════════════════════════════════════════
+   YOUTUBE DATA API
+════════════════════════════════════════ */
+
+function _scoreTitle(title, keywords) {
+  const t = title.toLowerCase();
+  
+  // NEW: Negative filter for non-English indicators
+  const blacklist = ['hindi', 'urdu', 'tamil', 'malayalam', 'telugu', 'cbse', 'ncert', 'jee', 'neet'];
+  if (blacklist.some(word => t.includes(word))) return -100; // Hard reject
+
+  if (!keywords?.length) return 1;
+  return keywords.filter(kw => t.includes(kw.toLowerCase())).length;
+}
+
+async function _ytSearch(query, keywords, isPrimary) {
+  const duration = isPrimary ? 'any' : 'medium';
+
+  // UPDATED: Append English and use regionCode NG (Nigeria) to prioritize English content
+  const url = [
+    'https://www.googleapis.com/youtube/v3/search',
+    '?part=snippet',
+    '&type=video',
+    '&maxResults=5',
+    '&videoEmbeddable=true',
+    '&safeSearch=strict',
+    `&videoDuration=${duration}`,
+    '&relevanceLanguage=en', // Hint
+    '&regionCode=NG',        // Force Nigerian context (strictly English school system)
+    `&q=${encodeURIComponent(query + ' English')}`,
+    `&key=${encodeURIComponent(state.YT_KEY)}`,
+  ].join('');
+
+  const res  = await fetch(url);
+  if (!res.ok) throw new Error(`YouTube API ${res.status}`);
+  const data = await res.json();
+  if (!data.items?.length) return null;
+
+  const scored = data.items.map(item => ({
+    item,
+    score: _scoreTitle(item.snippet.title, keywords),
+  }));
+
+  scored.sort((a, b) => b.score - a.score);
+  const best = scored[0];
+  
+  // Only accept if it matched at least one positive keyword and didn't hit the blacklist
+  if (best.score < 1) return null; 
+
+  const item = best.item;
+  return {
+    videoId  : item.id.videoId,
+    title    : item.snippet.title,
+    channel  : item.snippet.channelTitle,
+    thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || '',
+  };
+}
+
