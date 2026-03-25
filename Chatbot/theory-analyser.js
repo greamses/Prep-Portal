@@ -129,15 +129,14 @@
   ─────────────────────────────────────────────────────── */
   function stripMathJaxXML(text) {
     if (!text) return text;
-    let cleaned = text;
     
-    // Instead of deleting the whole container, just strip the HTML tags 
-    // but leave the text (which usually contains the raw LaTeX in assistive-mml)
+    if (text.includes('$')) {
+      return text.replace(/<[^>]+>/g, '').trim();
+    }
+    
+    // Otherwise, clean up the messy MathJax internal output
+    let cleaned = text.replace(/<mjx-container[^>]*>[\s\S]*?<\/mjx-container>/g, '');
     cleaned = cleaned.replace(/<[^>]+>/g, ' ');
-    
-    // Clean up HTML entities
-    cleaned = cleaned.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"');
-    
     return cleaned.trim();
   }
   
@@ -145,19 +144,19 @@
      CLEAN MALFORMED MATH
   ─────────────────────────────────────────────────────── */
   function cleanMalformedMath(text) {
-  if (!text) return text;
-  
-  // If the text already contains standard $ math delimiters, 
-  // do NOT run the aggressive XML stripper on it.
-  if (text.includes('$')) {
-    return text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$').replace(/\\\(/g, '$').replace(/\\\)/g, '$');
+    if (!text) return text;
+    
+    // If the text already contains standard $ math delimiters, 
+    // do NOT run the aggressive XML stripper on it.
+    if (text.includes('$')) {
+      return text.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$').replace(/\\\(/g, '$').replace(/\\\)/g, '$');
+    }
+    
+    // Otherwise, only perform light cleaning
+    let cleaned = stripMathJaxXML(text);
+    cleaned = cleaned.replace(/\\cdot\s*1([a-zA-Z])/g, '$1');
+    return cleaned;
   }
-  
-  // Otherwise, only perform light cleaning
-  let cleaned = stripMathJaxXML(text);
-  cleaned = cleaned.replace(/\\cdot\s*1([a-zA-Z])/g, '$1');
-  return cleaned;
-}
   
   function _parseJSON(raw) {
     let cleaned = stripMathJaxXML(raw);
@@ -267,29 +266,27 @@ MARKING — SS (age 15–19):
   function _parseAnnotated(raw) {
     if (!raw) return '';
     
-    // 1. Handle escaped newlines from the JSON response
+    // 1. Handle escaped newlines
     let h = raw.replace(/\\n/g, '\n');
     
-    // 2. Process all XML tags on the ENTIRE block first (not line-by-line)
-    // This prevents tags that span multiple lines from breaking the layout.
+    // 2. Process XML tags on the ENTIRE block (not line-by-line)
+    // This allows markings to span multiple lines without breaking.
     h = h.replace(
       /<mark\s+type=['"]([^'"]+)['"]\s*(?:fix=['"]([^'"]*?)['"])?\s*>([\s\S]*?)<\/mark>/gi,
       (_, type, fix, content) => {
-        if (type === 'del') return `<span class="rp-del" title="Delete">${content}</span>`;
+        if (type === 'del') return `<span class="rp-del">${content}</span>`;
         if (type === 'ins') return `<span class="rp-ins"><span class="rp-caret">&#x2038;</span><span class="rp-ins-w">${_esc(fix||'')}</span></span>`;
         if (fix) return `<span class="rp-wrap"><span class="rp-above">${_esc(fix)}</span><span class="rp-err">${content}</span></span>`;
-        return `<span class="rp-err" title="${_esc(type)}">${content}</span>`;
+        return `<span class="rp-err">${content}</span>`;
       }
     );
     
-    h = h.replace(/<ok>([\s\S]*?)<\/ok>/gi,
-      (_, c) => `<span class="rp-ok"><span class="rp-tick">&#10003;</span>${c}</span>`);
-    h = h.replace(/<weak>([\s\S]*?)<\/weak>/gi,
-      (_, c) => `<span class="rp-weak">${c}</span>`);
+    h = h.replace(/<ok>([\s\S]*?)<\/ok>/gi, (_, c) => `<span class="rp-ok"><span class="rp-tick">✓</span>${c}</span>`);
+    h = h.replace(/<weak>([\s\S]*?)<\/weak>/gi, (_, c) => `<span class="rp-weak">${c}</span>`);
     
-    // 3. NOW convert actual newlines into HTML line breaks
-    // Use trim to remove leading/trailing whitespace that might cause extra gaps
-    h = h.split('\n').map(line => line.trim()).filter(l => l !== "").join('<br>');
+    // 3. Convert actual newlines to <br> tags for the UI
+    // This ensures the layout you typed is preserved.
+    h = h.replace(/\n/g, '<br>');
     
     return `<p>${h}</p>`;
   }

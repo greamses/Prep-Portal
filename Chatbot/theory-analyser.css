@@ -803,12 +803,6 @@
   line-height: 32px;
 }
 
-.ta-annotated br {
-  display: block;
-  content: "";
-  margin: 0;
-}
-
 /* Teacher Notes */
 .ta-teacher-notes {
   padding: 10px 24px 18px 68px;
