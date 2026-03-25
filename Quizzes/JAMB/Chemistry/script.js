@@ -1,22 +1,22 @@
-import setupQuiz from '../question.js'
+import setupQuiz from '../../../question.js'
 
-[
+const quizData = [
   {
     "question": "The molecule with the highest number of lone pair of electrons is",
     "image": null,
     "options": [
-      "\( H_2O \)",
-      "\( NH_3 \)",
-      "\( CH_4 \)",
-      "\( CO_2 \)"
+      "H2O",
+      "NH3",
+      "CH4",
+      "CO2"
     ],
     "correctIndex": 3,
     "hint": "Draw Lewis structures for each molecule and count all non-bonding electron pairs across all atoms.",
     "explanation": [
-      "In \( H_2O \), oxygen has 2 lone pairs.",
-      "In \( NH_3 \), nitrogen has 1 lone pair.",
-      "In \( CH_4 \), carbon has 0 lone pairs.",
-      "In \( CO_2 \) (\( O=C=O \)), the carbon atom has 0 lone pairs, but each oxygen atom has 2 lone pairs, totaling 4 lone pairs for the whole molecule."
+      "In H2O, oxygen has 2 lone pairs.",
+      "In NH3, nitrogen has 1 lone pair.",
+      "In CH4, carbon has 0 lone pairs.",
+      "In CO2 (O=C=O), the carbon atom has 0 lone pairs, but each oxygen atom has 2 lone pairs, totaling 4 lone pairs for the whole molecule."
     ]
   },
   {
@@ -36,7 +36,7 @@ import setupQuiz from '../question.js'
     ]
   },
   {
-    "question": "Based on the functional groups (I: \( ROH \), II: \( RCOR' \), III: \( ROR' \), IV: \( RCOOH \), V: \( RCOOR' \)), the two compounds that will combine in the presence of an acid catalyst to produce compound V are",
+    "question": "Based on the functional groups (I: ROH, II: RCOR', III: ROR', IV: RCOOH, V: RCOOR'), the two compounds that will combine in the presence of an acid catalyst to produce compound V are",
     "image": null,
     "options": [
       "I and IV",
@@ -48,23 +48,23 @@ import setupQuiz from '../question.js'
     "hint": "Recall the reaction process known as esterification.",
     "explanation": [
       "Esterification is the reaction between an alkanol (alcohol) and an alkanoic acid (carboxylic acid) in the presence of an acid catalyst to produce an ester (alkanoate) and water.",
-      "In the provided list, I is an alkanol (\( ROH \)) and IV is an alkanoic acid (\( RCOOH \)). Compound V is an ester (\( RCOOR' \))."
+      "In the provided list, I is an alkanol (ROH) and IV is an alkanoic acid (RCOOH). Compound V is an ester (RCOOR')."
     ]
   },
   {
     "question": "An example of an alkaline gas is",
     "image": null,
     "options": [
-      "\( HCl \)",
-      "\( N_2 \)",
-      "\( NH_3 \)",
-      "\( NO_2 \)"
+      "HCl",
+      "N2",
+      "NH3",
+      "NO2"
     ],
     "correctIndex": 2,
     "hint": "Think of a common gas that turns moist red litmus paper blue.",
     "explanation": [
-      "Ammonia (\( NH_3 \)) is a classic example of a basic or alkaline gas.",
-      "When dissolved in water, it forms ammonium hydroxide, which contains hydroxide ions (\( OH^- \)), giving it its alkaline property."
+      "Ammonia (NH3) is a classic example of a basic or alkaline gas.",
+      "When dissolved in water, it forms ammonium hydroxide, which contains hydroxide ions (OH-), giving it its alkaline property."
     ]
   },
   {
@@ -100,7 +100,7 @@ import setupQuiz from '../question.js'
     ]
   },
   {
-    "question": "When \( \Delta H \) is positive and small, and \( \Delta S \) is positive and large, the reaction will be",
+    "question": "When ΔH is positive and small, and ΔS is positive and large, the reaction will be",
     "image": null,
     "options": [
       "Non-spontaneous",
@@ -109,14 +109,14 @@ import setupQuiz from '../question.js'
       "spontaneous"
     ],
     "correctIndex": 3,
-    "hint": "Evaluate the Gibbs free energy equation: \( \Delta G = \Delta H - T\Delta S \).",
+    "hint": "Evaluate the Gibbs free energy equation: ΔG = ΔH - TΔS.",
     "explanation": [
-      "Spontaneity is determined by the sign of the Gibbs free energy change (\( \Delta G \)). A reaction is spontaneous if \( \Delta G \) is negative.",
-      "In the equation \( \Delta G = \Delta H - T\Delta S \), if \( \Delta H \) is a small positive value and \( \Delta S \) is a large positive value, the term \( -T\Delta S \) will likely outweigh \( \Delta H \) at most temperatures, resulting in a negative \( \Delta G \)."
+      "Spontaneity is determined by the sign of the Gibbs free energy change (ΔG). A reaction is spontaneous if ΔG is negative.",
+      "In the equation ΔG = ΔH - TΔS, if ΔH is a small positive value and ΔS is a large positive value, the term -TΔS will likely outweigh ΔH at most temperatures, resulting in a negative ΔG."
     ]
   },
   {
-    "question": "Calculate the pH of \( 0.001M \) \( KOH \) solution.",
+    "question": "Calculate the pH of 0.001M KOH solution.",
     "image": null,
     "options": [
       "11",
@@ -125,11 +125,11 @@ import setupQuiz from '../question.js'
       "3"
     ],
     "correctIndex": 0,
-    "hint": "First calculate the pOH using the concentration of hydroxide ions, then use the relation \( pH + pOH = 14 \).",
+    "hint": "First calculate the pOH using the concentration of hydroxide ions, then use the relation pH + pOH = 14.",
     "explanation": [
-      "\( KOH \) is a strong base that dissociates completely: \( [OH^-] = 0.001M = 10^{-3} M \).",
-      "Calculate pOH: \( pOH = -\log[OH^-] = -\log(10^{-3}) = 3 \).",
-      "Calculate pH: Since \( pH + pOH = 14 \), then \( pH = 14 - 3 = 11 \)."
+      "KOH is a strong base that dissociates completely: [OH-] = 0.001M = 10^-3 M.",
+      "Calculate pOH: pOH = -log[OH-] = -log(10^-3) = 3.",
+      "Calculate pH: Since pH + pOH = 14, then pH = 14 - 3 = 11."
     ]
   },
   {
@@ -149,7 +149,7 @@ import setupQuiz from '../question.js'
     ]
   },
   {
-    "question": "For the reaction \( NH_3(g) + HCl(g) \rightarrow NH_4Cl(g) \), an increase in pressure will",
+    "question": "For the reaction NH3(g) + HCl(g) → NH4Cl(g), an increase in pressure will",
     "image": null,
     "options": [
       "lower the equilibrium constant",
@@ -165,7 +165,7 @@ import setupQuiz from '../question.js'
     ]
   },
   {
-    "question": "The compound \( CH_3CH(NH_2)CH_2CH_2CH_3 \) is an example of a",
+    "question": "The compound CH3CH(NH2)CH2CH2CH3 is an example of a",
     "image": null,
     "options": [
       "primary amine",
@@ -186,30 +186,30 @@ import setupQuiz from '../question.js'
     "options": [
       "production of cooling agent",
       "production of margarine",
-      "production of \( HNO_3 \)",
+      "production of HNO3",
       "manufacturing of oil"
     ],
     "correctIndex": 2,
     "hint": "Think about the major industrial chemical pathway starting from atmospheric nitrogen via the Haber process.",
     "explanation": [
-      "Nitrogen is used to produce ammonia (\( NH_3 \)) in the Haber process.",
-      "Ammonia is then used as the primary starting material in the Ostwald process for manufacturing nitric acid (\( HNO_3 \)), an essential industrial chemical."
+      "Nitrogen is used to produce ammonia (NH3) in the Haber process.",
+      "Ammonia is then used as the primary starting material in the Ostwald process for manufacturing nitric acid (HNO3), an essential industrial chemical."
     ]
   },
   {
-    "question": "In the reaction \( 2Na + Cl_2 \rightarrow 2NaCl \), the species that undergoes reduction is",
+    "question": "In the reaction 2Na + Cl2 → 2NaCl, the species that undergoes reduction is",
     "image": null,
     "options": [
-      "\( Na \)",
-      "\( NaCl \)",
-      "\( Cl^- \)",
-      "\( Cl_2 \)"
+      "Na",
+      "NaCl",
+      "Cl-",
+      "Cl2"
     ],
     "correctIndex": 3,
     "hint": "Reduction involves a gain of electrons, which is reflected as a decrease in oxidation state.",
     "explanation": [
-      "The oxidation state of Sodium (\( Na \)) changes from 0 to +1 (oxidation).",
-      "The oxidation state of Chlorine in \( Cl_2 \) changes from 0 to -1 in \( NaCl \). This decrease in oxidation state signifies reduction, meaning \( Cl_2 \) is the species reduced."
+      "The oxidation state of Sodium (Na) changes from 0 to +1 (oxidation).",
+      "The oxidation state of Chlorine in Cl2 changes from 0 to -1 in NaCl. This decrease in oxidation state signifies reduction, meaning Cl2 is the species reduced."
     ]
   },
   {
@@ -232,20 +232,20 @@ import setupQuiz from '../question.js'
     "question": "The products of the thermal decomposition of ammonium trioxonitrate(V) are",
     "image": null,
     "options": [
-      "\( N_2O \) and \( H_2O \)",
-      "\( NO_2 \) and \( H_2O \)",
-      "\( N_2O \) and \( O_2 \)",
-      "\( NO_3 \) and \( H_2O \)"
+      "N2O and H2O",
+      "NO2 and H2O",
+      "N2O and O2",
+      "NO3 and H2O"
     ],
     "correctIndex": 0,
     "hint": "Recall the balanced chemical equation for the controlled heating of ammonium nitrate.",
     "explanation": [
-      "Ammonium trioxonitrate(V) is the chemical name for ammonium nitrate (\( NH_4NO_3 \)).",
-      "Upon controlled heating, it decomposes according to the equation: \( NH_4NO_3 \rightarrow N_2O + 2H_2O \), yielding dinitrogen monoxide and water vapor."
+      "Ammonium trioxonitrate(V) is the chemical name for ammonium nitrate (NH4NO3).",
+      "Upon controlled heating, it decomposes according to the equation: NH4NO3 → N2O + 2H2O, yielding dinitrogen monoxide and water vapor."
     ]
   },
   {
-    "question": "In the chemical equation \( 2X + 2HCl \rightarrow 2XCl + H_2 \), X is",
+    "question": "In the chemical equation 2X + 2HCl → 2XCl + H2, X is",
     "image": null,
     "options": [
       "K",
@@ -256,8 +256,8 @@ import setupQuiz from '../question.js'
     "correctIndex": 0,
     "hint": "Examine the stoichiometry and the formula of the product chloride to determine the metal's valency.",
     "explanation": [
-      "The product \( XCl \) indicates that the metal \( X \) has a valency of +1.",
-      "Potassium (\( K \)) is a Group 1 alkali metal with a valency of +1. The other options (\( Mg, Ca, Ba \)) are Group 2 alkaline earth metals with a valency of +2, which would form chlorides with the formula \( XCl_2 \)."
+      "The product XCl indicates that the metal X has a valency of +1.",
+      "Potassium (K) is a Group 1 alkali metal with a valency of +1. The other options (Mg, Ca, Ba) are Group 2 alkaline earth metals with a valency of +2, which would form chlorides with the formula XCl2."
     ]
   },
   {
@@ -296,20 +296,20 @@ import setupQuiz from '../question.js'
     "question": "In the electrolysis of brine using a neutral electrode, which ion is discharged at the anode?",
     "image": null,
     "options": [
-      "\( 2H^+ \)",
-      "\( Na^+ \)",
-      "\( Cl^- \)",
-      "\( OH^- \)"
+      "2H+",
+      "Na+",
+      "Cl-",
+      "OH-"
     ],
     "correctIndex": 2,
     "hint": "Consider how ion concentration affects the preferential discharge of anions in an electrolytic cell.",
     "explanation": [
-      "Brine is a concentrated \( NaCl \) solution containing \( Cl^- \) and \( OH^- \) anions. At the anode, these ions compete for discharge.",
-      "Due to its high concentration in brine, the chloride ion (\( Cl^- \)) is preferentially discharged over the hydroxide ion (\( OH^- \)) to form chlorine gas."
+      "Brine is a concentrated NaCl solution containing Cl- and OH- anions. At the anode, these ions compete for discharge.",
+      "Due to its high concentration in brine, the chloride ion (Cl-) is preferentially discharged over the hydroxide ion (OH-) to form chlorine gas."
     ]
   },
   {
-    "question": "The time required to deposit \( 4.5g \) of copper from \( CuSO_4 \) solution by passing a current of \( 2.5 \) Amperes is (\( Cu = 64g \); \( 1F = 96500C/mol \))",
+    "question": "Calculate the time required to deposit 4.5g of copper from CuSO4 solution by passing a current of 2.5 Amperes. (Cu = 64g ; 1F = 96500C/mol)",
     "image": null,
     "options": [
       "2714 sec",
@@ -318,11 +318,11 @@ import setupQuiz from '../question.js'
       "6785 sec"
     ],
     "correctIndex": 2,
-    "hint": "Apply Faraday's first law equation: \( m = \frac{I \cdot t \cdot M}{n \cdot F} \).",
+    "hint": "Apply Faraday's first law equation: mass (m) = (Current (I) × Time (t) × Molar Mass (M)) / (Valency (n) × Faraday (F)).",
     "explanation": [
-      "Using the formula \( m = \frac{I \cdot t \cdot M}{n \cdot F} \), for \( Cu^{2+} \), \( n = 2 \). Rearrange to find time: \( t = \frac{m \cdot n \cdot F}{I \cdot M} \).",
-      "Plugging in the values: \( t = \frac{4.5 \cdot 2 \cdot 96500}{2.5 \cdot 64} = \frac{868500}{160} = 5428.125 \) seconds.",
-      "Rounding to the nearest whole number gives \( 5428 \) sec."
+      "Using the formula m = (ItM) / (nF), for Cu2+, n = 2. Rearrange to find time: t = (m × n × F) / (I × M).",
+      "Plugging in the values: t = (4.5 × 2 × 96500) / (2.5 × 64) = 868500 / 160 = 5428.125 seconds.",
+      "Rounding to the nearest whole number gives 5428 sec."
     ]
   }
 ]
