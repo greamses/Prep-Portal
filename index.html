@@ -11,7 +11,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="./main.css">
-    <link rel="stylesheet" href="./Chatbot/chatbot.css">
     
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -22,13 +21,7 @@
     <!-- NAVIGATION -->
     <nav class="site-nav">
         <a href="#" class="nav-logo">Prep<span>Portal</span></a>
-        <ul class="nav-links" id="nav-links">
-            <li><a href="#exams">Exams</a></li>
-            <li><a href="#subjects">Subjects</a></li>
-            <li><a href="#theory">Theory Drill</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#exams" class="nav-cta">Start Revising</a></li>
-        </ul>
+        <ul class="nav-links" id="nav-links"></ul>
         <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
             <span></span><span></span><span></span>
         </button>
@@ -42,86 +35,57 @@
     <!-- HERO -->
     <div class="hero">
         <div class="hero-left">
-            <h1 class="hero-title" id="main-title">The Exam<br>Archive.</h1>
+            <h1 class="hero-title" id="main-title">Prep<br>Portal.</h1>
         </div>
         <div class="hero-right">
-            <p class="hero-tagline">A curated vault of past papers, worked solutions, and prep kits — built for students who take results seriously.</p>
-            <div class="hero-stats">
-                <div class="stat"><strong>7</strong><span>Exam Sets</span></div>
-                <div class="stat"><strong>3</strong><span>Categories</span></div>
-                <div class="stat"><strong>200+</strong><span>Questions</span></div>
-                <div class="stat"><strong>2026</strong><span>Edition</span></div>
-            </div>
+            <p class="hero-tagline" id="hero-tagline">A curated vault of past papers, worked solutions, and prep kits — built for students who take results seriously.</p>
+            <div class="hero-stats" id="hero-stats"></div>
         </div>
     </div>
     
-    <!-- EXAM ARCHIVES SECTION - DIVIDED INTO CATEGORIES -->
+    <!-- EXAM ARCHIVES SECTION -->
     <div class="section-header" id="exams">
-        <h2>Exam Archives</h2>
-        <span>National · International · Competition</span>
+        <h2 id="exams-title">Exam Archives</h2>
+        <span id="exams-subtitle">National · International · Competition</span>
     </div>
     
     <main class="main-content">
-        <div class="category-grid" id="category-grid">
-            <!-- Category cards will be dynamically generated -->
-        </div>
+        <div class="category-grid" id="category-grid"></div>
     </main>
     
-    <!-- SUBJECT EXAMS SECTION - ALL SUBJECTS IN ONE PLACE -->
+    <!-- SUBJECT EXAMS SECTION -->
     <section class="subject-section" id="subjects">
         <div class="subject-header reveal">
             <div class="subject-header-text">
-                <p class="eyebrow">Subject-Based Resources</p>
-                <h2>Subject Exams</h2>
-                <p>Comprehensive subject-specific exam materials, practice questions, and revision guides across all core disciplines.</p>
+                <p class="eyebrow" id="subjects-eyebrow">Subject-Based Resources</p>
+                <h2 id="subjects-title">Subject Exams</h2>
+                <p id="subjects-description">Comprehensive subject-specific exam materials, practice questions, and revision guides across all core disciplines.</p>
             </div>
-            <span class="subject-tag">All Subjects</span>
+            <span class="subject-tag" id="subjects-tag">All Subjects</span>
         </div>
-        
-        <div class="subject-grid" id="subject-grid">
-            <!-- Subject cards will be dynamically generated -->
-        </div>
+        <div class="subject-grid" id="subject-grid"></div>
     </section>
     
     <!-- THEORY DRILL SECTION -->
     <section class="drill-section" id="theory">
         <div class="drill-header reveal">
             <div class="drill-header-text">
-                <p class="eyebrow">Practice & Revision</p>
-                <h2>Theory Drill</h2>
-                <p>Structured theory questions, worked examples, and detailed explanations to reinforce key concepts across all subjects.</p>
+                <p class="eyebrow" id="drill-eyebrow">Practice & Revision</p>
+                <h2 id="drill-title">Theory Drill</h2>
+                <p id="drill-description">Structured theory questions, worked examples, and detailed explanations to reinforce key concepts across all subjects.</p>
             </div>
-            <span class="drill-tag">Drill Mode</span>
+            <span class="drill-tag" id="drill-tag">Drill Mode</span>
         </div>
-        
-        <div class="drill-grid" id="drill-grid">
-            <!-- Drill cards will be dynamically generated -->
-        </div>
+        <div class="drill-grid" id="drill-grid"></div>
     </section>
     
     <!-- ABOUT SECTION -->
-    <section class="info-strip" id="about">
-        <div class="info-cell reveal">
-            <div class="info-label">What is Prep Portal?</div>
-            <h3>Built for Exam Season</h3>
-            <p>A structured study resource covering national and international exam boards — from Common Entrance to WAEC, all in one place.</p>
-        </div>
-        <div class="info-cell reveal" style="transition-delay:.15s">
-            <div class="info-label">How to use it</div>
-            <h3>Click. Practice. Review.</h3>
-            <p>Each exam opens a full interactive paper. Answer questions, check your score, and review worked solutions immediately.</p>
-        </div>
-        <div class="info-cell reveal" style="transition-delay:.3s">
-            <div class="info-label">Coming soon</div>
-            <h3>More Sets Dropping</h3>
-            <p>Grade 4 Spring, TULIP Questions, and Scholastic Prep are in active development. Check back each term for new releases.</p>
-        </div>
-    </section>
+    <section class="info-strip" id="info-strip"></section>
     
     <!-- CTA BAND -->
     <section class="cta-band reveal">
-        <h2>Ready to <em>raise your grade?</em></h2>
-        <a href="#exams" class="cta-btn">Browse All Exams →</a>
+        <h2 id="cta-title">Ready to <em>raise your grade?</em></h2>
+        <a href="#exams" class="cta-btn" id="cta-btn">Browse All Exams →</a>
     </section>
     
     <!-- FOOTER -->
@@ -129,52 +93,17 @@
         <div class="footer-top">
             <div class="footer-brand">
                 <span class="footer-logo">Prep<span>Portal</span></span>
-                <p>A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Exams</h4>
-                <ul>
-                    <li><a href="#exams">National Exams</a></li>
-                    <li><a href="#exams">International Exams</a></li>
-                    <li><a href="#exams">Competition Exams</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Subjects</h4>
-                <ul id="footer-subjects">
-                    <!-- Footer subject links will be dynamically generated -->
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Theory</h4>
-                <ul>
-                    <li><a href="./Theory-Page/index.html">Theory Drill</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Info</h4>
-                <ul>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#">Study Guides</a></li>
-                    <li><a href="#">Contact</a></li>
-                    <li><a href="#">Privacy</a></li>
-                </ul>
+                <p id="footer-description">A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 Prep Portal. All rights reserved.</p>
-            <div class="footer-links">
-                <a href="#">Terms</a>
-                <a href="#">Privacy</a>
-                <a href="#">Sitemap</a>
-            </div>
+            <p id="copyright">&copy; 2026 Prep Portal. All rights reserved.</p>
+            <div class="footer-links" id="footer-links"></div>
         </div>
     </footer>
     
-    <!-- PREPBOT -->
-    <div id="prepbot"></div>
-    <script src="./Chatbot/chatbot.js"></script>
-    <script src="./index.js"></script>
+    <script src="./data.js"></script>
+    <script src="../main.js"></script>
     
 </body>
 
