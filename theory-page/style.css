@@ -1545,6 +1545,39 @@ body {
   color: var(--yellow);
 }
 
+/* Calculation Link Styles - add after writing-link styles */
+.topic-chip.calculation-link {
+  background: var(--amber);
+  color: var(--bg);
+  border-color: var(--amber);
+}
+
+.topic-chip.calculation-link::after {
+  background: var(--ink);
+}
+
+.topic-chip.calculation-link:hover {
+  color: var(--yellow);
+}
+
+/* Group label styling for calculation links */
+.topic-group-label.calculation-link-lbl {
+  color: var(--amber);
+}
+
+.topic-group-label.calculation-link-lbl::after {
+  background: var(--amber);
+  opacity: 0.3;
+}
+
+/* Optional: Add hover effect for calculation link chips */
+.topic-chip.calculation-link:hover {
+  background: var(--amber);
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  transition: transform 0.15s ease;
+}
+
 .topic-footer {
   display: flex;
   align-items: center;
