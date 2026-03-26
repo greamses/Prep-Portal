@@ -13,230 +13,22 @@
     <link rel="stylesheet" href="./main.css">
     <link rel="stylesheet" href="./Chatbot/chatbot.css">
     
-    <!-- Math Section Styles -->
-    <style>
-        /* ══ MATH SECTION ══ */
-        .math-section {
-            border-top: 2px solid #0a0a0a;
-            padding: 0 clamp(1.2rem, 4vw, 3.5rem);
-        }
-        
-        .math-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 2rem;
-            padding: 3.5rem 0 2.5rem;
-            border-bottom: 2px solid #0a0a0a;
-            flex-wrap: wrap;
-        }
-        
-        .math-header-text .math-eyebrow {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: .72rem;
-            font-weight: 600;
-            letter-spacing: .12em;
-            text-transform: uppercase;
-            color: #0a0a0a;
-            background: #ffe500;
-            border: 2px solid #0a0a0a;
-            padding: .25rem .65rem;
-            display: inline-block;
-            margin-bottom: 1rem;
-        }
-        
-        .math-header-text h2 {
-            font-family: 'Unbounded', sans-serif;
-            font-size: clamp(1.9rem, 4vw, 3rem);
-            font-weight: 900;
-            line-height: 1.05;
-            margin: 0 0 .9rem;
-        }
-        
-        .math-header-text p {
-            font-size: .97rem;
-            line-height: 1.7;
-            max-width: 500px;
-            color: #333;
-        }
-        
-        .math-tag {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: .7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .1em;
-            border: 2px solid #0a0a0a;
-            padding: .4rem .9rem;
-            white-space: nowrap;
-            background: #0a0a0a;
-            color: #fff;
-            align-self: flex-start;
-            margin-top: .25rem;
-        }
-        
-        /* ── TABS ── */
-        .math-tabs {
-            display: flex;
-            gap: 0;
-            padding: 2rem 0 0;
-            flex-wrap: wrap;
-        }
-        
-        .math-tab {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: .78rem;
-            font-weight: 600;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            padding: .65rem 1.3rem;
-            border: 2px solid #0a0a0a;
-            background: transparent;
-            cursor: pointer;
-            transition: background .15s, color .15s;
-            margin-right: -2px;
-            margin-bottom: -2px;
-            position: relative;
-        }
-        
-        .math-tab:hover {
-            background: #f0f0f0;
-        }
-        
-        .math-tab.active {
-            background: #0a0a0a;
-            color: #fff;
-            z-index: 1;
-        }
-        
-        /* ── MATH GRID ── */
-        .math-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 0;
-            border-top: 2px solid #0a0a0a;
-            margin-bottom: 4rem;
-        }
-        
-        .math-card {
-            display: flex;
-            flex-direction: column;
-            border-right: 2px solid #0a0a0a;
-            border-bottom: 2px solid #0a0a0a;
-            padding: 1.6rem 1.4rem;
-            text-decoration: none;
-            color: #0a0a0a;
-            background: #fff;
-            transition: background .18s, transform .18s, box-shadow .18s;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .math-card:nth-child(4n) {
-            border-right: none;
-        }
-        
-        .math-card:hover {
-            background: #ffe500;
-            transform: translate(-3px, -3px);
-            box-shadow: 3px 3px 0 0 #0a0a0a;
-            z-index: 2;
-        }
-        
-        .math-card-inner {
-            padding: 22px 20px 20px;
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            flex: 1;
-            transition: color .25s;
-            min-height: 150px;
-        }
-        
-        .math-card h3 {
-            font-family: 'Unbounded', sans-serif;
-            font-weight: 700;
-            font-size: 10.5px;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            line-height: 1.4;
-            transition: color .25s;
-        }
-        
-        .math-card p {
-            font-size: 10px;
-            line-height: 1.75;
-            color: var(--muted);
-            flex: 1;
-            transition: color .25s;
-        }
-        
-        .math-card:hover h3 {
-            color: var(--yellow);
-        }
-        
-        .math-card:hover p {
-            color: rgba(255, 255, 255, .85);
-        }
-        
-        .mc-arrow {
-            align-self: flex-end;
-            font-size: 15px;
-            color: var(--ink);
-            transition: color .25s;
-            margin-top: 6px;
-        }
-        
-        .math-card:hover .mc-arrow {
-            color: var(--yellow);
-        }
-        
-        .math-panel {
-            display: none;
-        }
-        
-        .math-panel.active {
-            display: block;
-        }
-        
-        @media (max-width: 640px) {
-            .math-card:nth-child(4n) {
-                border-right: 2px solid #0a0a0a;
-            }
-            
-            .math-card:nth-child(2n) {
-                border-right: none;
-            }
-            
-            .math-tabs {
-                gap: 0;
-            }
-            
-            .math-tab {
-                font-size: .7rem;
-                padding: .55rem 1rem;
-            }
-        }
-    </style>
+ 
     
-    <!-- MathJax for Math Formatting -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 
 <body>
     
-    <!-- ═══ NAV ═══ -->
+    <!-- NAVIGATION -->
     <nav id="site-nav">
         <a href="#" class="nav-logo">Prep<span>Portal</span></a>
         <ul class="nav-links" id="nav-links">
             <li><a href="#exams">Exams</a></li>
-            <li><a href="#writing">Writing</a></li>
-            <li><a href="#math">Math</a></li>
+            <li><a href="#subjects">Subjects</a></li>
+            <li><a href="#theory">Theory Drill</a></li>
             <li><a href="#about">About</a></li>
-            <li><a href="#">Results</a></li>
             <li><a href="#exams" class="nav-cta">Start Revising</a></li>
         </ul>
         <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
@@ -244,12 +36,12 @@
         </button>
     </nav>
     
-    <!-- ═══ TICKER ═══ -->
+    <!-- TICKER -->
     <div class="ticker" aria-hidden="true">
         <div class="ticker-track" id="ticker-track"></div>
     </div>
     
-    <!-- ═══ HERO ═══ -->
+    <!-- HERO -->
     <header>
         <div class="hero-left">
             <h1 id="main-title">The Exam<br>Archive.</h1>
@@ -258,78 +50,174 @@
             <p class="hero-tagline">A curated vault of past papers, worked solutions, and prep kits — built for students who take results seriously.</p>
             <div class="hero-stat-row">
                 <div class="hero-stat"><strong>7</strong><span>Exam Sets</span></div>
-                <div class="hero-stat"><strong>8</strong><span>Writing Types</span></div>
+                <div class="hero-stat"><strong>3</strong><span>Categories</span></div>
                 <div class="hero-stat"><strong>200+</strong><span>Questions</span></div>
                 <div class="hero-stat"><strong>2026</strong><span>Edition</span></div>
             </div>
         </div>
     </header>
     
-    <!-- ═══ FEATURED BAND ═══ -->
-    <div class="featured-band reveal">
-        <div class="featured-label"><span>Active&nbsp;&nbsp;Sets</span></div>
-        <div class="featured-cards" id="featured-cards"></div>
-    </div>
-    
-    <!-- ═══ EXAM SECTION HEADER ═══ -->
+    <!-- EXAM ARCHIVES SECTION - DIVIDED INTO CATEGORIES -->
     <div class="section-header" id="exams">
-        <h2>All Exam Archives</h2>
-        <span>7 collections</span>
+        <h2>Exam Archives</h2>
+        <span>National · International · Competition</span>
     </div>
     
-    <!-- ═══ MAIN EXAM GRID ═══ -->
     <main class="main-content">
-        <div class="grid" id="exam-grid"></div>
+        <div class="exam-categories">
+            <!-- National Exams -->
+            <div class="card exam-category-card folder-card">
+                <div class="exam-category-inner">
+                    <h3>National Exams</h3>
+                    <p>Standardized assessments for national curricula and transition examinations.</p>
+                    <div class="exam-list">
+                        <a href="#" class="exam-list-item">
+                            <span>Common Entrance</span>
+                            <span class="exam-status">Coming Soon</span>
+                        </a>
+                        <a href="./WAEC/index.html" class="exam-list-item">
+                            <span>WAEC</span>
+                            <span class="exam-status live">Live</span>
+                        </a>
+                        <a href="./Grade-4-Exam/index.html" class="exam-list-item">
+                            <span>Grade 4 Spring</span>
+                            <span class="exam-status live">Live</span>
+                        </a>
+                        <a href="./Grade-5-Exam/index.html" class="exam-list-item">
+                            <span>Grade 5 Spring</span>
+                            <span class="exam-status live">Live</span>
+                        </a>
+                    </div>
+                    <span class="folder-path">/Exams/National/</span>
+                </div>
+            </div>
+            
+            <!-- International Exams -->
+            <div class="card exam-category-card folder-card">
+                <div class="exam-category-inner">
+                    <h3>International Exams</h3>
+                    <p>Globally recognized qualifications and international benchmark assessments.</p>
+                    <div class="exam-list">
+                        <a href="./Cambridge/index.html" class="exam-list-item">
+                            <span>Cambridge Exam</span>
+                            <span class="exam-status live">Live</span>
+                        </a>
+                        <a href="#" class="exam-list-item">
+                            <span>International Baccalaureate</span>
+                            <span class="exam-status">Coming Soon</span>
+                        </a>
+                        <a href="#" class="exam-list-item">
+                            <span>SAT Prep</span>
+                            <span class="exam-status">Coming Soon</span>
+                        </a>
+                    </div>
+                    <span class="folder-path">/Exams/International/</span>
+                </div>
+            </div>
+            
+            <!-- Competition Exams -->
+            <div class="card exam-category-card folder-card">
+                <div class="exam-category-inner">
+                    <h3>Competition Exams</h3>
+                    <p>Elite-level scholarship and academic competition preparation materials.</p>
+                    <div class="exam-list">
+                        <a href="./Scholarstic/index.html" class="exam-list-item">
+                            <span>Scholastic Prep</span>
+                            <span class="exam-status live">Live</span>
+                        </a>
+                        <a href="#" class="exam-list-item">
+                            <span>TULIP Questions</span>
+                            <span class="exam-status">Coming Soon</span>
+                        </a>
+                        <a href="#" class="exam-list-item">
+                            <span>Math Olympiad</span>
+                            <span class="exam-status">Coming Soon</span>
+                        </a>
+                    </div>
+                    <span class="folder-path">/Exams/Competition/</span>
+                </div>
+            </div>
+        </div>
     </main>
     
-    <!-- ═══ WRITING SECTION ═══ -->
-    <section class="writing-section" id="writing">
-        <div class="writing-header reveal">
-            <div class="writing-header-text">
-                <p class="writing-eyebrow">English Skills</p>
-                <h2>Writing Practice</h2>
-                <p>Master every writing genre — from formal letters to narrative essays. Each module includes structured prompts, model answers, and marking guides aligned to Common Entrance and WAEC syllabuses.</p>
+    <!-- SUBJECT EXAMS SECTION - ALL SUBJECTS IN ONE PLACE -->
+    <section class="subject-exams-section" id="subjects">
+        <div class="subject-header reveal">
+            <div class="subject-header-text">
+                <p class="subject-eyebrow">Subject-Based Resources</p>
+                <h2>Subject Exams</h2>
+                <p>Comprehensive subject-specific exam materials, practice questions, and revision guides across all core disciplines.</p>
             </div>
-            <span class="writing-tag">New Section</span>
+            <span class="subject-tag">All Subjects</span>
         </div>
         
-        <div class="writing-grid" id="writing-grid"></div>
+        <div class="subject-grid">
+            <!-- Writing Hub -->
+            <a href="./Writing/index.html" class="writing-card folder-card section-link">
+                <div class="writing-card-inner">
+                    <h3>English & Writing</h3>
+                    <p>Essay · Letter Writing · Comprehension · Summary · Speech · Report</p>
+                    <span class="folder-path">/Writing/</span>
+                    <div class="folder-arrow">→ Explore</div>
+                </div>
+            </a>
+            
+            <!-- Math Hub -->
+            <a href="./Math/index.html" class="math-card folder-card section-link">
+                <div class="math-card-inner">
+                    <h3>Mathematics</h3>
+                    <p>Arithmetic · Algebra · Geometry · Calculus · Statistics</p>
+                    <span class="folder-path">/Math/</span>
+                    <div class="folder-arrow">→ Explore</div>
+                </div>
+            </a>
+            
+            <!-- Science Hub -->
+            <a href="./Science/index.html" class="science-card folder-card section-link">
+                <div class="science-card-inner">
+                    <h3>Science</h3>
+                    <p>Biology · Chemistry · Physics · Integrated Science</p>
+                    <span class="folder-path">/Science/</span>
+                    <div class="folder-arrow">→ Explore</div>
+                </div>
+            </a>
+            
+            <!-- Social Studies Hub -->
+            <a href="./Social-Studies/index.html" class="social-card folder-card section-link">
+                <div class="social-card-inner">
+                    <h3>Social Studies</h3>
+                    <p>History · Geography · Government · Civic Education</p>
+                    <span class="folder-path">/Social-Studies/</span>
+                    <div class="folder-arrow">→ Explore</div>
+                </div>
+            </a>
+        </div>
     </section>
     
-    <!-- ═══ MATH SECTION ═══ -->
-    <section class="math-section" id="math">
-        <div class="math-header reveal">
-            <div class="math-header-text">
-                <p class="math-eyebrow">Maths Resources</p>
-                <h2>Math Hub</h2>
-                <p>Tools, games, videos, and reference sites to sharpen your mathematical thinking — from basic arithmetic to advanced algebra and beyond.</p>
+    <!-- THEORY DRILL SECTION -->
+    <section class="theory-section" id="theory">
+        <div class="theory-header reveal">
+            <div class="theory-header-text">
+                <p class="theory-eyebrow">Practice & Revision</p>
+                <h2>Theory Drill</h2>
+                <p>Structured theory questions, worked examples, and detailed explanations to reinforce key concepts across all subjects.</p>
             </div>
-            <span class="math-tag">Explore</span>
+            <span class="theory-tag">Drill Mode</span>
         </div>
         
-        <!-- TABS -->
-        <div class="math-tabs" id="math-tabs">
-            <button class="math-tab active" data-tab="tools"> Interactive Tools</button>
-            <button class="math-tab" data-tab="games"> Games</button>
-            <button class="math-tab" data-tab="video">▶ Video</button>
-            <button class="math-tab" data-tab="sites"> Other Sites</button>
-        </div>
-        
-        <!-- PANELS -->
-        <div class="math-panel active" id="math-panel-tools">
-            <div class="math-grid" id="math-grid-tools"></div>
-        </div>
-        <div class="math-panel" id="math-panel-games">
-            <div class="math-grid" id="math-grid-games"></div>
-        </div>
-        <div class="math-panel" id="math-panel-video">
-            <div class="math-grid" id="math-grid-video"></div>
-        </div>
-        <div class="math-panel" id="math-panel-sites">
-            <div class="math-grid" id="math-grid-sites"></div>
+        <div class="theory-grid">
+            <a href="./Theory-Page/index.html" class="theory-card folder-card section-link">
+                <div class="theory-card-inner">
+                    <h3>Theory Drill Hub</h3>
+                    <p>Subject-Specific Drills · Worked Examples · Step-by-Step Solutions · Exam-Style Questions</p>
+                    <span class="folder-path">/Theory-Page/</span>
+                    <div class="folder-arrow">→ Start Drilling</div>
+                </div>
+            </a>
         </div>
     </section>
     
+    <!-- ABOUT SECTION -->
     <section class="info-strip" id="about">
         <div class="info-cell reveal">
             <div class="label">What is Prep Portal?</div>
@@ -339,7 +227,7 @@
         <div class="info-cell reveal" style="transition-delay:.15s">
             <div class="label">How to use it</div>
             <h3>Click. Practice. Review.</h3>
-            <p>Each card opens a full interactive paper. Answer questions, check your score, and review worked solutions immediately.</p>
+            <p>Each exam opens a full interactive paper. Answer questions, check your score, and review worked solutions immediately.</p>
         </div>
         <div class="info-cell reveal" style="transition-delay:.3s">
             <div class="label">Coming soon</div>
@@ -348,13 +236,13 @@
         </div>
     </section>
     
-    <!-- ═══ CTA BAND ═══ -->
+    <!-- CTA BAND -->
     <section class="cta-band reveal">
         <h2>Ready to <em>raise your grade?</em></h2>
-        <a href="#exams" class="cta-btn">Browse All Exams &rarr;</a>
+        <a href="#exams" class="cta-btn">Browse All Exams →</a>
     </section>
     
-    <!-- ═══ FOOTER ═══ -->
+    <!-- FOOTER -->
     <footer>
         <div class="footer-top">
             <div class="footer-brand">
@@ -364,28 +252,24 @@
             <div class="footer-col">
                 <h4>Exams</h4>
                 <ul>
-                    <li><a href="#">Common Entrance</a></li>
-                    <li><a href="./Cambridge/index.html">Cambridge</a></li>
-                    <li><a href="./Grade-5-Exam/index.html">Grade 5 Spring</a></li>
-                    <li><a href="./WAEC/index.html">WAEC</a></li>
+                    <li><a href="#exams">National Exams</a></li>
+                    <li><a href="#exams">International Exams</a></li>
+                    <li><a href="#exams">Competition Exams</a></li>
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Math Hub</h4>
+                <h4>Subjects</h4>
                 <ul>
-                    <li><a href="#math">Interactive Tools</a></li>
-                    <li><a href="#math">Games</a></li>
-                    <li><a href="#math">Video</a></li>
-                    <li><a href="#math">Other Sites</a></li>
+                    <li><a href="./Writing/index.html">English & Writing</a></li>
+                    <li><a href="./Math/index.html">Mathematics</a></li>
+                    <li><a href="./Science/index.html">Science</a></li>
+                    <li><a href="./Social-Studies/index.html">Social Studies</a></li>
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Writing</h4>
+                <h4>Theory</h4>
                 <ul>
-                    <li><a href="./Writing/essay/index.html">Essay Writing</a></li>
-                    <li><a href="./Writing/formal-letter/index.html">Formal Letter</a></li>
-                    <li><a href="./Writing/narrative/index.html">Narrative</a></li>
-                    <li><a href="./Writing/comprehension/index.html">Comprehension</a></li>
+                    <li><a href="./Theory-Page/index.html">Theory Drill</a></li>
                 </ul>
             </div>
             <div class="footer-col">
@@ -408,11 +292,82 @@
         </div>
     </footer>
     
-    <!-- ═══ PREPBOT ═══ -->
+    <!-- PREPBOT -->
     <div id="prepbot"></div>
     <script src="./Chatbot/chatbot.js"></script>
     
-    <script src="./index.js"></script>
+    <script>
+        // TICKER
+        const tickerItems = [
+            "Common Entrance", "Cambridge", "Grade 5 Spring", "WAEC",
+            "TULIP Questions", "Scholastic Prep", "Math Olympiad",
+            "Essay Writing", "Comprehension", "Theory Drill"
+        ];
+        const tickerTrack = document.getElementById('ticker-track');
+        if (tickerTrack) {
+            [...tickerItems, ...tickerItems].forEach(t => {
+                const s = document.createElement('span');
+                s.className = 'ticker-item';
+                s.innerHTML = t + '<span class="ticker-dot"></span>';
+                tickerTrack.appendChild(s);
+            });
+        }
+        
+        // SPLIT TEXT ANIMATION
+        const splitText = el => {
+            if (!el) return;
+            const lines = el.innerHTML.split('<br>');
+            el.innerHTML = '';
+            lines.forEach((line, li) => {
+                const div = document.createElement('div');
+                div.style.display = 'block';
+                line.split('').forEach((char, ci) => {
+                    const wrapper = document.createElement('span');
+                    wrapper.className = 'char-wrapper';
+                    const span = document.createElement('span');
+                    span.className = 'char';
+                    span.innerHTML = char === ' ' ? '&nbsp;' : char;
+                    span.style.transitionDelay = `${li * 0.2 + ci * 0.03}s`;
+                    wrapper.appendChild(span);
+                    div.appendChild(wrapper);
+                });
+                el.appendChild(div);
+            });
+        };
+        splitText(document.getElementById('main-title'));
+        
+        // REVEAL OBSERVER
+        const revealObserver = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    revealObserver.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+        
+        // INIT
+        window.onload = () => document.body.classList.add('active');
+        
+        // NAV TOGGLE
+        const toggle = document.getElementById('nav-toggle');
+        const navLinks = document.getElementById('nav-links');
+        if (toggle && navLinks) {
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('open');
+                navLinks.classList.toggle('open');
+            });
+        }
+        
+        // NAV SHADOW ON SCROLL
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('site-nav');
+            if (nav) {
+                nav.style.boxShadow = window.scrollY > 10 ? '0 4px 0 0 #0a0a0a' : 'none';
+            }
+        }, { passive: true });
+    </script>
     
 </body>
 
