@@ -1,5 +1,5 @@
 // ============================================
-// UNIFIED CONTENT INJECTOR - No changes needed
+// UNIFIED CONTENT INJECTOR - Using innerHTML
 // ============================================
 
 // Helper function
@@ -15,23 +15,15 @@ function injectNavigation() {
     const navLinks = document.getElementById('nav-links');
     if (!navLinks) return;
     
-    navLinks.innerHTML = '';
-    siteData.navigation.forEach(item => {
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = item.href;
-        a.textContent = item.text;
-        li.appendChild(a);
-        navLinks.appendChild(li);
-    });
+    const navItems = siteData.navigation.map(item =>
+        `<li><a href="${item.href}">${item.text}</a></li>`
+    ).join('');
     
-    const ctaLi = document.createElement('li');
-    const ctaA = document.createElement('a');
-    ctaA.href = siteData.ctaButton.href;
-    ctaA.className = "nav-cta";
-    ctaA.textContent = siteData.ctaButton.text;
-    ctaLi.appendChild(ctaA);
-    navLinks.appendChild(ctaLi);
+    navLinks.innerHTML = navItems + `
+        <li>
+            <a href="${siteData.ctaButton.href}" class="nav-cta">${siteData.ctaButton.text}</a>
+        </li>
+    `;
 }
 
 // Inject ticker
@@ -39,12 +31,10 @@ function injectTicker() {
     const tickerTrack = document.getElementById('ticker-track');
     if (!tickerTrack) return;
     
-    tickerTrack.innerHTML = '';
     const items = [...siteData.tickerItems, ...siteData.tickerItems];
-    items.forEach(item => {
-        const s = createElement('span', 'ticker-item', item + '<span class="ticker-dot"></span>');
-        tickerTrack.appendChild(s);
-    });
+    tickerTrack.innerHTML = items.map(item =>
+        `<span class="ticker-item">${item}<span class="ticker-dot"></span></span>`
+    ).join('');
 }
 
 // Inject hero stats
@@ -52,11 +42,9 @@ function injectHeroStats() {
     const heroStats = document.getElementById('hero-stats');
     if (!heroStats) return;
     
-    heroStats.innerHTML = '';
-    siteData.hero.stats.forEach(stat => {
-        const statDiv = createElement('div', 'stat', `<strong>${stat.value}</strong><span>${stat.label}</span>`);
-        heroStats.appendChild(statDiv);
-    });
+    heroStats.innerHTML = siteData.hero.stats.map(stat =>
+        `<div class="stat"><strong>${stat.value}</strong><span>${stat.label}</span></div>`
+    ).join('');
     
     // Update hero tagline
     const tagline = document.getElementById('hero-tagline');
@@ -94,27 +82,23 @@ function injectExamCategories() {
     const container = document.getElementById('category-grid');
     if (!container) return;
     
-    container.innerHTML = '';
-    siteData.examCategories.forEach(category => {
-        const card = createElement('div', 'card category-card');
-        const cardInner = createElement('div', 'card-inner');
-        
-        cardInner.appendChild(createElement('h3', '', category.title));
-        cardInner.appendChild(createElement('p', '', category.description));
-        
-        const itemList = createElement('div', 'item-list');
-        category.items.forEach(item => {
-            const link = createElement('a', 'list-item', `<span>${item.name}</span><span class="status ${item.live ? 'live' : ''}">${item.status}</span>`);
-            link.href = item.link;
-            if (!item.live) link.style.opacity = '0.6';
-            itemList.appendChild(link);
-        });
-        
-        cardInner.appendChild(itemList);
-        cardInner.appendChild(createElement('span', 'badge', category.badge));
-        card.appendChild(cardInner);
-        container.appendChild(card);
-    });
+    container.innerHTML = siteData.examCategories.map(category => `
+        <div class="card category-card">
+            <div class="card-inner">
+                <h3>${category.title}</h3>
+                <p>${category.description}</p>
+                <div class="item-list">
+                    ${category.items.map(item => `
+                        <a href="${item.link}" class="list-item" ${!item.live ? 'style="opacity:0.6"' : ''}>
+                            <span>${item.name}</span>
+                            <span class="status ${item.live ? 'live' : ''}">${item.status}</span>
+                        </a>
+                    `).join('')}
+                </div>
+                <a href="${category.link}"><span class="badge">${category.badge}</span></a>
+            </div>
+        </div>
+    `).join('');
 }
 
 // Inject subject cards
@@ -122,20 +106,16 @@ function injectSubjectCards() {
     const container = document.getElementById('subject-grid');
     if (!container) return;
     
-    container.innerHTML = '';
-    siteData.subjects.forEach(subject => {
-        const card = createElement('a', `subject-card ${subject.color} section-link`);
-        card.href = subject.link;
-        card.innerHTML = `
+    container.innerHTML = siteData.subjects.map(subject => `
+        <a href="${subject.link}" class="subject-card ${subject.color} section-link">
             <div class="subject-card-inner">
                 <h3>${subject.name}</h3>
                 <p>${subject.description}</p>
                 <span class="badge">${subject.badge}</span>
                 <div class="card-arrow">→ ${subject.cta}</div>
             </div>
-        `;
-        container.appendChild(card);
-    });
+        </a>
+    `).join('');
 }
 
 // Inject drill cards
@@ -143,20 +123,16 @@ function injectDrillCards() {
     const container = document.getElementById('drill-grid');
     if (!container) return;
     
-    container.innerHTML = '';
-    siteData.drills.forEach(drill => {
-        const card = createElement('a', `subject-card ${drill.color} section-link`);
-        card.href = drill.link;
-        card.innerHTML = `
+    container.innerHTML = siteData.drills.map(drill => `
+        <a href="${drill.link}" class="subject-card ${drill.color} section-link">
             <div class="subject-card-inner">
                 <h3>${drill.name}</h3>
                 <p>${drill.description}</p>
                 <span class="badge">${drill.badge}</span>
                 <div class="card-arrow">→ ${drill.cta}</div>
             </div>
-        `;
-        container.appendChild(card);
-    });
+        </a>
+    `).join('');
 }
 
 // Inject info strip
@@ -164,17 +140,13 @@ function injectInfoStrip() {
     const container = document.getElementById('info-strip');
     if (!container) return;
     
-    container.innerHTML = '';
-    siteData.infoStrip.forEach((item, index) => {
-        const cell = createElement('div', 'info-cell reveal');
-        if (index > 0) cell.style.transitionDelay = `${0.15 * index}s`;
-        cell.innerHTML = `
+    container.innerHTML = siteData.infoStrip.map((item, index) => `
+        <div class="info-cell reveal" style="${index > 0 ? `transition-delay: ${0.15 * index}s` : ''}">
             <div class="info-label">${item.label}</div>
             <h3>${item.title}</h3>
             <p>${item.description}</p>
-        `;
-        container.appendChild(cell);
-    });
+        </div>
+    `).join('');
 }
 
 // Inject CTA band
@@ -201,31 +173,23 @@ function injectFooter() {
         footerTop.innerHTML = '';
         if (brand) footerTop.appendChild(brand);
         
-        siteData.footer.sections.forEach(section => {
-            const col = createElement('div', 'footer-col');
-            const h4 = createElement('h4', '', section.title);
-            const ul = createElement('ul', '');
-            section.links.forEach(link => {
-                const li = createElement('li', '');
-                const a = createElement('a', '', link.text);
-                a.href = link.href;
-                li.appendChild(a);
-                ul.appendChild(li);
-            });
-            col.appendChild(h4);
-            col.appendChild(ul);
-            footerTop.appendChild(col);
-        });
+        footerTop.innerHTML += siteData.footer.sections.map(section => `
+            <div class="footer-col">
+                <h4>${section.title}</h4>
+                <ul>
+                    ${section.links.map(link => `
+                        <li><a href="${link.href}">${link.text}</a></li>
+                    `).join('')}
+                </ul>
+            </div>
+        `).join('');
     }
     
     const footerLinks = document.getElementById('footer-links');
     if (footerLinks) {
-        footerLinks.innerHTML = '';
-        siteData.footer.bottomLinks.forEach(link => {
-            const a = createElement('a', '', link.text);
-            a.href = link.href;
-            footerLinks.appendChild(a);
-        });
+        footerLinks.innerHTML = siteData.footer.bottomLinks.map(link =>
+            `<a href="${link.href}">${link.text}</a>`
+        ).join('');
     }
 }
 

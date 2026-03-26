@@ -64,6 +64,7 @@ const siteData = {
             title: "National Exams",
             description: "Standardized assessments for national curricula and transition examinations.",
             badge: "/Exams/National/",
+            link: "./exam-archive",
             items: [
                 {
                     name: "WAEC",
@@ -72,13 +73,13 @@ const siteData = {
                     status: "Live"
                 },
                 {
-                    name: "Grade 4 Spring",
+                    name: "NECO",
                     link: "./Grade-4-Exam/index.html",
                     live: true,
                     status: "Live"
                 },
                 {
-                    name: "Grade 5 Spring",
+                    name: "JAMB",
                     link: "./Grade-5-Exam/index.html",
                     live: true,
                     status: "Live"
