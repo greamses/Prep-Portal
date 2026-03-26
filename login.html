@@ -557,7 +557,7 @@
         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
         await updateProfile(userCredential.user, { displayName: name });
         showMsg("Success! Redirecting...", "success");
-        window.location.href = "index.html"; // Redirect to your main app page
+        window.location.href = "./index.html"; // Redirect to your main app page
       } catch (error) {
         showMsg(error.message);
       } finally {
@@ -579,7 +579,7 @@
       setLoading(btn, true);
       try {
         await signInWithEmailAndPassword(auth, email, pass);
-        window.location.href = "dashboard.html"; 
+        window.location.href = "./index.html"; 
       } catch (error) {
         showMsg("Invalid login credentials.");
       } finally {
@@ -592,7 +592,7 @@
       btn.addEventListener('click', async () => {
         try {
           await signInWithPopup(auth, googleProvider);
-          window.location.href = "dashboard.html";
+          window.location.href = "./index.html";
         } catch (error) {
           showMsg(error.message);
         }
