@@ -4,336 +4,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upper Primary | Scholastic Prep Portal 2026</title>
-
+    <title>Scholastic Prep | Prep Portal 2026</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="../../main.css">
-    <link rel="stylesheet" href="../../Chatbot/chatbot.css">
-
+    
+    <link rel="stylesheet" href="../../../../main.css">
+    <link rel="stylesheet" href="../../../../utils/chatbot/chatbot.css">
+    <link rel="stylesheet" href="../../../../utils/loader/loader.css">
+    
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
-    <style>
-    /* ═══ LOADER ═══ */
-    #loader {
-        position: fixed;
-        inset: 0;
-        background: #0a0a0a;
-        z-index: 9000;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        transition: opacity .5s ease, visibility .5s ease;
-    }
-    #loader.done { opacity: 0; visibility: hidden; pointer-events: none; }
-    .lw { overflow: hidden; line-height: 1; }
-    .lw span {
-        display: block;
-        font-family: 'Unbounded', sans-serif;
-        font-weight: 900;
-        font-size: clamp(32px, 8vw, 72px);
-        color: #ffffff;
-        letter-spacing: -.03em;
-        text-transform: uppercase;
-        transform: translateY(110%);
-        animation: loaderWordIn .7s cubic-bezier(.16,1,.3,1) forwards;
-    }
-    .lw:nth-child(2) span { color: #ffe500; animation-delay: .12s; }
-    @keyframes loaderWordIn { to { transform: translateY(0); } }
-    .lbar {
-        width: 0;
-        height: 3px;
-        background: #ffe500;
-        margin-top: 28px;
-        animation: loaderBar .8s cubic-bezier(.16,1,.3,1) .35s forwards;
-    }
-    @keyframes loaderBar { to { width: clamp(160px, 30vw, 280px); } }
-
-    /* ═══ SCROLL HINT ═══ */
-    .scroll-hint {
-        position: fixed;
-        bottom: 28px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 9px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: .22em;
-        color: #0a0a0a;
-        opacity: 0;
-        z-index: 100;
-        transition: opacity .4s ease;
-        pointer-events: none;
-    }
-    body.loaded .scroll-hint { opacity: 1; }
-
-    /* ═══ BREADCRUMB ═══ */
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 14px clamp(18px, 5vw, 56px);
-        border-bottom: 2.5px solid #0a0a0a;
-        background: #fff;
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 9.5px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: .12em;
-    }
-    .breadcrumb a { color: #0a0a0a; text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    .breadcrumb .bc-sep { color: #777; }
-    .breadcrumb .bc-cur { color: #777; }
-    </style>
 </head>
 
 <body>
-
+    
     <!-- ═══ LOADER ═══ -->
     <div id="loader">
-        <div class="lw"><span>Upper</span></div>
-        <div class="lw"><span>Primary.</span></div>
-        <div class="lbar"></div>
+        <div class="loader-word"><span>Practice</span></div>
+        <div class="loader-word"><span>Years.</span></div>
+        <div class="loader-bar"></div>
     </div>
-
+    
     <div class="scroll-hint">Scroll</div>
-
-    <!-- ═══ NAV ═══ -->
-    <nav id="site-nav">
-        <a href="../../index.html" class="nav-logo">Prep<span>Portal</span></a>
-        <ul class="nav-links" id="nav-links">
-            <li><a href="../index.html">← All Levels</a></li>
-            <li><a href="#years">Past Questions</a></li>
-            <li><a href="../../index.html#about">About</a></li>
-            <li><a href="#years" class="nav-cta">Drill Now</a></li>
-        </ul>
+    
+    <!-- ═══ NAVIGATION ═══ -->
+    <nav class="site-nav">
+        <a href="../index.html" class="nav-logo">Prep<span>Portal</span></a>
+        <ul class="nav-links" id="nav-links"></ul>
         <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
             <span></span><span></span><span></span>
         </button>
     </nav>
-
-    <!-- ═══ BREADCRUMB ═══ -->
-    <div class="breadcrumb">
-        <a href="../../index.html">Prep Portal</a>
-        <span class="bc-sep">›</span>
-        <a href="../index.html">Scholastic Prep</a>
-        <span class="bc-sep">›</span>
-        <span class="bc-cur">Upper Primary</span>
-    </div>
-
+    
     <!-- ═══ TICKER ═══ -->
     <div class="ticker" aria-hidden="true">
         <div class="ticker-track" id="ticker-track"></div>
     </div>
-
-    <!-- ═══ HERO ═══ -->
-    <header>
+    
+    <!-- ═══ HERO SECTION ═══ -->
+    <div class="hero">
         <div class="hero-left">
-            <h1 id="main-title">Upper<br>Primary.</h1>
+            <h1 class="hero-title" id="main-title">Practice<br>Years.</h1>
         </div>
         <div class="hero-right">
-            <p class="hero-tagline">Six years of Upper Primary competition papers — fully archived and ready to drill for Primary 5–6 students targeting top placement.</p>
-            <div class="hero-stat-row">
-                <div class="hero-stat"><strong>6</strong><span>Years</span></div>
-                <div class="hero-stat"><strong>P5–6</strong><span>Level</span></div>
-                <div class="hero-stat"><strong>Free</strong><span>Access</span></div>
-            </div>
+            <p class="hero-tagline" id="hero-tagline"></p>
+            <div class="hero-stats" id="hero-stats"></div>
         </div>
-    </header>
-
+    </div>
+    
     <!-- ═══ FEATURED BAND ═══ -->
     <div class="featured-band reveal">
-        <div class="featured-label"><span>Available&nbsp;&nbsp;Years</span></div>
+        <div class="featured-label"><span>Live&nbsp;&nbsp;Now</span></div>
         <div class="featured-cards" id="featured-cards"></div>
     </div>
-
+    
     <!-- ═══ SECTION HEADER ═══ -->
-    <div class="section-header" id="years">
-        <h2>Past Questions Archive</h2>
-        <span>6 years</span>
+    <div class="section-header" id="categories">
+        <h2 id="categories-title">Competition Years</h2>
+        <span id="categories-subtitle">2021 · 2022 · 2023 · 2024 · 2025</span>
     </div>
-
-    <!-- ═══ YEAR GRID ═══ -->
+    
+    <!-- ═══ MAIN CONTENT ═══ -->
     <main class="main-content">
-        <div class="grid" id="year-grid"></div>
+        <div class="category-grid" id="category-grid"></div>
     </main>
-
+    
     <!-- ═══ INFO STRIP ═══ -->
-    <section class="info-strip">
-        <div class="info-cell reveal">
-            <div class="label">What's included</div>
-            <h3>Full Past Papers</h3>
-            <p>Each year holds the complete set of Upper Primary competition questions from that academic session.</p>
-        </div>
-        <div class="info-cell reveal" style="transition-delay:.15s">
-            <div class="label">How to use</div>
-            <h3>Simulate. Review. Improve.</h3>
-            <p>Work through each paper under timed conditions, then review with full worked solutions.</p>
-        </div>
-        <div class="info-cell reveal" style="transition-delay:.3s">
-            <div class="label">Coming soon</div>
-            <h3>Subject Drills Loading</h3>
-            <p>Topic-specific drill packs for Maths, English, Science, and General Knowledge in development.</p>
-        </div>
-    </section>
-
+    <section class="info-strip" id="info-strip"></section>
+    
     <!-- ═══ CTA BAND ═══ -->
     <section class="cta-band reveal">
-        <h2>Ready to <em>compete at the top?</em></h2>
-        <a href="#years" class="cta-btn">Start Drilling &rarr;</a>
+        <h2 id="cta-title">Ready to <em>compete at the top?</em></h2>
+        <a href="#categories" class="cta-btn" id="cta-btn">Start with 2025 →</a>
     </section>
-
+    
     <!-- ═══ FOOTER ═══ -->
-    <footer>
+    <footer class="site-footer">
         <div class="footer-top">
             <div class="footer-brand">
-                <span class="logo">Prep<span>Portal</span></span>
-                <p>A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Scholastic</h4>
-                <ul>
-                    <li><a href="#">Lower Primary</a></li>
-                    <li><a href="#">Middle Primary</a></li>
-                    <li><a href="./index.html">Upper Primary</a></li>
-                    <li><a href="#">Junior Secondary</a></li>
-                    <li><a href="#">Senior Secondary</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Exams</h4>
-                <ul>
-                    <li><a href="../../index.html#exams">Common Entrance</a></li>
-                    <li><a href="../../Cambridge/index.html">Cambridge</a></li>
-                    <li><a href="../../Grade-5-Exam/index.html">Grade 5 Spring</a></li>
-                    <li><a href="../../WAEC/index.html">WAEC</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Info</h4>
-                <ul>
-                    <li><a href="../../index.html#about">About</a></li>
-                    <li><a href="#">Contact</a></li>
-                    <li><a href="#">Privacy</a></li>
-                </ul>
+                <span class="footer-logo">Prep<span>Portal</span></span>
+                <p id="footer-description"></p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 Prep Portal. All rights reserved.</p>
-            <div class="footer-bottom-links">
-                <a href="#">Terms</a>
-                <a href="#">Privacy</a>
-                <a href="#">Sitemap</a>
-            </div>
+            <p id="copyright"></p>
+            <div class="footer-links" id="footer-links"></div>
         </div>
     </footer>
-
+    
+    <!-- ═══ CHATBOT ═══ -->
     <div id="prepbot"></div>
-    <script src="../../Chatbot/chatbot.js"></script>
-
-    <script>
-    const years = [
-        { id: "01", title: "2021 Past Questions", desc: "Full Upper Primary past questions from the 2021 competition session.", link: "./2021/index.html", live: true  },
-        { id: "02", title: "2022 Past Questions", desc: "Complete Upper Primary questions from the 2022 academic session.",    link: "./2022/index.html", live: true  },
-        { id: "03", title: "2023 Past Questions", desc: "Upper Primary past paper archive for the 2023 competition year.",     link: "./2023/index.html", live: true  },
-        { id: "04", title: "2024 Past Questions", desc: "Full question bank from the 2024 Upper Primary competition.",         link: "./2024/index.html", live: true  },
-        { id: "05", title: "2025 Past Questions", desc: "Most recent completed session — 2025 Upper Primary papers.",          link: "./2025/index.html", live: true  },
-        { id: "06", title: "2026 Past Questions", desc: "Current year — papers uploaded after the session concludes.",         link: "#",                 live: false },
-    ];
-
-    /* ── TICKER ── */
-    const tickerItems = ["Upper Primary","2021","2022","2023","2024","2025","2026","Scholastic Prep","Past Questions","Prep Portal","Competition Drills"];
-    const track = document.getElementById('ticker-track');
-    [...tickerItems, ...tickerItems].forEach(t => {
-        const s = document.createElement('span');
-        s.className = 'ticker-item';
-        s.innerHTML = t + '<span class="ticker-dot">✦</span>';
-        track.appendChild(s);
-    });
-
-    /* ── FEATURED BAND ── */
-    const featuredCards = document.getElementById('featured-cards');
-    years.filter(y => y.live).forEach(item => {
-        const a = document.createElement('a');
-        a.href = item.link;
-        a.className = 'feat-card';
-        a.innerHTML = `<div class="feat-card-inner"><span class="feat-badge">Available</span><h3>${item.title}</h3></div>`;
-        featuredCards.appendChild(a);
-    });
-
-    /* ── YEAR GRID ── */
-    const grid = document.getElementById('year-grid');
-    years.forEach((item, i) => {
-        const c = document.createElement(item.live ? 'a' : 'div');
-        if (item.live) c.href = item.link;
-        c.className = 'card';
-        c.style.transitionDelay = `${0.4 + i * 0.08}s`;
-        if (!item.live) c.style.opacity = '0.5';
-        c.innerHTML = `
-            <div class="card-inner">
-                <span class="card-num">${item.id}</span>
-                <h2>${item.title}</h2>
-                <p>${item.desc}</p>
-                <span class="card-arrow">${item.live ? '→' : '↳ Soon'}</span>
-            </div>`;
-        grid.appendChild(c);
-    });
-
-    /* ── CHAR SPLIT ── */
-    const splitText = el => {
-        const lines = el.innerHTML.split('<br>');
-        el.innerHTML = '';
-        lines.forEach((line, li) => {
-            const div = document.createElement('div');
-            div.style.display = 'block';
-            line.split('').forEach((char, ci) => {
-                const wrapper = document.createElement('span');
-                wrapper.className = 'char-wrapper';
-                const span = document.createElement('span');
-                span.className = 'char';
-                span.innerHTML = char === ' ' ? '&nbsp;' : char;
-                span.style.transitionDelay = `${li * 0.2 + ci * 0.03}s`;
-                wrapper.appendChild(span);
-                div.appendChild(wrapper);
-            });
-            el.appendChild(div);
-        });
-    };
-    splitText(document.getElementById('main-title'));
-
-    /* ── REVEAL ── */
-    const revealObserver = new IntersectionObserver(entries => {
-        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-    /* ── BOOT ── */
-    window.onload = () => {
-        setTimeout(() => {
-            document.getElementById('loader').classList.add('done');
-            document.body.classList.add('active', 'loaded');
-        }, 920);
-    };
-
-    /* ── NAV ── */
-    const toggle = document.getElementById('nav-toggle');
-    const navLinks = document.getElementById('nav-links');
-    toggle.addEventListener('click', () => { toggle.classList.toggle('open'); navLinks.classList.toggle('open'); });
-    window.addEventListener('scroll', () => {
-        document.getElementById('site-nav').style.boxShadow = window.scrollY > 10 ? '0 4px 0 0 #0a0a0a' : 'none';
-    }, { passive: true });
-
-    /* ── SCROLL HINT ── */
-    const hint = document.querySelector('.scroll-hint');
-    if (hint) window.addEventListener('scroll', () => { hint.style.opacity = window.scrollY > 60 ? '0' : ''; }, { passive: true });
-    </script>
-
+    <script src="../../../../utils/chatbot/chatbot.js"></script>
+    
+    <script src="./data.js"></script>
+    <script src="../../../../main.js"></script>
+    <script src="../../../../utils/loader/loader.js"></script>
+    
 </body>
+
 </html>
