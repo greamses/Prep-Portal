@@ -64,7 +64,6 @@ const siteData = {
             title: "National Exams",
             description: "Standardized assessments for national curricula and transition examinations.",
             badge: "/Exams/National/",
-            link: "./exam-archive",
             items: [
                 {
                     name: "WAEC",

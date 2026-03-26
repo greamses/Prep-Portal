@@ -95,7 +95,7 @@ function injectExamCategories() {
                         </a>
                     `).join('')}
                 </div>
-                <a href="${category.link}"><span class="badge">${category.badge}</span></a>
+<span class="badge">${category.badge}</span>
             </div>
         </div>
     `).join('');
