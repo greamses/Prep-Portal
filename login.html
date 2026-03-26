@@ -557,7 +557,7 @@
         const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
         await updateProfile(userCredential.user, { displayName: name });
         showMsg("Success! Redirecting...", "success");
-        window.location.href = "dashboard.html"; // Redirect to your main app page
+        window.location.href = "index.html"; // Redirect to your main app page
       } catch (error) {
         showMsg(error.message);
       } finally {
