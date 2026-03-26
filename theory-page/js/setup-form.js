@@ -148,7 +148,7 @@ function _buildTopicPicker(classKey, subject) {
         <div class="topic-group-label writing-link-lbl">Writing Practice</div>
         <div class="topic-chips">
           <a class="topic-chip writing-link" href="/writing" target="_blank">
-            <span>✍ Open Writing Practice Page ↗</span>
+            <span> Open Writing Practice Page ↗</span>
           </a>
         </div>`;
       groupsEl.appendChild(grpEl);
