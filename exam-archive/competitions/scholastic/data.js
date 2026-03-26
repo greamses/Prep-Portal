@@ -73,7 +73,7 @@ const siteData = {
             items: [
                 {
                     name: "Coming Soon",
-                    link: "#",
+                    link: "./upper-primary/inde",
                     live: false,
                     status: "2026",
                     description: "Challenge sets for Primary 4–5"
