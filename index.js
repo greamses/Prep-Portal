@@ -86,7 +86,7 @@ const drills = [
     {
         name: "Theory Drill Hub",
         description: "Subject-Specific Drills · Worked Examples · Step-by-Step Solutions · Exam-Style Questions",
-        link: "./Theory-Page/index.html",
+        link: "./theory-page/index.html",
         color: "red",
         badge: "/Theory-Page/",
         cta: "Start Drilling"
