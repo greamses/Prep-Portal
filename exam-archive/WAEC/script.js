@@ -1,4 +1,4 @@
-import setupQuiz from '../question.js'
+import setupQuiz from '../../../question.js'
 
 const quizData = [
 {
