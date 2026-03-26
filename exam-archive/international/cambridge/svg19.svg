@@ -1,0 +1,18 @@
+        <svg viewBox="0 0 300 30" width="100%" height="30" xmlns="http://www.w3.org/2000/svg">
+            <style>
+                .cell { stroke: #333; stroke-width: 1.5; }
+                .filled { fill: #64748b; }
+                .empty { fill: #f8fafc; }
+            </style>
+            <!-- 10 cells -->
+            <rect x="0" y="0" width="30" height="30" class="cell filled"/>
+            <rect x="30" y="0" width="30" height="30" class="cell filled"/>
+            <rect x="60" y="0" width="30" height="30" class="cell filled"/>
+            <rect x="90" y="0" width="30" height="30" class="cell filled"/>
+            <rect x="120" y="0" width="30" height="30" class="cell empty"/>
+            <rect x="150" y="0" width="30" height="30" class="cell empty"/>
+            <rect x="180" y="0" width="30" height="30" class="cell empty"/>
+            <rect x="210" y="0" width="30" height="30" class="cell empty"/>
+            <rect x="240" y="0" width="30" height="30" class="cell empty"/>
+            <rect x="270" y="0" width="30" height="30" class="cell empty"/>
+        </svg>

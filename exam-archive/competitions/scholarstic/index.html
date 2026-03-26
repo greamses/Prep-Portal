@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholastic Prep | Prep Portal 2026</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="../Chatbot/chatbot.css">
+
+    <style>
+    /* ═══ LOADER ═══ */
+    #loader {
+        position: fixed;
+        inset: 0;
+        background: #0a0a0a;
+        z-index: 9000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: opacity .5s ease, visibility .5s ease;
+    }
+    #loader.done {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+    .lw {
+        overflow: hidden;
+        line-height: 1;
+    }
+    .lw span {
+        display: block;
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 900;
+        font-size: clamp(32px, 8vw, 72px);
+        color: #ffffff;
+        letter-spacing: -.03em;
+        text-transform: uppercase;
+        transform: translateY(110%);
+        animation: loaderWordIn .7s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .lw:nth-child(2) span {
+        color: #ffe500;
+        animation-delay: .12s;
+    }
+    @keyframes loaderWordIn {
+        to { transform: translateY(0); }
+    }
+    .lbar {
+        width: 0;
+        height: 3px;
+        background: #ffe500;
+        margin-top: 28px;
+        animation: loaderBar .8s cubic-bezier(.16,1,.3,1) .35s forwards;
+    }
+    @keyframes loaderBar {
+        to { width: clamp(160px, 30vw, 280px); }
+    }
+
+    /* ═══ SCROLL HINT ═══ */
+    .scroll-hint {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .22em;
+        color: #0a0a0a;
+        opacity: 0;
+        z-index: 100;
+        transition: opacity .4s ease;
+        pointer-events: none;
+    }
+    body.loaded .scroll-hint { opacity: 1; }
+    </style>
+
+    <!-- MathJax for Math Formatting -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+
+    <!-- ═══ LOADER ═══ -->
+    <div id="loader">
+        <div class="lw"><span>Scholastic</span></div>
+        <div class="lw"><span>Prep.</span></div>
+        <div class="lbar"></div>
+    </div>
+
+    <div class="scroll-hint">Scroll</div>
+
+    <!-- ═══ NAV ═══ -->
+    <nav id="site-nav">
+        <a href="../index.html" class="nav-logo">Prep<span>Portal</span></a>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="../index.html#exams">Exams</a></li>
+            <li><a href="../index.html#writing">Writing</a></li>
+            <li><a href="../index.html#about">About</a></li>
+            <li><a href="#">Results</a></li>
+            <li><a href="#categories" class="nav-cta">Choose Level</a></li>
+        </ul>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- ═══ TICKER ═══ -->
+    <div class="ticker" aria-hidden="true">
+        <div class="ticker-track" id="ticker-track"></div>
+    </div>
+
+    <!-- ═══ HERO ═══ -->
+    <header>
+        <div class="hero-left">
+            <h1 id="main-title">Scholastic<br>Prep.</h1>
+        </div>
+        <div class="hero-right">
+            <p class="hero-tagline">Elite competition drills structured by school level — built for students who aim for the top.</p>
+            <div class="hero-stat-row">
+                <div class="hero-stat"><strong>5</strong><span>Categories</span></div>
+                <div class="hero-stat"><strong>1</strong><span>Live Now</span></div>
+                <div class="hero-stat"><strong>2026</strong><span>Edition</span></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ═══ FEATURED BAND ═══ -->
+    <div class="featured-band reveal">
+        <div class="featured-label"><span>Live&nbsp;&nbsp;Now</span></div>
+        <div class="featured-cards" id="featured-cards"></div>
+    </div>
+
+    <!-- ═══ SECTION HEADER ═══ -->
+    <div class="section-header" id="categories">
+        <h2>All Categories</h2>
+        <span>5 levels</span>
+    </div>
+
+    <!-- ═══ MAIN GRID ═══ -->
+    <main class="main-content">
+        <div class="grid" id="cat-grid"></div>
+    </main>
+
+    <!-- ═══ INFO STRIP ═══ -->
+    <section class="info-strip" id="about">
+        <div class="info-cell reveal">
+            <div class="label">What is Scholastic?</div>
+            <h3>Academic Competition Prep</h3>
+            <p>Scholastic Prep covers all school levels — Lower Primary to Senior Secondary — with drills built for high-stakes academic contests.</p>
+        </div>
+        <div class="info-cell reveal" style="transition-delay:.15s">
+            <div class="label">How to use it</div>
+            <h3>Pick Your Level. Drill Hard.</h3>
+            <p>Select your category, work through the questions, and review your score with full worked solutions to sharpen your edge.</p>
+        </div>
+        <div class="info-cell reveal" style="transition-delay:.3s">
+            <div class="label">Coming soon</div>
+            <h3>More Levels Dropping</h3>
+            <p>Lower Primary, Middle Primary, Junior Secondary, and Senior Secondary are in active development. New releases each term.</p>
+        </div>
+    </section>
+
+    <!-- ═══ CTA BAND ═══ -->
+    <section class="cta-band reveal">
+        <h2>Ready to <em>compete at the top?</em></h2>
+        <a href="#categories" class="cta-btn">Start Upper Primary &rarr;</a>
+    </section>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer>
+        <div class="footer-top">
+            <div class="footer-brand">
+                <span class="logo">Prep<span>Portal</span></span>
+                <p>A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Scholastic</h4>
+                <ul>
+                    <li><a href="#">Lower Primary</a></li>
+                    <li><a href="#">Middle Primary</a></li>
+                    <li><a href="./Upper-Primary/index.html">Upper Primary</a></li>
+                    <li><a href="#">Junior Secondary</a></li>
+                    <li><a href="#">Senior Secondary</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Exams</h4>
+                <ul>
+                    <li><a href="../index.html#exams">Common Entrance</a></li>
+                    <li><a href="../Cambridge/index.html">Cambridge</a></li>
+                    <li><a href="../Grade-5-Exam/index.html">Grade 5 Spring</a></li>
+                    <li><a href="../WAEC/index.html">WAEC</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Info</h4>
+                <ul>
+                    <li><a href="../index.html#about">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Prep Portal. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">Terms</a>
+                <a href="#">Privacy</a>
+                <a href="#">Sitemap</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ═══ PREPBOT ═══ -->
+    <div id="prepbot"></div>
+    <script src="../Chatbot/chatbot.js"></script>
+
+    <script>
+    /* ══════════════════════════════════════════
+       DATA
+    ══════════════════════════════════════════ */
+    const categories = [
+        { id: "01", title: "Lower Primary",    desc: "Foundation drills for Primary 1–3 students.",              link: "#",                            live: false },
+        { id: "02", title: "Middle Primary",   desc: "Challenge sets for Primary 4–5 students.",                 link: "#",                            live: false },
+        { id: "03", title: "Upper Primary",    desc: "Intensive prep for Primary 5–6 top placements.",           link: "./Upper-Primary/index.html",   live: true  },
+        { id: "04", title: "Junior Secondary", desc: "Problem sets for JSS1–JSS3 competition entrants.",         link: "#",                            live: false },
+        { id: "05", title: "Senior Secondary", desc: "Advanced modules for SSS academic contest prep.",          link: "#",                            live: false },
+    ];
+
+    /* ── TICKER ── */
+    const tickerItems = [
+        "Scholastic Prep", "Upper Primary", "Lower Primary",
+        "Middle Primary", "Junior Secondary", "Senior Secondary",
+        "2026 Edition", "Competition Drills", "Prep Portal"
+    ];
+    const track = document.getElementById('ticker-track');
+    [...tickerItems, ...tickerItems].forEach(t => {
+        const s = document.createElement('span');
+        s.className = 'ticker-item';
+        s.innerHTML = t + '<span class="ticker-dot">✦</span>';
+        track.appendChild(s);
+    });
+
+    /* ── FEATURED BAND ── */
+    const featuredCards = document.getElementById('featured-cards');
+    categories.filter(c => c.live).forEach(item => {
+        const a = document.createElement('a');
+        a.href = item.link;
+        a.className = 'feat-card';
+        a.innerHTML = `<div class="feat-card-inner"><span class="feat-badge">Live</span><h3>${item.title}</h3></div>`;
+        featuredCards.appendChild(a);
+    });
+
+    /* ── CATEGORY GRID ── */
+    const grid = document.getElementById('cat-grid');
+    categories.forEach((item, i) => {
+        const c = document.createElement(item.live ? 'a' : 'div');
+        if (item.live) c.href = item.link;
+        c.className = 'card';
+        c.style.transitionDelay = `${0.4 + i * 0.08}s`;
+        if (!item.live) c.style.opacity = '0.5';
+        c.innerHTML = `
+            <div class="card-inner">
+                <span class="card-num">${item.id}</span>
+                <h2>${item.title}</h2>
+                <p>${item.desc}</p>
+                <span class="card-arrow">${item.live ? '→' : '↳ Soon'}</span>
+            </div>`;
+        grid.appendChild(c);
+    });
+
+    /* ── CHAR SPLIT ANIMATION ── */
+    const splitText = el => {
+        const lines = el.innerHTML.split('<br>');
+        el.innerHTML = '';
+        lines.forEach((line, li) => {
+            const div = document.createElement('div');
+            div.style.display = 'block';
+            line.split('').forEach((char, ci) => {
+                const wrapper = document.createElement('span');
+                wrapper.className = 'char-wrapper';
+                const span = document.createElement('span');
+                span.className = 'char';
+                span.innerHTML = char === ' ' ? '&nbsp;' : char;
+                span.style.transitionDelay = `${li * 0.2 + ci * 0.03}s`;
+                wrapper.appendChild(span);
+                div.appendChild(wrapper);
+            });
+            el.appendChild(div);
+        });
+    };
+    splitText(document.getElementById('main-title'));
+
+    /* ── REVEAL OBSERVER ── */
+    const revealObserver = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                revealObserver.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    /* ── INIT ── */
+    window.onload = () => {
+        setTimeout(() => {
+            document.getElementById('loader').classList.add('done');
+            document.body.classList.add('active', 'loaded');
+        }, 920);
+    };
+
+    /* ── SCROLL HINT ── */
+    const hint = document.querySelector('.scroll-hint');
+    if (hint) window.addEventListener('scroll', () => {
+        hint.style.opacity = window.scrollY > 60 ? '0' : '';
+    }, { passive: true });
+
+    /* ── NAV TOGGLE ── */
+    const toggle = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('nav-links');
+    toggle.addEventListener('click', () => {
+        toggle.classList.toggle('open');
+        navLinks.classList.toggle('open');
+    });
+
+    /* ── NAV SHADOW ON SCROLL ── */
+    window.addEventListener('scroll', () => {
+        document.getElementById('site-nav').style.boxShadow =
+            window.scrollY > 10 ? '0 4px 0 0 #0a0a0a' : 'none';
+    }, { passive: true });
+    </script>
+
+</body>
+</html>
