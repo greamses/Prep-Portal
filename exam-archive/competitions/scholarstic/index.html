@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="../main.css">
+    <link rel="stylesheet" href="../../../main.css">
     <link rel="stylesheet" href="../Chatbot/chatbot.css">
 
     <style>
@@ -101,8 +101,8 @@
 
     <div class="scroll-hint">Scroll</div>
 
-    <!-- ═══ NAV ═══ -->
-    <nav id="site-nav">
+    <!-- ═══ NAVIGATION ═══ -->
+    <nav class="site-nav" id="site-nav">
         <a href="../index.html" class="nav-logo">Prep<span>Portal</span></a>
         <ul class="nav-links" id="nav-links">
             <li><a href="../index.html#exams">Exams</a></li>
@@ -121,17 +121,17 @@
         <div class="ticker-track" id="ticker-track"></div>
     </div>
 
-    <!-- ═══ HERO ═══ -->
-    <header>
+    <!-- ═══ HERO SECTION ═══ -->
+    <header class="hero">
         <div class="hero-left">
-            <h1 id="main-title">Scholastic<br>Prep.</h1>
+            <h1 class="hero-title" id="main-title">Scholastic<br>Prep.</h1>
         </div>
         <div class="hero-right">
             <p class="hero-tagline">Elite competition drills structured by school level — built for students who aim for the top.</p>
-            <div class="hero-stat-row">
-                <div class="hero-stat"><strong>5</strong><span>Categories</span></div>
-                <div class="hero-stat"><strong>1</strong><span>Live Now</span></div>
-                <div class="hero-stat"><strong>2026</strong><span>Edition</span></div>
+            <div class="hero-stats" id="hero-stats">
+                <div class="stat"><strong>5</strong><span>Categories</span></div>
+                <div class="stat"><strong>1</strong><span>Live Now</span></div>
+                <div class="stat"><strong>2026</strong><span>Edition</span></div>
             </div>
         </div>
     </header>
@@ -148,25 +148,25 @@
         <span>5 levels</span>
     </div>
 
-    <!-- ═══ MAIN GRID ═══ -->
+    <!-- ═══ MAIN CONTENT ═══ -->
     <main class="main-content">
-        <div class="grid" id="cat-grid"></div>
+        <div class="category-grid" id="category-grid"></div>
     </main>
 
     <!-- ═══ INFO STRIP ═══ -->
     <section class="info-strip" id="about">
         <div class="info-cell reveal">
-            <div class="label">What is Scholastic?</div>
+            <div class="info-label">What is Scholastic?</div>
             <h3>Academic Competition Prep</h3>
             <p>Scholastic Prep covers all school levels — Lower Primary to Senior Secondary — with drills built for high-stakes academic contests.</p>
         </div>
         <div class="info-cell reveal" style="transition-delay:.15s">
-            <div class="label">How to use it</div>
+            <div class="info-label">How to use it</div>
             <h3>Pick Your Level. Drill Hard.</h3>
             <p>Select your category, work through the questions, and review your score with full worked solutions to sharpen your edge.</p>
         </div>
         <div class="info-cell reveal" style="transition-delay:.3s">
-            <div class="label">Coming soon</div>
+            <div class="info-label">Coming soon</div>
             <h3>More Levels Dropping</h3>
             <p>Lower Primary, Middle Primary, Junior Secondary, and Senior Secondary are in active development. New releases each term.</p>
         </div>
@@ -175,14 +175,14 @@
     <!-- ═══ CTA BAND ═══ -->
     <section class="cta-band reveal">
         <h2>Ready to <em>compete at the top?</em></h2>
-        <a href="#categories" class="cta-btn">Start Upper Primary &rarr;</a>
+        <a href="#categories" class="cta-btn">Start Upper Primary →</a>
     </section>
 
     <!-- ═══ FOOTER ═══ -->
-    <footer>
+    <footer class="site-footer">
         <div class="footer-top">
             <div class="footer-brand">
-                <span class="logo">Prep<span>Portal</span></span>
+                <span class="footer-logo">Prep<span>Portal</span></span>
                 <p>A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
             </div>
             <div class="footer-col">
@@ -215,7 +215,7 @@
         </div>
         <div class="footer-bottom">
             <p>&copy; 2026 Prep Portal. All rights reserved.</p>
-            <div class="footer-bottom-links">
+            <div class="footer-links" id="footer-links">
                 <a href="#">Terms</a>
                 <a href="#">Privacy</a>
                 <a href="#">Sitemap</a>
@@ -223,7 +223,7 @@
         </div>
     </footer>
 
-    <!-- ═══ PREPBOT ═══ -->
+    <!-- ═══ CHATBOT ═══ -->
     <div id="prepbot"></div>
     <script src="../Chatbot/chatbot.js"></script>
 
@@ -245,12 +245,12 @@
         "Middle Primary", "Junior Secondary", "Senior Secondary",
         "2026 Edition", "Competition Drills", "Prep Portal"
     ];
-    const track = document.getElementById('ticker-track');
+    const tickerTrack = document.getElementById('ticker-track');
     [...tickerItems, ...tickerItems].forEach(t => {
         const s = document.createElement('span');
         s.className = 'ticker-item';
         s.innerHTML = t + '<span class="ticker-dot">✦</span>';
-        track.appendChild(s);
+        tickerTrack.appendChild(s);
     });
 
     /* ── FEATURED BAND ── */
@@ -264,21 +264,21 @@
     });
 
     /* ── CATEGORY GRID ── */
-    const grid = document.getElementById('cat-grid');
+    const categoryGrid = document.getElementById('category-grid');
     categories.forEach((item, i) => {
-        const c = document.createElement(item.live ? 'a' : 'div');
-        if (item.live) c.href = item.link;
-        c.className = 'card';
-        c.style.transitionDelay = `${0.4 + i * 0.08}s`;
-        if (!item.live) c.style.opacity = '0.5';
-        c.innerHTML = `
+        const card = document.createElement(item.live ? 'a' : 'div');
+        if (item.live) card.href = item.link;
+        card.className = 'category-card';
+        card.style.transitionDelay = `${0.4 + i * 0.08}s`;
+        if (!item.live) card.style.opacity = '0.5';
+        card.innerHTML = `
             <div class="card-inner">
                 <span class="card-num">${item.id}</span>
-                <h2>${item.title}</h2>
+                <h3>${item.title}</h3>
                 <p>${item.desc}</p>
                 <span class="card-arrow">${item.live ? '→' : '↳ Soon'}</span>
             </div>`;
-        grid.appendChild(c);
+        categoryGrid.appendChild(card);
     });
 
     /* ── CHAR SPLIT ANIMATION ── */
@@ -338,10 +338,13 @@
 
     /* ── NAV SHADOW ON SCROLL ── */
     window.addEventListener('scroll', () => {
-        document.getElementById('site-nav').style.boxShadow =
-            window.scrollY > 10 ? '0 4px 0 0 #0a0a0a' : 'none';
+        const siteNav = document.getElementById('site-nav');
+        if (siteNav) {
+            siteNav.style.boxShadow = window.scrollY > 10 ? '0 4px 0 0 #0a0a0a' : 'none';
+        }
     }, { passive: true });
     </script>
 
 </body>
+
 </html>
