@@ -13,8 +13,6 @@
     <link rel="stylesheet" href="./main.css">
     <link rel="stylesheet" href="./Chatbot/chatbot.css">
     
- 
-    
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
@@ -22,7 +20,7 @@
 <body>
     
     <!-- NAVIGATION -->
-    <nav id="site-nav">
+    <nav class="site-nav">
         <a href="#" class="nav-logo">Prep<span>Portal</span></a>
         <ul class="nav-links" id="nav-links">
             <li><a href="#exams">Exams</a></li>
@@ -42,20 +40,20 @@
     </div>
     
     <!-- HERO -->
-    <header>
+    <div class="hero">
         <div class="hero-left">
-            <h1 id="main-title">The Exam<br>Archive.</h1>
+            <h1 class="hero-title" id="main-title">The Exam<br>Archive.</h1>
         </div>
         <div class="hero-right">
             <p class="hero-tagline">A curated vault of past papers, worked solutions, and prep kits — built for students who take results seriously.</p>
-            <div class="hero-stat-row">
-                <div class="hero-stat"><strong>7</strong><span>Exam Sets</span></div>
-                <div class="hero-stat"><strong>3</strong><span>Categories</span></div>
-                <div class="hero-stat"><strong>200+</strong><span>Questions</span></div>
-                <div class="hero-stat"><strong>2026</strong><span>Edition</span></div>
+            <div class="hero-stats">
+                <div class="stat"><strong>7</strong><span>Exam Sets</span></div>
+                <div class="stat"><strong>3</strong><span>Categories</span></div>
+                <div class="stat"><strong>200+</strong><span>Questions</span></div>
+                <div class="stat"><strong>2026</strong><span>Edition</span></div>
             </div>
         </div>
-    </header>
+    </div>
     
     <!-- EXAM ARCHIVES SECTION - DIVIDED INTO CATEGORIES -->
     <div class="section-header" id="exams">
@@ -64,173 +62,57 @@
     </div>
     
     <main class="main-content">
-        <div class="exam-categories">
-            <!-- National Exams -->
-            <div class="card exam-category-card folder-card">
-                <div class="exam-category-inner">
-                    <h3>National Exams</h3>
-                    <p>Standardized assessments for national curricula and transition examinations.</p>
-                    <div class="exam-list">
-                        <a href="#" class="exam-list-item">
-                            <span>Common Entrance</span>
-                            <span class="exam-status">Coming Soon</span>
-                        </a>
-                        <a href="./WAEC/index.html" class="exam-list-item">
-                            <span>WAEC</span>
-                            <span class="exam-status live">Live</span>
-                        </a>
-                        <a href="./Grade-4-Exam/index.html" class="exam-list-item">
-                            <span>Grade 4 Spring</span>
-                            <span class="exam-status live">Live</span>
-                        </a>
-                        <a href="./Grade-5-Exam/index.html" class="exam-list-item">
-                            <span>Grade 5 Spring</span>
-                            <span class="exam-status live">Live</span>
-                        </a>
-                    </div>
-                    <span class="folder-path">/Exams/National/</span>
-                </div>
-            </div>
-            
-            <!-- International Exams -->
-            <div class="card exam-category-card folder-card">
-                <div class="exam-category-inner">
-                    <h3>International Exams</h3>
-                    <p>Globally recognized qualifications and international benchmark assessments.</p>
-                    <div class="exam-list">
-                        <a href="./Cambridge/index.html" class="exam-list-item">
-                            <span>Cambridge Exam</span>
-                            <span class="exam-status live">Live</span>
-                        </a>
-                        <a href="#" class="exam-list-item">
-                            <span>International Baccalaureate</span>
-                            <span class="exam-status">Coming Soon</span>
-                        </a>
-                        <a href="#" class="exam-list-item">
-                            <span>SAT Prep</span>
-                            <span class="exam-status">Coming Soon</span>
-                        </a>
-                    </div>
-                    <span class="folder-path">/Exams/International/</span>
-                </div>
-            </div>
-            
-            <!-- Competition Exams -->
-            <div class="card exam-category-card folder-card">
-                <div class="exam-category-inner">
-                    <h3>Competition Exams</h3>
-                    <p>Elite-level scholarship and academic competition preparation materials.</p>
-                    <div class="exam-list">
-                        <a href="./Scholarstic/index.html" class="exam-list-item">
-                            <span>Scholastic Prep</span>
-                            <span class="exam-status live">Live</span>
-                        </a>
-                        <a href="#" class="exam-list-item">
-                            <span>TULIP Questions</span>
-                            <span class="exam-status">Coming Soon</span>
-                        </a>
-                        <a href="#" class="exam-list-item">
-                            <span>Math Olympiad</span>
-                            <span class="exam-status">Coming Soon</span>
-                        </a>
-                    </div>
-                    <span class="folder-path">/Exams/Competition/</span>
-                </div>
-            </div>
+        <div class="category-grid" id="category-grid">
+            <!-- Category cards will be dynamically generated -->
         </div>
     </main>
     
     <!-- SUBJECT EXAMS SECTION - ALL SUBJECTS IN ONE PLACE -->
-    <section class="subject-exams-section" id="subjects">
+    <section class="subject-section" id="subjects">
         <div class="subject-header reveal">
             <div class="subject-header-text">
-                <p class="subject-eyebrow">Subject-Based Resources</p>
+                <p class="eyebrow">Subject-Based Resources</p>
                 <h2>Subject Exams</h2>
                 <p>Comprehensive subject-specific exam materials, practice questions, and revision guides across all core disciplines.</p>
             </div>
             <span class="subject-tag">All Subjects</span>
         </div>
         
-        <div class="subject-grid">
-            <!-- Writing Hub -->
-            <a href="./Writing/index.html" class="writing-card folder-card section-link">
-                <div class="writing-card-inner">
-                    <h3>English & Writing</h3>
-                    <p>Essay · Letter Writing · Comprehension · Summary · Speech · Report</p>
-                    <span class="folder-path">/Writing/</span>
-                    <div class="folder-arrow">→ Explore</div>
-                </div>
-            </a>
-            
-            <!-- Math Hub -->
-            <a href="./Math/index.html" class="math-card folder-card section-link">
-                <div class="math-card-inner">
-                    <h3>Mathematics</h3>
-                    <p>Arithmetic · Algebra · Geometry · Calculus · Statistics</p>
-                    <span class="folder-path">/Math/</span>
-                    <div class="folder-arrow">→ Explore</div>
-                </div>
-            </a>
-            
-            <!-- Science Hub -->
-            <a href="./Science/index.html" class="science-card folder-card section-link">
-                <div class="science-card-inner">
-                    <h3>Science</h3>
-                    <p>Biology · Chemistry · Physics · Integrated Science</p>
-                    <span class="folder-path">/Science/</span>
-                    <div class="folder-arrow">→ Explore</div>
-                </div>
-            </a>
-            
-            <!-- Social Studies Hub -->
-            <a href="./Social-Studies/index.html" class="social-card folder-card section-link">
-                <div class="social-card-inner">
-                    <h3>Social Studies</h3>
-                    <p>History · Geography · Government · Civic Education</p>
-                    <span class="folder-path">/Social-Studies/</span>
-                    <div class="folder-arrow">→ Explore</div>
-                </div>
-            </a>
+        <div class="subject-grid" id="subject-grid">
+            <!-- Subject cards will be dynamically generated -->
         </div>
     </section>
     
     <!-- THEORY DRILL SECTION -->
-    <section class="theory-section" id="theory">
-        <div class="theory-header reveal">
-            <div class="theory-header-text">
-                <p class="theory-eyebrow">Practice & Revision</p>
+    <section class="drill-section" id="theory">
+        <div class="drill-header reveal">
+            <div class="drill-header-text">
+                <p class="eyebrow">Practice & Revision</p>
                 <h2>Theory Drill</h2>
                 <p>Structured theory questions, worked examples, and detailed explanations to reinforce key concepts across all subjects.</p>
             </div>
-            <span class="theory-tag">Drill Mode</span>
+            <span class="drill-tag">Drill Mode</span>
         </div>
         
-        <div class="theory-grid">
-            <a href="./Theory-Page/index.html" class="theory-card folder-card section-link">
-                <div class="theory-card-inner">
-                    <h3>Theory Drill Hub</h3>
-                    <p>Subject-Specific Drills · Worked Examples · Step-by-Step Solutions · Exam-Style Questions</p>
-                    <span class="folder-path">/Theory-Page/</span>
-                    <div class="folder-arrow">→ Start Drilling</div>
-                </div>
-            </a>
+        <div class="drill-grid" id="drill-grid">
+            <!-- Drill cards will be dynamically generated -->
         </div>
     </section>
     
     <!-- ABOUT SECTION -->
     <section class="info-strip" id="about">
         <div class="info-cell reveal">
-            <div class="label">What is Prep Portal?</div>
+            <div class="info-label">What is Prep Portal?</div>
             <h3>Built for Exam Season</h3>
             <p>A structured study resource covering national and international exam boards — from Common Entrance to WAEC, all in one place.</p>
         </div>
         <div class="info-cell reveal" style="transition-delay:.15s">
-            <div class="label">How to use it</div>
+            <div class="info-label">How to use it</div>
             <h3>Click. Practice. Review.</h3>
             <p>Each exam opens a full interactive paper. Answer questions, check your score, and review worked solutions immediately.</p>
         </div>
         <div class="info-cell reveal" style="transition-delay:.3s">
-            <div class="label">Coming soon</div>
+            <div class="info-label">Coming soon</div>
             <h3>More Sets Dropping</h3>
             <p>Grade 4 Spring, TULIP Questions, and Scholastic Prep are in active development. Check back each term for new releases.</p>
         </div>
@@ -243,10 +125,10 @@
     </section>
     
     <!-- FOOTER -->
-    <footer>
+    <footer class="site-footer">
         <div class="footer-top">
             <div class="footer-brand">
-                <span class="logo">Prep<span>Portal</span></span>
+                <span class="footer-logo">Prep<span>Portal</span></span>
                 <p>A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
             </div>
             <div class="footer-col">
@@ -259,11 +141,8 @@
             </div>
             <div class="footer-col">
                 <h4>Subjects</h4>
-                <ul>
-                    <li><a href="./Writing/index.html">English & Writing</a></li>
-                    <li><a href="./Math/index.html">Mathematics</a></li>
-                    <li><a href="./Science/index.html">Science</a></li>
-                    <li><a href="./Social-Studies/index.html">Social Studies</a></li>
+                <ul id="footer-subjects">
+                    <!-- Footer subject links will be dynamically generated -->
                 </ul>
             </div>
             <div class="footer-col">
@@ -284,7 +163,7 @@
         </div>
         <div class="footer-bottom">
             <p>&copy; 2026 Prep Portal. All rights reserved.</p>
-            <div class="footer-bottom-links">
+            <div class="footer-links">
                 <a href="#">Terms</a>
                 <a href="#">Privacy</a>
                 <a href="#">Sitemap</a>
@@ -295,79 +174,7 @@
     <!-- PREPBOT -->
     <div id="prepbot"></div>
     <script src="./Chatbot/chatbot.js"></script>
-    
-    <script>
-        // TICKER
-        const tickerItems = [
-            "Common Entrance", "Cambridge", "Grade 5 Spring", "WAEC",
-            "TULIP Questions", "Scholastic Prep", "Math Olympiad",
-            "Essay Writing", "Comprehension", "Theory Drill"
-        ];
-        const tickerTrack = document.getElementById('ticker-track');
-        if (tickerTrack) {
-            [...tickerItems, ...tickerItems].forEach(t => {
-                const s = document.createElement('span');
-                s.className = 'ticker-item';
-                s.innerHTML = t + '<span class="ticker-dot"></span>';
-                tickerTrack.appendChild(s);
-            });
-        }
-        
-        // SPLIT TEXT ANIMATION
-        const splitText = el => {
-            if (!el) return;
-            const lines = el.innerHTML.split('<br>');
-            el.innerHTML = '';
-            lines.forEach((line, li) => {
-                const div = document.createElement('div');
-                div.style.display = 'block';
-                line.split('').forEach((char, ci) => {
-                    const wrapper = document.createElement('span');
-                    wrapper.className = 'char-wrapper';
-                    const span = document.createElement('span');
-                    span.className = 'char';
-                    span.innerHTML = char === ' ' ? '&nbsp;' : char;
-                    span.style.transitionDelay = `${li * 0.2 + ci * 0.03}s`;
-                    wrapper.appendChild(span);
-                    div.appendChild(wrapper);
-                });
-                el.appendChild(div);
-            });
-        };
-        splitText(document.getElementById('main-title'));
-        
-        // REVEAL OBSERVER
-        const revealObserver = new IntersectionObserver(entries => {
-            entries.forEach(e => {
-                if (e.isIntersecting) {
-                    e.target.classList.add('visible');
-                    revealObserver.unobserve(e.target);
-                }
-            });
-        }, { threshold: 0.1 });
-        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-        
-        // INIT
-        window.onload = () => document.body.classList.add('active');
-        
-        // NAV TOGGLE
-        const toggle = document.getElementById('nav-toggle');
-        const navLinks = document.getElementById('nav-links');
-        if (toggle && navLinks) {
-            toggle.addEventListener('click', () => {
-                toggle.classList.toggle('open');
-                navLinks.classList.toggle('open');
-            });
-        }
-        
-        // NAV SHADOW ON SCROLL
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('site-nav');
-            if (nav) {
-                nav.style.boxShadow = window.scrollY > 10 ? '0 4px 0 0 #0a0a0a' : 'none';
-            }
-        }, { passive: true });
-    </script>
+    <script src="./index.js"></script>
     
 </body>
 
