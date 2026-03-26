@@ -734,6 +734,8 @@ body.active .card {
     line-height: 1.4;
 }
 
+
+
 .writing-card p,
 .math-card p,
 .science-card p,
@@ -796,6 +798,12 @@ body.active .card {
 .theory-card:hover .folder-arrow::after {
     transform: translateX(4px);
 }
+
+
+.math-card:hover h3, .writing-card:hover h3, .science-card:hover h3, .social-card:hover h3, .theory-card:hover h3 {
+    color: var(--text-light);
+}
+
 
 .writing-card:hover p,
 .math-card:hover p,
