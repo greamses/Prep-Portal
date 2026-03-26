@@ -9,13 +9,14 @@ const siteData = {
     
     // Hero Section
     hero: {
-        title: "The Exam<br>Archive.",
+        title: "Prep <br>Portal.",
         tagline: "A curated vault of past papers, worked solutions, and prep kits — built for students who take results seriously.",
         stats: [
-            { value: "3", label: "Exam Categories" },
-            { value: "7+", label: "Exam Papers" },
-            { value: "200+", label: "Questions" },
-            { value: "2026", label: "Edition" }
+            { value: "50+", label: "Practice Papers" },
+            { value: "1000+", label: "Questions" },
+            { value: "30+", label: "Subjects" },
+            { value: "Wide", label: "Teachers Resources" },
+            { value: "24/7", label: "Access" }
         ]
     },
     
@@ -185,7 +186,7 @@ const siteData = {
         {
             name: "Theory Drill Hub",
             description: "Subject-Specific Drills · Worked Examples · Step-by-Step Solutions · Exam-Style Questions",
-            link: "./Theory-Page/index.html",
+            link: "./theory-page/index.html",
             color: "red",
             badge: "/Theory-Page/",
             cta: "Start Drilling"
