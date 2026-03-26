@@ -15,71 +15,106 @@
     
     <style>
         /* Hero Refinement */
-.hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 100px 20px;
-    background: var(--bg);
-}
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 100px 20px;
+            background: var(--bg);
+        }
+        
+        .highlight {
+            color: var(--blue);
+            text-decoration: underline;
+            text-decoration-color: var(--yellow);
+        }
+        
+        .hero-tagline {
+            max-width: 600px;
+            margin: 20px auto 40px;
+            font-size: 1.1rem;
+            color: var(--muted);
+        }
+        
+        .main-cta {
+            display: inline-block;
+            font-family: 'Unbounded', sans-serif;
+            background: var(--ink);
+            color: var(--yellow);
+            padding: 20px 40px;
+            text-decoration: none;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 14px;
+            border: var(--border);
+            box-shadow: 8px 8px 0 var(--yellow);
+            transition: 0.2s;
+        }
+        
+        .main-cta:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0 var(--blue);
+        }
+        
+        .eyebrow {
+            font-family: 'JetBrains Mono';
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 12px;
+            background: var(--yellow);
+            padding: 4px 12px;
+            display: inline-block;
+            margin-bottom: 10px;
+            border: 2px solid var(--ink);
+        }
+        
+        /* Nav CTA */
+        .nav-cta {
+            background: var(--yellow);
+            border: var(--border);
+            padding: 8px 20px;
+            text-decoration: none;
+            color: var(--ink);
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        /* Typewriter Highlight Styling */
+        .highlight {
+            color: var(--blue);
+            position: relative;
+            display: inline-block;
+            min-width: 50px;
+            /* Prevents layout jump */
+        }
+        
+        /* The Blinking Cursor */
+        .cursor {
+            color: var(--blue);
+            font-weight: 300;
+            animation: blink 0.8s infinite;
+            margin-left: 4px;
+        }
+        
+        @keyframes blink {
 
-.highlight {
-    color: var(--blue);
-    text-decoration: underline;
-    text-decoration-color: var(--yellow);
-}
-
-.hero-tagline {
-    max-width: 600px;
-    margin: 20px auto 40px;
-    font-size: 1.1rem;
-    color: var(--muted);
-}
-
-.main-cta {
-    display: inline-block;
-    font-family: 'Unbounded', sans-serif;
-    background: var(--ink);
-    color: var(--yellow);
-    padding: 20px 40px;
-    text-decoration: none;
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: 14px;
-    border: var(--border);
-    box-shadow: 8px 8px 0 var(--yellow);
-    transition: 0.2s;
-}
-
-.main-cta:hover {
-    transform: translate(-4px, -4px);
-    box-shadow: 12px 12px 0 var(--blue);
-}
-
-.eyebrow {
-    font-family: 'JetBrains Mono';
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-size: 12px;
-    background: var(--yellow);
-    padding: 4px 12px;
-    display: inline-block;
-    margin-bottom: 10px;
-    border: 2px solid var(--ink);
-}
-
-/* Nav CTA */
-.nav-cta {
-    background: var(--yellow);
-    border: var(--border);
-    padding: 8px 20px;
-    text-decoration: none;
-    color: var(--ink);
-    font-weight: 700;
-    font-size: 12px;
-    text-transform: uppercase;
-}
+            0%,
+            100% {
+                opacity: 1;
+            }
+            
+            50% {
+                opacity: 0;
+            }
+        }
+        
+        /* Ensure the title doesn't shift the whole page when text changes */
+        .hero-title {
+            min-height: 1.2em;
+            line-height: 1.1;
+        }
     </style>
 </head>
 
@@ -104,7 +139,11 @@
     <section class="hero">
         <div class="hero-content">
             <p class="eyebrow">Launching 2026</p>
-            <h1 class="hero-title">Master Your <br><span class="highlight">Exams.</span></h1>
+            <!-- We added a span with the ID "typewriter" -->
+            <h1 class="hero-title">
+                Prep Portal.<br>
+                Master Your <span id="typewriter" class="highlight"></span><span class="cursor">|</span>
+            </h1>
             <p class="hero-tagline">A curated vault of past papers, worked solutions, and prep kits — built for students who take results seriously.</p>
             
             <div class="hero-btns">
@@ -112,9 +151,7 @@
             </div>
         </div>
         
-        <div class="hero-stats" id="hero-stats">
-            <!-- populated by JS -->
-        </div>
+        <div class="hero-stats" id="hero-stats"></div>
     </section>
     
     <!-- CORE FEATURES (DETAILS) -->
@@ -200,5 +237,60 @@
         });
     </script>
 </body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const textElement = document.getElementById('typewriter');
+        // ADD YOUR CATCHY PHRASES HERE
+        const phrases = [
+            "Exams.",
+            "Future.",
+            "Grades.",
+            "WAEC.",
+            "JAMB.",
+            "IGCSE.",
+            "Potential.",
+            "Success."
+        ];
+        
+        let phraseIndex = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        let typeSpeed = 150;
+        
+        function type() {
+            const currentPhrase = phrases[phraseIndex];
+            
+            if (isDeleting) {
+                // Remove a character
+                textElement.textContent = currentPhrase.substring(0, charIndex - 1);
+                charIndex--;
+                typeSpeed = 80; // Faster when deleting
+            } else {
+                // Add a character
+                textElement.textContent = currentPhrase.substring(0, charIndex + 1);
+                charIndex++;
+                typeSpeed = 150; // Normal typing speed
+            }
+            
+            // If word is complete
+            if (!isDeleting && charIndex === currentPhrase.length) {
+                isDeleting = true;
+                typeSpeed = 2000; // PAUSE at the end of the word
+            }
+            // If word is fully deleted
+            else if (isDeleting && charIndex === 0) {
+                isDeleting = false;
+                phraseIndex = (phraseIndex + 1) % phrases.length;
+                typeSpeed = 500; // Small pause before typing next word
+            }
+            
+            setTimeout(type, typeSpeed);
+        }
+        
+        // Start the animation
+        type();
+    });
+</script>
 
 </html>
