@@ -477,8 +477,8 @@ body.active .card {
     border-top: 1px solid #e0e0e0;
 }
 
-.item-list span a{
-    color: var(--text-light);
+.card-inner a{
+    color: var(--ink);
 }
 
 .list-item {
