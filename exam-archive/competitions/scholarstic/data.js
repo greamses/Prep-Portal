@@ -1,8 +1,8 @@
 // ============================================
-// SCHOLASTIC PREP DATA - Extracted from HTML
+// SCHOLASTIC PREP DATA - Update this file only!
 // ============================================
 
-const scholasticData = {
+const siteData = {
     // Site Identity
     siteName: "Scholastic Prep",
     siteLogo: "Prep<span>Portal</span>",
@@ -40,69 +40,104 @@ const scholasticData = {
         "Prep Portal"
     ],
     
-    // Featured Section (Live Now)
-    featured: {
-        label: "Live Now",
-        items: [
-            {
-                name: "Upper Primary",
-                link: "./Upper-Primary/index.html",
-                live: true,
-                status: "Live"
-            }
-        ]
+    // Section Headers
+    sections: {
+        exams: {
+            title: "All Categories",
+            subtitle: "5 levels"
+        }
     },
     
     // Categories (School Levels)
-    categories: [
+    examCategories: [
         {
-            id: "01",
+            id: "lower-primary",
             title: "Lower Primary",
             description: "Foundation drills for Primary 1–3 students.",
-            link: "#",
-            live: false,
-            status: "Coming Soon",
-            color: "lower-primary"
+            badge: "Coming Soon",
+            items: [
+                {
+                    name: "Coming Soon",
+                    link: "#",
+                    live: false,
+                    status: "2026",
+                    description: "Foundation drills for Primary 1–3"
+                }
+            ]
         },
         {
-            id: "02",
+            id: "middle-primary",
             title: "Middle Primary",
             description: "Challenge sets for Primary 4–5 students.",
-            link: "#",
-            live: false,
-            status: "Coming Soon",
-            color: "middle-primary"
+            badge: "Coming Soon",
+            items: [
+                {
+                    name: "Coming Soon",
+                    link: "#",
+                    live: false,
+                    status: "2026",
+                    description: "Challenge sets for Primary 4–5"
+                }
+            ]
         },
         {
-            id: "03",
+            id: "upper-primary",
             title: "Upper Primary",
             description: "Intensive prep for Primary 5–6 top placements.",
-            link: "./Upper-Primary/index.html",
-            live: true,
-            status: "Live",
-            color: "upper-primary"
+            badge: "Live Now",
+            items: [
+                {
+                    name: "Start Upper Primary",
+                    link: "./Upper-Primary/index.html",
+                    live: true,
+                    status: "Live",
+                    description: "Intensive prep for Primary 5–6 top placements"
+                }
+            ]
         },
         {
-            id: "04",
+            id: "junior-secondary",
             title: "Junior Secondary",
             description: "Problem sets for JSS1–JSS3 competition entrants.",
-            link: "#",
-            live: false,
-            status: "Coming Soon",
-            color: "junior-secondary"
+            badge: "Coming Soon",
+            items: [
+                {
+                    name: "Coming Soon",
+                    link: "#",
+                    live: false,
+                    status: "2026",
+                    description: "Problem sets for JSS1–JSS3"
+                }
+            ]
         },
         {
-            id: "05",
+            id: "senior-secondary",
             title: "Senior Secondary",
             description: "Advanced modules for SSS academic contest prep.",
-            link: "#",
-            live: false,
-            status: "Coming Soon",
-            color: "senior-secondary"
+            badge: "Coming Soon",
+            items: [
+                {
+                    name: "Coming Soon",
+                    link: "#",
+                    live: false,
+                    status: "2026",
+                    description: "Advanced modules for SSS"
+                }
+            ]
         }
     ],
     
-    // Info Strip (About section)
+    // Featured items (Live Now)
+    featuredItems: [
+        {
+            name: "Upper Primary",
+            link: "./Upper-Primary/index.html",
+            live: true,
+            badge: "Live"
+        }
+    ],
+    
+    // Info Strip
     infoStrip: [
         {
             label: "What is Scholastic?",
