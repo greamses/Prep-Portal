@@ -265,3 +265,5 @@ function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+console.log('great')

@@ -2,109 +2,134 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prep Portal | 2026</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prep Portal 2026 | Your Exam Vault</title>
     
+    <!-- FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="./main.css">
-    
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 
 <body>
     
     <!-- NAVIGATION -->
     <nav class="site-nav">
-        <a href="#" class="nav-logo">Prep<span>Portal</span></a>
-        <ul class="nav-links" id="nav-links"></ul>
-        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
-            <span></span><span></span><span></span>
-        </button>
+        <a href="index.html" class="nav-logo">Prep<span>Portal</span></a>
+        <div class="nav-right">
+            <a href="login.html" class="nav-cta" id="auth-status-btn">Sign In</a>
+        </div>
     </nav>
     
     <!-- TICKER -->
     <div class="ticker" aria-hidden="true">
-        <div class="ticker-track" id="ticker-track"></div>
-    </div>
-    
-    <!-- HERO -->
-    <div class="hero">
-        <div class="hero-left">
-            <h1 class="hero-title" id="main-title">Prep<br>Portal.</h1>
-        </div>
-        <div class="hero-right">
-            <p class="hero-tagline" id="hero-tagline">A curated vault of past papers, worked solutions, and prep kits — built for students who take results seriously.</p>
-            <div class="hero-stats" id="hero-stats"></div>
+        <div class="ticker-track" id="ticker-track">
+            <!-- populated by JS -->
         </div>
     </div>
     
-    <!-- EXAM ARCHIVES SECTION -->
-    <div class="section-header" id="exams">
-        <h2 id="exams-title">Exam Archives</h2>
-        <span id="exams-subtitle">National · International · Competition</span>
-    </div>
-    
-    <main class="main-content">
-        <div class="category-grid" id="category-grid"></div>
-    </main>
-    
-    <!-- SUBJECT EXAMS SECTION -->
-    <section class="subject-section" id="subjects">
-        <div class="subject-header reveal">
-            <div class="subject-header-text">
-                <p class="eyebrow" id="subjects-eyebrow">Subject-Based Resources</p>
-                <h2 id="subjects-title">Subject Exams</h2>
-                <p id="subjects-description">Comprehensive subject-specific exam materials, practice questions, and revision guides across all core disciplines.</p>
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-content">
+            <p class="eyebrow">Launching 2026</p>
+            <h1 class="hero-title">Master Your <br><span class="highlight">Exams.</span></h1>
+            <p class="hero-tagline">A curated vault of past papers, worked solutions, and prep kits — built for students who take results seriously.</p>
+            
+            <div class="hero-btns">
+                <a href="login.html" class="main-cta">Start Practicing Now →</a>
             </div>
-            <span class="subject-tag" id="subjects-tag">All Subjects</span>
         </div>
-        <div class="subject-grid" id="subject-grid"></div>
+        
+        <div class="hero-stats" id="hero-stats">
+            <!-- populated by JS -->
+        </div>
     </section>
     
-    <!-- THEORY DRILL SECTION -->
-    <section class="drill-section" id="theory">
-        <div class="drill-header reveal">
-            <div class="drill-header-text">
-                <p class="eyebrow" id="drill-eyebrow">Practice & Revision</p>
-                <h2 id="drill-title">Theory Drill</h2>
-                <p id="drill-description">Structured theory questions, worked examples, and detailed explanations to reinforce key concepts across all subjects.</p>
-            </div>
-            <span class="drill-tag" id="drill-tag">Drill Mode</span>
+    <!-- CORE FEATURES (DETAILS) -->
+    <section class="info-strip" id="details">
+        <div class="info-cell">
+            <span class="info-label">Archives</span>
+            <h3>National & International</h3>
+            <p>From WAEC and JAMB to Cambridge IGCSE. We've archived the toughest papers so you don't have to search.</p>
         </div>
-        <div class="drill-grid" id="drill-grid"></div>
+        <div class="info-cell">
+            <span class="info-label">Drills</span>
+            <h3>Theory & Objective</h3>
+            <p>Interactive practice modes that let you solve questions and see worked solutions the moment you finish.</p>
+        </div>
+        <div class="info-cell">
+            <span class="info-label">24/7 Access</span>
+            <h3>Your Personal Vault</h3>
+            <p>Log in from any device. Your progress, saved papers, and results are always synchronized.</p>
+        </div>
     </section>
     
-    <!-- ABOUT SECTION -->
-    <section class="info-strip" id="info-strip"></section>
-    
-    <!-- CTA BAND -->
-    <section class="cta-band reveal">
-        <h2 id="cta-title">Ready to <em>raise your grade?</em></h2>
-        <a href="#exams" class="cta-btn" id="cta-btn">Browse All Exams →</a>
+    <!-- FINAL CTA -->
+    <section class="cta-band">
+        <h2>Ready to <em>raise your grade?</em></h2>
+        <a href="login.html" class="cta-btn">Create Free Account</a>
     </section>
     
     <!-- FOOTER -->
     <footer class="site-footer">
-        <div class="footer-top">
-            <div class="footer-brand">
-                <span class="footer-logo">Prep<span>Portal</span></span>
-                <p id="footer-description">A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
-            </div>
-        </div>
         <div class="footer-bottom">
-            <p id="copyright">&copy; 2026 Prep Portal. All rights reserved.</p>
-            <div class="footer-links" id="footer-links"></div>
+            <p>&copy; 2026 Prep Portal. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+            </div>
         </div>
     </footer>
     
+    <!-- DATA & LOGIC -->
     <script src="./data.js"></script>
-    <script src="../main.js"></script>
-    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+        
+        // ── FIREBASE CONFIG ──
+        const firebaseConfig = {
+            apiKey: "AIzaSyA2N3uI_XfSIVsto2Ku1g_qSezmD3qFmbk",
+            authDomain: "prep-portal-2026.firebaseapp.com",
+            projectId: "prep-portal-2026",
+            storageBucket: "prep-portal-2026.firebasestorage.app",
+            messagingSenderId: "837672918701",
+            appId: "1:837672918701:web:e64c0c25dc01b542e23024"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        
+        // ── AUTH CHECK ──
+        // If the user is already logged in, change "Sign In" to "Dashboard"
+        onAuthStateChanged(auth, (user) => {
+            const btn = document.getElementById('auth-status-btn');
+            if (user) {
+                btn.textContent = "Dashboard";
+                btn.href = "dashboard.html";
+            }
+        });
+        
+        // ── RENDER UI FROM DATA.JS ──
+        document.addEventListener('DOMContentLoaded', () => {
+            // Render Ticker
+            const track = document.getElementById('ticker-track');
+            const items = [...siteData.tickerItems, ...siteData.tickerItems];
+            track.innerHTML = items.map(item => `<span class="ticker-item">${item}<span class="ticker-dot">◆</span></span>`).join('');
+            
+            // Render Stats
+            const statsContainer = document.getElementById('hero-stats');
+            statsContainer.innerHTML = siteData.hero.stats.map(s => `
+            <div class="stat">
+                <strong>${s.value}</strong>
+                <span>${s.label}</span>
+            </div>
+        `).join('');
+        });
+    </script>
 </body>
 
 </html>
