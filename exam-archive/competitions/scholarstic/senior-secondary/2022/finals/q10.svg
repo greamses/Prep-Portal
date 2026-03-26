@@ -1,0 +1,53 @@
+<svg width="450" height="480" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        .axis { stroke: black; stroke-width: 2; }
+        .bar { stroke: black; stroke-width: 1; }
+        .label { font-family: sans-serif; font-size: 14px; fill: black; }
+        .tick-label { font-family: sans-serif; font-size: 14px; text-anchor: end; fill: black; }
+        .title { font-family: sans-serif; font-size: 16px; font-weight: bold; fill: black; text-anchor: middle; }
+        .tick { stroke: black; stroke-width: 1.5; }
+    </style>
+    
+    <!-- Y-axis -->
+    <line x1="60" y1="340" x2="60" y2="40" class="axis" />
+    <polygon points="56,48 64,48 60,40" fill="black" />
+    <text x="60" y="30" class="label" text-anchor="middle">y</text>
+    <text x="20" y="190" class="title" transform="rotate(-90 20,190)">Number of books</text>
+
+    <!-- Y-axis ticks & labels -->
+    <line x1="55" y1="320" x2="60" y2="320" class="tick" /> <text x="50" y="325" class="tick-label">0</text>
+    <line x1="55" y1="260" x2="60" y2="260" class="tick" /> <text x="50" y="265" class="tick-label">100</text>
+    <line x1="55" y1="200" x2="60" y2="200" class="tick" /> <text x="50" y="205" class="tick-label">200</text>
+    <line x1="55" y1="140" x2="60" y2="140" class="tick" /> <text x="50" y="145" class="tick-label">300</text>
+    <line x1="55" y1="80" x2="60" y2="80" class="tick" /> <text x="50" y="85" class="tick-label">400</text>
+
+    <!-- X-axis -->
+    <line x1="60" y1="320" x2="400" y2="320" class="axis" />
+    <polygon points="392,316 392,324 400,320" fill="black" />
+    <text x="410" y="325" class="label">x</text>
+    <text x="230" y="460" class="title">Subjects</text>
+
+    <!-- Legend -->
+    <text x="250" y="60" class="label">Scale: 1 cm = 100 books</text>
+
+    <!-- Bars & X-axis labels -->
+    <!-- Maths -->
+    <rect x="90" y="140" width="30" height="180" class="bar" fill="#4e79a7" />
+    <text x="105" y="335" class="label" transform="rotate(-90 105,335)" text-anchor="end">Maths</text>
+
+    <!-- Hindi -->
+    <rect x="140" y="80" width="30" height="240" class="bar" fill="#f28e2b" />
+    <text x="155" y="335" class="label" transform="rotate(-90 155,335)" text-anchor="end">Hindi</text>
+
+    <!-- English -->
+    <rect x="190" y="200" width="30" height="120" class="bar" fill="#e15759" />
+    <text x="205" y="335" class="label" transform="rotate(-90 205,335)" text-anchor="end">English</text>
+
+    <!-- Science -->
+    <rect x="240" y="140" width="30" height="180" class="bar" fill="#76b7b2" />
+    <text x="255" y="335" class="label" transform="rotate(-90 255,335)" text-anchor="end">Science</text>
+
+    <!-- Social science -->
+    <rect x="290" y="260" width="30" height="60" class="bar" fill="#59a14f" />
+    <text x="305" y="335" class="label" transform="rotate(-90 305,335)" text-anchor="end">Social science</text>
+</svg>

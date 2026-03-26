@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2021 Past Questions | Upper Primary | Prep Portal</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../../../main.css">
+    <link rel="stylesheet" href="../../../Chatbot/chatbot.css">
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+    /* ═══ LOADER ═══ */
+    #loader {
+        position: fixed;
+        inset: 0;
+        background: #0a0a0a;
+        z-index: 9000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: opacity .5s ease, visibility .5s ease;
+    }
+    #loader.done { opacity: 0; visibility: hidden; pointer-events: none; }
+    .lw { overflow: hidden; line-height: 1; }
+    .lw span {
+        display: block;
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 900;
+        font-size: clamp(52px, 14vw, 120px);
+        color: #ffffff;
+        letter-spacing: -.03em;
+        transform: translateY(110%);
+        animation: loaderWordIn .7s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .lw:nth-child(2) span { color: #ffe500; font-size: clamp(13px, 2.5vw, 18px); letter-spacing: .12em; text-transform: uppercase; animation-delay: .18s; }
+    @keyframes loaderWordIn { to { transform: translateY(0); } }
+    .lbar {
+        width: 0; height: 3px;
+        background: #ffe500;
+        margin-top: 28px;
+        animation: loaderBar .8s cubic-bezier(.16,1,.3,1) .4s forwards;
+    }
+    @keyframes loaderBar { to { width: clamp(160px, 30vw, 280px); } }
+
+    /* ═══ BREADCRUMB ═══ */
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px clamp(18px, 5vw, 56px);
+        border-bottom: 2.5px solid #0a0a0a;
+        background: #fff;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        flex-wrap: wrap;
+    }
+    .breadcrumb a { color: #0a0a0a; text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb .bc-sep { color: #777; }
+    .breadcrumb .bc-cur { color: #777; }
+
+    /* ═══ PAGE HEADER ═══ */
+    .page-header {
+        background: #0a0a0a;
+        border-bottom: 2.5px solid #0a0a0a;
+        padding: clamp(48px, 9vw, 96px) clamp(18px, 5vw, 56px) clamp(36px, 6vw, 64px);
+        position: relative;
+        overflow: hidden;
+    }
+    .page-header-year {
+        position: absolute;
+        right: clamp(18px, 4vw, 48px);
+        top: 50%;
+        transform: translateY(-50%);
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 900;
+        font-size: clamp(80px, 22vw, 240px);
+        color: rgba(255,255,255,.04);
+        line-height: 1;
+        pointer-events: none;
+        user-select: none;
+    }
+    .page-header-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .18em;
+        color: rgba(255,255,255,.4);
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .page-header-eyebrow::before {
+        content: '';
+        display: inline-block;
+        width: 18px; height: 2px;
+        background: #ffe500;
+        flex-shrink: 0;
+    }
+    .page-header h1 {
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 900;
+        font-size: clamp(48px, 10vw, 108px);
+        line-height: 1;
+        letter-spacing: -.025em;
+        color: #fff;
+        position: relative;
+        z-index: 1;
+        margin-bottom: clamp(32px, 5vw, 52px);
+    }
+    .page-header h1 em { color: #ffe500; font-style: normal; }
+
+    .page-header-stats {
+        display: flex;
+        width: fit-content;
+        border: 2.5px solid rgba(255,255,255,.15);
+        position: relative;
+        z-index: 1;
+    }
+    .ph-stat {
+        padding: 14px 22px;
+        border-right: 2.5px solid rgba(255,255,255,.15);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .ph-stat:last-child { border-right: none; }
+    .ph-stat strong {
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 900;
+        font-size: clamp(16px, 2.8vw, 24px);
+        color: #fff;
+        line-height: 1;
+    }
+    .ph-stat strong em { color: #ffe500; font-style: normal; }
+    .ph-stat span {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 8px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .14em;
+        color: rgba(255,255,255,.4);
+    }
+
+    /* ═══ ROUND CARDS ═══ */
+    .rounds-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 14px;
+        padding: 0 clamp(18px, 5vw, 56px) 56px;
+    }
+
+    .round-card {
+        display: block;
+        text-decoration: none;
+        color: #0a0a0a;
+        border: 2.5px solid #0a0a0a;
+        background: #fff;
+        box-shadow: 6px 6px 0 #0a0a0a;
+        position: relative;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(22px);
+        transition: opacity .5s ease, transform .5s cubic-bezier(.16,1,.3,1), box-shadow .12s;
+    }
+    body.active .round-card { opacity: 1; transform: translateY(0); }
+    .round-card:nth-child(2) { transition-delay: .1s; }
+
+    .round-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: #0a0a0a;
+        transform: translateY(102%);
+        transition: transform .28s cubic-bezier(.16,1,.3,1);
+        z-index: 1;
+    }
+    .round-card:hover { transform: translate(-3px,-3px) !important; box-shadow: 9px 9px 0 #0a0a0a; }
+    .round-card:hover::after { transform: translateY(0); }
+    .round-card:hover .rc-inner { color: #fff; }
+    .round-card:hover .rc-stamp { opacity: .06; color: #fff; }
+    .round-card:hover .rc-badge { background: #ffe500; color: #0a0a0a; }
+    .round-card:hover .rc-cta { color: #ffe500; }
+    .round-card:hover p { color: rgba(255,255,255,.55); }
+    .round-card:hover .rc-meta-label { color: rgba(255,255,255,.4); }
+
+    .rc-inner {
+        padding: 28px;
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 360px;
+        transition: color .28s;
+    }
+    .rc-stamp {
+        position: absolute;
+        top: 20px; right: 24px;
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 900;
+        font-size: 72px;
+        line-height: 1;
+        opacity: .05;
+        pointer-events: none;
+        transition: opacity .28s, color .28s;
+    }
+    .rc-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 8.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .16em;
+        background: #0a0a0a;
+        color: #ffe500;
+        padding: 3px 9px;
+        width: fit-content;
+        transition: background .28s, color .28s;
+    }
+    .rc-number {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .14em;
+        color: #777;
+        margin-top: 4px;
+    }
+    .rc-title {
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 900;
+        font-size: clamp(22px, 4vw, 32px);
+        line-height: 1.05;
+        letter-spacing: -.02em;
+    }
+    .rc-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .14em;
+        color: #777;
+    }
+    .rc-divider {
+        width: 100%;
+        height: 2.5px;
+        background: #0a0a0a;
+        margin: 4px 0;
+    }
+    .round-card p {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        line-height: 1.8;
+        color: #777;
+        flex: 1;
+        transition: color .28s;
+    }
+    .rc-meta-row {
+        display: flex;
+        gap: 0;
+        border: 2.5px solid #0a0a0a;
+        width: fit-content;
+        margin-top: 4px;
+    }
+    .rc-meta-item {
+        padding: 10px 16px;
+        border-right: 2.5px solid #0a0a0a;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    .rc-meta-item:last-child { border-right: none; }
+    .rc-meta-val {
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        line-height: 1;
+    }
+    .rc-meta-val em { font-style: normal; color: #0055ff; }
+    .rc-meta-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 8px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .14em;
+        color: #777;
+        transition: color .28s;
+    }
+    .rc-cta {
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 700;
+        font-size: 9.5px;
+        text-transform: uppercase;
+        letter-spacing: .1em;
+        color: #0055ff;
+        margin-top: 6px;
+        transition: color .28s;
+    }
+
+    /* ═══ YEAR NAV ═══ */
+    .year-nav {
+        display: flex;
+        border-top: 2.5px solid #0a0a0a;
+        border-bottom: 2.5px solid #0a0a0a;
+        background: #fff;
+    }
+    .yn-item {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: clamp(20px, 4vw, 36px) clamp(18px, 5vw, 56px);
+        text-decoration: none;
+        color: #0a0a0a;
+        border-right: 2.5px solid #0a0a0a;
+        transition: background .15s;
+        position: relative;
+        overflow: hidden;
+    }
+    .yn-item:last-child { border-right: none; }
+    .yn-item:hover { background: #0a0a0a; color: #fff; }
+    .yn-item:hover .yn-label { color: rgba(255,255,255,.4); }
+    .yn-item.disabled { opacity: .35; pointer-events: none; }
+    .yn-dir {
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 700;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: .14em;
+        flex-shrink: 0;
+    }
+    .yn-sep {
+        width: 2px;
+        height: 36px;
+        background: currentColor;
+        opacity: .2;
+        flex-shrink: 0;
+    }
+    .yn-year {
+        font-family: 'Unbounded', sans-serif;
+        font-weight: 900;
+        font-size: clamp(18px, 3vw, 26px);
+        letter-spacing: -.01em;
+        line-height: 1;
+    }
+    .yn-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .12em;
+        color: #777;
+        margin-top: 4px;
+        transition: color .15s;
+    }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══ LOADER ═══ -->
+    <div id="loader">
+        <div class="lw"><span>2021</span></div>
+        <div class="lw"><span>Upper Primary · Past Questions</span></div>
+        <div class="lbar"></div>
+    </div>
+
+    <!-- ═══ NAV ═══ -->
+    <nav id="site-nav">
+        <a href="../../../index.html" class="nav-logo">Prep<span>Portal</span></a>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="../index.html">← All Years</a></li>
+            <li><a href="../../../index.html">Home</a></li>
+            <li><a href="#rounds" class="nav-cta">Start Drilling</a></li>
+        </ul>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- ═══ BREADCRUMB ═══ -->
+    <div class="breadcrumb">
+        <a href="../../../index.html">Prep Portal</a>
+        <span class="bc-sep">›</span>
+        <a href="../../index.html">Scholastic Prep</a>
+        <span class="bc-sep">›</span>
+        <a href="../index.html">Upper Primary</a>
+        <span class="bc-sep">›</span>
+        <span class="bc-cur">2021</span>
+    </div>
+
+    <!-- ═══ TICKER ═══ -->
+    <div class="ticker" aria-hidden="true">
+        <div class="ticker-track" id="ticker-track"></div>
+    </div>
+
+    <!-- ═══ PAGE HEADER ═══ -->
+    <div class="page-header">
+        <div class="page-header-year" aria-hidden="true">2021</div>
+        <p class="page-header-eyebrow">Upper Primary · Past Questions</p>
+        <h1>2021<br><em>Questions.</em></h1>
+        <div class="page-header-stats">
+            <div class="ph-stat"><strong>2</strong><span>Rounds</span></div>
+            <div class="ph-stat"><strong><em>Both</em></strong><span>Available</span></div>
+            <div class="ph-stat"><strong>P5–6</strong><span>Level</span></div>
+            <div class="ph-stat"><strong>Free</strong><span>Access</span></div>
+        </div>
+    </div>
+
+    <!-- ═══ SECTION HEADER ═══ -->
+    <div class="section-header" id="rounds">
+        <h2>Select a Round</h2>
+        <span>2 rounds available</span>
+    </div>
+
+    <!-- ═══ ROUND CARDS ═══ -->
+    <div class="rounds-grid">
+
+        <a href="./First-Round/index.html" class="round-card">
+            <div class="rc-inner">
+                <div class="rc-stamp" aria-hidden="true">01</div>
+                <span class="rc-badge">Available</span>
+                <div class="rc-number">Round 01 of 02</div>
+                <div class="rc-title">First<br>Round</div>
+                <div class="rc-tag">Qualifying Stage</div>
+                <div class="rc-divider"></div>
+                <p>The opening qualifying round. All registered students compete across the full subject syllabus. Top scorers advance to the finals.</p>
+                <div class="rc-meta-row">
+                    <div class="rc-meta-item"><div class="rc-meta-val">Multi.</div><div class="rc-meta-label">Format</div></div>
+                    <div class="rc-meta-item"><div class="rc-meta-val">50</div><div class="rc-meta-label">Questions</div></div>
+                    <div class="rc-meta-item"><div class="rc-meta-val">60<span style="font-size:.6em;font-family:'JetBrains Mono',monospace;font-weight:600">min</span></div><div class="rc-meta-label">Duration</div></div>
+                </div>
+                <div class="rc-cta">Start Round One →</div>
+            </div>
+        </a>
+
+        <a href="./Finals/index.html" class="round-card">
+            <div class="rc-inner">
+                <div class="rc-stamp" aria-hidden="true">02</div>
+                <span class="rc-badge">Available</span>
+                <div class="rc-number">Round 02 of 02</div>
+                <div class="rc-title">Finals</div>
+                <div class="rc-tag">Championship Stage</div>
+                <div class="rc-divider"></div>
+                <p>The championship final. Harder questions, higher stakes. Only students who cleared the first round sit this paper.</p>
+                <div class="rc-meta-row">
+                    <div class="rc-meta-item"><div class="rc-meta-val">Multi.</div><div class="rc-meta-label">Format</div></div>
+                    <div class="rc-meta-item"><div class="rc-meta-val">50</div><div class="rc-meta-label">Questions</div></div>
+                    <div class="rc-meta-item"><div class="rc-meta-val">40<span style="font-size:.6em;font-family:'JetBrains Mono',monospace;font-weight:600">min</span></div><div class="rc-meta-label">Duration</div></div>
+                </div>
+                <div class="rc-cta">Start Finals →</div>
+            </div>
+        </a>
+
+    </div>
+
+    <!-- ═══ INFO STRIP ═══ -->
+    <section class="info-strip">
+        <div class="info-cell reveal">
+            <div class="label">How it works</div>
+            <h3>Two-Stage Format</h3>
+            <p>Every Scholastic year runs a First Round open to all, followed by a Finals for qualifiers. Each paper has its own format, duration, and difficulty level.</p>
+        </div>
+        <div class="info-cell reveal" style="transition-delay:.15s">
+            <div class="label">Worked solutions</div>
+            <h3>Full Explanations</h3>
+            <p>Every question comes with a detailed worked solution. Review your answers after each attempt to understand exactly where marks were won or lost.</p>
+        </div>
+        <div class="info-cell reveal" style="transition-delay:.3s">
+            <div class="label">Tip</div>
+            <h3>First Round First</h3>
+            <p>Tackle the First Round before the Finals. The jump in difficulty is significant — drilling round one builds the speed and confidence you need.</p>
+        </div>
+    </section>
+
+    <!-- ═══ YEAR NAVIGATION ═══ -->
+    <nav class="year-nav" aria-label="Year navigation">
+        <a href="../2024/index.html" class="yn-item">
+            <div class="yn-dir">← Prev</div>
+            <div class="yn-sep"></div>
+            <div>
+                <div class="yn-year">2024</div>
+                <div class="yn-label">Past Questions</div>
+            </div>
+        </a>
+        <div class="yn-item disabled">
+            <div class="yn-dir">Next →</div>
+            <div class="yn-sep"></div>
+            <div>
+                <div class="yn-year">2026</div>
+                <div class="yn-label">After Session</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══ CTA BAND ═══ -->
+    <section class="cta-band reveal">
+        <h2>Ready to <em>compete at the top?</em></h2>
+        <a href="#rounds" class="cta-btn">Start Drilling &rarr;</a>
+    </section>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer>
+        <div class="footer-top">
+            <div class="footer-brand">
+                <span class="logo">Prep<span>Portal</span></span>
+                <p>A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Upper Primary</h4>
+                <ul>
+                    <li><a href="../2021/index.html">2021 Papers</a></li>
+                    <li><a href="../2022/index.html">2022 Papers</a></li>
+                    <li><a href="../2023/index.html">2023 Papers</a></li>
+                    <li><a href="../2024/index.html">2024 Papers</a></li>
+                    <li><a href="../2025/index.html">2025 Papers</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Scholastic</h4>
+                <ul>
+                    <li><a href="#">Lower Primary</a></li>
+                    <li><a href="#">Middle Primary</a></li>
+                    <li><a href="../index.html">Upper Primary</a></li>
+                    <li><a href="#">Junior Secondary</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Info</h4>
+                <ul>
+                    <li><a href="../../../index.html">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Prep Portal. All rights reserved.</p>
+            <div class="footer-bottom-links">
+                <a href="#">Terms</a>
+                <a href="#">Privacy</a>
+                <a href="#">Sitemap</a>
+            </div>
+        </div>
+    </footer>
+
+    <div id="prepbot"></div>
+    <script src="../../../Chatbot/chatbot.js"></script>
+
+    <script>
+    /* ── TICKER ── */
+    const tickerItems = ["2021 Past Questions","First Round","Finals","Upper Primary","Scholastic Prep","Prep Portal","2021 Edition","P5–6 Level","Competition Drills"];
+    const track = document.getElementById('ticker-track');
+    [...tickerItems, ...tickerItems].forEach(t => {
+        const s = document.createElement('span');
+        s.className = 'ticker-item';
+        s.innerHTML = t + '<span class="ticker-dot">✦</span>';
+        track.appendChild(s);
+    });
+
+    /* ── REVEAL ── */
+    const revealObserver = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    /* ── BOOT ── */
+    window.onload = () => {
+        setTimeout(() => {
+            document.getElementById('loader').classList.add('done');
+            document.body.classList.add('active', 'loaded');
+        }, 1000);
+    };
+
+    /* ── NAV ── */
+    const toggle = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('nav-links');
+    toggle.addEventListener('click', () => { toggle.classList.toggle('open'); navLinks.classList.toggle('open'); });
+    window.addEventListener('scroll', () => {
+        document.getElementById('site-nav').style.boxShadow = window.scrollY > 10 ? '0 4px 0 0 #0a0a0a' : 'none';
+    }, { passive: true });
+    </script>
+
+</body>
+</html>
