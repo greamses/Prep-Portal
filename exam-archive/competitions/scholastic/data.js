@@ -73,7 +73,7 @@ const siteData = {
             items: [
                 {
                     name: "Coming Soon",
-                    link: "./upper-primary/inde",
+                    link: "./middle-primary/index.html",
                     live: false,
                     status: "2026",
                     description: "Challenge sets for Primary 4–5"
@@ -88,7 +88,7 @@ const siteData = {
             items: [
                 {
                     name: "Start Upper Primary",
-                    link: "./Upper-Primary/index.html",
+                    link: "./upper-primary/index.html",
                     live: true,
                     status: "Live",
                     description: "Intensive prep for Primary 5–6 top placements"

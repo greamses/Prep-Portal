@@ -75,8 +75,8 @@ const siteData = {
             description: "Scholastic competition papers from 2022 with First and Final rounds.",
             badge: "2 Rounds",
             items: [
-                { id: "first-round", name: "First Round", link: "./2022/first-round.html", live: true, status: "Available", description: "2022 First Round Competition Paper" },
-                { id: "final-round", name: "Final Round", link: "./2022/final-round.html", live: true, status: "Available", description: "2022 Final Round Competition Paper" }
+                { id: "first-round", name: "First Round", link: "./2022/first-round.html", live: false, status: "Available", description: "2022 First Round Competition Paper" },
+                { id: "final-round", name: "Final Round", link: "./2022/final-round.html", live: false, status: "Available", description: "2022 Final Round Competition Paper" }
             ]
         },
         {
@@ -85,8 +85,8 @@ const siteData = {
             description: "Scholastic competition papers from 2023 with First and Final rounds.",
             badge: "2 Rounds",
             items: [
-                { id: "first-round", name: "First Round", link: "./2023/first-round.html", live: true, status: "Available", description: "2023 First Round Competition Paper" },
-                { id: "final-round", name: "Final Round", link: "./2023/final-round.html", live: true, status: "Available", description: "2023 Final Round Competition Paper" }
+                { id: "first-round", name: "First Round", link: "./2023/first-round.html", live: false, status: "Available", description: "2023 First Round Competition Paper" },
+                { id: "final-round", name: "Final Round", link: "./2023/final-round.html", live: false, status: "Available", description: "2023 Final Round Competition Paper" }
             ]
         },
         {
@@ -95,8 +95,8 @@ const siteData = {
             description: "Scholastic competition papers from 2024 with First and Final rounds.",
             badge: "2 Rounds",
             items: [
-                { id: "first-round", name: "First Round", link: "./2024/first-round.html", live: true, status: "Available", description: "2024 First Round Competition Paper" },
-                { id: "final-round", name: "Final Round", link: "./2024/final-round.html", live: true, status: "Available", description: "2024 Final Round Competition Paper" }
+                { id: "first-round", name: "First Round", link: "./2024/first-round.html", live: false, status: "Available", description: "2024 First Round Competition Paper" },
+                { id: "final-round", name: "Final Round", link: "./2024/final-round.html", live: false, status: "Available", description: "2024 Final Round Competition Paper" }
             ]
         },
         {
@@ -105,8 +105,8 @@ const siteData = {
             description: "Scholastic competition papers from 2025 with First and Final rounds.",
             badge: "2 Rounds",
             items: [
-                { id: "first-round", name: "First Round", link: "./2025/first-round.html", live: true, status: "Available", description: "2025 First Round Competition Paper" },
-                { id: "final-round", name: "Final Round", link: "./2025/final-round.html", live: true, status: "Available", description: "2025 Final Round Competition Paper" }
+                { id: "first-round", name: "First Round", link: "./2025/first-round.html", live: false, status: "Available", description: "2025 First Round Competition Paper" },
+                { id: "final-round", name: "Final Round", link: "./2025/final-round.html", live: false, status: "Available", description: "2025 Final Round Competition Paper" }
             ]
         }
     ],

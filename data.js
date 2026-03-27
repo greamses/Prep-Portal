@@ -67,19 +67,19 @@ const siteData = {
             items: [
                 {
                     name: "WAEC",
-                    link: "./WAEC/index.html",
+                    link: "./exam-archive/national/WAEC/index.html",
                     live: true,
                     status: "Live"
                 },
                 {
                     name: "NECO",
-                    link: "./Grade-4-Exam/index.html",
+                    link: "./exam-archive/national/NECO/index.html",
                     live: true,
                     status: "Live"
                 },
                 {
                     name: "JAMB",
-                    link: "./Grade-5-Exam/index.html",
+                    link: "./exam-archive/national/JAMB/index.html",
                     live: true,
                     status: "Live"
                 },
@@ -125,7 +125,7 @@ const siteData = {
             items: [
                 {
                     name: "Scholastic Prep",
-                    link: "./Scholarstic/index.html",
+                    link: "./exam-archive/competitions/scholastic/index.html",
                     live: true,
                     status: "Live"
                 },
