@@ -188,21 +188,6 @@
 }
 
 /* animated colour stripe at top of window */
-#chat-window::before {
-    content: '';
-    display: block;
-    height: 4px;
-    flex-shrink: 0;
-    background: repeating-linear-gradient(
-        90deg,
-        var(--blue)  0px,  var(--blue) 32px,
-        var(--ink)  32px, var(--ink)  48px,
-        var(--blue) 48px, var(--blue) 80px,
-        var(--ink)  80px, var(--ink)  96px
-    );
-    background-size: 200% 100%;
-    animation: stripeScroll 10s linear infinite;
-}
 
 @keyframes stripeScroll {
     from { background-position: 0 0; }
@@ -854,7 +839,7 @@
     #chat-window {
         width: calc(100vw - 16px);
         right: 8px;
-        bottom: 86px;
+        bottom: 16px;
         height: 90vh;
         max-height: 700px;
     }
@@ -1802,7 +1787,7 @@ You: "Sure! I'll take you to the WAEC section right away. [NAVIGATE: ./WAEC/inde
         function scheduleNext() {
             clearTimeout(scheduleTimer);
             // Random interval: 20–50 seconds
-            const delay = (20 + Math.floor(Math.random() * 31)) * 1000;
+            const delay = (20 + Math.floor(Math.random() * 11)) * 1000;
             scheduleTimer = setTimeout(showPopup, delay);
         }
 
