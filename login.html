@@ -328,41 +328,66 @@
       cursor: not-allowed;
     }
     
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 16px 0;
-      font-size: 9px;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--light-muted);
-    }
-    
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(0, 0, 0, .12);
-    }
-    
-    .google-btn {
-      width: 100%;
-      padding: 13px 14px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      background: var(--bg);
-      border: var(--border);
-      box-shadow: 4px 4px 0 var(--ink);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
+   /* ── IMPROVED GOOGLE BTN ── */
+.google-btn {
+  width: 100%;
+  padding: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  background: #ffffff; /* Clean white */
+  color: var(--ink);
+  border: 2.5px solid var(--ink); /* Thick brutalist border */
+  box-shadow: 4px 4px 0 var(--ink); /* Hard shadow */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
+}
+
+.google-btn:hover {
+  background: var(--off);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.google-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  /* Keeps the Google colors crisp */
+}
+
+/* ── IMPROVED DIVIDER ── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 24px 0;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .2em;
+  color: var(--light-muted);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 2.5px; /* Matches your border thickness */
+  background: var(--ink);
+  opacity: 0.1;
+}
     
     .forgot-row {
       text-align: right;
@@ -376,6 +401,11 @@
       text-transform: uppercase;
       color: var(--blue);
       text-decoration: none;
+    }
+    
+    .terms-note{
+      padding: 15px;
+      font-size: 12px;
     }
     
     .msg {
@@ -477,7 +507,7 @@
     <div class="login-card">
       <div class="card-header">
         <p class="card-eyebrow">Prep Portal 2026</p>
-        <h1 class="card-title" id="card-title">Access Your Account</h1>
+        <h1 class="card-title" id="card-title">Access Account</h1>
         <div class="tabs" role="tablist">
           <button class="tab-btn active" id="tab-login">Sign In</button>
           <button class="tab-btn" id="tab-register">Register</button>
@@ -643,7 +673,7 @@
         loginPanel.classList.add('active');
         tabRegister.classList.remove('active');
         tabLogin.classList.add('active');
-        cardTitle.textContent = "Access Your Account";
+        cardTitle.textContent = "Access  Account";
         footText.textContent = "Don't have an account?";
         footLink.textContent = "Register free";
       }
