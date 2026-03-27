@@ -691,7 +691,8 @@
       signInWithEmailAndPassword,
       createUserWithEmailAndPassword,
       GoogleAuthProvider,
-      signInWithPopup,
+      signInWithRedirect, // Add this
+      getRedirectResult, // Add this
       sendPasswordResetEmail,
       updateProfile
     } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
@@ -825,17 +826,31 @@
     });
     
     // ── ACTION: GOOGLE ──
+    // ── ACTION: GOOGLE SIGN-IN (REDIRECT) ──
     document.querySelectorAll('.btn-google').forEach(btn => {
       btn.addEventListener('click', async () => {
         try {
-          await signInWithPopup(auth, googleProvider);
-          window.location.href = "./dashboard.html";
+          // Use Redirect instead of Popup for mobile compatibility
+          await signInWithRedirect(auth, googleProvider);
         } catch (error) {
-          showMsg(error.message);
+          showMsg("Google Login failed: " + error.message);
         }
       });
     });
     
+    // ── HANDLE THE RETURN FROM GOOGLE ──
+    // This code runs when the user is sent back from Google to your website
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          // If result exists, the user just successfully logged in
+          window.location.href = "dashboard.html";
+        }
+      }).catch((error) => {
+        if (error.code !== 'auth/redirect-cancelled-by-user') {
+          showMsg("Error during Google return: " + error.message);
+        }
+      });
     // ── ACTION: FORGOT PASSWORD ──
     document.getElementById('forgot-link').addEventListener('click', async (e) => {
       e.preventDefault();
