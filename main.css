@@ -80,10 +80,6 @@ body {
     flex-shrink: 0;
 }
 
-.nav-logo span {
-    color: var(--blue);
-}
-
 .nav-links {
     list-style: none;
     display: flex;
@@ -156,6 +152,63 @@ body {
 
 .nav-toggle.open span:nth-child(3) {
     transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* ============================================
+   REFINED NAV BRANDING (NEO-BRUTALIST)
+   ============================================ */
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+    height: 100%; /* Ensures vertical centering in nav */
+}
+
+.nav-logo img {
+    height: 38px; /* Matches your previous setting */
+    width: auto;
+    display: block;
+}
+
+.logo-brand {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 14px;
+    border-left: 2px solid var(--ink);
+    line-height: 1;
+}
+
+.brand-top {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 900;
+    font-size: 22px;
+    color: var(--blue);
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+}
+
+.brand-bottom {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em; 
+    opacity: 0.9;
+    color: var(--yellow);
+    background: var(--ink);
+padding: 3px;
+}
+
+
+/* Responsive adjustment for Mobile */
+@media (max-width: 480px) {
+    .nav-logo { gap: 10px; }
+    .logo-brand { padding-left: 10px; }
+    .brand-top { font-size: 15px; }
+    .brand-bottom { font-size: 8.5px; }
 }
 
 /* ════════════════════════════════════════

@@ -1,58 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282 72" width="282" height="72" role="img" aria-label="Prep Portal">
-  <title>Prep Portal — Dark</title>
-  <desc>Prep Portal — AI-powered exam preparation platform (dark variant)</desc>
-
-  <defs>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&amp;display=swap');
-    </style>
-  </defs>
-
-  <!-- ═══════════════════════════
-       ICON MARK — inverted
-  ════════════════════════════ -->
-  <g id="icon-mark-dark">
-    <!-- Blue offset shadow -->
-    <rect x="4" y="8" width="64" height="64" fill="#0b57d0"/>
-
-    <!-- White icon box -->
-    <rect x="0" y="4" width="64" height="64" fill="#ffffff"/>
-
-    <!-- P letterform — ink -->
-    <rect x="8"  y="12" width="7"  height="48" fill="#1f1f1f"/>
-    <rect x="8"  y="12" width="40" height="7"  fill="#1f1f1f"/>
-    <rect x="41" y="12" width="7"  height="28" fill="#1f1f1f"/>
-    <rect x="8"  y="33" width="40" height="7"  fill="#1f1f1f"/>
-
-    <!-- Portal counter — blue window (same, always blue) -->
-    <rect x="15" y="19" width="26" height="14" fill="#0b57d0"/>
-  </g>
-
-  <!-- ═══════════════════════════
-       WORDMARK — light
-  ════════════════════════════ -->
-  <g id="wordmark-dark">
-    <!-- Vertical divider -->
-    <rect x="78" y="10" width="2" height="52" fill="#ffffff"/>
-
-    <!-- PREP — white -->
-    <text
-      x="90"
-      y="38"
-      font-family="'Unbounded', 'Arial Black', sans-serif"
-      font-weight="900"
-      font-size="24"
-      fill="#ffffff"
-      letter-spacing="1.5">PREP</text>
-
-    <!-- PORTAL — blue -->
-    <text
-      x="91"
-      y="56"
-      font-family="'Unbounded', 'Arial Black', sans-serif"
-      font-weight="700"
-      font-size="11.5"
-      fill="#0b57d0"
-      letter-spacing="5.5">PORTAL</text>
-  </g>
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Glowing Background Blur (Optional subtle effect) -->
+  <circle cx="50" cy="50" r="40" fill="#0055ff" fill-opacity="0.15" />
+  
+  <!-- Left Facet -->
+  <path d="M50 50L10 27V73L50 96V50Z" fill="#0055ff" stroke="white" stroke-width="2.5" />
+  
+  <!-- Right Facet -->
+  <path d="M50 50L90 27V73L50 96V50Z" fill="#002266" stroke="white" stroke-width="2.5" />
+  
+  <!-- Top Facet -->
+  <path d="M50 50L90 27L50 4L10 27L50 50Z" fill="#1a1a1a" stroke="white" stroke-width="2.5" />
+  
+  <!-- THE PORTAL CORE -->
+  <path d="M50 35L65 43V58L50 66L35 58V43L50 35Z" fill="#ffe500" stroke="white" stroke-width="2" />
+  <circle cx="50" cy="50.5" r="4" fill="white" />
+  
+  <!-- GEOMETRIC GRID LINES -->
+  <path d="M10 27L50 50" stroke="white" stroke-width="1" opacity="0.4" stroke-dasharray="3 2" />
+  <path d="M90 27L50 50" stroke="white" stroke-width="1" opacity="0.4" stroke-dasharray="3 2" />
+  <path d="M50 4V50" stroke="white" stroke-width="1" opacity="0.4" stroke-dasharray="3 2" />
+  
+  <!-- Light Refraction Detail -->
+  <path d="M30 15.5L70 38.5" stroke="white" stroke-width="0.5" opacity="0.2" />
+  <path d="M30 38.5L70 15.5" stroke="white" stroke-width="0.5" opacity="0.2" />
+  
+  <!-- Professional Detail Accents -->
+  <rect x="48" y="75" width="4" height="15" fill="#ffe500" stroke="white" stroke-width="1" />
+  <path d="M25 65L35 70" stroke="white" stroke-width="2" stroke-linecap="round" />
+  <path d="M75 65L65 70" stroke="white" stroke-width="2" stroke-linecap="round" />
+  
+  <!-- Corner Highlighting -->
+  <circle cx="50" cy="4" r="1.5" fill="white" />
+  <circle cx="10" cy="27" r="1.5" fill="white" />
+  <circle cx="90" cy="27" r="1.5" fill="white" />
 </svg>

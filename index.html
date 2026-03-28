@@ -13,6 +13,7 @@
     
     <link rel="stylesheet" href="./main.css">
     
+    
     <style>
         /* Hero Refinement */
         .hero {
@@ -116,17 +117,43 @@
             line-height: 1.1;
         }
     </style>
+    <link rel="stylesheet" href="./utils/loader/loader.css">
 </head>
 
 <body>
     
-    <!-- NAVIGATION -->
-    <nav class="site-nav">
-        <a href="index.html" class="nav-logo">Prep<span>Portal</span></a>
+  <!-- ═══ ADVANCED TRI-CORE LOADER ═══ -->
+  <div id="loader">
+      <div id="loader-wrapper">
+          <div class="logo-cluster">
+              <img src="./logo/logo-loading.svg" class="pulse-logo" alt="Loading...">
+              <img src="./logo/logo-loading.svg" class="pulse-logo" alt="Loading...">
+              <img src="./logo/logo-loading.svg" class="pulse-logo" alt="Loading...">
+          </div>
+      </div>
+      
+      <div class="loader-word"><span>Login</span></div>
+      <div class="loader-word"><span>Sign up.</span></div>
+      <div class="loader-bar"></div>
+  </div>
+  
+  <!-- NAVIGATION -->
+  <nav class="site-nav">
+      <a href="/" class="nav-logo">
+          <!-- Icon -->
+          <img src="./logo/logo-light.svg" alt="PrepPortal logo" />
+          
+          <!-- Stacked Text Branding -->
+          <div class="logo-brand">
+              <span class="brand-top">Prep</span>
+              <span class="brand-bottom">Portal</span>
+          </div>
+      </a>
+      
         <div class="nav-right">
             <a href="login.html" class="nav-cta" id="auth-status-btn">Sign In</a>
         </div>
-    </nav>
+  </nav>
     
     <!-- TICKER -->
     <div class="ticker" aria-hidden="true">
@@ -288,5 +315,7 @@
         type();
     });
 </script>
+
+<script src="./utils/loader/loader.js"></script>
 
 </html>

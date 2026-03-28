@@ -1,0 +1,32 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Structural Shadow (Bottom Offset) -->
+  <path d="M50 98L10 75V25L50 2L90 25V75L50 98Z" fill="#0a0a0a" fill-opacity="0.1" />
+  
+  <!-- Left Facet (Blue) -->
+  <path d="M50 50L10 27V73L50 96V50Z" fill="#0055ff" stroke="#0a0a0a" stroke-width="2.5" />
+  
+  <!-- Right Facet (Darker Blue) -->
+  <path d="M50 50L90 27V73L50 96V50Z" fill="#003db3" stroke="#0a0a0a" stroke-width="2.5" />
+  
+  <!-- Top Facet (Light/Paper) -->
+  <path d="M50 50L90 27L50 4L10 27L50 50Z" fill="#ffffff" stroke="#0a0a0a" stroke-width="2.5" />
+  
+  <!-- THE PORTAL CORE (Yellow) -->
+  <path d="M50 35L65 43V58L50 66L35 58V43L50 35Z" fill="#ffe500" stroke="#0a0a0a" stroke-width="2" />
+  <circle cx="50" cy="50.5" r="4" fill="#0a0a0a" />
+  
+  <!-- ADVANCED GEOMETRIC LINES (The Ideation Grid) -->
+  <!-- Top Face Grid -->
+  <path d="M30 15.5L70 38.5" stroke="#0a0a0a" stroke-width="1" opacity="0.3" />
+  <path d="M30 38.5L70 15.5" stroke="#0a0a0a" stroke-width="1" opacity="0.3" />
+  
+  <!-- Vertical Support Lines -->
+  <path d="M10 27L50 50" stroke="#0a0a0a" stroke-width="1.5" stroke-dasharray="2 2" />
+  <path d="M90 27L50 50" stroke="#0a0a0a" stroke-width="1.5" stroke-dasharray="2 2" />
+  <path d="M50 4V50" stroke="#0a0a0a" stroke-width="1.5" stroke-dasharray="2 2" />
+  
+  <!-- Detail Accents (The Professional Finish) -->
+  <rect x="48" y="75" width="4" height="15" fill="#ffe500" stroke="#0a0a0a" stroke-width="1" />
+  <path d="M25 65L35 70" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" />
+  <path d="M75 65L65 70" stroke="#0a0a0a" stroke-width="2" stroke-linecap="round" />
+</svg>
