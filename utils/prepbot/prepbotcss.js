@@ -1034,9 +1034,9 @@ const chatbotcss = `
 @media (max-width: 480px) {
     #chat-window {
         width: calc(100vw - 16px);
-        right: 8px;
-        top: 16px;
-        height: 90vh;
+        right: 4px;
+        top: 6dvh;
+        height: 90dvh;
         max-height: 700px;
     }
     
