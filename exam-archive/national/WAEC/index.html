@@ -8,7 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
-  <script src=""></script>
+  <link rel="stylesheet" href="../../../main.css">
+  <script src="../../../utils/loader/loader.js"></script>
 </head>
 
 <body>
@@ -23,13 +24,23 @@
   </div>
   
   
-  <nav id="site-nav">
-    <a class="nav-logo" href="#">Prep<span>Portal</span></a>
+  <nav class="site-nav">
+    <a href="/" class="nav-logo">
+      <!-- Icon -->
+      <img src="../../../logo/logo-light.svg" alt="PrepPortal logo" />
+      
+      <!-- Stacked Text Branding -->
+      <div class="logo-brand">
+        <span class="brand-top">Prep</span>
+        <span class="brand-bottom">Portal</span>
+      </div>
     <div class="nav-right">
       <a class="nav-link active" href="#">WAEC</a>
       <a class="nav-link" href="#">JAMB</a>
     </div>
   </nav>
+
+
   
   <div class="ticker">
     <div class="ticker-track" id="ticker-track"></div>

@@ -127,19 +127,6 @@
       backdrop-filter: blur(0px);
     }
     
-    .nav-logo {
-      font-family: 'Unbounded', sans-serif;
-      font-weight: 900;
-      font-size: 1rem;
-      text-decoration: none;
-      color: var(--ink);
-      letter-spacing: -0.3px;
-    }
-    
-    .nav-logo span {
-      color: var(--blue);
-    }
-    
     .nav-right {
       display: flex;
       gap: 8px;
@@ -269,12 +256,12 @@
     .ph-stats {
       display: flex;
       border: var(--border);
-      box-shadow: var(--shadow-sm);
       background: var(--bg);
       width: 100%;
       flex-wrap: wrap;
       position: relative;
       z-index: 2;
+      box-shadow: 6px 6px 0 var(--ink);
     }
     
     .ph-stat {
@@ -654,7 +641,7 @@
       .ph-stat {
         border-right: none;
         border-bottom: var(--border);
-        text-align: center;
+        
       }
       
       .ph-stat:last-child {
