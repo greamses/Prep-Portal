@@ -1,9 +1,8 @@
 import chatbotcss from './chatbotcss.js';
 
 /* ═══════════════════════════════════════════════════════════
-   PREPBOT — Content-Aware AI Study Assistant (Groq / Llama 3.1)
-   Logics: DOM Scraping, Context Injection, MathJax, Auto-Nav
-   Update: High-Frequency Dynamic Conversation Starters
+   PREPBOT — Content-Aware AI Study Assistant
+   Update: Restored MathJax, Fixed Loading, Auto-Hide FAB
 ═══════════════════════════════════════════════════════════ */
 
 (function() {
@@ -24,21 +23,17 @@ import chatbotcss from './chatbotcss.js';
     const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
     const BOT_NAME = 'PrepBot';
     
-    const isGitHubPages = location.hostname.includes("github.io");
-    const BASE = isGitHubPages ? "/" + location.pathname.split('/')[1] : "";
-    
     const SITE_MAP = {
-        "Home": `${BASE}/index.html`,
-        "Cambridge": `${BASE}/Cambridge/index.html`,
-        "WAEC": `${BASE}/WAEC/index.html`,
-        "Scholastic": `${BASE}/Scholarstic/index.html`,
+        "Home": "/index.html",
+        "Cambridge": "/Cambridge/index.html",
+        "WAEC": "/WAEC/index.html",
+        "Scholastic": "/Scholarstic/index.html",
     };
 
-    /* ── DOM SCRAPER (Content Awareness) ── */
+    /* ── DOM SCRAPER ── */
     function getPageContext() {
         const selectors = ['main', 'article', '.study-content', '.lesson-body', '#question-text', '.content'];
         let mainContent = "";
-        
         for (const selector of selectors) {
             const el = document.querySelector(selector);
             if (el) {
@@ -48,13 +43,11 @@ import chatbotcss from './chatbotcss.js';
                 break; 
             }
         }
-
         if (!mainContent) mainContent = document.body.innerText.replace(/\s+/g, ' ').substring(0, 1500);
-
         return {
             title: document.title,
-            h1: document.querySelector('h1')?.innerText || "this topic",
-            body: mainContent.substring(0, 3000)
+            h1: document.querySelector('h1')?.innerText || "this lesson",
+            body: mainContent.substring(0, 3500)
         };
     }
 
@@ -85,24 +78,15 @@ import chatbotcss from './chatbotcss.js';
                     <div class="chat-header-info"><h4>${BOT_NAME}</h4><div class="chat-status"><span class="chat-status-dot"></span><span>Online</span></div></div>
                 </div>
                 <div class="chat-header-actions">
-                    <button class="chat-icon-btn" id="chat-clear-btn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                    </button>
+                    <button class="chat-icon-btn" id="chat-clear-btn" title="Clear chat history"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
                     <button class="chat-icon-btn" id="chat-close">×</button>
                 </div>
             </div>
 
-            <div class="chat-tabs" id="chat-tabs">
-                <button class="chat-tab active" data-subject="General">All</button>
-                <button class="chat-tab" data-subject="Mathematics">Maths</button>
-                <button class="chat-tab" data-subject="English">English</button>
-                <button class="chat-tab" data-subject="Science">Science</button>
-            </div>
-
             <div class="chat-messages" id="chat-messages">
                 <div class="chat-intro-card">
-                    <div class="intro-label">${BOT_NAME} &middot; ACTIVE CONTEXT</div>
-                    <p>I'm reading this page with you. Ask me to <strong>explain</strong>, <strong>summarize</strong>, or <strong>solve</strong> any part of this lesson.</p>
+                    <div class="intro-label">${BOT_NAME} &middot; STUDY MODE</div>
+                    <p>I can see the content of this page. Ask me to <strong>explain</strong>, <strong>summarize</strong>, or <strong>solve</strong> any part of this lesson.</p>
                 </div>
             </div>
 
@@ -117,15 +101,20 @@ import chatbotcss from './chatbotcss.js';
                     <div class="send-spinner"></div>
                 </button>
             </div>
+
             <div class="chat-clear-bar" id="chat-clear-bar">
-                <span>Clear chat?</span>
-                <div class="chat-clear-bar-actions"><button id="clear-cancel">No</button><button id="clear-confirm">Clear</button></div>
+                <span>Clear conversation?</span>
+                <div class="chat-clear-bar-actions">
+                    <button class="clear-cancel-btn" id="clear-cancel">Cancel</button>
+                    <button class="clear-confirm-btn" id="clear-confirm">Clear</button>
+                </div>
             </div>
         </div>
     `;
     
-    /* ── STATE & REFS ── */
+    /* ── REFS & STATE ── */
     const win = document.getElementById('chat-window');
+    const fabWrap = document.getElementById('chat-fab-wrap');
     const input = document.getElementById('chat-input');
     const messages = document.getElementById('chat-messages');
     const sendBtn = document.getElementById('chat-send');
@@ -136,31 +125,48 @@ import chatbotcss from './chatbotcss.js';
     let isOpen = false;
     let isBusy = false;
     let history = []; 
-    let activeSubject = 'General';
-    let currentNudgePrompt = ""; 
+    let currentNudgePrompt = "";
 
     /* ── SYSTEM PROMPT ── */
     function getSystemPrompt() {
         const page = getPageContext();
         return `You are ${BOT_NAME}, an expert study assistant. 
-        REAL-TIME PAGE CONTEXT:
-        - Topic: ${page.h1}
-        - Content: "${page.body}"
+        YOU CAN SEE THIS PAGE CONTENT:
+        - Heading: ${page.h1}
+        - Text: "${page.body}"
         
-        INSTRUCTIONS:
-        1. Use the provided page content to answer.
-        2. Use LaTeX for math: \\(...\\) for inline and \\[...\\] for blocks.
-        3. Be concise and academic.`;
+        Answer based on this text. Use LaTeX: \\(...\\) for inline and \\[...\\] for blocks.`;
+    }
+
+    /* ── MATHJAX LOGIC ── */
+    function renderMath(el) {
+        if (window.MathJax) {
+            if (MathJax.typesetPromise) MathJax.typesetPromise([el]);
+            else if (MathJax.Hub) MathJax.Hub.Queue(["Typeset", MathJax.Hub, el]);
+        }
+    }
+
+    function renderMathWhenReady(el) {
+        let attempts = 0;
+        const poll = setInterval(() => {
+            if (window.MathJax) { clearInterval(poll); renderMath(el); }
+            if (attempts++ > 30) clearInterval(poll);
+        }, 200);
     }
 
     /* ── UI LOGIC ── */
     function toggleChat(force) {
         isOpen = force !== undefined ? force : !isOpen;
         win.classList.toggle('open', isOpen);
-        if (isOpen) { 
+        
+        // Use your CSS class to hide the FAB while chat is open
+        if (isOpen) {
+            fabWrap.classList.add('fab-hidden');
             popup.classList.remove('visible');
             updateSuggestions();
-            setTimeout(() => input.focus(), 300); 
+            setTimeout(() => input.focus(), 300);
+        } else {
+            fabWrap.classList.remove('fab-hidden');
         }
     }
 
@@ -170,16 +176,12 @@ import chatbotcss from './chatbotcss.js';
 
         isBusy = true;
         sendBtn.disabled = true;
-        sendBtn.classList.add('loading');
+        sendBtn.classList.add('loading'); // Triggers CSS .send-spinner
         input.value = '';
         input.style.height = 'auto';
 
         appendMessage('user', text);
         showTyping();
-
-        const systemPrompt = getSystemPrompt();
-        history.push({ role: 'user', content: text });
-        if (history.length > 8) history = history.slice(-8);
 
         try {
             const res = await fetch(GROQ_URL, {
@@ -187,19 +189,24 @@ import chatbotcss from './chatbotcss.js';
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
                 body: JSON.stringify({
                     model: "llama-3.1-8b-instant",
-                    messages: [{ role: "system", content: systemPrompt }, ...history],
+                    messages: [{ role: "system", content: getSystemPrompt() }, ...history, { role: "user", content: text }],
                     temperature: 0.6
                 })
             });
             const data = await res.json();
             hideTyping();
-            let reply = data.choices?.[0]?.message?.content || "Error getting response.";
+            let reply = data.choices?.[0]?.message?.content || "Sorry, I encountered an error.";
+            
+            history.push({ role: 'user', content: text });
             history.push({ role: 'assistant', content: reply });
+            if (history.length > 10) history = history.slice(-10);
+            
             appendMessage('bot', reply);
         } catch (err) {
             hideTyping();
-            appendMessage('bot', "Connection error.");
+            appendMessage('bot', "Connection error. Check your internet.");
         }
+
         isBusy = false;
         sendBtn.disabled = false;
         sendBtn.classList.remove('loading');
@@ -211,17 +218,29 @@ import chatbotcss from './chatbotcss.js';
         wrap.innerHTML = `<div class="msg-meta">${role === 'user' ? 'You' : BOT_NAME}</div><div class="msg-bubble">${formatText(text)}</div>`;
         messages.appendChild(wrap);
         messages.scrollTop = messages.scrollHeight;
-        if (window.MathJax) MathJax.typesetPromise?.([wrap]);
+        renderMathWhenReady(wrap);
     }
 
-    function formatText(t) { return t.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>'); }
-    function showTyping() { const t = document.createElement('div'); t.id = 'typing'; t.className = 'msg bot'; t.innerHTML = `<div class="msg-bubble">...</div>`; messages.appendChild(t); messages.scrollTop = messages.scrollHeight; }
-    function hideTyping() { document.getElementById('typing')?.remove(); }
+    function formatText(t) {
+        return t.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>')
+                .replace(/`(.*?)`/g, '<code>$1</code>');
+    }
+
+    function showTyping() {
+        const t = document.createElement('div');
+        t.id = 'typing-indicator';
+        t.className = 'msg bot';
+        t.innerHTML = `<div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+        messages.appendChild(t);
+        messages.scrollTop = messages.scrollHeight;
+    }
+    function hideTyping() { document.getElementById('typing-indicator')?.remove(); }
 
     function updateSuggestions() {
         suggBox.innerHTML = '';
         const page = getPageContext();
-        const chips = [`Explain ${page.h1}`, 'Summarize this', 'Give me a quiz'];
+        const chips = [`Explain ${page.h1}`, 'Summarize this', 'Quick Quiz'];
         chips.forEach(c => {
             const b = document.createElement('button');
             b.className = 'suggestion-chip';
@@ -231,71 +250,54 @@ import chatbotcss from './chatbotcss.js';
         });
     }
 
-    /* ── DYNAMIC CONVERSATION STARTERS (NUDGES) ── */
+    /* ── NUDGE LOGIC (10-15s) ── */
     function triggerNudge() {
-        if (isOpen || isBusy) return;
-
+        if (isOpen || isBusy || fabWrap.classList.contains('fab-hidden')) return;
         const page = getPageContext();
-        const nudgeData = [
-            { label: `Confused by ${page.h1}? Tap for an explanation.`, prompt: `Can you explain "${page.h1}" in simple terms based on this page?` },
-            { label: `Want a quick summary of this lesson?`, prompt: `Give me a 3-point bullet summary of the content on this page.` },
-            { label: `Think you know ${page.h1}? Let me quiz you!`, prompt: `Based on the text on this page, give me one multiple choice question to test my knowledge.` },
-            { label: `Need the key formulas/facts from this page?`, prompt: `List the most important formulas or facts from this current page.` }
+        const nudges = [
+            { l: `Need help with "${page.h1}"?`, p: `Explain the key concepts of "${page.h1}" based on this page.` },
+            { l: `I can summarize this page for you!`, p: `Summarize the content of this page in 3 easy bullets.` },
+            { l: `Ready for a quick check?`, p: `Ask me one quiz question about the information on this page.` }
         ];
-
-        const pick = nudgeData[Math.floor(Math.random() * nudgeData.length)];
-        popupText.textContent = pick.label;
-        currentNudgePrompt = pick.prompt;
-        
+        const pick = nudges[Math.floor(Math.random() * nudges.length)];
+        popupText.textContent = pick.l;
+        currentNudgePrompt = pick.p;
         popup.classList.add('visible');
-        // Hide after 7 seconds
         setTimeout(() => popup.classList.remove('visible'), 7000);
     }
 
-    // Start nudging every 10-15 seconds
     function startNudgeTimer() {
         const delay = Math.floor(Math.random() * (15000 - 10000 + 1) + 10000);
-        setTimeout(() => {
-            triggerNudge();
-            startNudgeTimer();
-        }, delay);
+        setTimeout(() => { triggerNudge(); startNudgeTimer(); }, delay);
     }
 
     /* ── EVENTS ── */
     document.getElementById('chat-fab').onclick = () => toggleChat();
     document.getElementById('chat-close').onclick = () => toggleChat(false);
+    document.getElementById('chat-clear-btn').onclick = () => document.getElementById('chat-clear-bar').classList.add('visible');
+    document.getElementById('clear-cancel').onclick = () => document.getElementById('chat-clear-bar').classList.remove('visible');
+    document.getElementById('clear-confirm').onclick = () => { history = []; messages.innerHTML = ''; document.getElementById('chat-clear-bar').classList.remove('visible'); };
+    
     sendBtn.onclick = () => sendMessage();
     input.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
 
-    // When clicking the popup nudge
     popup.onclick = (e) => {
-        if (e.target.id === 'prepbot-popup-close') {
-            popup.classList.remove('visible');
-            return;
-        }
+        if (e.target.id === 'prepbot-popup-close') return;
         toggleChat(true);
-        if (currentNudgePrompt) {
-            setTimeout(() => sendMessage(currentNudgePrompt), 500);
-        }
+        if (currentNudgePrompt) setTimeout(() => sendMessage(currentNudgePrompt), 500);
     };
 
-    document.getElementById('prepbot-popup-close').onclick = (e) => {
-        e.stopPropagation();
-        popup.classList.remove('visible');
-    };
-
+    document.getElementById('prepbot-popup-close').onclick = (e) => { e.stopPropagation(); popup.classList.remove('visible'); };
     document.getElementById('chat-fab-dismiss').onclick = (e) => {
         e.stopPropagation();
-        document.getElementById('chat-fab-wrap').classList.add('fab-hidden');
+        fabWrap.classList.add('fab-hidden');
         document.getElementById('chat-fab-restore').classList.add('fab-restore-visible');
     };
-
     document.getElementById('chat-fab-restore').onclick = () => {
-        document.getElementById('chat-fab-wrap').classList.remove('fab-hidden');
+        fabWrap.classList.remove('fab-hidden');
         document.getElementById('chat-fab-restore').classList.remove('fab-restore-visible');
     };
 
-    // Initialize timers
-    setTimeout(startNudgeTimer, 5000); // First nudge after 5s
+    setTimeout(startNudgeTimer, 8000);
 
 })();
