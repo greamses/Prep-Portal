@@ -165,8 +165,9 @@ body {
     height: 100%; /* Ensures vertical centering in nav */
 }
 
+.nav-logo svg, 
 .nav-logo img {
-    height: 38px; /* Matches your previous setting */
+    height: 38px; /* Adjust this to fit your 62px nav bar */
     width: auto;
     display: block;
 }
@@ -1246,9 +1247,3 @@ body.active .card {
 }
 
 
-.nav-logo svg, 
-.nav-logo img {
-    height: 38px; /* Adjust this to fit your 62px nav bar */
-    width: auto;
-    display: block;
-}
