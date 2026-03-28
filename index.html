@@ -14,107 +14,7 @@
     <link rel="stylesheet" href="./main.css">
     <script src="./utils/loader/loader.js"></script>
     
-    <style>
-        .hero {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding: 100px 20px;
-            background: var(--bg);
-        }
-        
-        .highlight {
-            color: var(--blue);
-            text-decoration: underline;
-            text-decoration-color: var(--yellow);
-        }
-        
-        .hero-tagline {
-            max-width: 600px;
-            margin: 20px auto 40px;
-            font-size: 1.1rem;
-            color: var(--muted);
-        }
-        
-        .main-cta {
-            display: inline-block;
-            font-family: 'Unbounded', sans-serif;
-            background: var(--ink);
-            color: var(--yellow);
-            padding: 20px 40px;
-            text-decoration: none;
-            font-weight: 900;
-            text-transform: uppercase;
-            font-size: 14px;
-            border: var(--border);
-            box-shadow: 8px 8px 0 var(--yellow);
-            transition: 0.2s;
-        }
-        
-        .main-cta:hover {
-            transform: translate(-4px, -4px);
-            box-shadow: 12px 12px 0 var(--blue);
-        }
-        
-        .eyebrow {
-            font-family: 'JetBrains Mono';
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 12px;
-            background: var(--yellow);
-            padding: 4px 12px;
-            display: inline-block;
-            margin-bottom: 10px;
-            border: 2px solid var(--ink);
-        }
-        
-        /* Nav CTA */
-        .nav-cta {
-            background: var(--yellow);
-            border: var(--border);
-            padding: 8px 20px;
-            text-decoration: none;
-            color: var(--ink);
-            font-weight: 700;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-        
-        
-        .highlight {
-            color: var(--blue);
-            position: relative;
-            display: inline-block;
-            min-width: 50px;
-            /* Prevents layout jump */
-        }
-        
-        .cursor {
-            color: var(--blue);
-            font-weight: 300;
-            animation: blink 0.8s infinite;
-            margin-left: 4px;
-        }
-        
-        @keyframes blink {
-            
-            0%,
-            100% {
-                opacity: 1;
-            }
-            
-            50% {
-                opacity: 0;
-            }
-        }
-        
-        
-        .hero-title {
-            min-height: 1.2em;
-            line-height: 1.1;
-        }
-    </style>
+<link rel="stylesheet" href="./style.css">
     
 </head>
 
@@ -158,7 +58,7 @@
     <!-- HERO SECTION -->
     <section class="hero">
         <div class="hero-content">
-            <p class="eyebrow">Launching 2026</p>
+            <p class="eyebrow">Track 2026</p>
             <!-- We added a span with the ID "typewriter" -->
             <h1 class="hero-title">
                 Master Your <span id="typewriter" class="highlight"></span><span class="cursor">|</span>
@@ -211,102 +111,13 @@
     
     <!-- DATA & LOGIC -->
     <script src="./data.js"></script>
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-        
-        // ── FIREBASE CONFIG ──
-        const firebaseConfig = {
-            apiKey: "AIzaSyA2N3uI_XfSIVsto2Ku1g_qSezmD3qFmbk",
-            authDomain: "prep-portal-2026.firebaseapp.com",
-            projectId: "prep-portal-2026",
-            storageBucket: "prep-portal-2026.firebasestorage.app",
-            messagingSenderId: "837672918701",
-            appId: "1:837672918701:web:e64c0c25dc01b542e23024"
-        };
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        
-        // ── AUTH CHECK ──
-        // If the user is already logged in, change "Sign In" to "Dashboard"
-        onAuthStateChanged(auth, (user) => {
-            const btn = document.getElementById('auth-status-btn');
-            if (user) {
-                btn.textContent = "Dashboard";
-                btn.href = "dashboard.html";
-            }
-        });
-        
-        // ── RENDER UI FROM DATA.JS ──
-        document.addEventListener('DOMContentLoaded', () => {
-            // Render Ticker
-            const track = document.getElementById('ticker-track');
-            const items = [...siteData.tickerItems, ...siteData.tickerItems];
-            track.innerHTML = items.map(item => `<span class="ticker-item">${item}<span class="ticker-dot">◆</span></span>`).join('');
-            
-            // Render Stats
-            const statsContainer = document.getElementById('hero-stats');
-            statsContainer.innerHTML = siteData.hero.stats.map(s => `
-            <div class="stat">
-                <strong>${s.value}</strong>
-                <span>${s.label}</span>
-            </div>
-        `).join('');
-        });
+    <script type="module" src="./redirect.js">
+    
     </script>
 </body>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const textElement = document.getElementById('typewriter');
-        // ADD YOUR CATCHY PHRASES HERE
-        const phrases = [
-            "WAEC.",
-            "NECO.",
-            "JAMB.",
-            "SAT.",
-            "IGCSE.",
-        ];
-        
-        let phraseIndex = 0;
-        let charIndex = 0;
-        let isDeleting = false;
-        let typeSpeed = 150;
-        
-        function type() {
-            const currentPhrase = phrases[phraseIndex];
-            
-            if (isDeleting) {
-                // Remove a character
-                textElement.textContent = currentPhrase.substring(0, charIndex - 1);
-                charIndex--;
-                typeSpeed = 80; // Faster when deleting
-            } else {
-                // Add a character
-                textElement.textContent = currentPhrase.substring(0, charIndex + 1);
-                charIndex++;
-                typeSpeed = 150; // Normal typing speed
-            }
-            
-            // If word is complete
-            if (!isDeleting && charIndex === currentPhrase.length) {
-                isDeleting = true;
-                typeSpeed = 2000; // PAUSE at the end of the word
-            }
-            // If word is fully deleted
-            else if (isDeleting && charIndex === 0) {
-                isDeleting = false;
-                phraseIndex = (phraseIndex + 1) % phrases.length;
-                typeSpeed = 500; // Small pause before typing next word
-            }
-            
-            setTimeout(type, typeSpeed);
-        }
-        
-        // Start the animation
-        type();
-    });
+<script src="./index.js">
+
 </script>
 
 
