@@ -519,7 +519,7 @@ CONTEXT: ${ctx.content}
 ${stepByStepContext}
 
 STRICT RULES:
-1. Use LaTeX ONLY for math/formulas: \\(...\\) for inline, \\[...\\] for blocks.
+1. Use LaTeX ONLY for scientific equations/formulas: \\(...\\) for inline, \\[...\\] for blocks.
 2. Do NOT use LaTeX for normal words.
 3. Be encouraging and provide DETAILED STEP-BY-STEP explanations.
 4. Break down the solution into clear, sequential steps with numbers.
@@ -527,7 +527,10 @@ STRICT RULES:
 6. Use simple, clear language appropriate for a ${userProficiency} level learner.
 7. Provide examples when helpful.
 8. Keep responses concise but informative.
-9. Do not use emojis.`;
+9. Do not use emojis.
+10. At the very end of EVERY response, on a new line, append exactly this format:
+[SUGGESTIONS: "short follow-up prompt 1", "short follow-up prompt 2"]
+The two suggestions must be short (2-5 words), relevant to what you just explained, and phrased as things the student would naturally ask next. Do not number them. Do not add anything after this line.`;
 
         try {
             const res = await fetch(GROQ_URL, {
@@ -544,12 +547,15 @@ STRICT RULES:
             hideTyping();
             let reply = data.choices?.[0]?.message?.content || "Connection error. Please try again.";
 
-            lastBotReply = reply;
-            history.push({ role: 'user', content: text }, { role: 'assistant', content: reply });
-            if (history.length > 10) history = history.slice(-10);
-            await appendMessage('bot', reply);
+            // Extract [SUGGESTIONS: ...] block before rendering
+            const { cleanReply, chips } = parseSuggestions(reply);
 
-            showContextualSuggestions(reply, text);
+            lastBotReply = cleanReply;
+            history.push({ role: 'user', content: text }, { role: 'assistant', content: cleanReply });
+            if (history.length > 10) history = history.slice(-10);
+            await appendMessage('bot', cleanReply);
+
+            renderSuggestionChips(chips);
         } catch (err) {
             hideTyping();
             await appendMessage('bot', "Connection error. Please check your internet connection.");
@@ -558,48 +564,38 @@ STRICT RULES:
         sendBtn.classList.remove('loading');
     }
 
-    /* ── 11. CONTEXTUAL SUGGESTION CHIPS ── */
+    /* ── 11. AI-GENERATED SUGGESTION CHIPS ── */
     /*
-     * Analyses the bot reply and user message to generate 2 relevant follow-up
-     * chips. Uses keyword matching across topic buckets so chips always relate
-     * to what was just discussed.
+     * The model appends [SUGGESTIONS: "...", "..."] at the end of every reply.
+     * parseSuggestions() strips that block from the reply before display and
+     * returns the chips as an array. renderSuggestionChips() builds the DOM.
+     * Falls back to FALLBACK_CHIPS if the model omits or malforms the block.
      */
-    function showContextualSuggestions(botReply, userMsg) {
+    function parseSuggestions(raw) {
+        const pattern = /\[SUGGESTIONS:\s*([^\]]+)\]\s*$/is;
+        const match = raw.match(pattern);
+
+        let chips = FALLBACK_CHIPS.slice(0, 2);
+
+        if (match) {
+            const extracted = [];
+            const quoted = match[1].matchAll(/"([^"]+)"/g);
+            for (const m of quoted) {
+                const label = m[1].trim();
+                if (label) extracted.push(label);
+            }
+            if (extracted.length >= 1) chips = extracted.slice(0, 3);
+        }
+
+        // Strip the block and any trailing whitespace before it
+        const cleanReply = raw.replace(/\n?\[SUGGESTIONS:[^\]]*\]\s*$/is, '').trimEnd();
+
+        return { cleanReply, chips };
+    }
+
+    function renderSuggestionChips(chips) {
         if (!suggBox) return;
         suggBox.innerHTML = '';
-
-        const bot = (botReply || '').toLowerCase();
-        const user = (userMsg || '').toLowerCase();
-
-        // Ordered buckets — first match wins priority
-        const buckets = [
-            { test: t => /step \d|next step|method|procedure/.test(t),    chips: ['Next Step', 'Show Working', 'Alternate Method'] },
-            { test: t => /formula|equation|theorem|identity|rule/.test(t), chips: ['Derive It', 'Explain Formula', 'Apply It'] },
-            { test: t => /graph|plot|axis|curve|sketch/.test(t),           chips: ['Sketch It', 'Key Features', 'Worked Example'] },
-            { test: t => /definition|defined|means|concept|term/.test(t),  chips: ['Give Example', 'Simplify', 'Real Life Use'] },
-            { test: t => /option|answer|correct|wrong|choice/.test(t),     chips: ['Why That Answer', 'Check My Work', 'Compare Options'] },
-            { test: t => /calculate|compute|evaluate|find the/.test(t),    chips: ['Check Working', 'Alternate Method', 'Verify Answer'] },
-            { test: t => /summary|overview|main points|key point/.test(t), chips: ['More Detail', 'Give Example', 'Test Me'] },
-            { test: t => /experiment|practical|lab|observation/.test(t),   chips: ['Explain Setup', 'Expected Result', 'Real Example'] },
-            { test: t => /history|event|date|century|war|period/.test(t),  chips: ['Key Facts', 'Time Period', 'Significance'] },
-            { test: t => /read|passage|comprehension|extract/.test(t),     chips: ['Main Theme', 'Author Intent', 'Summarise'] }
-        ];
-
-        const matched = new Set();
-        for (const bucket of buckets) {
-            if (bucket.test(bot) || bucket.test(user)) {
-                bucket.chips.forEach(c => matched.add(c));
-                if (matched.size >= 4) break;
-            }
-        }
-
-        // Always ensure at least 2 chips
-        if (matched.size < 2) {
-            FALLBACK_CHIPS.forEach(c => matched.add(c));
-        }
-
-        const chips = [...matched].slice(0, 2);
-
         chips.forEach(label => {
             const b = document.createElement('button');
             b.className = 'suggestion-chip';
