@@ -1012,6 +1012,15 @@ body.active .card {
     border-right: var(--border);
 }
 
+.site-footer .logo-brand {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 14px;
+    border-left: 2px solid var(--light-muted);
+    line-height: 1;
+}
+
 .footer-col:last-child {
     border-right: none;
 }

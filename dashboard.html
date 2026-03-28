@@ -13,7 +13,7 @@
   <link rel="icon" type="image/svg+xml" href="./logo/logo-icon.svg">
   <link rel="stylesheet" href="./main.css">
   
-  <script src="./utils/loader/loader.js" ></script>
+  <script src="./utils/loader/loader.js"></script>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
@@ -26,8 +26,8 @@
     <div id="loader-wrapper">
       <div class="logo-cluster"></div> <!-- JS will inject the 3 images here -->
     </div>
-    <div class="loader-word"><span>Prep</span></div>
-    <div class="loader-word"><span>Portal.</span></div>
+    <div class="loader-word"><span>Dashboard</span></div>
+    <!--     <div class="loader-word"><span>Portal.</span></div> -->
     <div class="loader-bar"></div>
   </div>
   
@@ -116,18 +116,16 @@
   <footer class="site-footer">
     <div class="footer-top">
       <div class="footer-brand">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282 72" height="48" aria-label="Prep Portal">
-          <rect x="4" y="8" width="64" height="64" fill="#0b57d0" />
-          <rect x="0" y="4" width="64" height="64" fill="#fff" />
-          <rect x="8" y="12" width="7" height="48" fill="#1f1f1f" />
-          <rect x="8" y="12" width="40" height="7" fill="#1f1f1f" />
-          <rect x="41" y="12" width="7" height="28" fill="#1f1f1f" />
-          <rect x="8" y="33" width="40" height="7" fill="#1f1f1f" />
-          <rect x="15" y="19" width="26" height="14" fill="#0b57d0" />
-          <rect x="78" y="10" width="2" height="52" fill="#fff" />
-          <text x="90" y="38" font-family="Unbounded, Arial Black, sans-serif" font-weight="900" font-size="24" fill="#fff" letter-spacing="1.5">PREP</text>
-          <text x="91" y="56" font-family="Unbounded, Arial Black, sans-serif" font-weight="700" font-size="11.5" fill="#0b57d0" letter-spacing="5.5">PORTAL</text>
-        </svg>
+        <a href="/" class="nav-logo">
+  <!-- Icon -->
+  <img src="./logo/logo-light.svg" alt="PrepPortal logo" />
+  
+  <!-- Stacked Text Branding -->
+  <div class="logo-brand">
+    <span class="brand-top">Prep</span>
+    <span class="brand-bottom">Portal</span>
+  </div>
+</a>
         <p id="footer-description">A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
       </div>
     </div>
@@ -139,7 +137,7 @@
   
   <div id="prepbot"></div>
   <script src="./utils/chatbot/chatbot.js"></script>
-
+  
   <script src="./data.js"></script>
   <script src="./main.js"></script>
   
