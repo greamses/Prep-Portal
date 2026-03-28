@@ -226,7 +226,7 @@ const chatbotcss = `
     border: var(--border);
 }
 
-.chat-avatar svg { 
+.chat-avatar svg {
     display: block;
     stroke: var(--bg);
 }
@@ -334,17 +334,9 @@ const chatbotcss = `
     background: var(--off);
 }
 
-.chat-messages::-webkit-scrollbar {
-    width: 4px;
-}
-
-.chat-messages::-webkit-scrollbar-track {
-    background: var(--ruled);
-}
-
-.chat-messages::-webkit-scrollbar-thumb {
-    background: var(--ink);
-}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: var(--ruled); }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--ink); }
 
 /* ── INTRO CARD ── */
 .chat-intro-card {
@@ -383,9 +375,7 @@ const chatbotcss = `
     line-height: 1.65;
 }
 
-.chat-intro-card strong {
-    color: var(--ink);
-}
+.chat-intro-card strong { color: var(--ink); }
 
 /* ── MESSAGE BUBBLES ── */
 .msg {
@@ -397,25 +387,12 @@ const chatbotcss = `
 }
 
 @keyframes msg-in {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-.msg.user {
-    align-self: flex-end;
-    align-items: flex-end;
-}
-
-.msg.bot {
-    align-self: flex-start;
-    align-items: flex-start;
-}
+.msg.user { align-self: flex-end; align-items: flex-end; }
+.msg.bot  { align-self: flex-start; align-items: flex-start; }
 
 .msg-meta {
     font-family: 'JetBrains Mono', monospace;
@@ -435,14 +412,12 @@ const chatbotcss = `
     border: var(--border);
 }
 
-/* user bubble */
 .msg.user .msg-bubble {
     background: var(--ink);
     color: var(--bg);
     box-shadow: 3px 3px 0 var(--blue);
 }
 
-/* bot bubble */
 .msg.bot .msg-bubble {
     background: var(--bg);
     color: var(--ink);
@@ -450,15 +425,8 @@ const chatbotcss = `
     box-shadow: 3px 3px 0 var(--ruled);
 }
 
-.msg.bot .msg-bubble strong {
-    color: var(--blue);
-    font-weight: 700;
-}
-
-.msg.bot .msg-bubble em {
-    color: var(--ink);
-    font-style: italic;
-}
+.msg.bot .msg-bubble strong { color: var(--blue); font-weight: 700; }
+.msg.bot .msg-bubble em { color: var(--ink); font-style: italic; }
 
 /* Math styling */
 .math-inline {
@@ -478,7 +446,6 @@ const chatbotcss = `
     overflow-x: auto;
 }
 
-/* Step highlight */
 .step-highlight {
     color: var(--blue);
     background: rgba(0, 85, 255, 0.1);
@@ -500,23 +467,12 @@ const chatbotcss = `
     animation: bounce 1.2s infinite ease-in-out;
 }
 
-.typing-dots span:nth-child(2) {
-    animation-delay: 0.2s;
-}
-
-.typing-dots span:nth-child(3) {
-    animation-delay: 0.4s;
-}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes bounce {
-    0%, 80%, 100% {
-        transform: translateY(0);
-        opacity: 0.35;
-    }
-    40% {
-        transform: translateY(-6px);
-        opacity: 1;
-    }
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
+    40% { transform: translateY(-6px); opacity: 1; }
 }
 
 /* ── SUGGESTIONS STRIP ── */
@@ -530,6 +486,12 @@ const chatbotcss = `
     background: var(--bg);
     flex-shrink: 0;
     justify-content: center;
+    min-height: 0;
+}
+
+.chat-suggestions:empty {
+    padding: 0;
+    border: none;
 }
 
 .suggestion-chip {
@@ -607,38 +569,15 @@ const chatbotcss = `
     transition: background 0.2s, color 0.2s;
 }
 
-#chat-send:hover:not(:disabled) {
-    background: var(--blue);
-    color: var(--bg);
-}
-
-#chat-send:disabled {
-    background: var(--light-muted);
-    cursor: default;
-}
-
+#chat-send:hover:not(:disabled) { background: var(--blue); color: var(--bg); }
+#chat-send:disabled { background: var(--light-muted); cursor: default; }
 #chat-send .send-icon,
-#chat-send .send-spinner {
-    transition: opacity 0.15s;
-}
+#chat-send .send-spinner { transition: opacity 0.15s; }
+#chat-send .send-spinner { display: none; }
+#chat-send.loading .send-icon { display: none; }
+#chat-send.loading .send-spinner { display: block; }
 
-#chat-send .send-spinner {
-    display: none;
-}
-
-#chat-send.loading .send-icon {
-    display: none;
-}
-
-#chat-send.loading .send-spinner {
-    display: block;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .send-spinner {
     width: 18px;
@@ -665,9 +604,7 @@ const chatbotcss = `
     border-top: var(--border);
 }
 
-.chat-clear-bar.visible {
-    display: flex;
-}
+.chat-clear-bar.visible { display: flex; }
 
 .chat-clear-bar span {
     font-family: 'JetBrains Mono', monospace;
@@ -677,10 +614,7 @@ const chatbotcss = `
     letter-spacing: 0.08em;
 }
 
-.chat-clear-bar-actions {
-    display: flex;
-    gap: 8px;
-}
+.chat-clear-bar-actions { display: flex; gap: 8px; }
 
 #clear-confirm,
 #clear-cancel {
@@ -696,27 +630,10 @@ const chatbotcss = `
     background: transparent;
 }
 
-#clear-confirm {
-    background: var(--blue);
-    color: var(--bg);
-    border-color: var(--blue);
-}
-
-#clear-confirm:hover {
-    background: var(--ink);
-    color: var(--blue);
-    border-color: var(--ink);
-}
-
-#clear-cancel {
-    color: rgba(255, 255, 255, 0.6);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-#clear-cancel:hover {
-    color: #fff;
-    border-color: #fff;
-}
+#clear-confirm { background: var(--blue); color: var(--bg); border-color: var(--blue); }
+#clear-confirm:hover { background: var(--ink); color: var(--blue); border-color: var(--ink); }
+#clear-cancel { color: rgba(255, 255, 255, 0.6); border-color: rgba(255, 255, 255, 0.3); }
+#clear-cancel:hover { color: #fff; border-color: #fff; }
 
 /* ── Q-BUBBLES PANEL ── */
 .qbubbles-bar {
@@ -728,14 +645,8 @@ const chatbotcss = `
 }
 
 @keyframes qbSlideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .qbubbles-header {
@@ -773,17 +684,9 @@ const chatbotcss = `
     font-family: 'JetBrains Mono', monospace;
 }
 
-.qbubbles-close:hover {
-    background: var(--ink);
-    color: var(--bg);
-    border-color: var(--ink);
-}
+.qbubbles-close:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
-.qbubbles-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
+.qbubbles-grid { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .qbubble {
     width: 34px;
@@ -810,10 +713,7 @@ const chatbotcss = `
     box-shadow: 3px 3px 0 var(--ink);
 }
 
-.qbubble:active {
-    transform: translate(2px, 2px);
-    box-shadow: 1px 1px 0 var(--ink);
-}
+.qbubble:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 
 /* ── MICROPHONE ── */
 #chat-mic {
@@ -829,57 +729,47 @@ const chatbotcss = `
     transition: color 0.2s, background 0.2s;
 }
 
-#chat-mic:hover {
-    color: var(--blue);
-    background: rgba(0, 85, 255, 0.06);
-}
-
-#chat-mic svg {
-    transition: transform 0.2s var(--cb);
-}
-
-#chat-mic.mic-active {
-    color: var(--red);
-    animation: pulse-mic 1.5s infinite;
-}
-
-#chat-mic.mic-active svg {
-    transform: scale(1.15);
-}
+#chat-mic:hover { color: var(--blue); background: rgba(0, 85, 255, 0.06); }
+#chat-mic svg { transition: transform 0.2s var(--cb); }
+#chat-mic.mic-active { color: var(--red); animation: pulse-mic 1.5s infinite; }
+#chat-mic.mic-active svg { transform: scale(1.15); }
 
 @keyframes pulse-mic {
-    0% {
-        background: transparent;
-    }
-    50% {
-        background: rgba(255, 34, 0, 0.1);
-    }
-    100% {
-        background: transparent;
-    }
+    0%   { background: transparent; }
+    50%  { background: rgba(255, 34, 0, 0.1); }
+    100% { background: transparent; }
 }
 
 /* ── POPUP NUDGE ── */
+/*
+ * The popup must support MathJax-rendered content. Key rules:
+ * - overflow-x: auto so wide equations scroll rather than clip
+ * - min-height prevents the popup from collapsing while MathJax renders
+ * - pointer-events: none until .visible is added (after typeset completes)
+ * - p tag left as block for natural math layout
+ */
 #prepbot-popup {
     position: fixed;
     bottom: calc(72px + 1.4rem);
     right: 32px;
-    max-width: 280px;
+    max-width: 300px;
+    min-height: 52px;
     background: var(--ink);
     color: var(--bg);
     border: var(--border);
-    padding: 12px 32px 12px 16px;
+    padding: 12px 36px 14px 16px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.75rem;
-    line-height: 1.5;
+    line-height: 1.55;
     box-shadow: 6px 6px 0 var(--blue);
     cursor: pointer;
     z-index: 9997;
     opacity: 0;
     transform: translateY(8px) scale(0.96);
     pointer-events: none;
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
     user-select: none;
+    overflow-x: auto;
 }
 
 #prepbot-popup::after {
@@ -901,6 +791,22 @@ const chatbotcss = `
 #prepbot-popup p {
     margin: 0;
     padding: 0;
+    /* Allow block-level MathJax elements to lay out naturally */
+    display: block;
+    overflow-x: auto;
+}
+
+/* MathJax inside popup — scale down slightly to fit the compact container */
+#prepbot-popup .MJX-TEX,
+#prepbot-popup mjx-container {
+    font-size: 0.92em !important;
+    color: var(--bg);
+}
+
+/* Inline math colour fix inside dark popup */
+#prepbot-popup mjx-container svg {
+    fill: var(--bg);
+    color: var(--bg);
 }
 
 .prepbot-popup-close {
@@ -922,9 +828,7 @@ const chatbotcss = `
     font-family: 'JetBrains Mono', monospace;
 }
 
-.prepbot-popup-close:hover {
-    color: var(--blue);
-}
+.prepbot-popup-close:hover { color: var(--blue); }
 
 /* ── SPEAKER BUTTON ── */
 .speaker-btn {
@@ -942,11 +846,7 @@ const chatbotcss = `
     height: 28px;
 }
 
-.speaker-btn:hover {
-    background: var(--blue);
-    color: #fff;
-    border-color: var(--blue);
-}
+.speaker-btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
 
 .soundwave {
     display: inline-flex;
@@ -963,23 +863,12 @@ const chatbotcss = `
     animation: wave-anim 1s infinite ease-in-out;
 }
 
-.soundwave span:nth-child(2) {
-    animation-delay: 0.2s;
-    height: 100%;
-}
-
-.soundwave span:nth-child(3) {
-    animation-delay: 0.4s;
-    height: 60%;
-}
+.soundwave span:nth-child(2) { animation-delay: 0.2s; height: 100%; }
+.soundwave span:nth-child(3) { animation-delay: 0.4s; height: 60%; }
 
 @keyframes wave-anim {
-    0%, 100% {
-        height: 4px;
-    }
-    50% {
-        height: 14px;
-    }
+    0%, 100% { height: 4px; }
+    50%       { height: 14px; }
 }
 
 .msg-footer {
@@ -1039,26 +928,24 @@ const chatbotcss = `
         height: 90dvh;
         max-height: 700px;
     }
-    
+
     #chat-fab-wrap {
         right: 16px;
         bottom: 20px;
     }
-    
-    #chat-fab {
-        padding: 10px 16px 10px 12px;
-    }
-    
+
+    #chat-fab { padding: 10px 16px 10px 12px; }
+
     .suggestion-chip {
         font-size: 0.6rem;
         padding: 6px 10px;
     }
-    
+
     .quiz-nav-pill {
         font-size: 0.65rem;
         padding: 6px 12px;
     }
-    
+
     #prepbot-popup {
         right: 16px;
         max-width: calc(100vw - 80px);
