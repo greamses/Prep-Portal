@@ -1035,7 +1035,7 @@ const chatbotcss = `
     #chat-window {
         width: calc(100vw - 16px);
         right: 8px;
-        bottom: 16px;
+        top: 16px;
         height: 90vh;
         max-height: 700px;
     }
