@@ -15,7 +15,6 @@
     
     
     <style>
-        /* Hero Refinement */
         .hero {
             display: flex;
             flex-direction: column;
@@ -82,7 +81,7 @@
             text-transform: uppercase;
         }
         
-        /* Typewriter Highlight Styling */
+        
         .highlight {
             color: var(--blue);
             position: relative;
@@ -91,7 +90,6 @@
             /* Prevents layout jump */
         }
         
-        /* The Blinking Cursor */
         .cursor {
             color: var(--blue);
             font-weight: 300;
@@ -111,49 +109,44 @@
             }
         }
         
-        /* Ensure the title doesn't shift the whole page when text changes */
+        
         .hero-title {
             min-height: 1.2em;
             line-height: 1.1;
         }
     </style>
-    <link rel="stylesheet" href="./utils/loader/loader.css">
+    
 </head>
 
 <body>
     
-  <!-- ═══ ADVANCED TRI-CORE LOADER ═══ -->
-  <div id="loader">
-      <div id="loader-wrapper">
-          <div class="logo-cluster">
-              <img src="./logo/logo-loading.svg" class="pulse-logo" alt="Loading...">
-              <img src="./logo/logo-loading.svg" class="pulse-logo" alt="Loading...">
-              <img src="./logo/logo-loading.svg" class="pulse-logo" alt="Loading...">
-          </div>
-      </div>
-      
-      <div class="loader-word"><span>Login</span></div>
-      <div class="loader-word"><span>Sign up.</span></div>
-      <div class="loader-bar"></div>
-  </div>
-  
-  <!-- NAVIGATION -->
-  <nav class="site-nav">
-      <a href="/" class="nav-logo">
-          <!-- Icon -->
-          <img src="./logo/logo-light.svg" alt="PrepPortal logo" />
-          
-          <!-- Stacked Text Branding -->
-          <div class="logo-brand">
-              <span class="brand-top">Prep</span>
-              <span class="brand-bottom">Portal</span>
-          </div>
-      </a>
-      
+    <!-- ═══ ADVANCED TRI-CORE LOADER ═══ -->
+    <div id="loader">
+        <div id="loader-wrapper">
+            <div class="logo-cluster"></div> <!-- JS will inject the 3 images here -->
+        </div>
+        <div class="loader-word"><span>Prep</span></div>
+        <div class="loader-word"><span>Portal.</span></div>
+        <div class="loader-bar"></div>
+    </div>
+    
+    <!-- NAVIGATION -->
+    <nav class="site-nav">
+        <a href="/" class="nav-logo">
+            <!-- Icon -->
+            <img src="./logo/logo-light.svg" alt="PrepPortal logo" />
+            
+            <!-- Stacked Text Branding -->
+            <div class="logo-brand">
+                <span class="brand-top">Prep</span>
+                <span class="brand-bottom">Portal</span>
+            </div>
+        </a>
+        
         <div class="nav-right">
             <a href="login.html" class="nav-cta" id="auth-status-btn">Sign In</a>
         </div>
-  </nav>
+    </nav>
     
     <!-- TICKER -->
     <div class="ticker" aria-hidden="true">

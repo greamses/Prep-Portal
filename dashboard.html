@@ -12,8 +12,8 @@
   
   <link rel="icon" type="image/svg+xml" href="./logo/logo-icon.svg">
   <link rel="stylesheet" href="./main.css">
-  <link rel="stylesheet" href="./utils/loader/loader.css">
   
+  <script src="./utils/loader/loader.js" ></script>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
@@ -21,15 +21,11 @@
 <body>
   
   <!-- ═══ ADVANCED TRI-CORE LOADER ═══ -->
+  
   <div id="loader">
     <div id="loader-wrapper">
-      <div class="logo-cluster">
-        <img src="./logo/logo-loading.svg" class="pulse-logo" alt="Loading...">
-        <img src="./logo/logo-loading.svg" class="pulse-logo" alt="Loading...">
-        <img src="./logo/logo-loading.svg" class="pulse-logo" alt="Loading...">
-      </div>
+      <div class="logo-cluster"></div> <!-- JS will inject the 3 images here -->
     </div>
-    
     <div class="loader-word"><span>Prep</span></div>
     <div class="loader-word"><span>Portal.</span></div>
     <div class="loader-bar"></div>
@@ -143,8 +139,7 @@
   
   <div id="prepbot"></div>
   <script src="./utils/chatbot/chatbot.js"></script>
-  <script src="./utils/loader/loader.js"></script>
-  
+
   <script src="./data.js"></script>
   <script src="./main.js"></script>
   
