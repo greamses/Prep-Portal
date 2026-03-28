@@ -175,24 +175,6 @@ body {
   animation: fadeIn .4s ease both;
 }
 
-.nav-logo {
-  font-family: 'Unbounded', sans-serif;
-  font-weight: 900;
-  font-size: clamp(12px, 2.2vw, 15px);
-  text-decoration: none;
-  color: var(--ink);
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  transition: opacity .15s;
-}
-
-.nav-logo:hover {
-  opacity: .7;
-}
-
-.nav-logo span {
-  color: var(--blue);
-}
 
 .nav-right {
   display: flex;
