@@ -1182,3 +1182,11 @@ body.active .card {
         border-bottom: none;
     }
 }
+
+
+.nav-logo svg, 
+.nav-logo img {
+    height: 38px; /* Adjust this to fit your 62px nav bar */
+    width: auto;
+    display: block;
+}
