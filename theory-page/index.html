@@ -16,13 +16,33 @@
 
 <body>
   
-  <!-- NAV -->
-  <nav id="site-nav">
-    <a class="nav-logo" href="#">Prep<span>Portal</span></a>
-    <div class="nav-right">
-      <a class="nav-link active" href="#">Theory</a>
-      <a class="nav-link" href="#">Writing</a>
+  <!-- ═══ ADVANCED TRI-CORE LOADER ═══ -->
+  
+  <div id="loader">
+    <div id="loader-wrapper">
+      <div class="logo-cluster"></div> <!-- JS will inject the 3 images here -->
     </div>
+    <div class="loader-word"><span>Prepwrite</span></div>
+    <!--     <div class="loader-word"><span>Portal.</span></div> -->
+    <div class="loader-bar"></div>
+  </div>
+  
+  <!-- NAVIGATION -->
+  <nav class="site-nav">
+    <a href="/" class="nav-logo">
+      <!-- Icon -->
+      <img src="../logo/logo-light.svg" alt="PrepPortal logo" />
+      
+      <!-- Stacked Text Branding -->
+      <div class="logo-brand">
+        <span class="brand-top">Prep</span>
+        <span class="brand-bottom">Portal</span>
+      </div>
+    </a>
+    
+  <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
+  
+  <script src="../utils/loader/loader.js"></script>
   </nav>
   
   <!-- TICKER -->
