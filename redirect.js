@@ -20,7 +20,7 @@ onAuthStateChanged(auth, (user) => {
   const btn = document.getElementById('auth-status-btn');
   if (user) {
     btn.textContent = "Dashboard";
-    btn.href = "dashboard.html";
+    btn.href = "./dashboard/dashboard.html";
   }
 });
 
