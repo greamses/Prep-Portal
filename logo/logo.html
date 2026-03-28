@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prep Portal — Logo Sheet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      background: #f0f0f0;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 48px 40px;
+      min-height: 100vh;
+    }
+    
+    h1 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: #444;
+      margin-bottom: 40px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #1f1f1f;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    
+    .card {
+      border: 2px solid #1f1f1f;
+      background: #fff;
+      padding: 40px;
+      position: relative;
+      box-shadow: 4px 4px 0 #0b57d0;
+    }
+    
+    .card.dark {
+      background: #1f1f1f;
+      box-shadow: 4px 4px 0 #0b57d0;
+    }
+    
+    .card.icon-only {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+      grid-column: 1 / -1;
+    }
+    
+    .card-label {
+      position: absolute;
+      top: 10px;
+      left: 14px;
+      font-size: 0.55rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #888;
+    }
+    
+    .card.dark .card-label {
+      color: #555;
+    }
+    
+    .logo-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 8px;
+    }
+    
+    .icon-grid {
+      display: flex;
+      gap: 20px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    
+    .icon-size-label {
+      font-size: 0.55rem;
+      color: #888;
+      margin-top: 8px;
+      display: block;
+      text-align: center;
+    }
+    
+    .icon-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .divider {
+      font-size: 0.55rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #aaa;
+      grid-column: 1 / -1;
+      padding: 8px 0 4px;
+      border-top: 1px solid #ccc;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  
+  <h1>Prep Portal · Logo System · 2026</h1>
+  
+  <div class="grid">
+    
+    <!-- Light lockup -->
+    <div class="card">
+      <span class="card-label">Primary · Light background</span>
+      <div class="logo-wrap" style="padding: 20px 0">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282 72" width="282" height="72" role="img" aria-label="Prep Portal">
+          <title>Prep Portal</title>
+          <rect x="4" y="8" width="64" height="64" fill="#0b57d0" />
+          <rect x="0" y="4" width="64" height="64" fill="#1f1f1f" />
+          <rect x="8" y="12" width="7" height="48" fill="#ffffff" />
+          <rect x="8" y="12" width="40" height="7" fill="#ffffff" />
+          <rect x="41" y="12" width="7" height="28" fill="#ffffff" />
+          <rect x="8" y="33" width="40" height="7" fill="#ffffff" />
+          <rect x="15" y="19" width="26" height="14" fill="#0b57d0" />
+          <rect x="78" y="10" width="2" height="52" fill="#1f1f1f" />
+          <text x="90" y="38" font-family="'Unbounded','Arial Black',sans-serif" font-weight="900" font-size="24" fill="#1f1f1f" letter-spacing="1.5">PREP</text>
+          <text x="91" y="56" font-family="'Unbounded','Arial Black',sans-serif" font-weight="700" font-size="11.5" fill="#0b57d0" letter-spacing="5.5">PORTAL</text>
+        </svg>
+      </div>
+    </div>
+    
+    <!-- Dark lockup -->
+    <div class="card dark">
+      <span class="card-label">Dark background</span>
+      <div class="logo-wrap" style="padding: 20px 0">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282 72" width="282" height="72" role="img" aria-label="Prep Portal">
+          <title>Prep Portal Dark</title>
+          <rect x="4" y="8" width="64" height="64" fill="#0b57d0" />
+          <rect x="0" y="4" width="64" height="64" fill="#ffffff" />
+          <rect x="8" y="12" width="7" height="48" fill="#1f1f1f" />
+          <rect x="8" y="12" width="40" height="7" fill="#1f1f1f" />
+          <rect x="41" y="12" width="7" height="28" fill="#1f1f1f" />
+          <rect x="8" y="33" width="40" height="7" fill="#1f1f1f" />
+          <rect x="15" y="19" width="26" height="14" fill="#0b57d0" />
+          <rect x="78" y="10" width="2" height="52" fill="#ffffff" />
+          <text x="90" y="38" font-family="'Unbounded','Arial Black',sans-serif" font-weight="900" font-size="24" fill="#ffffff" letter-spacing="1.5">PREP</text>
+          <text x="91" y="56" font-family="'Unbounded','Arial Black',sans-serif" font-weight="700" font-size="11.5" fill="#0b57d0" letter-spacing="5.5">PORTAL</text>
+        </svg>
+      </div>
+    </div>
+    
+    <!-- Icon mark at multiple sizes -->
+    <div class="card icon-only">
+      <span class="card-label">Icon mark · All sizes</span>
+      <div class="icon-grid" style="padding-top: 12px">
+        
+        <div class="icon-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="96" height="96">
+            <rect x="4" y="4" width="64" height="64" fill="#0b57d0" />
+            <rect x="0" y="0" width="64" height="64" fill="#1f1f1f" />
+            <rect x="8" y="8" width="7" height="48" fill="#ffffff" />
+            <rect x="8" y="8" width="40" height="7" fill="#ffffff" />
+            <rect x="41" y="8" width="7" height="28" fill="#ffffff" />
+            <rect x="8" y="29" width="40" height="7" fill="#ffffff" />
+            <rect x="15" y="15" width="26" height="14" fill="#0b57d0" />
+          </svg>
+          <span class="icon-size-label">96px</span>
+        </div>
+        
+        <div class="icon-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="64" height="64">
+            <rect x="4" y="4" width="64" height="64" fill="#0b57d0" />
+            <rect x="0" y="0" width="64" height="64" fill="#1f1f1f" />
+            <rect x="8" y="8" width="7" height="48" fill="#ffffff" />
+            <rect x="8" y="8" width="40" height="7" fill="#ffffff" />
+            <rect x="41" y="8" width="7" height="28" fill="#ffffff" />
+            <rect x="8" y="29" width="40" height="7" fill="#ffffff" />
+            <rect x="15" y="15" width="26" height="14" fill="#0b57d0" />
+          </svg>
+          <span class="icon-size-label">64px</span>
+        </div>
+        
+        <div class="icon-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="48" height="48">
+            <rect x="4" y="4" width="64" height="64" fill="#0b57d0" />
+            <rect x="0" y="0" width="64" height="64" fill="#1f1f1f" />
+            <rect x="8" y="8" width="7" height="48" fill="#ffffff" />
+            <rect x="8" y="8" width="40" height="7" fill="#ffffff" />
+            <rect x="41" y="8" width="7" height="28" fill="#ffffff" />
+            <rect x="8" y="29" width="40" height="7" fill="#ffffff" />
+            <rect x="15" y="15" width="26" height="14" fill="#0b57d0" />
+          </svg>
+          <span class="icon-size-label">48px</span>
+        </div>
+        
+        <div class="icon-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="32" height="32">
+            <rect x="4" y="4" width="64" height="64" fill="#0b57d0" />
+            <rect x="0" y="0" width="64" height="64" fill="#1f1f1f" />
+            <rect x="8" y="8" width="7" height="48" fill="#ffffff" />
+            <rect x="8" y="8" width="40" height="7" fill="#ffffff" />
+            <rect x="41" y="8" width="7" height="28" fill="#ffffff" />
+            <rect x="8" y="29" width="40" height="7" fill="#ffffff" />
+            <rect x="15" y="15" width="26" height="14" fill="#0b57d0" />
+          </svg>
+          <span class="icon-size-label">32px</span>
+        </div>
+        
+        <div class="icon-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="20" height="20">
+            <rect x="4" y="4" width="64" height="64" fill="#0b57d0" />
+            <rect x="0" y="0" width="64" height="64" fill="#1f1f1f" />
+            <rect x="8" y="8" width="7" height="48" fill="#ffffff" />
+            <rect x="8" y="8" width="40" height="7" fill="#ffffff" />
+            <rect x="41" y="8" width="7" height="28" fill="#ffffff" />
+            <rect x="8" y="29" width="40" height="7" fill="#ffffff" />
+            <rect x="15" y="15" width="26" height="14" fill="#0b57d0" />
+          </svg>
+          <span class="icon-size-label">20px · favicon</span>
+        </div>
+        
+        <!-- White icon on dark pill -->
+        <div class="icon-item" style="margin-left: 32px;">
+          <div style="background:#1f1f1f; padding: 16px; display:inline-flex; border: 2px solid #1f1f1f; box-shadow: 3px 3px 0 #0b57d0">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" width="64" height="64">
+              <rect x="4" y="4" width="64" height="64" fill="#0b57d0" />
+              <rect x="0" y="0" width="64" height="64" fill="#ffffff" />
+              <rect x="8" y="8" width="7" height="48" fill="#1f1f1f" />
+              <rect x="8" y="8" width="40" height="7" fill="#1f1f1f" />
+              <rect x="41" y="8" width="7" height="28" fill="#1f1f1f" />
+              <rect x="8" y="29" width="40" height="7" fill="#1f1f1f" />
+              <rect x="15" y="15" width="26" height="14" fill="#0b57d0" />
+            </svg>
+          </div>
+          <span class="icon-size-label">inverted · on dark</span>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- Colour palette strip -->
+    <div class="card" style="grid-column: 1 / -1; padding: 24px 40px;">
+      <span class="card-label">Brand colours</span>
+      <div style="display:flex; gap:16px; align-items:center; padding-top: 12px; flex-wrap:wrap;">
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="width:40px;height:40px;background:#1f1f1f;border:2px solid #1f1f1f"></div>
+          <div>
+            <div style="font-size:0.62rem;font-weight:700;color:#1f1f1f">#1F1F1F</div>
+            <div style="font-size:0.55rem;color:#888">Ink / Primary</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="width:40px;height:40px;background:#0b57d0;border:2px solid #1f1f1f"></div>
+          <div>
+            <div style="font-size:0.62rem;font-weight:700;color:#1f1f1f">#0B57D0</div>
+            <div style="font-size:0.55rem;color:#888">Blue / Accent</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="width:40px;height:40px;background:#ffffff;border:2px solid #1f1f1f"></div>
+          <div>
+            <div style="font-size:0.62rem;font-weight:700;color:#1f1f1f">#FFFFFF</div>
+            <div style="font-size:0.55rem;color:#888">Background</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="width:40px;height:40px;background:#4cff91;border:2px solid #1f1f1f"></div>
+          <div>
+            <div style="font-size:0.62rem;font-weight:700;color:#1f1f1f">#4CFF91</div>
+            <div style="font-size:0.55rem;color:#888">Green / Live pulse</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  
+</body>
+
+</html>

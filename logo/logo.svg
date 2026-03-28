@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282 72" width="282" height="72" role="img" aria-label="Prep Portal">
+  <title>Prep Portal</title>
+  <desc>Prep Portal — AI-powered exam preparation platform</desc>
+
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- ═══════════════════════════
+       ICON MARK
+  ════════════════════════════ -->
+  <g id="icon-mark">
+    <!-- Blue offset shadow -->
+    <rect x="4" y="8" width="64" height="64" fill="#0b57d0"/>
+
+    <!-- Black icon box -->
+    <rect x="0" y="4" width="64" height="64" fill="#1f1f1f"/>
+
+    <!-- P letterform — white -->
+    <!-- Left stem: full height -->
+    <rect x="8"  y="12" width="7"  height="48" fill="#ffffff"/>
+    <!-- Top bar -->
+    <rect x="8"  y="12" width="40" height="7"  fill="#ffffff"/>
+    <!-- Bowl right side -->
+    <rect x="41" y="12" width="7"  height="28" fill="#ffffff"/>
+    <!-- Bowl bottom bar -->
+    <rect x="8"  y="33" width="40" height="7"  fill="#ffffff"/>
+
+    <!-- Portal counter — the blue window, the actual portal -->
+    <rect x="15" y="19" width="26" height="14" fill="#0b57d0"/>
+  </g>
+
+  <!-- ═══════════════════════════
+       WORDMARK
+  ════════════════════════════ -->
+  <g id="wordmark">
+    <!-- Vertical divider -->
+    <rect x="78" y="10" width="2" height="52" fill="#1f1f1f"/>
+
+    <!-- PREP -->
+    <text
+      x="90"
+      y="38"
+      font-family="'Unbounded', 'Arial Black', sans-serif"
+      font-weight="900"
+      font-size="24"
+      fill="#1f1f1f"
+      letter-spacing="1.5">PREP</text>
+
+    <!-- PORTAL -->
+    <text
+      x="91"
+      y="56"
+      font-family="'Unbounded', 'Arial Black', sans-serif"
+      font-weight="700"
+      font-size="11.5"
+      fill="#0b57d0"
+      letter-spacing="5.5">PORTAL</text>
+  </g>
+</svg>
