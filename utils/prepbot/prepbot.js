@@ -2,13 +2,13 @@ import chatbotcss from './prepbotcss.js';
 
 /* ═══════════════════════════════════════════════════════════
    PREPBOT — The Ultimate AI Study Assistant
-   Features: Context-Scraping, Quiz-Sync, Voice (STT/TTS), 
+   Features: Context-Scraping, Quiz-Sync, Voice (STT/TTS),
              MathJax, Question Nav, Smart Nudges.
-   UPDATED: No emojis, quiz navigation pill in chat window
+   UPDATED: Contextual chips, MathJax-first popup, site map nudges
 ═══════════════════════════════════════════════════════════ */
 
 (function() {
-    
+
     /* ── 1. STYLE INJECTION ── */
     (function injectStyles() {
         const style = document.createElement('style');
@@ -16,7 +16,7 @@ import chatbotcss from './prepbotcss.js';
         style.textContent = chatbotcss;
         document.head.appendChild(style);
     })();
-    
+
     /* ── 2. CONFIG ── */
     const p1 = "gsk_9sz5p",
         p2 = "0Vrwv8chiknSBrJW",
@@ -25,36 +25,128 @@ import chatbotcss from './prepbotcss.js';
     const GROQ_KEY = p1 + p2 + p3 + p4;
     const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
     const BOT_NAME = 'PrepBot';
-    
-    // Two-word pill suggestions without emojis
-    const TWO_WORD_PILLS = [
-        "Explain More",
-        "Step By Step",
-        "Summarize It",
-        "Give Hint",
-        "Next Step",
-        "Show Work",
-        "Key Points",
-        "Break Down",
-        "Simplify",
-        "More Detail",
-        "Examples",
-        "Quick Recap"
+
+    /* ── SITE MAP — for non-quiz page nudges ── */
+    const SITE_MAP = [
+        {
+            match: p => p === '/' || p === '/index.html',
+            title: 'Home',
+            section: 'Prep Portal',
+            nudges: [
+                'Select an exam category to begin your preparation.',
+                'Browse available quiz sets or visit the Math Hub.',
+                'Not sure where to start? I can guide you to the right section.'
+            ],
+            icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>`
+        },
+        {
+            match: p => p.includes('waec'),
+            title: 'WAEC',
+            section: 'WAEC Prep',
+            nudges: [
+                'WAEC questions follow predictable patterns. I can walk you through any topic.',
+                'Working on WAEC prep? Ask me to explain a concept or break down past questions.',
+                'Need a summary of key WAEC topics for this subject? Just ask.'
+            ],
+            icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="0"/><path d="M3 9h18M9 21V9"/></svg>`
+        },
+        {
+            match: p => p.includes('jamb') || p.includes('utme'),
+            title: 'JAMB / UTME',
+            section: 'JAMB Prep',
+            nudges: [
+                'JAMB questions test speed and accuracy. Want a quick drill on any topic?',
+                'Preparing for UTME? I can help you revise core concepts fast.',
+                'Ask me to generate practice questions or explain any JAMB topic.'
+            ],
+            icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>`
+        },
+        {
+            match: p => p.includes('igcse'),
+            title: 'IGCSE',
+            section: 'IGCSE Prep',
+            nudges: [
+                'IGCSE marking relies on key terms. I can help you use the right language.',
+                'Revising for IGCSE? Ask me to explain any concept with worked examples.',
+                'Want a breakdown of what examiners look for in this topic?'
+            ],
+            icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`
+        },
+        {
+            match: p => p.includes('cambridge') || p.includes('a-level') || p.includes('alevel'),
+            title: 'Cambridge A-Level',
+            section: 'Cambridge Prep',
+            nudges: [
+                'Cambridge A-Level demands deep understanding. I can unpack any concept.',
+                'Ask me for a structured revision plan or topic explanation.',
+                'Need model answers or mark scheme guidance? I can help.'
+            ],
+            icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.74V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v13.26"/><path d="M2 20h20"/><path d="M8 8h8M8 12h5"/></svg>`
+        },
+        {
+            match: p => p.includes('common-entrance') || p.includes('entrance'),
+            title: 'Common Entrance',
+            section: 'Common Entrance Prep',
+            nudges: [
+                'Common Entrance needs solid basics. Ask me to explain any topic simply.',
+                'Working through Common Entrance prep? I can guide you step by step.',
+                'Ask me a question from any subject and I will break it down clearly.'
+            ],
+            icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`
+        },
+        {
+            match: p => p.includes('scholastic') || p.includes('sat') || p.includes('gre'),
+            title: 'Scholastic',
+            section: 'Scholastic Exams',
+            nudges: [
+                'Scholastic exams reward strategy. Want tips on approaching question types?',
+                'Ask me to drill vocabulary, math reasoning, or reading comprehension.',
+                'Need timed practice guidance? I can set up a mini drill session.'
+            ],
+            icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`
+        },
+        {
+            match: p => p.includes('math-hub') || p.includes('maths') || p.includes('mathematics'),
+            title: 'Math Hub',
+            section: 'Math Hub',
+            nudges: [
+                'The Math Hub has tools, games, and videos. Want a guided tour?',
+                'Stuck on a concept? Ask me and I will give a worked example.',
+                'Need an interactive explanation of any math topic? I am ready.'
+            ],
+            icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v16h16"/><path d="M8 16l4-8 4 8"/><path d="M10 13h4"/></svg>`
+        },
+        {
+            match: p => p.includes('theory') || p.includes('essay'),
+            title: 'Theory Practice',
+            section: 'Theory / Essay',
+            nudges: [
+                'Theory questions reward structure. Ask me to review your approach.',
+                'Want model answer structure for any theory question? Just ask.',
+                'I can mark a draft answer or suggest how to improve your response.'
+            ],
+            icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`
+        }
     ];
-    
+
+    /* Fallback suggestion chips when no context available */
+    const FALLBACK_CHIPS = ['Explain More', 'Give Example', 'Summarize'];
+
     let lastSuggestionIndex = -1;
     let suggestionHistory = [];
     let currentPopupTimeout = null;
-    
-    /* ── 3. DOM & QUIZ SCAPER ── */
+    let lastBotReply = '';
+    let lastUserMessage = '';
+
+    /* ── 3. DOM & QUIZ SCRAPER ── */
     function getPageContext() {
         const quizData = window.__prepbotQuizData || null;
         const currentIdx = window.__prepbotCurrentQuestionIndex || 0;
-        
+
         if (quizData && quizData[currentIdx]) {
             const q = quizData[currentIdx];
             const opts = (q.options || []).map((o, i) => `${String.fromCharCode(65 + i)}. ${o}`).join('\n');
-            
+
             let solutionsText = "";
             if (q.solutions) {
                 if (Array.isArray(q.solutions)) {
@@ -63,12 +155,12 @@ import chatbotcss from './prepbotcss.js';
                     solutionsText = q.solutions;
                 }
             }
-            
+
             let explanationText = q.explanation || "";
             if (Array.isArray(explanationText)) {
                 explanationText = explanationText.map((step, i) => `Step ${i+1}: ${step}`).join('\n');
             }
-            
+
             return {
                 mode: 'quiz',
                 qNum: currentIdx + 1,
@@ -84,7 +176,7 @@ import chatbotcss from './prepbotcss.js';
                 fullData: q
             };
         }
-        
+
         const selectors = ['main', 'article', '.study-content', '.content'];
         let scrapedText = "";
         for (const sel of selectors) {
@@ -111,11 +203,54 @@ import chatbotcss from './prepbotcss.js';
             fullData: null
         };
     }
-    
+
+    /* ── PAGE META READER ── */
+    function getPageMeta() {
+        return {
+            title: document.title || '',
+            h1: document.querySelector('h1')?.innerText?.trim() || '',
+            description: document.querySelector('meta[name="description"]')?.content || '',
+            ogDescription: document.querySelector('meta[property="og:description"]')?.content || '',
+            keywords: document.querySelector('meta[name="keywords"]')?.content || '',
+            path: window.location.pathname.toLowerCase()
+        };
+    }
+
+    /* ── SITE MAP LOOKUP ── */
+    function getSiteMapEntry(path) {
+        return SITE_MAP.find(entry => entry.match(path)) || null;
+    }
+
+    /* ── NON-QUIZ NUDGE GENERATOR ── */
+    function getNonQuizNudge() {
+        const meta = getPageMeta();
+        const entry = getSiteMapEntry(meta.path);
+
+        if (entry) {
+            const nudge = entry.nudges[Math.floor(Math.random() * entry.nudges.length)];
+            return { text: nudge, prompt: nudge };
+        }
+
+        // Fall back to reading page metatags
+        const topic = meta.h1 || meta.title.split('|')[0].split('-')[0].trim() || 'this section';
+        const desc = meta.description || meta.ogDescription;
+
+        const fallbackNudges = [
+            desc
+                ? `${desc.substring(0, 90).trimEnd()}. Ask me anything about this.`
+                : `On ${topic} — I can explain, summarise, or quiz you on any part of this page.`,
+            `Need help understanding ${topic}? I am reading this page with you.`,
+            `Ask me a question about ${topic} and I will break it down clearly.`
+        ];
+
+        const text = fallbackNudges[Math.floor(Math.random() * fallbackNudges.length)];
+        return { text, prompt: `Help me understand this page: ${topic}` };
+    }
+
     /* ── 4. INJECT HTML ── */
     const mount = document.getElementById('prepbot');
     if (!mount) return;
-    
+
     mount.innerHTML = `
         <div id="chat-fab-wrap">
             <button id="chat-fab" title="Open AI Assistant">
@@ -175,7 +310,7 @@ import chatbotcss from './prepbotcss.js';
             </div>
         </div>
     `;
-    
+
     /* ── 5. REFS & STATE ── */
     const win = document.getElementById('chat-window'),
         fabWrap = document.getElementById('chat-fab-wrap'),
@@ -193,7 +328,7 @@ import chatbotcss from './prepbotcss.js';
         quizNavNext = document.getElementById('quiz-nav-next'),
         quizNavCurrent = document.getElementById('quiz-nav-current'),
         quizNavTotal = document.getElementById('quiz-nav-total');
-    
+
     let isBusy = false,
         history = [],
         currentNudgePrompt = "",
@@ -205,17 +340,19 @@ import chatbotcss from './prepbotcss.js';
         lastQuestionId = null,
         questionStartTime = null,
         userProficiency = 'beginner';
-    
+
     /* ── 6. VOICE ENGINE ── */
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new SpeechRecognition();
         recognition.onstart = () => micBtn.classList.add('mic-active');
         recognition.onend = () => micBtn.classList.remove('mic-active');
-        recognition.onresult = (e) => { input.value = e.results[0][0].transcript;
-            sendMessage(); };
+        recognition.onresult = (e) => {
+            input.value = e.results[0][0].transcript;
+            sendMessage();
+        };
     }
-    
+
     function speak(text, btn) {
         synth.cancel();
         const cleanText = text.replace(/\\\(|\\\)|\\\[|\\\]/g, '');
@@ -223,65 +360,49 @@ import chatbotcss from './prepbotcss.js';
         const wave = document.createElement('div');
         wave.className = 'soundwave';
         wave.innerHTML = '<span></span><span></span><span></span>';
-        
         utter.onstart = () => btn.appendChild(wave);
         utter.onend = () => wave.remove();
         synth.speak(utter);
     }
-    
+
     /* ── 7. GET SOLUTION STEPS ── */
     function getSolutionSteps(questionData) {
         if (!questionData) return [];
-        
         let steps = [];
-        
         if (questionData.solutions) {
-            if (Array.isArray(questionData.solutions)) {
-                steps = questionData.solutions;
-            } else if (typeof questionData.solutions === 'string') {
-                steps = questionData.solutions.split('\n').filter(s => s.trim());
-            }
+            if (Array.isArray(questionData.solutions)) steps = questionData.solutions;
+            else if (typeof questionData.solutions === 'string') steps = questionData.solutions.split('\n').filter(s => s.trim());
         }
-        
         if (steps.length === 0 && questionData.explanation) {
-            if (Array.isArray(questionData.explanation)) {
-                steps = questionData.explanation;
-            } else if (typeof questionData.explanation === 'string') {
-                steps = questionData.explanation.split('\n').filter(s => s.trim());
-            }
+            if (Array.isArray(questionData.explanation)) steps = questionData.explanation;
+            else if (typeof questionData.explanation === 'string') steps = questionData.explanation.split('\n').filter(s => s.trim());
         }
-        
         if (steps.length === 0 && questionData.solutionSteps) {
-            if (Array.isArray(questionData.solutionSteps)) {
-                steps = questionData.solutionSteps;
-            } else if (typeof questionData.solutionSteps === 'string') {
-                steps = questionData.solutionSteps.split('\n').filter(s => s.trim());
-            }
+            if (Array.isArray(questionData.solutionSteps)) steps = questionData.solutionSteps;
+            else if (typeof questionData.solutionSteps === 'string') steps = questionData.solutionSteps.split('\n').filter(s => s.trim());
         }
-        
         return steps.filter(s => s.length > 0);
     }
-    
-    /* ── 8. PROGRESSIVE HINT GENERATION (no emojis) ── */
+
+    /* ── 8. PROGRESSIVE HINT GENERATION ── */
     function generateProgressiveHint() {
         const quizData = window.__prepbotQuizData;
         const currentIdx = window.__prepbotCurrentQuestionIndex || 0;
-        
         if (!quizData || !quizData[currentIdx]) return null;
-        
+
         const currentQuestion = quizData[currentIdx];
         const questionId = `${currentIdx}_${currentQuestion.question.substring(0, 50)}`;
-        
+
         if (lastQuestionId !== questionId) {
             lastQuestionId = questionId;
             nudgeStepCounter = 0;
             questionStartTime = Date.now();
             suggestionHistory = [];
         }
-        
+
         const timeSpent = questionStartTime ? Math.floor((Date.now() - questionStartTime) / 1000) : 0;
         const steps = getSolutionSteps(currentQuestion);
-        
+
         let availableSteps = steps;
         if (availableSteps.length === 0) {
             availableSteps = [
@@ -293,18 +414,18 @@ import chatbotcss from './prepbotcss.js';
                 "Check your answer against the options"
             ];
         }
-        
+
         let stepIndex = Math.min(nudgeStepCounter, availableSteps.length - 1);
         let suggestionText = "";
         let promptForAI = "";
-        
+
         if (timeSpent < 15) {
             suggestionText = `Try starting with: "${availableSteps[0]?.substring(0, 60)}..."`;
             promptForAI = `Give me a beginner-friendly hint for: ${currentQuestion.question}`;
         } else if (timeSpent < 30) {
             stepIndex = Math.min(1, availableSteps.length - 1);
             suggestionText = `Next step: ${availableSteps[stepIndex]?.substring(0, 80)}`;
-            promptForAI = `What's the next step after considering the basics for: ${currentQuestion.question}`;
+            promptForAI = `What is the next step after considering the basics for: ${currentQuestion.question}`;
         } else if (timeSpent < 45) {
             stepIndex = Math.min(2, availableSteps.length - 1);
             suggestionText = `Focus on: ${availableSteps[stepIndex]?.substring(0, 80)}`;
@@ -317,102 +438,81 @@ import chatbotcss from './prepbotcss.js';
             suggestionText = `Let me guide you through the complete solution. ${availableSteps[0]?.substring(0, 60)}...`;
             promptForAI = `Provide a complete step-by-step solution with explanations for: ${currentQuestion.question}`;
         }
-        
+
         nudgeStepCounter = Math.min(nudgeStepCounter + 1, availableSteps.length - 1);
-        
         return { suggestionText, promptForAI, stepIndex };
     }
-    
+
     /* ── 9. ADD QUIZ NAVIGATION PILL ── */
     function addQuizNavigationPill() {
         const messagesContainer = document.getElementById('chat-messages');
         if (!messagesContainer) return;
-        
-        // Check if pill already exists
         if (document.getElementById('quiz-nav-pill')) return;
-        
+
         const quizData = window.__prepbotQuizData;
         if (!quizData || quizData.length === 0) return;
-        
+
         const currentIdx = window.__prepbotCurrentQuestionIndex || 0;
         const total = quizData.length;
-        
+
         const pill = document.createElement('button');
         pill.id = 'quiz-nav-pill';
         pill.className = 'quiz-nav-pill';
         pill.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4v16h16"/><polyline points="20 10 12 18 8 14"/></svg>
             Question ${currentIdx + 1} of ${total}
-
         `;
-        
+
         pill.onclick = () => {
-            const qbBar = document.getElementById('qbubbles-bar');
-            if (qbBar) {
-                qbBar.style.display = qbBar.style.display === 'none' ? 'block' : 'none';
-                if (qbBar.style.display === 'block' && window.__prepbotQuizData) {
-                    buildQuizNav();
-                }
+            const qbBarEl = document.getElementById('qbubbles-bar');
+            if (qbBarEl) {
+                qbBarEl.style.display = qbBarEl.style.display === 'none' ? 'block' : 'none';
+                if (qbBarEl.style.display === 'block' && window.__prepbotQuizData) buildQuizNav();
             }
         };
-        
-        // Insert at top of messages
+
         messagesContainer.insertBefore(pill, messagesContainer.firstChild);
     }
-    
+
     function updateQuizNavigationPill() {
         const pill = document.getElementById('quiz-nav-pill');
         if (!pill) return;
-        
+
         const quizData = window.__prepbotQuizData;
         if (!quizData || quizData.length === 0) {
             pill.style.display = 'none';
             return;
         }
-        
+
         pill.style.display = 'inline-flex';
         const currentIdx = window.__prepbotCurrentQuestionIndex || 0;
         const total = quizData.length;
         pill.innerHTML = `
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v16h16"/><polyline points="20 10 12 18 8 14"/></svg>
             Question ${currentIdx + 1} of ${total}
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         `;
     }
-    
-    /* ── 10. CORE AI LOGIC WITH MATHJAX ── */
-    async function sendMessage(overrideText) {
-        let text = overrideText || input.value.trim();
+
+    /* ── 10. SEND MESSAGE ── */
+    async function sendMessage(text) {
+        text = text || input.value.trim();
         if (!text || isBusy) return;
-        
-        const quiz = window.__prepbotQuizData;
-        const numMatch = text.match(/\b(\d+)\b/);
-        if (quiz && numMatch) {
-            const idx = parseInt(numMatch[1]) - 1;
-            if (quiz[idx]) {
-                if (window.__prepbotJumpToQuestion) window.__prepbotJumpToQuestion(idx);
-                text = `I have moved to question ${idx + 1}. Please explain it: ${quiz[idx].question}`;
-            }
-        }
-        
+
+        lastUserMessage = text;
+        input.value = '';
         isBusy = true;
         sendBtn.classList.add('loading');
-        input.value = '';
-        input.style.height = 'auto';
-        
-        appendMessage('user', text);
+        suggBox.innerHTML = '';
+
+        await appendMessage('user', text);
         showTyping();
-        
+
         const ctx = getPageContext();
-        
+
         let stepByStepContext = "";
-        if (ctx.solutions) {
-            stepByStepContext = `\n\nCOMPLETE STEP-BY-STEP SOLUTION:\n${ctx.solutions}\n\n`;
-        }
-        
-        if (ctx.explanation) {
-            stepByStepContext += `DETAILED EXPLANATION:\n${ctx.explanation}\n\n`;
-        }
-        
+        if (ctx.solutions) stepByStepContext = `\n\nCOMPLETE STEP-BY-STEP SOLUTION:\n${ctx.solutions}\n\n`;
+        if (ctx.explanation) stepByStepContext += `DETAILED EXPLANATION:\n${ctx.explanation}\n\n`;
+
         const systemPrompt = `You are ${BOT_NAME}, an expert study assistant specializing in step-by-step teaching.
 
 CONTEXT: ${ctx.content}
@@ -443,25 +543,77 @@ STRICT RULES:
             const data = await res.json();
             hideTyping();
             let reply = data.choices?.[0]?.message?.content || "Connection error. Please try again.";
-            
+
+            lastBotReply = reply;
             history.push({ role: 'user', content: text }, { role: 'assistant', content: reply });
             if (history.length > 10) history = history.slice(-10);
             await appendMessage('bot', reply);
-            
-            showTwoWordPills();
-        } catch (err) { 
+
+            showContextualSuggestions(reply, text);
+        } catch (err) {
             hideTyping();
-            await appendMessage('bot', "Connection error. Please check your internet connection."); 
+            await appendMessage('bot', "Connection error. Please check your internet connection.");
         }
         isBusy = false;
         sendBtn.classList.remove('loading');
     }
-    
-    /* ── 11. UI RENDERERS WITH MATHJAX SUPPORT ── */
+
+    /* ── 11. CONTEXTUAL SUGGESTION CHIPS ── */
+    /*
+     * Analyses the bot reply and user message to generate 2 relevant follow-up
+     * chips. Uses keyword matching across topic buckets so chips always relate
+     * to what was just discussed.
+     */
+    function showContextualSuggestions(botReply, userMsg) {
+        if (!suggBox) return;
+        suggBox.innerHTML = '';
+
+        const bot = (botReply || '').toLowerCase();
+        const user = (userMsg || '').toLowerCase();
+
+        // Ordered buckets — first match wins priority
+        const buckets = [
+            { test: t => /step \d|next step|method|procedure/.test(t),    chips: ['Next Step', 'Show Working', 'Alternate Method'] },
+            { test: t => /formula|equation|theorem|identity|rule/.test(t), chips: ['Derive It', 'Explain Formula', 'Apply It'] },
+            { test: t => /graph|plot|axis|curve|sketch/.test(t),           chips: ['Sketch It', 'Key Features', 'Worked Example'] },
+            { test: t => /definition|defined|means|concept|term/.test(t),  chips: ['Give Example', 'Simplify', 'Real Life Use'] },
+            { test: t => /option|answer|correct|wrong|choice/.test(t),     chips: ['Why That Answer', 'Check My Work', 'Compare Options'] },
+            { test: t => /calculate|compute|evaluate|find the/.test(t),    chips: ['Check Working', 'Alternate Method', 'Verify Answer'] },
+            { test: t => /summary|overview|main points|key point/.test(t), chips: ['More Detail', 'Give Example', 'Test Me'] },
+            { test: t => /experiment|practical|lab|observation/.test(t),   chips: ['Explain Setup', 'Expected Result', 'Real Example'] },
+            { test: t => /history|event|date|century|war|period/.test(t),  chips: ['Key Facts', 'Time Period', 'Significance'] },
+            { test: t => /read|passage|comprehension|extract/.test(t),     chips: ['Main Theme', 'Author Intent', 'Summarise'] }
+        ];
+
+        const matched = new Set();
+        for (const bucket of buckets) {
+            if (bucket.test(bot) || bucket.test(user)) {
+                bucket.chips.forEach(c => matched.add(c));
+                if (matched.size >= 4) break;
+            }
+        }
+
+        // Always ensure at least 2 chips
+        if (matched.size < 2) {
+            FALLBACK_CHIPS.forEach(c => matched.add(c));
+        }
+
+        const chips = [...matched].slice(0, 2);
+
+        chips.forEach(label => {
+            const b = document.createElement('button');
+            b.className = 'suggestion-chip';
+            b.textContent = label;
+            b.onclick = () => sendMessage(label);
+            suggBox.appendChild(b);
+        });
+    }
+
+    /* ── 12. UI RENDERERS WITH MATHJAX SUPPORT ── */
     async function appendMessage(role, text) {
         const wrap = document.createElement('div');
         wrap.className = `msg ${role}`;
-        
+
         let content = text
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/Step (\d+):/gi, '<strong class="step-highlight">Step $1:</strong>')
@@ -469,9 +621,9 @@ STRICT RULES:
             .replace(/\\\((.*?)\\\)/g, '<span class="math-inline">\\($1\\)</span>')
             .replace(/\\\[(.*?)\\\]/g, '<div class="math-block">\\[$1\\]</div>')
             .replace(/\n/g, '<br>');
-        
+
         wrap.innerHTML = `<div class="msg-meta">${role === 'user' ? 'You' : BOT_NAME}</div><div class="msg-bubble">${content}</div>`;
-        
+
         if (role === 'bot') {
             const footer = document.createElement('div');
             footer.className = 'msg-footer';
@@ -482,10 +634,10 @@ STRICT RULES:
             footer.appendChild(sBtn);
             wrap.querySelector('.msg-bubble').appendChild(footer);
         }
-        
+
         messages.appendChild(wrap);
         messages.scrollTop = messages.scrollHeight;
-        
+
         if (window.MathJax) {
             try {
                 await MathJax.typesetPromise([wrap]);
@@ -493,45 +645,40 @@ STRICT RULES:
                 console.log('MathJax error:', err);
             }
         }
-        
+
         return Promise.resolve();
     }
-    
-    function showTwoWordPills() {
-        if (!suggBox) return;
-        
-        suggBox.innerHTML = '';
-        
-        const shuffled = [...TWO_WORD_PILLS];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        
-        const selectedPills = shuffled.slice(0, 2);
-        
-        selectedPills.forEach(pill => {
-            const b = document.createElement('button');
-            b.className = 'suggestion-chip';
-            b.textContent = pill;
-            b.onclick = () => sendMessage(pill);
-            suggBox.appendChild(b);
-        });
+
+    /* ── FORMAT TEXT FOR POPUP (inline math wrapping) ── */
+    function formatForPopup(text) {
+        // Escape HTML first, then re-apply math delimiters
+        const escaped = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+        // Restore LaTeX delimiters (they survive escaping since they use backslash)
+        return escaped
+            .replace(/\\\((.+?)\\\)/g, '\\($1\\)')
+            .replace(/\\\[(.+?)\\\]/g, '\\[$1\\]');
     }
-    
-    function showTyping() { 
+
+    function hasMath(text) {
+        return /\\\(|\\\[/.test(text);
+    }
+
+    function showTyping() {
         const t = document.createElement('div');
         t.id = 'typing';
         t.className = 'msg bot';
         t.innerHTML = `<div class="msg-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
         messages.appendChild(t);
-        messages.scrollTop = messages.scrollHeight; 
+        messages.scrollTop = messages.scrollHeight;
     }
-    
-    function hideTyping() { 
-        document.getElementById('typing')?.remove(); 
+
+    function hideTyping() {
+        document.getElementById('typing')?.remove();
     }
-    
+
     function toggleChat(force) {
         const isOpen = force !== undefined ? force : !win.classList.contains('open');
         win.classList.toggle('open', isOpen);
@@ -548,7 +695,7 @@ STRICT RULES:
             }
         }
     }
-    
+
     function updateQuizNavBar() {
         const quizData = window.__prepbotQuizData;
         if (quizData && quizData.length > 0) {
@@ -563,7 +710,7 @@ STRICT RULES:
             if (pill) pill.style.display = 'none';
         }
     }
-    
+
     function buildQuizNav() {
         const data = window.__prepbotQuizData;
         if (!data) return;
@@ -572,84 +719,87 @@ STRICT RULES:
             const b = document.createElement('button');
             b.className = 'qbubble';
             b.textContent = i + 1;
-            b.onclick = () => { 
+            b.onclick = () => {
                 if (window.__prepbotJumpToQuestion) window.__prepbotJumpToQuestion(i);
                 sendMessage(`Explain question ${i + 1} step by step`);
-                qbBar.style.display = 'none'; 
+                qbBar.style.display = 'none';
             };
             qbGrid.appendChild(b);
         });
         qbBar.style.display = 'block';
     }
-    
-    /* ── 12. POPUP SUGGESTION (no emojis) ── */
+
+    /* ── 13. POPUP SUGGESTION — MathJax-first, site-aware ── */
+    /*
+     * Quiz mode:  shows progressive hints from solution steps.
+     *             If the hint contains LaTeX, MathJax renders it fully
+     *             before the popup becomes visible.
+     *
+     * Study mode: reads page metatags + SITE_MAP to show a contextual
+     *             help nudge relevant to the current section.
+     *
+     * Timing: 40-50 seconds between popups, 10 seconds visible.
+     */
     async function showPopupSuggestion() {
         if (win.classList.contains('open') || isBusy || fabWrap.classList.contains('fab-hidden')) return;
-        
-        if (window.MathJax && window.MathJax.startup && window.MathJax.startup.document) {
-            try {
-                await window.MathJax.startup.document.clear();
-                await window.MathJax.startup.document.updateDocument();
-            } catch (err) {
-                console.log('MathJax cleanup error:', err);
-            }
-        }
-        
+
         const ctx = getPageContext();
-        
+
         if (ctx.mode === 'quiz') {
             const hint = generateProgressiveHint();
-            if (hint) {
-                currentNudgeDisplayText = hint.suggestionText;
-                currentNudgePrompt = hint.promptForAI;
-                
-                popupText.textContent = hint.suggestionText;
-                popup.classList.add('visible');
-                
-                if (currentPopupTimeout) clearTimeout(currentPopupTimeout);
-                
-                currentPopupTimeout = setTimeout(() => {
-                    popup.classList.remove('visible');
-                    currentPopupTimeout = null;
-                }, 30000);
+            if (!hint) return;
+
+            currentNudgeDisplayText = hint.suggestionText;
+            currentNudgePrompt = hint.promptForAI;
+
+            // Set content with proper HTML encoding + math spans
+            popupText.innerHTML = formatForPopup(hint.suggestionText);
+
+            // Render MathJax fully before showing the popup
+            if (hasMath(hint.suggestionText) && window.MathJax) {
+                try {
+                    await MathJax.typesetPromise([popup]);
+                } catch (err) {
+                    console.log('MathJax popup error:', err);
+                }
             }
-        } else {
-            const studySuggestions = [
-                "Want a summary",
-                "Need key points",
-                "Focus on main ideas",
-                "Take notes on this"
-            ];
-            const randomSuggestion = studySuggestions[Math.floor(Math.random() * studySuggestions.length)];
-            currentNudgeDisplayText = randomSuggestion;
-            currentNudgePrompt = randomSuggestion;
-            popupText.textContent = randomSuggestion;
+
             popup.classList.add('visible');
-            
-            if (currentPopupTimeout) clearTimeout(currentPopupTimeout);
-            
-            currentPopupTimeout = setTimeout(() => {
-                popup.classList.remove('visible');
-                currentPopupTimeout = null;
-            }, 30000);
+
+        } else {
+            // Non-quiz: site-aware nudge from metatags + site map
+            const nudge = getNonQuizNudge();
+            currentNudgeDisplayText = nudge.text;
+            currentNudgePrompt = nudge.prompt;
+            popupText.innerHTML = formatForPopup(nudge.text);
+            popup.classList.add('visible');
         }
+
+        if (currentPopupTimeout) clearTimeout(currentPopupTimeout);
+
+        // Stay visible for 10 seconds
+        currentPopupTimeout = setTimeout(() => {
+            popup.classList.remove('visible');
+            currentPopupTimeout = null;
+        }, 10000);
     }
-    
-    /* ── 13. NUDGE INTERVAL (60-90 seconds) ── */
+
+    /* ── 14. NUDGE INTERVAL — 40 to 50 seconds ── */
     function startNudgeInterval() {
         if (nudgeInterval) clearInterval(nudgeInterval);
-        
+
         function scheduleNext() {
-            const delay = Math.floor(Math.random() * (90000 - 60000 + 1) + 60000);
+            // Random delay between 40 000 ms and 50 000 ms
+            const delay = Math.floor(Math.random() * (50000 - 40000 + 1) + 40000);
             nudgeInterval = setTimeout(() => {
                 showPopupSuggestion();
                 scheduleNext();
             }, delay);
         }
-        
+
         scheduleNext();
     }
-    
+
     function stopNudgeInterval() {
         if (nudgeInterval) {
             clearTimeout(nudgeInterval);
@@ -660,13 +810,13 @@ STRICT RULES:
             currentPopupTimeout = null;
         }
     }
-    
-    /* ── 14. EVENT LISTENERS ── */
+
+    /* ── 15. EVENT LISTENERS ── */
     document.getElementById('chat-fab').onclick = () => toggleChat();
     document.getElementById('chat-close').onclick = () => toggleChat(false);
     document.getElementById('chat-clear-btn').onclick = () => document.getElementById('chat-clear-bar').classList.add('visible');
     document.getElementById('clear-cancel').onclick = () => document.getElementById('chat-clear-bar').classList.remove('visible');
-    document.getElementById('clear-confirm').onclick = () => { 
+    document.getElementById('clear-confirm').onclick = () => {
         history = [];
         messages.innerHTML = '<div class="chat-intro-card"><div class="intro-label">SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
         document.getElementById('chat-clear-bar').classList.remove('visible');
@@ -676,7 +826,7 @@ STRICT RULES:
     sendBtn.onclick = () => sendMessage();
     micBtn.onclick = () => { if (recognition) recognition.start(); };
     input.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
-    
+
     if (quizNavPrev) {
         quizNavPrev.onclick = () => {
             const quizData = window.__prepbotQuizData;
@@ -690,7 +840,7 @@ STRICT RULES:
             }
         };
     }
-    
+
     if (quizNavNext) {
         quizNavNext.onclick = () => {
             const quizData = window.__prepbotQuizData;
@@ -704,25 +854,20 @@ STRICT RULES:
             }
         };
     }
-    
+
     popup.onclick = async (e) => {
         if (e.target.classList.contains('prepbot-popup-close')) return;
-        
         if (currentPopupTimeout) {
             clearTimeout(currentPopupTimeout);
             currentPopupTimeout = null;
         }
-        
         toggleChat(true);
-        
         setTimeout(() => {
-            if (currentNudgePrompt) {
-                sendMessage(currentNudgePrompt);
-            }
+            if (currentNudgePrompt) sendMessage(currentNudgePrompt);
         }, 300);
     };
-    
-    document.getElementById('prepbot-popup-close').onclick = e => { 
+
+    document.getElementById('prepbot-popup-close').onclick = e => {
         e.stopPropagation();
         popup.classList.remove('visible');
         if (currentPopupTimeout) {
@@ -730,21 +875,24 @@ STRICT RULES:
             currentPopupTimeout = null;
         }
     };
+
     document.getElementById('qbubbles-close').onclick = () => qbBar.style.display = 'none';
-    document.getElementById('chat-fab-dismiss').onclick = e => { 
+
+    document.getElementById('chat-fab-dismiss').onclick = e => {
         e.stopPropagation();
         fabWrap.classList.add('fab-hidden');
         document.getElementById('chat-fab-restore').classList.add('fab-restore-visible');
         stopNudgeInterval();
     };
-    document.getElementById('chat-fab-restore').onclick = () => { 
+
+    document.getElementById('chat-fab-restore').onclick = () => {
         fabWrap.classList.remove('fab-hidden');
         document.getElementById('chat-fab-restore').classList.remove('fab-restore-visible');
         if (!nudgeInterval) startNudgeInterval();
     };
-    
+
     startNudgeInterval();
-    
+
     window.addEventListener('prepbot:quizUpdated', () => {
         if (qbBar.style.display === 'block') buildQuizNav();
         updateQuizNavBar();
@@ -762,20 +910,19 @@ STRICT RULES:
             }
         }
     });
-    
+
     setTimeout(() => {
         updateQuizNavBar();
         addQuizNavigationPill();
         updateQuizNavigationPill();
     }, 100);
-    
+
     window.__prepbotRefreshContext = () => {
         updateQuizNavBar();
         addQuizNavigationPill();
         updateQuizNavigationPill();
         if (qbBar.style.display === 'block' && window.__prepbotQuizData) buildQuizNav();
     };
-    
-    console.log(`${BOT_NAME} ready — no emojis, quiz navigation pill added, 60-90s popup intervals, 30s duration`);
-})();
 
+    console.log(`${BOT_NAME} ready — contextual chips, MathJax-first popup, 40-50s interval, 10s duration`);
+})();
