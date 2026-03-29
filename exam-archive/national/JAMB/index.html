@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>WAEC Practice Prep — Exam Setup Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="../../../main.css">
+  <script src="../../../utils/loader/loader.js"></script>
+</head>
+
+<body>
+  <!-- ═══ ADVANCED TRI-CORE LOADER ═══ -->
+  <div id="loader">
+    <div id="loader-wrapper">
+      <div class="logo-cluster"></div> <!-- JS will inject the 3 images here -->
+    </div>
+    <div class="loader-word"><span>Home Page</span></div>
+    <!-- <div class="loader-word"><span></span></div> -->
+    <div class="loader-bar"></div>
+  </div>
+  
+  
+  <nav class="site-nav">
+    <a href="/" class="nav-logo">
+      <!-- Icon -->
+      <img src="../../../logo/logo-light.svg" alt="PrepPortal logo" />
+      
+      <!-- Stacked Text Branding -->
+      <div class="logo-brand">
+        <span class="brand-top">Prep</span>
+        <span class="brand-bottom">Portal</span>
+      </div>
+    <div class="nav-right">
+      <a class="nav-link active" href="#">WAEC</a>
+      <a class="nav-link" href="#">JAMB</a>
+    </div>
+  </nav>
+
+
+  
+  <div class="ticker">
+    <div class="ticker-track" id="ticker-track"></div>
+  </div>
+  
+  <div class="pg-header">
+    <div class="ph-left">
+      <div class="pg-eyebrow">Practice Portal</div>
+      <div class="pg-title">WAEC<br><em>PREP</em></div>
+    </div>
+    <div class="ph-right">
+      <div class="ph-stats">
+        <div class="ph-stat"><strong>2023–25</strong><span>Live Sessions</span></div>
+        <div class="ph-stat"><strong>SSCE</strong><span>Standard</span></div>
+        <div class="ph-stat"><strong>AI</strong><span>Instant Marking</span></div>
+      </div>
+    </div>
+  </div>
+  
+  <section class="setup-section">
+    <div class="setup-box">
+      <!-- STEP 1 + 2: years + stream -->
+      <div class="setup-row">
+        <div class="setup-cell">
+          <div class="step-label">
+            <span class="step-num">1</span>
+            <span class="step-title">Exam Year</span>
+            <span class="step-done" id="done-year">✓</span>
+          </div>
+          <div class="year-grid" id="year-chips"></div>
+          <div class="step-sub">only active years (green pulse) are selectable</div>
+        </div>
+        <div class="setup-cell">
+          <div class="step-label">
+            <span class="step-num">2</span>
+            <span class="step-title">Your Stream</span>
+            <span class="step-done" id="done-stream">✓</span>
+          </div>
+          <div class="csel" id="csel-stream">
+            <button class="csel-btn" id="streamBtn"><span id="stream-label">— select stream —</span></button>
+            <div class="csel-panel">
+              <div class="csel-item" data-val="science">Science</div>
+              <div class="csel-item" data-val="arts">Arts / Humanities</div>
+              <div class="csel-item" data-val="commercial">Commercial</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- STEP 3 : subjects (dynamic) -->
+      <div class="setup-row full" id="subject-row" style="display: none;">
+        <div class="setup-cell">
+          <div class="step-label">
+            <span class="step-num">3</span>
+            <span class="step-title">Subjects (<span id="subject-count">0</span>/9 max)</span>
+            <span class="step-done" id="done-subject">✓</span>
+          </div>
+          <div class="chips-container" id="subject-chips"></div>
+          <div class="step-sub">Choose up to 9 subjects (WAEC standard)</div>
+        </div>
+      </div>
+      
+      <!-- STEP 4 : type -->
+      <div class="setup-row full" id="type-row" style="display: none;">
+        <div class="setup-cell">
+          <div class="step-label">
+            <span class="step-num">4</span>
+            <span class="step-title">Exam Format</span>
+            <span class="step-done" id="done-type">✓</span>
+          </div>
+          <div class="chips-container" id="type-chips">
+            <div class="custom-chip" data-type="objective">
+              <div class="chip-check-box"></div><span>Objective (MCQ)</span>
+            </div>
+            <div class="custom-chip" data-type="theory">
+              <div class="chip-check-box"></div><span>Theory (Essay)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="setup-footer">
+        <span class="setup-status" id="setup-status">Awaiting selections...</span>
+        <button class="btn-yellow" id="begin-btn" disabled>Generate Practice Paper →</button>
+      </div>
+    </div>
+  </section>
+  
+
+</body>
+
+</html>

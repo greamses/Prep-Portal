@@ -1,4 +1,4 @@
-[
+const chemistryObjective = [
   {
     "question": "Which of the following gases could be collected by downward displacement of air?",
     "image": null,
