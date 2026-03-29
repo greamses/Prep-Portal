@@ -22,7 +22,7 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
   /* ── 2. CONFIG ── */
   const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
   const BOT_NAME = 'PrepBot';
-  let GROQ_KEY = sessionStorage.getItem('pp_groq_key') || '';
+  let GROQ_KEY = '';
 
   /* ── 2b. FIRESTORE KEY HELPERS ── */
   function currentUID() {
@@ -111,21 +111,24 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
         });
 
         if (res.ok || res.status === 400) {
-          GROQ_KEY = raw;
-          sessionStorage.setItem('pp_groq_key', raw);
-          saveGroqKeyToFirestore(raw);
-          status.style.color = 'green';
-          status.textContent = 'Key verified. Starting PrepBot…';
-          setTimeout(() => {
-            const messagesEl = document.getElementById('chat-messages');
-            if (messagesEl) {
-              messagesEl.innerHTML = '<div class="chat-intro-card"><div class="intro-label">SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
-            }
-            addQuizNavigationPill();
-            updateQuizNavigationPill();
-            startNudgeInterval();
-          }, 800);
-        } else if (res.status === 401) {
+  GROQ_KEY = raw;
+  
+  await saveGroqKeyToFirestore(raw);
+  
+  status.style.color = 'green';
+  status.textContent = 'Key verified. Starting PrepBot…';
+  
+  setTimeout(() => {
+    const messagesEl = document.getElementById('chat-messages');
+    if (messagesEl) {
+      messagesEl.innerHTML = '<div class="chat-intro-card"><div class="intro-label">SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
+    }
+    addQuizNavigationPill();
+    updateQuizNavigationPill();
+    startNudgeInterval();
+  }, 800);
+}
+        else if (res.status === 401) {
           status.style.color = 'red';
           status.textContent = 'Invalid key — check and re-paste from Groq console.';
           this.textContent = 'Retry →';
@@ -978,18 +981,17 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
   };
 
   /* ── 16. INIT — load key from Firestore if not already in sessionStorage ── */
-  if (isKeySet()) {
+  (async () => {
+  const saved = await loadGroqKeyFromFirestore();
+  
+  if (saved) {
+    GROQ_KEY = saved;
+    console.log("Groq key loaded from Firestore");
     startNudgeInterval();
   } else {
-    (async () => {
-      const saved = await loadGroqKeyFromFirestore();
-      if (saved) {
-        GROQ_KEY = saved;
-        sessionStorage.setItem('pp_groq_key', saved);
-        startNudgeInterval();
-      }
-    })();
+    console.log("No Groq key found in Firestore");
   }
+})();
 
   window.addEventListener('prepbot:quizUpdated', () => {
     if (qbBar.style.display === 'block') buildQuizNav();
@@ -1024,3 +1026,8 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
 
   console.log(`${BOT_NAME} ready — Groq key gate, Firestore persistence, MathJax-first popup, 40-50s nudge interval`);
 })();
+
+
+function currentUID() {
+  return getAuth().currentUser?.uid ?? null;
+}
