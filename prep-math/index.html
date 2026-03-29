@@ -1,245 +1,350 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Algebra Lab | Prep Portal</title>
-  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://graspablemath.com/shared/libs/gmath/gm-inject.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  <link rel="stylesheet" href="./style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algebra Practice — Prep Portal 2026</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="../theory-page/style.css">
 </head>
 
 <body>
-  
-  <header class="site-header">
-    <a class="logo" href="#">Prep<em>Portal</em></a>
-    <span class="header-tag">Algebra Lab · AI-Powered</span>
-  </header>
-  
-  <div class="page">
     
-    <div class="page-title-block">
-      <p class="page-eyebrow">Algebra · Interactive</p>
-      <h1 class="page-title">Algebra<br><em>Lab.</em></h1>
-      <p class="page-desc">PrepBot generates a fresh algebra equation by topic. It opens fullscreen on Graspable Math's live canvas — drag terms, factor, and explore algebra visually.</p>
+    <!-- ═══════════════════════════════════════════
+       NAV
+  ═══════════════════════════════════════════ -->
+    <nav id="site-nav">
+        <a href="index.html" class="nav-logo" aria-label="Prep Portal">
+            <svg width="148" height="36" viewBox="0 0 148 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="36" height="36" fill="#0a0a0a" />
+                <text x="18" y="24" text-anchor="middle" font-family="Unbounded, sans-serif" font-size="13" font-weight="900" fill="#ffe500">PP</text>
+                <text x="48" y="19" font-family="Unbounded, sans-serif" font-size="11" font-weight="900" fill="#0a0a0a" letter-spacing=".06em">PREP</text>
+                <text x="48" y="31" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="600" fill="#666" letter-spacing=".12em">PORTAL 2026</text>
+            </svg>
+        </a>
+        <div class="nav-right">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="waec.html" class="nav-link">WAEC</a>
+            <a href="jamb.html" class="nav-link">JAMB</a>
+            <a href="algebra-practice.html" class="nav-link active">Algebra</a>
+        </div>
+    </nav>
+    
+    <!-- ═══════════════════════════════════════════
+       TICKER
+  ═══════════════════════════════════════════ -->
+    <div class="ticker" aria-hidden="true">
+        <div class="ticker-track">
+            <span class="ticker-item">Linear Equations<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Quadratic Equations<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Inequalities<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Word Problems<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Simultaneous Equations<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Interactive Canvas<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">AI-Generated Questions<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Step-by-Step Hints<span class="ticker-dot">◆</span></span>
+            <!-- duplicate for seamless loop -->
+            <span class="ticker-item">Linear Equations<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Quadratic Equations<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Inequalities<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Word Problems<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Simultaneous Equations<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Interactive Canvas<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">AI-Generated Questions<span class="ticker-dot">◆</span></span>
+            <span class="ticker-item">Step-by-Step Hints<span class="ticker-dot">◆</span></span>
+        </div>
     </div>
     
-    <!-- CONTROLS -->
-    <div class="controls-bar">
-      
-      <!-- ── Topic accordions ── -->
-      <div class="topic-accordion" id="topic-accordion">
+    <!-- ═══════════════════════════════════════════
+       PAGE HEADER
+  ═══════════════════════════════════════════ -->
+    <header class="pg-header">
+        <div class="ph-left">
+            <p class="pg-eyebrow">PrepBot &middot; Mathematics</p>
+            <h1 class="pg-title">ALGEBRA<br><em>LAB</em></h1>
+        </div>
+        <div class="ph-right">
+            <p>AI-generated algebra questions with an interactive equation canvas. Pick a topic, choose your hint method, and solve step by step.</p>
+            <div class="ph-stats">
+                <div class="ph-stat">
+                    <strong id="stat-count">0</strong>
+                    <span>Solved</span>
+                </div>
+                <div class="ph-stat">
+                    <strong id="stat-topic" class="stat-topic-val">—</strong>
+                    <span>Topic</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- ═══════════════════════════════════════════
+       STATUS BAR
+  ═══════════════════════════════════════════ -->
+    <div id="status-bar" class="status-bar" role="status" aria-live="polite"></div>
+    
+    <!-- ═══════════════════════════════════════════
+       SETUP SECTION
+  ═══════════════════════════════════════════ -->
+    <section class="setup-section">
         
-        <!-- Group 1: Linear Equations -->
-        <div class="accordion-group" id="grp-linear">
-          <button class="accordion-header open" onclick="toggleAccordion('grp-linear')">
-            <span class="accordion-header-left">
-              <span>Linear Equations</span>
-              <span class="accordion-tag">Core</span>
-              <span class="accordion-count">3 topics</span>
-            </span>
-            <span class="accordion-arrow">▾</span>
-          </button>
-          <div class="accordion-body open">
-            <button class="topic-chip active" data-topic="one-step" onclick="setTopic(this)">One-Step</button>
-            <button class="topic-chip" data-topic="two-step" onclick="setTopic(this)">Two-Step</button>
-            <button class="topic-chip" data-topic="both-sides" onclick="setTopic(this)">Both Sides</button>
-          </div>
+        <div class="setup-box">
+            
+            <!-- ── Step 1: Topic ── -->
+            <div class="setup-row full">
+                <div class="setup-cell">
+                    
+                    <div class="step-label">
+                        <span class="step-num">1</span>
+                        <span class="step-title">Choose a Topic</span>
+                    </div>
+                    
+                    <div class="accordion-list">
+                        
+                        <!-- Group: Linear Equations -->
+                        <div class="accordion-group has-active" id="grp-linear">
+                            <button class="accordion-header open" type="button" onclick="toggleAccordion('grp-linear')">
+                                <span>Linear Equations</span>
+                                <svg class="accordion-arrow" viewBox="0 0 16 16">
+                                    <path d="M3 6l5 5 5-5" />
+                                </svg>
+                            </button>
+                            <div class="accordion-body open">
+                                <div class="topic-chips">
+                                    <button class="topic-chip active" data-topic="one-step" type="button" onclick="setTopic(this)">One-Step</button>
+                                    <button class="topic-chip" data-topic="two-step" type="button" onclick="setTopic(this)">Two-Step</button>
+                                    <button class="topic-chip" data-topic="both-sides" type="button" onclick="setTopic(this)">Both Sides</button>
+                                    <button class="topic-chip" data-topic="fractions" type="button" onclick="setTopic(this)">Fractions</button>
+                                    <button class="topic-chip" data-topic="decimals" type="button" onclick="setTopic(this)">Decimals</button>
+                                    <button class="topic-chip" data-topic="mixed-number" type="button" onclick="setTopic(this)">Mixed Numbers</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Group: Quadratics -->
+                        <div class="accordion-group" id="grp-quadratic">
+                            <button class="accordion-header" type="button" onclick="toggleAccordion('grp-quadratic')">
+                                <span>Quadratics</span>
+                                <svg class="accordion-arrow" viewBox="0 0 16 16">
+                                    <path d="M3 6l5 5 5-5" />
+                                </svg>
+                            </button>
+                            <div class="accordion-body">
+                                <div class="topic-chips">
+                                    <button class="topic-chip" data-topic="quadratic" type="button" onclick="setTopic(this)">Factoring</button>
+                                    <button class="topic-chip" data-topic="diff-squares" type="button" onclick="setTopic(this)">Diff. of Squares</button>
+                                    <button class="topic-chip" data-topic="completing-square" type="button" onclick="setTopic(this)">Complete the Square</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Group: Inequalities -->
+                        <div class="accordion-group" id="grp-ineq">
+                            <button class="accordion-header" type="button" onclick="toggleAccordion('grp-ineq')">
+                                <span>Inequalities</span>
+                                <svg class="accordion-arrow" viewBox="0 0 16 16">
+                                    <path d="M3 6l5 5 5-5" />
+                                </svg>
+                            </button>
+                            <div class="accordion-body">
+                                <div class="topic-chips">
+                                    <button class="topic-chip" data-topic="inequalities" type="button" onclick="setTopic(this)">Inequalities</button>
+                                    <button class="topic-chip" data-topic="compound-ineq" type="button" onclick="setTopic(this)">Compound Ineq.</button>
+                                    <button class="topic-chip" data-topic="abs-value-ineq" type="button" onclick="setTopic(this)">Abs. Value Ineq.</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Group: Word Problems -->
+                        <div class="accordion-group" id="grp-word">
+                            <button class="accordion-header" type="button" onclick="toggleAccordion('grp-word')">
+                                <span>Word Problems</span>
+                                <svg class="accordion-arrow" viewBox="0 0 16 16">
+                                    <path d="M3 6l5 5 5-5" />
+                                </svg>
+                            </button>
+                            <div class="accordion-body">
+                                <div class="topic-chips">
+                                    <button class="topic-chip" data-topic="age-problems" type="button" onclick="setTopic(this)">Age Problems</button>
+                                    <button class="topic-chip" data-topic="speed-distance" type="button" onclick="setTopic(this)">Speed &amp; Distance</button>
+                                    <button class="topic-chip" data-topic="mixture" type="button" onclick="setTopic(this)">Mixture</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Group: Simultaneous -->
+                        <div class="accordion-group" id="grp-simul">
+                            <button class="accordion-header" type="button" onclick="toggleAccordion('grp-simul')">
+                                <span>Simultaneous Equations</span>
+                                <svg class="accordion-arrow" viewBox="0 0 16 16">
+                                    <path d="M3 6l5 5 5-5" />
+                                </svg>
+                            </button>
+                            <div class="accordion-body">
+                                <div class="topic-chips">
+                                    <button class="topic-chip" data-topic="substitution" type="button" onclick="setTopic(this)">Substitution</button>
+                                    <button class="topic-chip" data-topic="elimination" type="button" onclick="setTopic(this)">Elimination</button>
+                                    <button class="topic-chip" data-topic="graphical" type="button" onclick="setTopic(this)">Graphical</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div><!-- /.accordion-list -->
+                </div>
+            </div><!-- /.setup-row -->
+            
+            <!-- ── Step 2 + Step 3 ── -->
+            <div class="setup-row">
+                
+                <div class="setup-cell">
+                    <div class="step-label">
+                        <span class="step-num">2</span>
+                        <span class="step-title">Hint Method</span>
+                    </div>
+                    <div class="method-row">
+                        <button class="method-chip active" data-method="transfer" type="button" onclick="setMethod(this)">Transfer</button>
+                        <button class="method-chip" data-method="balancing" type="button" onclick="setMethod(this)">Balancing</button>
+                    </div>
+                    <p class="step-sub">How should PrepBot phrase the hint?</p>
+                </div>
+                
+                <div class="setup-cell">
+                    <div class="step-label">
+                        <span class="step-num">3</span>
+                        <span class="step-title">Generate</span>
+                    </div>
+                    <button id="gen-btn" class="btn btn-yellow gen-btn" type="button" onclick="generateQuestion()">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square">
+                            <path d="M8 1v3M8 12v3M1 8h3M12 8h3M3.05 3.05l2.12 2.12M10.83 10.83l2.12 2.12M3.05 12.95l2.12-2.12M10.83 5.17l2.12-2.12" />
+                        </svg>
+                        Generate Equation
+                    </button>
+                </div>
+                
+            </div><!-- /.setup-row -->
+            
+        </div><!-- /.setup-box -->
+        
+        <!-- Shown until first question is generated -->
+        <div id="page-placeholder" class="ap-placeholder">
+            Select a topic above, then click <strong>Generate</strong> to open the equation canvas.
         </div>
         
-        <!-- Group 2: Fractions & Decimals -->
-        <div class="accordion-group" id="grp-fractions">
-          <button class="accordion-header" onclick="toggleAccordion('grp-fractions')">
-            <span class="accordion-header-left">
-              <span>Fractions &amp; Decimals</span>
-              <span class="accordion-tag">Mid</span>
-              <span class="accordion-count">3 topics</span>
-            </span>
-            <span class="accordion-arrow">▾</span>
-          </button>
-          <div class="accordion-body">
-            <button class="topic-chip" data-topic="fractions" onclick="setTopic(this)">Fractions</button>
-            <button class="topic-chip" data-topic="decimals" onclick="setTopic(this)">Decimals</button>
-            <button class="topic-chip" data-topic="mixed-number" onclick="setTopic(this)">Mixed Numbers</button>
-          </div>
+    </section>
+    
+    
+    <!-- ═══════════════════════════════════════════
+       FULLSCREEN OVERLAY
+  ═══════════════════════════════════════════ -->
+    <div id="fs-overlay" class="fs-overlay" style="pointer-events: none;" role="dialog" aria-modal="true" aria-label="Equation canvas">
+        
+        <header class="fs-hdr">
+            <div class="fs-hdr-left">
+                <span id="fs-topic-badge" class="fs-topic-badge"></span>
+                <span id="fs-eq-label" class="fs-eq-label"></span>
+            </div>
+            <div class="fs-hdr-right">
+                <button id="wp-modal-btn" class="fs-wp-btn" type="button" onclick="toggleWordProblemModal()" style="display:none">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square">
+                        <rect x=".9" y=".9" width="11.2" height="11.2" />
+                        <path d="M3 4.5h7M3 7.5h5" />
+                    </svg>
+                    Problem
+                </button>
+                <button id="fs-new-btn" class="fs-new-btn" type="button" onclick="generateQuestion()">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square">
+                        <path d="M1.5 6.5a5 5 0 1 1 5 5" />
+                        <path d="M1.5 3.5v3h3" />
+                    </svg>
+                    New
+                </button>
+                <button class="fs-close-btn" type="button" onclick="closeOverlay()" aria-label="Close canvas">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
+                        <path d="M1 1l10 10M11 1L1 11" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+        
+        <div id="fs-canvas-wrap" class="fs-canvas-wrap">
+            <div id="gm-fs-canvas"></div>
         </div>
         
-        <!-- Group 3: Quadratics -->
-        <div class="accordion-group" id="grp-quadratics">
-          <button class="accordion-header" onclick="toggleAccordion('grp-quadratics')">
-            <span class="accordion-header-left">
-              <span>Quadratics &amp; Polynomials</span>
-              <span class="accordion-tag">Upper</span>
-              <span class="accordion-count">3 topics</span>
-            </span>
-            <span class="accordion-arrow">▾</span>
-          </button>
-          <div class="accordion-body">
-            <button class="topic-chip" data-topic="quadratic" onclick="setTopic(this)">Factoring</button>
-            <button class="topic-chip" data-topic="diff-squares" onclick="setTopic(this)">Diff. of Squares</button>
-            <button class="topic-chip" data-topic="completing-square" onclick="setTopic(this)">Complete the Square</button>
-          </div>
+        <footer class="fs-ftr">
+            <div class="fs-hint-row">
+                <span class="fs-hint-lbl">Hint</span>
+                <span id="fs-hint-text" class="fs-hint-txt"></span>
+            </div>
+            <button class="fs-dismiss-btn" type="button" onclick="closeOverlay()">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square">
+                    <path d="M1 1l9 9M10 1L1 10" />
+                </svg>
+                Close
+            </button>
+        </footer>
+        
+        <!-- ── Word problem modal (anchored inside overlay) ── -->
+        <div id="wp-modal" class="wp-modal">
+            <div class="wp-hdr">
+                <span class="wp-title">Word Problem</span>
+                <button class="wp-close" type="button" onclick="toggleWordProblemModal()" aria-label="Close word problem">
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square">
+                        <path d="M1 1l9 9M10 1L1 10" />
+                    </svg>
+                </button>
+            </div>
+            <p id="wp-modal-text" class="wp-text"></p>
+            <p class="wp-hint">Set up and solve this equation in the canvas above.</p>
         </div>
         
-        <!-- Group 4: Inequalities -->
-        <div class="accordion-group" id="grp-inequalities">
-          <button class="accordion-header" onclick="toggleAccordion('grp-inequalities')">
-            <span class="accordion-header-left">
-              <span>Inequalities</span>
-              <span class="accordion-tag">Mid</span>
-              <span class="accordion-count">3 topics</span>
-            </span>
-            <span class="accordion-arrow">▾</span>
-          </button>
-          <div class="accordion-body">
-            <button class="topic-chip" data-topic="inequalities" onclick="setTopic(this)">Linear</button>
-            <button class="topic-chip" data-topic="compound-ineq" onclick="setTopic(this)">Compound</button>
-            <button class="topic-chip" data-topic="abs-value-ineq" onclick="setTopic(this)">Absolute Value</button>
-          </div>
-        </div>
-        
-        <!-- Group 5: Word Problems -->
-        <div class="accordion-group" id="grp-word">
-          <button class="accordion-header" onclick="toggleAccordion('grp-word')">
-            <span class="accordion-header-left">
-              <span>Word Problems</span>
-              <span class="accordion-tag">Applied</span>
-              <span class="accordion-count">3 topics</span>
-            </span>
-            <span class="accordion-arrow">▾</span>
-          </button>
-          <div class="accordion-body">
-            <button class="topic-chip" data-topic="age-problems" onclick="setTopic(this)">Age Problems</button>
-            <button class="topic-chip" data-topic="speed-distance" onclick="setTopic(this)">Speed &amp; Distance</button>
-            <button class="topic-chip" data-topic="mixture" onclick="setTopic(this)">Mixture</button>
-          </div>
-        </div>
-        
-        <!-- Group 6: Simultaneous Equations -->
-        <div class="accordion-group" id="grp-simultaneous">
-          <button class="accordion-header" onclick="toggleAccordion('grp-simultaneous')">
-            <span class="accordion-header-left">
-              <span>Simultaneous Equations</span>
-              <span class="accordion-tag">Upper</span>
-              <span class="accordion-count">3 topics</span>
-            </span>
-            <span class="accordion-arrow">▾</span>
-          </button>
-          <div class="accordion-body">
-            <button class="topic-chip" data-topic="substitution" onclick="setTopic(this)">Substitution</button>
-            <button class="topic-chip" data-topic="elimination" onclick="setTopic(this)">Elimination</button>
-            <button class="topic-chip" data-topic="graphical" onclick="setTopic(this)">Graphical</button>
-          </div>
-        </div>
-        
-      </div><!-- /topic-accordion -->
-      
-      <!-- Generate button -->
-      <button class="gen-btn" id="gen-btn" onclick="generateQuestion()">
-        <div class="spinner"></div>
-        <span class="btn-label">✦ Generate</span>
-      </button>
-      
-      <!-- Method row -->
-      <div class="controls-method">
-        <span class="method-label">Method</span>
-        <button class="method-chip active" data-method="transfer" onclick="setMethod(this)">Transfer</button>
-        <button class="method-chip" data-method="balancing" onclick="setMethod(this)">Balancing</button>
-        <span class="method-mode-tag transfer" id="method-mode-tag">Drag &amp; Simplify</span>
-      </div>
-    </div>
+    </div><!-- /#fs-overlay -->
     
-    <div class="status-bar" id="status-bar"></div>
     
-    <!-- Page placeholder -->
-    <div id="page-placeholder">
-      <div class="empty-state">
-        <div class="empty-icon">∑</div>
-        <div class="empty-title">Ready to Generate</div>
-        <div class="empty-sub">Pick a topic &amp; method, then hit <strong>Generate</strong><br>to open a fullscreen equation.</div>
-      </div>
-    </div>
+    <!-- ═══════════════════════════════════════════
+       FAB — reopen canvas
+  ═══════════════════════════════════════════ -->
+    <button id="open-fab" class="open-fab" type="button" onclick="openOverlay()" aria-label="Open equation canvas">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square">
+            <rect x="1.5" y="1.5" width="13" height="13" />
+            <path d="M8 4.5v7M4.5 8h7" />
+        </svg>
+        Open Canvas
+    </button>
     
-    <!-- Stats -->
-    <div class="info-row">
-      <div class="info-card">
-        <div class="ic-label">Generated</div>
-        <div class="ic-val blue" id="stat-count">0</div>
-        <div class="ic-sub">equations this session</div>
-      </div>
-      <div class="info-card">
-        <div class="ic-label">Topic</div>
-        <div class="ic-val yellow" id="stat-topic" style="font-size:14px; padding:2px 8px;">—</div>
-        <div class="ic-sub">current equation</div>
-      </div>
-      <div class="info-card">
-        <div class="ic-label">Powered by</div>
-        <div class="ic-val" style="font-size:14px; margin-top:4px;">PrepBot</div>
-        <div class="ic-sub">Groq · Graspable Math</div>
-      </div>
-    </div>
     
-  </div><!-- /page -->
-  
-  <!-- ═══════════════ FULLSCREEN OVERLAY ═══════════════ -->
-  <div class="fs-overlay" id="fs-overlay">
+    <!-- ═══════════════════════════════════════════
+       FIREBASE (compat)
+  ═══════════════════════════════════════════ -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script>
+        firebase.initializeApp({
+            apiKey: "YOUR_API_KEY",
+            authDomain: "prep-portal-2026.web.app",
+            projectId: "prep-portal-2026",
+            storageBucket: "prep-portal-2026.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        });
+    </script>
     
-    <div class="fs-topbar">
-      <span class="fs-topic-badge" id="fs-topic-badge">—</span>
-      <div class="fs-divider"></div>
-      <span class="fs-method-badge" id="fs-method-badge">Transfer</span>
-      <div class="fs-divider"></div>
-      <span class="fs-eq-label" id="fs-eq-label"></span>
-      
-      <button class="fs-btn new-btn" id="fs-new-btn" onclick="generateQuestion()">
-        <div class="spinner"></div>
-        <span class="btn-label">↺ New</span>
-      </button>
-      <!-- Word problem toggle — only shown for word-problem topics -->
-      <button id="wp-modal-btn" class="fs-btn wp-btn" onclick="toggleWordProblemModal()" style="display:none" aria-label="Show word problem">
-        <span class="btn-label">Problem</span>
-      </button>
-      <button class="fs-btn close-btn" onclick="toggleOverlay()">✕ Close</button>
-    </div>
+    <!-- ═══════════════════════════════════════════
+       GRASPABLE MATH
+  ═══════════════════════════════════════════ -->
+    <script src="https://graspablemath.com/graspable/gmath.js"></script>
     
-    <div class="fs-canvas-wrap" id="fs-canvas-wrap">
-      <div id="gm-fs-canvas"></div>
-    </div>
+    <!-- ═══════════════════════════════════════════
+       APP
+  ═══════════════════════════════════════════ -->
+<script src="./script.js"></script>
     
-    <div class="fs-hint-bar" id="fs-hint-bar">
-      <span class="fs-hint-label">Hint</span>
-      <span class="fs-hint-text" id="fs-hint-text">—</span>
-    </div>
-    
-    <!-- Word Problem Modal -->
-    <div id="wp-modal" role="dialog" aria-modal="true">
-      <div id="wp-modal-card">
-        <div class="wp-modal-eyebrow">Word Problem</div>
-        <p id="wp-modal-text"></p>
-        <div class="wp-modal-footer">
-          <span class="wp-modal-note">Write the equation on the canvas, then solve.</span>
-          <button class="wp-modal-close" onclick="toggleWordProblemModal()">✕ Close</button>
-        </div>
-      </div>
-    </div>
-    
-  </div>
-  
-  <!-- FAB to reopen -->
-  <button class="open-fab" id="open-fab" onclick="toggleOverlay()">⤢ Open Equation</button>
-  
-  
-
-  <!-- PrepBot -->
-  <!--  <div id="prepbot"></div>
- <script src="chatbot.js"></script>
-  -->
-  <script src="./script.js">
-  
-  </script>
-  
 </body>
 
 </html>
