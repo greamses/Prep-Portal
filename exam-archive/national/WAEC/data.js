@@ -70,7 +70,7 @@
       setupStatusSpan.innerHTML = '✓ All set. Ready to generate WAEC paper.';
       setupStatusSpan.classList.add('ready');
     } else {
-      let msg = '⚠️ Incomplete: ';
+      let msg = 'Incomplete: ';
       if (!yearOk) msg += 'select year • ';
       if (!streamOk) msg += 'choose stream • ';
       if (!subjectsOk) msg += 'pick subjects • ';
@@ -132,7 +132,7 @@
               state.subjects.push(sub);
               chip.classList.add('checked');
             } else {
-              setupStatusSpan.innerHTML = '⚠️ Max 9 subjects allowed';
+              setupStatusSpan.innerHTML = 'Max 9 subjects allowed';
               setTimeout(() => updateReadyState(), 700);
               return;
             }
