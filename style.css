@@ -1,99 +1,103 @@
+/* Additional Hero & Interactive Elements Styles */
 .hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 100px 20px;
-  background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 100px 20px;
+    background: var(--bg);
+    gap: var(--gap-md);
 }
 
 .highlight {
-  color: var(--blue);
-  text-decoration: underline;
-  text-decoration-color: var(--yellow);
-}
-
-.hero-tagline {
-  max-width: 600px;
-  margin: 20px auto 40px;
-  font-size: 1.1rem;
-  color: var(--muted);
-}
-
-.main-cta {
-  display: inline-block;
-  font-family: 'Unbounded', sans-serif;
-  background: var(--ink);
-  color: var(--yellow);
-  padding: 20px 40px;
-  text-decoration: none;
-  font-weight: 900;
-  text-transform: uppercase;
-  font-size: 14px;
-  border: var(--border);
-  box-shadow: 8px 8px 0 var(--yellow);
-  transition: 0.2s;
-}
-
-.main-cta:hover {
-  transform: translate(-4px, -4px);
-  box-shadow: 12px 12px 0 var(--blue);
-}
-
-.eyebrow {
-  font-family: 'JetBrains Mono';
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  font-size: 12px;
-  background: var(--yellow);
-  padding: 4px 12px;
-  display: inline-block;
-  margin-bottom: 10px;
-  border: 2px solid var(--ink);
-}
-
-/* Nav CTA */
-.nav-cta {
-  background: var(--yellow);
-  border: var(--border);
-  padding: 8px 20px;
-  text-decoration: none;
-  color: var(--ink);
-  font-weight: 700;
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
-
-.highlight {
-  color: var(--blue);
-  position: relative;
-  display: inline-block;
-  min-width: 50px;
-  /* Prevents layout jump */
+    color: var(--blue);
+    text-decoration: underline;
+    text-decoration-color: var(--yellow);
+    position: relative;
+    display: inline-block;
+    min-width: 50px;
 }
 
 .cursor {
-  color: var(--blue);
-  font-weight: 300;
-  animation: blink 0.8s infinite;
-  margin-left: 4px;
+    color: var(--blue);
+    font-weight: var(--weight-regular);
+    animation: blink 0.8s infinite;
+    margin-left: 4px;
 }
 
 @keyframes blink {
-  
-  0%,
-  100% {
-    opacity: 1;
-  }
-  
-  50% {
-    opacity: 0;
-  }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
 }
 
+.hero-tagline {
+    max-width: 600px;
+    margin: 20px auto 40px;
+    font-size: var(--text-mono-xl);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    line-height: var(--leading-relaxed);
+}
+
+.main-cta {
+    display: inline-block;
+    font-family: var(--font-display);
+    background: var(--ink);
+    color: var(--yellow);
+    padding: 20px 40px;
+    text-decoration: none;
+    font-weight: var(--weight-black);
+    text-transform: uppercase;
+    font-size: 14px;
+    border: var(--border);
+    box-shadow: 8px 8px 0 var(--yellow);
+    transition: transform var(--duration-instant) var(--ease-default),
+                box-shadow var(--duration-instant) var(--ease-default);
+}
+
+.main-cta:hover {
+    transform: translate(-4px, -4px);
+    box-shadow: 12px 12px 0 var(--blue);
+}
+
+.eyebrow {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 12px;
+    background: var(--yellow);
+    padding: 4px 12px;
+    display: inline-block;
+    margin-bottom: 10px;
+    border: 2px solid var(--ink);
+    font-weight: var(--weight-semibold);
+}
+
+/* Nav CTA override/integration */
+.nav-cta {
+    background: var(--yellow);
+    border: var(--border);
+    padding: 8px 20px;
+    text-decoration: none;
+    color: var(--ink);
+    font-weight: var(--weight-bold);
+    font-size: var(--text-mono-base);
+    text-transform: uppercase;
+    font-family: var(--font-mono);
+    transition: background var(--duration-base) var(--ease-default),
+                color var(--duration-base) var(--ease-default);
+}
+
+.nav-cta:hover {
+    background: var(--ink);
+    color: var(--yellow);
+}
 
 .hero-title {
-  min-height: 1.2em;
-  line-height: 1.1;
+    min-height: 1.2em;
+    line-height: var(--leading-tight);
+    font-family: var(--font-display);
+    font-weight: var(--weight-black);
+    font-size: var(--text-hero);
+    color: var(--ink);
 }

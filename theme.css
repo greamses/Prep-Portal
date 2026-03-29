@@ -1,0 +1,421 @@
+/* ============================================
+   THEME VARIABLES & ROOT PARAMS
+   ============================================ */
+
+/* LIGHT THEME (default) */
+:root,
+[data-theme="light"] {
+  /* Colors - Light Mode */
+  --bg: #ffffff;
+  --app-bg: #f0ece3;
+  --ink: #0a0a0a;
+  --yellow: #ffe500;
+  --blue: #0055ff;
+  --red: #ff2200;
+  --green: #00a550;
+  --amber: #e67e00;
+  --muted: #555555;
+  --light-muted: #888888;
+  --off: #f7f4ee;
+  --paper: #fffef8;
+  --border-color: #0a0a0a;
+  --card-hover: #0a0a0a;
+  --text-light: #ffffff;
+  
+  /* Shadows & Effects */
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --shadow-md: 5px 5px 0 var(--ink);
+  --shadow-lg: 6px 6px 0 var(--ink);
+  --shadow-xl: 9px 9px 0 var(--ink);
+  --shadow-cta: 6px 6px 0 rgba(255, 229, 0, 0.35);
+  --shadow-cta-hover: 8px 8px 0 rgba(255, 255, 255, 0.15);
+  
+  /* Border */
+  --border-width: 2.5px;
+  --border-style: solid;
+  --border: var(--border-width) var(--border-style) var(--border-color);
+  
+  /* Transitions */
+  --transition-fast: 0.12s;
+  --transition-base: 0.15s;
+  --transition-smooth: 0.25s;
+  --transition-bounce: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-char: 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  
+  /* Z-Index Layers */
+  --z-nav: 200;
+  --z-mobile-nav: 199;
+  --z-overlay: 1;
+  
+  /* Container Padding */
+  --padding-xs: clamp(18px, 5vw, 56px);
+  --padding-sm: clamp(18px, 4vw, 52px);
+  --padding-md: clamp(22px, 4vw, 44px);
+  --padding-lg: clamp(28px, 5vw, 52px);
+  --padding-xl: clamp(56px, 9vw, 90px);
+  
+  /* Gap Spacing */
+  --gap-xs: 2px;
+  --gap-sm: 8px;
+  --gap-md: 12px;
+  --gap-lg: 16px;
+  --gap-xl: 24px;
+  --gap-2xl: 36px;
+  
+  /* Border Radius */
+  --radius-none: 0;
+  --radius-sm: 2px;
+}
+
+/* DARK THEME */
+[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --app-bg: #121212;
+  --ink: #f0f0f0;
+  --yellow: #ffea2e;
+  --blue: #3b82f6;
+  --red: #ff4444;
+  --green: #10b981;
+  --amber: #f59e0b;
+  --muted: #a0a0a0;
+  --light-muted: #707070;
+  --off: #1a1a1a;
+  --paper: #0f0f0f;
+  --border-color: #f0f0f0;
+  --card-hover: #f0f0f0;
+  --text-light: #0a0a0a;
+  
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --shadow-md: 5px 5px 0 var(--ink);
+  --shadow-lg: 6px 6px 0 var(--ink);
+  --shadow-xl: 9px 9px 0 var(--ink);
+  --shadow-cta: 6px 6px 0 rgba(255, 234, 46, 0.35);
+  --shadow-cta-hover: 8px 8px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================
+   TYPOGRAPHY - FONT SIZES WITH CLAMP
+   ============================================ */
+:root {
+  /* Font Families */
+  --font-display: 'Unbounded', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-serif: 'DM Serif Display', serif;
+  
+  /* Font Weights */
+  --weight-regular: 400;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-black: 900;
+  
+  /* Letter Spacing */
+  --tracking-tight: -0.025em;
+  --tracking-normal: -0.01em;
+  --tracking-wide: 0.04em;
+  --tracking-wider: 0.07em;
+  --tracking-widest: 0.1em;
+  --tracking-ultra: 0.14em;
+  --tracking-mega: 0.16em;
+  --tracking-giga: 0.18em;
+  --tracking-terra: 0.2em;
+  
+  /* Line Heights */
+  --leading-none: 1;
+  --leading-tight: 1.05;
+  --leading-snug: 1.3;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.7;
+  --leading-loose: 1.75;
+  --leading-extra-loose: 1.85;
+  --leading-ultra-loose: 1.9;
+  
+  /* ===== FONT SIZES (clamp based) ===== */
+  
+  /* Display / Hero */
+  --text-hero: clamp(52px, 10vw, 108px);
+  --text-hero-bg: clamp(80px, 20vw, 220px);
+  
+  /* Headings */
+  --text-h1: clamp(52px, 10vw, 108px);
+  --text-h2: clamp(26px, 5.5vw, 52px);
+  --text-h2-section: clamp(18px, 3.5vw, 26px);
+  --text-h2-subject: clamp(1.9rem, 4vw, 3rem);
+  --text-h3: clamp(14px, 2vw, 18px);
+  --text-h3-card: clamp(15px, 2.4vw, 19px);
+  
+  /* Body Text */
+  --text-body: clamp(11px, 1.7vw, 13.5px);
+  --text-body-sm: 11px;
+  --text-body-xs: 10.5px;
+  --text-body-xxs: 9.5px;
+  
+  /* Mono / Code Text */
+  --text-mono-xs: 8.5px;
+  --text-mono-sm: 9.5px;
+  --text-mono-base: 10px;
+  --text-mono-md: 11px;
+  --text-mono-lg: 11.5px;
+  --text-mono-xl: 13px;
+  
+  /* Special */
+  --text-brand-top: 22px;
+  --text-brand-bottom: 8px;
+  --text-ticker: 9.5px;
+  --text-stat: clamp(20px, 3.5vw, 30px);
+  --text-badge: 0.65rem;
+  --text-cta: 10px;
+  --text-arrow: 20px;
+  
+  /* Responsive Font Adjustments */
+  --text-brand-top-mobile: 15px;
+  --text-brand-bottom-mobile: 8.5px;
+}
+
+/* ============================================
+   SPACING & LAYOUT VARIABLES
+   ============================================ */
+:root {
+  /* Navbar */
+  --nav-height: 62px;
+  --ticker-height: 34px;
+  
+  /* Card Dimensions */
+  --card-min-height: 220px;
+  --subject-card-min-height: 160px;
+  
+  /* Grid Gaps */
+  --grid-gap-sm: 0;
+  --grid-gap-md: 16px;
+  --grid-gap-lg: 2rem;
+  
+  /* Grid Columns */
+  --grid-cols-category: repeat(auto-fit, minmax(320px, 1fr));
+  --grid-cols-subject: repeat(auto-fill, minmax(280px, 1fr));
+  --grid-cols-drill: repeat(auto-fill, minmax(300px, 1fr));
+  --grid-cols-info: repeat(3, 1fr);
+  --grid-cols-footer: 2fr 1fr 1fr 1fr;
+  
+  /* Hero Layout */
+  --hero-gap: clamp(24px, 6vw, 80px);
+  --hero-max-width: 440px;
+  
+  /* Container Max Widths */
+  --container-max-sm: 380px;
+  --container-max-md: 500px;
+  --container-max-lg: 640px;
+  
+  /* Section Spacing */
+  --section-padding-y: clamp(56px, 10vw, 110px);
+  --section-padding-bottom: clamp(48px, 8vw, 80px);
+}
+
+/* ============================================
+   ANIMATION DURATIONS & EASINGS
+   ============================================ */
+:root {
+  /* Durations */
+  --duration-instant: 0.08s;
+  --duration-fast: 0.12s;
+  --duration-base: 0.15s;
+  --duration-smooth: 0.2s;
+  --duration-normal: 0.25s;
+  --duration-medium: 0.28s;
+  --duration-slow: 0.3s;
+  --duration-bounce: 0.5s;
+  --duration-char: 0.65s;
+  
+  /* Easings */
+  --ease-default: ease;
+  --ease-in-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================
+   BREAKPOINTS (for reference)
+   ============================================ */
+/* 
+  --breakpoint-sm: 480px
+  --breakpoint-md: 640px
+  --breakpoint-lg: 720px
+  --breakpoint-xl: 900px
+  --breakpoint-2xl: 1000px
+*/
+
+/* ============================================
+   THEME UTILITY CLASSES
+   ============================================ */
+/* Theme Toggle Button Styles */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: transform var(--duration-base) var(--ease-default);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* System preference detection support */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0a0a;
+    --app-bg: #121212;
+    --ink: #f0f0f0;
+    --yellow: #ffea2e;
+    --blue: #3b82f6;
+    --red: #ff4444;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --muted: #a0a0a0;
+    --light-muted: #707070;
+    --off: #1a1a1a;
+    --paper: #0f0f0f;
+    --border-color: #f0f0f0;
+    --card-hover: #f0f0f0;
+    --text-light: #0a0a0a;
+  }
+}
+
+
+/* Additional CSS for Theme Toggle and Enhancements */
+
+/* Theme Toggle Button */
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: transform var(--duration-base) var(--ease-default);
+    color: var(--ink);
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    margin-left: var(--gap-sm);
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    background: var(--off);
+}
+
+/* Loading State */
+body:not(.loaded) {
+    opacity: 0;
+}
+
+body.loaded {
+    opacity: 1;
+    transition: opacity var(--duration-normal) var(--ease-default);
+}
+
+/* Enhanced Card Transitions */
+.card, .subject-card {
+    will-change: transform, box-shadow;
+}
+
+/* Smooth Theme Transition */
+* {
+    transition: background-color var(--duration-normal) var(--ease-default),
+                color var(--duration-normal) var(--ease-default),
+                border-color var(--duration-normal) var(--ease-default);
+}
+
+/* But exclude transitions on certain elements for performance */
+.ticker-track,
+.nav-toggle span,
+.hero::after {
+    transition: none;
+}
+
+/* Focus Styles for Accessibility */
+a:focus-visible,
+button:focus-visible,
+.theme-toggle:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 2px;
+}
+
+/* Reduced Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .char {
+        transform: translateY(0) !important;
+    }
+    
+    .ticker-track {
+        animation: none !important;
+        transform: translateX(0) !important;
+    }
+}
+
+/* Dark Theme Specific Adjustments */
+[data-theme="dark"] .card .badge {
+    background: var(--off);
+    color: var(--ink);
+}
+
+[data-theme="dark"] .subject-card .card-arrow {
+    background: var(--off);
+}
+
+[data-theme="dark"] .list-item {
+    border-bottom-color: var(--muted);
+}
+
+[data-theme="dark"] .hero::after {
+    color: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .item-list {
+    border-top-color: var(--muted);
+}
+
+[data-theme="dark"] .nav-links li a {
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Print Styles */
+@media print {
+    .site-nav,
+    .ticker,
+    .cta-band,
+    .site-footer,
+    .theme-toggle,
+    .nav-toggle {
+        display: none !important;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+    
+    .card,
+    .subject-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        break-inside: avoid;
+    }
+    
+    .hero {
+        padding: 20px;
+    }
+}
