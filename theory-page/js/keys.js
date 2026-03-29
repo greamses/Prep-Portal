@@ -3,18 +3,49 @@
 ════════════════════════════════════════ */
 import { state } from '../state.js';
 import { checkReady } from './setup-form.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+/* ── Firebase helpers ── */
+function currentUID() {
+  return getAuth().currentUser?.uid ?? null;
+}
+
+async function saveKeyToFirestore(field, value) {
+  const uid = currentUID();
+  if (!uid) return;
+  try {
+    const db = getFirestore();
+    await setDoc(doc(db, 'users', uid, 'settings', 'keys'), { [field]: value }, { merge: true });
+  } catch (e) {
+    console.warn('Could not save key to Firestore:', e);
+  }
+}
+
+async function loadKeysFromFirestore() {
+  const uid = currentUID();
+  if (!uid) return null;
+  try {
+    const db = getFirestore();
+    const snap = await getDoc(doc(db, 'users', uid, 'settings', 'keys'));
+    return snap.exists() ? snap.data() : null;
+  } catch (e) {
+    console.warn('Could not load keys from Firestore:', e);
+    return null;
+  }
+}
 
 /* ── Gemini key ── */
 export function setGeminiKeyRaw(raw, verified) {
   const key = raw.trim();
   state.GEMINI_KEY = key;
   state.KEY_VERIFIED = verified;
-  
-  const dot = document.getElementById('apikey-dot');
-  const txt = document.getElementById('apikey-status-text');
-  const done = document.getElementById('done-key');
+
+  const dot    = document.getElementById('apikey-dot');
+  const txt    = document.getElementById('apikey-status-text');
+  const done   = document.getElementById('done-key');
   const verBtn = document.getElementById('apikey-verify-btn');
-  
+
   if (!key) {
     dot.className = 'apikey-dot';
     txt.textContent = 'Paste your key, then click Verify';
@@ -32,47 +63,50 @@ export function setGeminiKeyRaw(raw, verified) {
     sessionStorage.setItem('pp_gemini_key', key);
   } else {
     dot.className = 'apikey-dot ok';
-    txt.textContent = '✓ Key verified and active for this session';
+    txt.textContent = 'Key verified and active';
     done.classList.add('show');
     verBtn.disabled = true;
     verBtn.className = 'apikey-verify-btn verified';
-    verBtn.textContent = '✓ Verified';
+    verBtn.textContent = 'Verified';
     sessionStorage.setItem('pp_gemini_key', key);
+    saveKeyToFirestore('geminiKey', key); // <-- persist to Firebase
   }
   checkReady();
 }
 
-export function initGeminiKey() {
-  const saved = sessionStorage.getItem('pp_gemini_key') || '';
+export async function initGeminiKey() {
+  // Try Firestore first, fall back to sessionStorage
+  const stored = await loadKeysFromFirestore();
+  const saved = stored?.geminiKey || sessionStorage.getItem('pp_gemini_key') || '';
   if (saved) {
     document.getElementById('apikey-input').value = saved;
-    setGeminiKeyRaw(saved, false);
+    setGeminiKeyRaw(saved, !!stored?.geminiKey); // treat Firestore key as pre-verified
   }
-  
-  document.getElementById('apikey-input').addEventListener('input', function() {
+
+  document.getElementById('apikey-input').addEventListener('input', function () {
     setGeminiKeyRaw(this.value, false);
   });
-  
-  document.getElementById('apikey-toggle').addEventListener('click', function() {
+
+  document.getElementById('apikey-toggle').addEventListener('click', function () {
     const inp = document.getElementById('apikey-input');
     const hidden = inp.type === 'password';
     inp.type = hidden ? 'text' : 'password';
     this.textContent = hidden ? 'Hide' : 'Show';
   });
-  
-  document.getElementById('apikey-verify-btn').addEventListener('click', async function() {
+
+  document.getElementById('apikey-verify-btn').addEventListener('click', async function () {
     const key = state.GEMINI_KEY.trim();
     if (!key) return;
-    
-    const dot = document.getElementById('apikey-dot');
-    const txt = document.getElementById('apikey-status-text');
+
+    const dot  = document.getElementById('apikey-dot');
+    const txt  = document.getElementById('apikey-status-text');
     const done = document.getElementById('done-key');
     this.disabled = true;
     this.className = 'apikey-verify-btn verifying';
     this.textContent = 'Checking…';
     dot.className = 'apikey-dot verifying';
     txt.textContent = 'Verifying key with Gemini…';
-    
+
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${encodeURIComponent(key)}`;
       const res = await fetch(url, {
@@ -88,14 +122,14 @@ export function initGeminiKey() {
       } else if (res.status === 429) {
         setGeminiKeyRaw(key, true);
         document.getElementById('apikey-status-text').textContent =
-          '✓ Key valid (quota limit active — will retry automatically)';
+          'Key valid (quota limit active — will retry automatically)';
       } else if (res.status === 401 || res.status === 403) {
         state.KEY_VERIFIED = false;
         dot.className = 'apikey-dot bad';
-        txt.textContent = '✗ Invalid key — check and re-paste from AI Studio';
+        txt.textContent = 'Invalid key — check and re-paste from AI Studio';
         done.classList.remove('show');
         this.className = 'apikey-verify-btn failed';
-        this.textContent = '✗ Invalid';
+        this.textContent = 'Invalid';
         this.disabled = false;
         sessionStorage.removeItem('pp_gemini_key');
       } else {
@@ -117,13 +151,13 @@ export function setYTKeyRaw(raw, verified) {
   const key = raw.trim();
   state.YT_KEY = key;
   state.YT_KEY_VERIFIED = verified;
-  
-  const dot = document.getElementById('yt-apikey-dot');
-  const txt = document.getElementById('yt-apikey-status-text');
-  const done = document.getElementById('yt-done-key');
+
+  const dot    = document.getElementById('yt-apikey-dot');
+  const txt    = document.getElementById('yt-apikey-status-text');
+  const done   = document.getElementById('yt-done-key');
   const verBtn = document.getElementById('yt-apikey-verify-btn');
-  const sub = document.getElementById('yt-apikey-sub');
-  
+  const sub    = document.getElementById('yt-apikey-sub');
+
   if (!key) {
     dot.className = 'apikey-dot';
     txt.textContent = 'Optional — skip to use channel search links';
@@ -142,19 +176,20 @@ export function setYTKeyRaw(raw, verified) {
     sessionStorage.setItem('pp_yt_key', key);
   } else {
     dot.className = 'apikey-dot ok';
-    txt.textContent = '✓ YouTube key verified — real video embeds enabled';
+    txt.textContent = 'YouTube key verified — real video embeds enabled';
     done.style.display = '';
     verBtn.disabled = true;
     verBtn.className = 'apikey-verify-btn verified';
-    verBtn.textContent = '✓ Verified';
+    verBtn.textContent = 'Verified';
     sub.textContent = 'Real embedded videos with thumbnails are enabled';
     sessionStorage.setItem('pp_yt_key', key);
+    saveKeyToFirestore('ytKey', key); // <-- persist to Firebase
   }
 }
 
-export function initYTKey() {
+export async function initYTKey() {
   if (document.getElementById('yt-apikey-section')) return;
-  
+
   const anchor = document.getElementById('apikey-section') || document.querySelector('main') || document.body;
   anchor.insertAdjacentHTML('afterend', `
 <section class="setup-card" id="yt-apikey-section">
@@ -183,36 +218,38 @@ export function initYTKey() {
     </button>
   </div>
 </section>`);
-  
-  const saved = sessionStorage.getItem('pp_yt_key') || '';
+
+  // Try Firestore first, fall back to sessionStorage
+  const stored = await loadKeysFromFirestore();
+  const saved = stored?.ytKey || sessionStorage.getItem('pp_yt_key') || '';
   if (saved) {
     document.getElementById('yt-apikey-input').value = saved;
-    setYTKeyRaw(saved, false);
+    setYTKeyRaw(saved, !!stored?.ytKey);
   }
-  
-  document.getElementById('yt-apikey-input').addEventListener('input', function() {
+
+  document.getElementById('yt-apikey-input').addEventListener('input', function () {
     setYTKeyRaw(this.value, false);
   });
-  
-  document.getElementById('yt-apikey-toggle').addEventListener('click', function() {
+
+  document.getElementById('yt-apikey-toggle').addEventListener('click', function () {
     const inp = document.getElementById('yt-apikey-input');
     const hidden = inp.type === 'password';
     inp.type = hidden ? 'text' : 'password';
     this.textContent = hidden ? 'Hide' : 'Show';
   });
-  
+
   document.getElementById('yt-apikey-skip-btn').addEventListener('click', () => {
     document.getElementById('yt-apikey-input').value = '';
     state.YT_KEY = '';
     state.YT_KEY_VERIFIED = false;
     document.getElementById('yt-apikey-dot').className = 'apikey-dot ok';
-    document.getElementById('yt-apikey-status-text').textContent = '✓ Using channel search links (no key needed)';
+    document.getElementById('yt-apikey-status-text').textContent = 'Using channel search links (no key needed)';
   });
-  
-  document.getElementById('yt-apikey-verify-btn').addEventListener('click', async function() {
+
+  document.getElementById('yt-apikey-verify-btn').addEventListener('click', async function () {
     const key = state.YT_KEY.trim();
     if (!key) return;
-    
+
     const dot = document.getElementById('yt-apikey-dot');
     const txt = document.getElementById('yt-apikey-status-text');
     this.disabled = true;
@@ -220,7 +257,7 @@ export function initYTKey() {
     this.textContent = 'Checking…';
     dot.className = 'apikey-dot verifying';
     txt.textContent = 'Verifying key with YouTube…';
-    
+
     try {
       const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=test&key=${encodeURIComponent(key)}`);
       if (res.ok) {
@@ -228,9 +265,9 @@ export function initYTKey() {
       } else if (res.status === 400 || res.status === 403) {
         state.YT_KEY_VERIFIED = false;
         dot.className = 'apikey-dot bad';
-        txt.textContent = '✗ Invalid YouTube key — check Google Cloud Console';
+        txt.textContent = 'Invalid YouTube key — check Google Cloud Console';
         this.className = 'apikey-verify-btn failed';
-        this.textContent = '✗ Invalid';
+        this.textContent = 'Invalid';
         this.disabled = false;
         sessionStorage.removeItem('pp_yt_key');
       } else {
@@ -254,5 +291,6 @@ export function clearKeysOnUnload() {
     state.KEY_VERIFIED = false;
     state.YT_KEY = '';
     state.YT_KEY_VERIFIED = false;
+    // Note: Firestore copy is intentionally NOT cleared here
   });
 }
