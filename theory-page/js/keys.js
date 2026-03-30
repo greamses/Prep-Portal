@@ -3,12 +3,12 @@
 ════════════════════════════════════════ */
 import { state } from '../state.js';
 import { checkReady } from './setup-form.js';
-import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import {auth} from '../../firebase-init.js'
 import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 /* ── Firebase helpers ── */
 function currentUID() {
-  return getAuth().currentUser?.uid ?? null;
+  return auth.currentUser?.uid ?? null;
 }
 
 async function saveKeyToFirestore(field, value) {
