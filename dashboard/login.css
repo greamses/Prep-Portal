@@ -54,20 +54,6 @@
       height: 62px;
     }
     
-    .nav-logo {
-      font-family: 'Unbounded', sans-serif;
-      font-weight: 900;
-      font-size: clamp(12px, 2.2vw, 15px);
-      text-decoration: none;
-      color: var(--ink);
-      letter-spacing: .07em;
-      text-transform: uppercase;
-    }
-    
-    .nav-logo span {
-      color: var(--blue);
-    }
-    
     .nav-back {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
