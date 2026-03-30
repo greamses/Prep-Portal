@@ -17,7 +17,6 @@
     <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="./main.css">
 </head>
-
 <body>
     
     <!-- ═══ ADVANCED TRI-CORE LOADER ═══ -->
@@ -44,6 +43,7 @@
         </a>
         
         <div class="nav-right">
+            <!-- This is the button that will change -->
             <a href="./dashboard/login.html" class="nav-cta" id="auth-status-btn">Sign In</a>
         </div>
     </nav>
@@ -59,7 +59,6 @@
     <section class="hero">
         <div class="hero-content">
             <p class="eyebrow">Track 2026</p>
-            <!-- We added a span with the ID "typewriter" -->
             <h1 class="hero-title">
                 Master Your <span id="typewriter" class="highlight"></span><span class="cursor">|</span>
             </h1>
@@ -111,15 +110,13 @@
     
     <!-- DATA & LOGIC -->
     <script src="./data.js"></script>
-    <script type="module" src="./redirect.js">
+    <script type="module" src="./redirect.js"></script>
     
-    </script>
+    <!-- Firebase Initialization MUST come first if other modules use it -->
+    <script type="module" src="./firebase-init.js"></script> 
+    
+    <!-- Your main index.js as a module -->
+    <script type="module" src="./index.js"></script> 
+    
 </body>
-
-<script src="./index.js">
-
-</script>
-
-
-
 </html>
