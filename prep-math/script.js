@@ -1,267 +1,473 @@
- /* ═══════════════════════════════════════════
-     FIREBASE — AUTH & KEY FETCH
-     Gemini key stored at: users/{uid}.geminiKey
-  ═══════════════════════════════════════════ */
- let authUser = null;
- 
- firebase.auth().onAuthStateChanged(user => {
-   authUser = user;
- });
- 
- async function getGeminiKey() {
-   if (!authUser) throw new Error('Please sign in to use PrepBot');
-   const snap = await firebase.firestore()
-     .collection('users')
-     .doc(authUser.uid)
-     .get();
-   const key = snap.data()?.geminiKey;
-   if (!key) throw new Error('No Gemini key found. Add one in Account Settings.');
-   return key;
- }
- 
- /* ═══════════════════════════════════════════
-    GEMINI CONFIG
- ═══════════════════════════════════════════ */
- const GEMINI_MODEL = 'gemini-1.5-flash';
- const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
- 
- /* ═══════════════════════════════════════════
-    TOPIC MAP
- ═══════════════════════════════════════════ */
- const topicMap = {
-   'one-step': 'simple one-step linear equations, e.g. x + 5 = 12, x - 3 = 7, 4x = 20, x/3 = 4',
-   'two-step': 'two-step equations, e.g. 2x + 3 = 11, 4x - 5 = 19, x/3 + 2 = 6, 3(x-1) = 12',
-   'both-sides': 'equations with variables on both sides, e.g. 3x + 2 = x + 10, 5x - 4 = 2x + 8',
-   'fractions': 'equations involving fractions, e.g. x/2 + 3 = 7, (2x+1)/3 = 5, x/4 - 1 = 2',
-   'decimals': 'equations involving decimal coefficients or constants, e.g. 1.5x + 2.3 = 8, 0.4x - 1.2 = 2.4',
-   'mixed-number': 'equations where answers may be mixed numbers or improper fractions, e.g. x/4 + 1 = 3/2, 2x - 1/3 = 5/6',
-   'quadratic': 'simple factorable quadratic equations, e.g. x^2 - 5x + 6 = 0, x^2 + 3x - 10 = 0',
-   'diff-squares': 'difference of two squares, e.g. x^2 - 9 = 0, 4x^2 - 25 = 0, x^2 - 16 = 0',
-   'completing-square': 'completing the square to solve quadratics, e.g. x^2 + 6x + 5 = 0, x^2 - 4x - 12 = 0',
-   'inequalities': 'simple linear inequalities, e.g. 2x + 3 > 7, 4x - 1 <= 11, x/2 >= 3',
-   'compound-ineq': 'compound inequalities, e.g. -3 < 2x + 1 < 9, 1 <= 3x - 2 <= 10',
-   'abs-value-ineq': 'absolute value inequalities, e.g. |x - 3| < 5, |2x + 1| >= 7',
-   'age-problems': 'age word problems translated into a linear equation',
-   'speed-distance': 'speed-distance-time word problems resulting in a linear equation',
-   'mixture': 'mixture or concentration word problems resulting in a linear equation',
-   'substitution': 'pair of simultaneous linear equations solved by substitution',
-   'elimination': 'pair of simultaneous linear equations solved by elimination',
-   'graphical': 'pair of simultaneous linear equations that represent two straight lines meeting at a point',
- };
- 
- const topicLabels = {
-   'one-step': 'One-Step',
-   'two-step': 'Two-Step',
-   'both-sides': 'Both Sides',
-   'fractions': 'Fractions',
-   'decimals': 'Decimals',
-   'mixed-number': 'Mixed Numbers',
-   'quadratic': 'Factoring',
-   'diff-squares': 'Diff. of Squares',
-   'completing-square': 'Complete the Square',
-   'inequalities': 'Inequalities',
-   'compound-ineq': 'Compound Ineq.',
-   'abs-value-ineq': 'Abs. Value Ineq.',
-   'age-problems': 'Age Problems',
-   'speed-distance': 'Speed & Distance',
-   'mixture': 'Mixture',
-   'substitution': 'Substitution',
-   'elimination': 'Elimination',
-   'graphical': 'Graphical',
- };
- 
- /* ═══════════════════════════════════════════
-    STEP CONSTRAINTS
- ═══════════════════════════════════════════ */
- const topicSteps = {
-   'one-step': 'EXACTLY 1 operation to isolate x. E.g. "x + 7 = 15" (subtract once) or "3x = 18" (divide once). DO NOT add a second operation.',
-   'two-step': 'EXACTLY 2 operations to isolate x. E.g. "2x + 3 = 11" (subtract, then divide). No more, no fewer.',
-   'both-sides': 'Variable appears on BOTH sides; 2–3 steps: collect variable terms, then isolate. E.g. "5x - 4 = 2x + 8".',
-   'fractions': 'Equation contains a fraction coefficient or constant; 2–3 steps: clear fraction, then isolate. E.g. "x/3 + 2 = 6".',
-   'decimals': 'Coefficients or constants are decimals; 2 steps max. E.g. "1.5x + 2 = 8".',
-   'mixed-number': 'Answer is a fraction or mixed number; 2 steps. E.g. "4x - 1 = 3/2".',
-   'quadratic': 'Factorable quadratic in the form ax^2 + bx + c = 0. Solve by factoring only — do NOT use the quadratic formula.',
-   'diff-squares': 'Form x^2 - k = 0 or ax^2 - b = 0. Solve by recognising the difference of two squares.',
-   'completing-square': 'Quadratic solved by completing the square only. E.g. "x^2 + 6x - 7 = 0".',
-   'inequalities': 'Simple linear inequality; 1–2 steps. E.g. "3x - 4 > 8". Remember to flip the sign if dividing by a negative.',
-   'compound-ineq': 'Compound inequality of the form a < bx + c < d; 2 steps. E.g. "-1 < 2x + 3 < 9".',
-   'abs-value-ineq': 'Absolute value inequality of the form |ax + b| < c or |ax + b| > c.',
-   'age-problems': 'Word problem → single linear equation → solve in 2–3 steps. Return a "problem" field with the word problem as a plain English sentence. The "eq" field must contain the equation only, not the word problem.',
-   'speed-distance': 'Word problem → single linear equation → solve in 2–3 steps. Return a "problem" field with the word problem as a plain English sentence. The "eq" field must contain the equation only.',
-   'mixture': 'Word problem → single linear equation → solve in 2–3 steps. Return a "problem" field with the word problem as a plain English sentence. The "eq" field must contain the equation only.',
-   'substitution': 'Two simultaneous linear equations solved by substitution. "eq" must contain BOTH equations separated by a comma, e.g. "y=2x-1,3x+y=14".',
-   'elimination': 'Two simultaneous linear equations solved by elimination. "eq" must contain BOTH equations separated by a comma.',
-   'graphical': 'Two simultaneous linear equations that intersect at one point. "eq" must contain BOTH equations separated by a comma.',
- };
- 
- /* ═══════════════════════════════════════════
-    METHOD HINT INSTRUCTIONS
- ═══════════════════════════════════════════ */
- const methodHintInstruction = {
-   'transfer': 'Write the hint using the TRANSFER METHOD: describe moving a term across the equals sign with a sign change. ' +
-     'E.g. "Transfer the +3 to the right side where it becomes −3, giving x = 7 − 3 = 4."',
-   'balancing': 'Write the hint using the BALANCING METHOD: describe performing the same operation on BOTH sides. ' +
-     'E.g. "Subtract 3 from both sides: x + 3 − 3 = 7 − 3, so x = 4."'
- };
- 
- /* ═══════════════════════════════════════════
-    STATE
- ═══════════════════════════════════════════ */
- let currentTopic = 'one-step';
- let gmReady = false;
- let gmCanvas = null;
- let pendingEq = null;
- let currentAnswer = null;
- let sessionCount = 0;
- let overlayOpen = false;
- let isSolved = false;
- 
- const recentEquations = [];
- const wordProblemTopics = new Set(['age-problems', 'speed-distance', 'mixture']);
- 
- /* ═══════════════════════════════════════════
-    GRASPABLE MATH INIT
- ═══════════════════════════════════════════ */
- loadGM(function() {
-   gmath.setDarkTheme(true);
-   gmReady = true;
-   if (pendingEq) {
-     const eq = pendingEq;
-     pendingEq = null;
-     requestAnimationFrame(() => requestAnimationFrame(() => mountEquation(eq)));
-   }
- }, { version: 'latest' });
- 
- /* ═══════════════════════════════════════════
-    ACCORDION
- ═══════════════════════════════════════════ */
- function toggleAccordion(groupId) {
-   const group = document.getElementById(groupId);
-   const header = group.querySelector('.accordion-header');
-   const body = group.querySelector('.accordion-body');
-   const isOpen = header.classList.contains('open');
-   
-   document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('open'));
-   document.querySelectorAll('.accordion-body').forEach(b => b.classList.remove('open'));
-   
-   if (!isOpen) {
-     header.classList.add('open');
-     body.classList.add('open');
-   }
- }
- 
- function updateGroupHighlight() {
-   document.querySelectorAll('.accordion-group').forEach(g => {
-     const hasActive = g.querySelector('.topic-chip.active');
-     g.classList.toggle('has-active', !!hasActive);
-   });
- }
- 
- /* ═══════════════════════════════════════════
-    TOPIC
- ═══════════════════════════════════════════ */
- function setTopic(btn) {
-   document.querySelectorAll('.topic-chip').forEach(b => b.classList.remove('active'));
-   btn.classList.add('active');
-   currentTopic = btn.dataset.topic;
-   updateGroupHighlight();
-   
-   const group = btn.closest('.accordion-group');
-   const header = group.querySelector('.accordion-header');
-   const body = group.querySelector('.accordion-body');
-   document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('open'));
-   document.querySelectorAll('.accordion-body').forEach(b => b.classList.remove('open'));
-   header.classList.add('open');
-   body.classList.add('open');
- }
- 
- /* ═══════════════════════════════════════════
-    METHOD
- ═══════════════════════════════════════════ */
- function setMethod(btn) {
-   document.querySelectorAll('.method-chip').forEach(b => b.classList.remove('active'));
-   btn.classList.add('active');
- }
- 
- /* ═══════════════════════════════════════════
-    OVERLAY CONTROL
- ═══════════════════════════════════════════ */
- function openOverlay() {
-   overlayOpen = true;
-   const ov = document.getElementById('fs-overlay');
-   ov.style.pointerEvents = '';
-   ov.classList.add('open');
-   document.getElementById('open-fab').classList.remove('visible');
-   document.body.style.overflow = 'hidden';
- }
- 
- function closeOverlay() {
-   overlayOpen = false;
-   const ov = document.getElementById('fs-overlay');
-   ov.classList.remove('open');
-   ov.style.pointerEvents = 'none';
-   if (sessionCount > 0) document.getElementById('open-fab').classList.add('visible');
-   document.body.style.overflow = '';
-   document.getElementById('wp-modal').classList.remove('open');
- }
- 
- function toggleOverlay() {
-   overlayOpen ? closeOverlay() : openOverlay();
- }
- 
- /* ═══════════════════════════════════════════
-    WORD PROBLEM MODAL
- ═══════════════════════════════════════════ */
- function toggleWordProblemModal() {
-   document.getElementById('wp-modal').classList.toggle('open');
- }
- 
- /* ═══════════════════════════════════════════
-    VARIETY SEED
- ═══════════════════════════════════════════ */
- function randInt(min, max) {
-   return Math.floor(Math.random() * (max - min + 1)) + min;
- }
- 
- function buildVarietySeed() {
-   return {
-     a: randInt(2, 13),
-     b: randInt(1, 20),
-     c: randInt(1, 15),
-     x: randInt(-9, 9) || 2,
-   };
- }
- 
- /* ═══════════════════════════════════════════
-    GENERATE — Gemini
- ═══════════════════════════════════════════ */
- async function generateQuestion() {
-   const pageBtn = document.getElementById('gen-btn');
-   const fsBtn = document.getElementById('fs-new-btn');
-   
-   pageBtn.classList.add('loading');
-   pageBtn.disabled = true;
-   fsBtn.classList.add('loading');
-   fsBtn.disabled = true;
-   
-   showStatus('info', '\u27f3 PrepBot is generating your equation\u2026');
-   
-   try {
-     /* ── Fetch user's Gemini key from Firestore ── */
-     const geminiKey = await getGeminiKey();
-     
-     /* ── Build prompt ── */
-     const seed = buildVarietySeed();
-     const avoidClause = recentEquations.length ?
-       `\nDo NOT reuse any of these recent equations: ${recentEquations.join(' | ')}` :
-       '';
-     const isWordProblem = wordProblemTopics.has(currentTopic);
-     const stepRule = topicSteps[currentTopic];
-     const method = document.querySelector('.method-chip.active')?.dataset?.method || 'transfer';
-     const hintInstruction = methodHintInstruction[method];
-     
-     const prompt =
-       `You are PrepBot, an algebra tutor. Generate exactly 1 equation for the topic: ${topicLabels[currentTopic]}.
+// ============================================
+// FIREBASE — AUTH & KEY FETCH
+// ============================================
+let authUser = null;
+
+const firebaseConfig = {
+    apiKey: "AIzaSyA2N3uI_XfSIVsto2Ku1g_qSezmD3qFmbk",
+    authDomain: "prep-portal-2026.web.app",
+    projectId: "prep-portal-2026",
+    storageBucket: "prep-portal-2026.firebasestorage.app",
+    messagingSenderId: "837672918701",
+    appId: "1:837672918701:web:e64c0c25dc01b542e23024",
+    measurementId: "G-2PDS7LL77R"
+};
+
+// Initialize Firebase if config exists
+if (firebaseConfig.apiKey) {
+    firebase.initializeApp(firebaseConfig);
+    
+    firebase.auth().onAuthStateChanged(user => {
+        authUser = user;
+    });
+}
+
+async function getGeminiKey() {
+    if (!authUser) throw new Error('Please sign in to use PrepBot');
+    const snap = await firebase.firestore()
+        .collection('users')
+        .doc(authUser.uid)
+        .get();
+    const key = snap.data()?.geminiKey;
+    if (!key) throw new Error('No Gemini key found. Add one in Account Settings.');
+    return key;
+}
+
+// ============================================
+// GEMINI CONFIG
+// ============================================
+const GEMINI_MODEL = 'gemini-1.5-flash';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+// ============================================
+// CLASS CURRICULUM DATA - Primary 1 to SS3
+// ============================================
+const curriculumTopics = {
+    p1: { name: "Primary 1", level: "primary", topics: [
+        { id: "p1-counting", label: "Counting & Number Patterns", difficulty: "easy", mappedTopic: "one-step" },
+        { id: "p1-addition", label: "Simple Addition", difficulty: "easy", mappedTopic: "one-step" },
+        { id: "p1-subtraction", label: "Simple Subtraction", difficulty: "easy", mappedTopic: "one-step" },
+        { id: "p1-missing", label: "Find the Missing Number", difficulty: "easy", mappedTopic: "one-step" }
+    ]},
+    p2: { name: "Primary 2", level: "primary", topics: [
+        { id: "p2-addition", label: "Addition with Unknown", difficulty: "easy", mappedTopic: "one-step" },
+        { id: "p2-subtraction", label: "Subtraction with Unknown", difficulty: "easy", mappedTopic: "one-step" },
+        { id: "p2-multiplication", label: "Simple Multiplication", difficulty: "easy", mappedTopic: "one-step" },
+        { id: "p2-division", label: "Simple Division", difficulty: "easy", mappedTopic: "one-step" }
+    ]},
+    p3: { name: "Primary 3", level: "primary", topics: [
+        { id: "p3-mult-step", label: "Multi-step Operations", difficulty: "easy-medium", mappedTopic: "two-step" },
+        { id: "p3-fractions", label: "Simple Fractions", difficulty: "medium", mappedTopic: "fractions" },
+        { id: "p3-word-problems", label: "Word Problems", difficulty: "medium", mappedTopic: "age-problems" }
+    ]},
+    p4: { name: "Primary 4", level: "primary", topics: [
+        { id: "p4-equations", label: "Simple Equations", difficulty: "medium", mappedTopic: "one-step" },
+        { id: "p4-variables", label: "Variables & Expressions", difficulty: "medium", mappedTopic: "both-sides" },
+        { id: "p4-inequalities", label: "Simple Inequalities", difficulty: "medium", mappedTopic: "inequalities" }
+    ]},
+    p5: { name: "Primary 5", level: "primary", topics: [
+        { id: "p5-one-step", label: "One-Step Equations", difficulty: "medium", mappedTopic: "one-step" },
+        { id: "p5-two-step", label: "Two-Step Equations", difficulty: "medium", mappedTopic: "two-step" },
+        { id: "p5-decimals", label: "Equations with Decimals", difficulty: "medium", mappedTopic: "decimals" }
+    ]},
+    p6: { name: "Primary 6", level: "primary", topics: [
+        { id: "p6-variables-both", label: "Variables on Both Sides", difficulty: "medium-hard", mappedTopic: "both-sides" },
+        { id: "p6-fractions", label: "Equations with Fractions", difficulty: "hard", mappedTopic: "fractions" },
+        { id: "p6-word-problems", label: "Advanced Word Problems", difficulty: "hard", mappedTopic: "age-problems" }
+    ]},
+    jss1: { name: "JSS 1", level: "jss", topics: [
+        { id: "jss1-linear", label: "Linear Equations", difficulty: "medium", mappedTopic: "both-sides" },
+        { id: "jss1-simultaneous", label: "Simultaneous Equations", difficulty: "medium-hard", mappedTopic: "substitution" },
+        { id: "jss1-inequalities", label: "Inequalities", difficulty: "medium", mappedTopic: "inequalities" },
+        { id: "jss1-word-problems", label: "Word Problems", difficulty: "hard", mappedTopic: "age-problems" }
+    ]},
+    jss2: { name: "JSS 2", level: "jss", topics: [
+        { id: "jss2-quadratic", label: "Quadratic Equations", difficulty: "hard", mappedTopic: "quadratic" },
+        { id: "jss2-factorization", label: "Factorization", difficulty: "hard", mappedTopic: "quadratic" },
+        { id: "jss2-algebraic-fractions", label: "Algebraic Fractions", difficulty: "hard", mappedTopic: "fractions" },
+        { id: "jss2-graphs", label: "Graphical Solutions", difficulty: "hard", mappedTopic: "graphical" }
+    ]},
+    jss3: { name: "JSS 3", level: "jss", topics: [
+        { id: "jss3-complex", label: "Complex Equations", difficulty: "hard", mappedTopic: "both-sides" },
+        { id: "jss3-simultaneous-quad", label: "Simultaneous Quadratics", difficulty: "hard", mappedTopic: "substitution" },
+        { id: "jss3-inequalities-advanced", label: "Advanced Inequalities", difficulty: "hard", mappedTopic: "compound-ineq" },
+        { id: "jss3-exam-practice", label: "Exam Practice", difficulty: "hard", mappedTopic: "quadratic" }
+    ]},
+    ss1: { name: "SS 1", level: "ss", topics: [
+        { id: "ss1-polynomials", label: "Polynomials", difficulty: "advanced", mappedTopic: "quadratic" },
+        { id: "ss1-logarithms", label: "Logarithms", difficulty: "advanced", mappedTopic: "inequalities" },
+        { id: "ss1-indices", label: "Indices & Surds", difficulty: "advanced", mappedTopic: "both-sides" },
+        { id: "ss1-sequences", label: "Sequences & Series", difficulty: "advanced", mappedTopic: "quadratic" }
+    ]},
+    ss2: { name: "SS 2", level: "ss", topics: [
+        { id: "ss2-calculus", label: "Introduction to Calculus", difficulty: "advanced", mappedTopic: "quadratic" },
+        { id: "ss2-trigonometry", label: "Trigonometric Equations", difficulty: "advanced", mappedTopic: "quadratic" },
+        { id: "ss2-exponential", label: "Exponential Functions", difficulty: "advanced", mappedTopic: "both-sides" },
+        { id: "ss2-logarithmic", label: "Logarithmic Equations", difficulty: "advanced", mappedTopic: "inequalities" }
+    ]},
+    ss3: { name: "SS 3", level: "ss", topics: [
+        { id: "ss3-differentiation", label: "Differentiation", difficulty: "advanced", mappedTopic: "quadratic" },
+        { id: "ss3-integration", label: "Integration", difficulty: "advanced", mappedTopic: "quadratic" },
+        { id: "ss3-waec-prep", label: "WAEC Prep", difficulty: "advanced", mappedTopic: "quadratic" },
+        { id: "ss3-jamb-prep", label: "JAMB Prep", difficulty: "advanced", mappedTopic: "both-sides" }
+    ]}
+};
+
+// ============================================
+// TOPIC MAP
+// ============================================
+const topicLabels = {
+    'one-step': 'One-Step',
+    'two-step': 'Two-Step',
+    'both-sides': 'Both Sides',
+    'fractions': 'Fractions',
+    'decimals': 'Decimals',
+    'mixed-number': 'Mixed Numbers',
+    'quadratic': 'Factoring',
+    'diff-squares': 'Diff. of Squares',
+    'completing-square': 'Complete the Square',
+    'inequalities': 'Inequalities',
+    'compound-ineq': 'Compound Ineq.',
+    'abs-value-ineq': 'Abs. Value Ineq.',
+    'age-problems': 'Age Problems',
+    'speed-distance': 'Speed & Distance',
+    'mixture': 'Mixture',
+    'substitution': 'Substitution',
+    'elimination': 'Elimination',
+    'graphical': 'Graphical',
+};
+
+// ============================================
+// STEP CONSTRAINTS
+// ============================================
+const topicSteps = {
+    'one-step': 'EXACTLY 1 operation to isolate x. E.g. "x + 7 = 15" (subtract once) or "3x = 18" (divide once). DO NOT add a second operation.',
+    'two-step': 'EXACTLY 2 operations to isolate x. E.g. "2x + 3 = 11" (subtract, then divide). No more, no fewer.',
+    'both-sides': 'Variable appears on BOTH sides; 2–3 steps: collect variable terms, then isolate. E.g. "5x - 4 = 2x + 8".',
+    'fractions': 'Equation contains a fraction coefficient or constant; 2–3 steps: clear fraction, then isolate. E.g. "x/3 + 2 = 6".',
+    'decimals': 'Coefficients or constants are decimals; 2 steps max. E.g. "1.5x + 2 = 8".',
+    'mixed-number': 'Answer is a fraction or mixed number; 2 steps. E.g. "4x - 1 = 3/2".',
+    'quadratic': 'Factorable quadratic in the form ax^2 + bx + c = 0. Solve by factoring only — do NOT use the quadratic formula.',
+    'diff-squares': 'Form x^2 - k = 0 or ax^2 - b = 0. Solve by recognising the difference of two squares.',
+    'completing-square': 'Quadratic solved by completing the square only. E.g. "x^2 + 6x - 7 = 0".',
+    'inequalities': 'Simple linear inequality; 1–2 steps. E.g. "3x - 4 > 8". Remember to flip the sign if dividing by a negative.',
+    'compound-ineq': 'Compound inequality of the form a < bx + c < d; 2 steps. E.g. "-1 < 2x + 3 < 9".',
+    'abs-value-ineq': 'Absolute value inequality of the form |ax + b| < c or |ax + b| > c.',
+    'age-problems': 'Word problem → single linear equation → solve in 2–3 steps. Return a "problem" field with the word problem as a plain English sentence. The "eq" field must contain the equation only, not the word problem.',
+    'speed-distance': 'Word problem → single linear equation → solve in 2–3 steps. Return a "problem" field with the word problem as a plain English sentence. The "eq" field must contain the equation only.',
+    'mixture': 'Word problem → single linear equation → solve in 2–3 steps. Return a "problem" field with the word problem as a plain English sentence. The "eq" field must contain the equation only.',
+    'substitution': 'Two simultaneous linear equations solved by substitution. "eq" must contain BOTH equations separated by a comma, e.g. "y=2x-1,3x+y=14".',
+    'elimination': 'Two simultaneous linear equations solved by elimination. "eq" must contain BOTH equations separated by a comma.',
+    'graphical': 'Two simultaneous linear equations that intersect at one point. "eq" must contain BOTH equations separated by a comma.',
+};
+
+// ============================================
+// METHOD HINT INSTRUCTIONS
+// ============================================
+const methodHintInstruction = {
+    'transfer': 'Write the hint using the TRANSFER METHOD: describe moving a term across the equals sign with a sign change. ' +
+        'E.g. "Transfer the +3 to the right side where it becomes −3, giving x = 7 − 3 = 4."',
+    'balancing': 'Write the hint using the BALANCING METHOD: describe performing the same operation on BOTH sides. ' +
+        'E.g. "Subtract 3 from both sides: x + 3 − 3 = 7 − 3, so x = 4."'
+};
+
+// ============================================
+// STATE
+// ============================================
+let currentTopic = 'one-step';
+let currentClassId = '';
+let currentClassTopic = null;
+let gmReady = false;
+let gmCanvas = null;
+let pendingEq = null;
+let currentAnswer = null;
+let sessionCount = 0;
+let overlayOpen = false;
+let isSolved = false;
+
+const recentEquations = [];
+const wordProblemTopics = new Set(['age-problems', 'speed-distance', 'mixture']);
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function buildVarietySeed() {
+    return {
+        a: randInt(2, 13),
+        b: randInt(1, 20),
+        c: randInt(1, 15),
+        x: randInt(-9, 9) || 2,
+    };
+}
+
+function normaliseEq(str) {
+    return (str || '')
+        .replace(/\s/g, '')
+        .replace(/[()]/g, '')
+        .replace(/\u2264/g, '<=')
+        .replace(/\u2265/g, '>=')
+        .toLowerCase();
+}
+
+// ============================================
+// STATUS HELPERS
+// ============================================
+function showStatus(type, msg) {
+    const bar = document.getElementById('status-bar');
+    if (bar) {
+        bar.className = `status-bar ${type}`;
+        bar.textContent = msg;
+        bar.style.height = '46px';
+        setTimeout(() => {
+            if (bar) bar.style.height = '0';
+        }, 2500);
+    }
+}
+
+function hideStatus() {
+    const bar = document.getElementById('status-bar');
+    if (bar) bar.className = 'status-bar';
+}
+
+// ============================================
+// CLASS & TOPIC SELECTION FUNCTIONS
+// ============================================
+function onClassChange(selectedValue) {
+    // If called from dropdown, use the passed value
+    if (selectedValue) {
+        currentClassId = selectedValue;
+    } else {
+        // Fallback to select element for backward compatibility
+        const select = document.getElementById('class-select');
+        if (select) {
+            currentClassId = select.value;
+        }
+    }
+    
+    if (!currentClassId) {
+        document.getElementById('topic-container').innerHTML = '<div class="topic-placeholder">Select a class level first</div>';
+        document.getElementById('stat-class').textContent = '—';
+        return;
+    }
+    
+    const classData = curriculumTopics[currentClassId];
+    if (!classData) {
+        console.error('Invalid class ID:', currentClassId);
+        return;
+    }
+    
+    document.getElementById('stat-class').textContent = classData.name;
+    
+    let topicsHtml = '<div class="topic-chips">';
+    classData.topics.forEach(topic => {
+        topicsHtml += `<button class="topic-chip" data-topic-id="${topic.id}" data-mapped-topic="${topic.mappedTopic}" onclick="setClassTopic(this)">${topic.label}</button>`;
+    });
+    topicsHtml += '</div>';
+    document.getElementById('topic-container').innerHTML = topicsHtml;
+    
+    showStatus('info', `${classData.name} selected. Choose a topic.`);
+}
+
+function setClassTopic(btn) {
+    document.querySelectorAll('#topic-container .topic-chip').forEach(chip => chip.classList.remove('active'));
+    btn.classList.add('active');
+    currentClassTopic = {
+        id: btn.getAttribute('data-topic-id'),
+        label: btn.innerText,
+        mappedTopic: btn.getAttribute('data-mapped-topic')
+    };
+    currentTopic = currentClassTopic.mappedTopic;
+    document.getElementById('stat-topic').textContent = currentClassTopic.label;
+    showStatus('info', `Topic: ${currentClassTopic.label}`);
+}
+
+// ============================================
+// METHOD SELECTION
+// ============================================
+function setMethod(btn) {
+    document.querySelectorAll('.method-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+// ============================================
+// OVERLAY CONTROL
+// ============================================
+function openOverlay() {
+    overlayOpen = true;
+    const ov = document.getElementById('fs-overlay');
+    ov.style.pointerEvents = '';
+    ov.classList.add('open');
+    const fab = document.getElementById('open-fab');
+    if (fab) fab.classList.remove('visible');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeOverlay() {
+    overlayOpen = false;
+    const ov = document.getElementById('fs-overlay');
+    ov.classList.remove('open');
+    ov.style.pointerEvents = 'none';
+    if (sessionCount > 0) {
+        const fab = document.getElementById('open-fab');
+        if (fab) fab.classList.add('visible');
+    }
+    document.body.style.overflow = '';
+    const wpModal = document.getElementById('wp-modal');
+    if (wpModal) wpModal.classList.remove('open');
+}
+
+function toggleOverlay() {
+    overlayOpen ? closeOverlay() : openOverlay();
+}
+
+// ============================================
+// WORD PROBLEM MODAL
+// ============================================
+function toggleWordProblemModal() {
+    const modal = document.getElementById('wp-modal');
+    if (modal) modal.classList.toggle('open');
+}
+
+// ============================================
+// GRASPABLE MATH INIT & MOUNT
+// ============================================
+function mountEquation(eq) {
+    const wrap = document.getElementById('fs-canvas-wrap');
+    const canvasEl = document.getElementById('gm-fs-canvas');
+    
+    if (gmCanvas) {
+        try { gmCanvas.remove(); } catch (e) {}
+        gmCanvas = null;
+    }
+    if (canvasEl) canvasEl.innerHTML = '';
+    const old = wrap?.querySelector('.eq-fallback-fs');
+    if (old) old.remove();
+    
+    try {
+        gmCanvas = new gmath.Canvas('#gm-fs-canvas', {
+            undo_btn: true,
+            redo_btn: true,
+            new_sheet_btn: false,
+            font_size_btns: false,
+            formula_btn: false,
+            help_btn: false,
+            help_logo_btn: false,
+            fullscreen_toolbar_btn: false,
+            fullscreen_btn: false,
+            transform_btn: true,
+            keypad_btn: false,
+            scrub_btn: false,
+            draw_btn: false,
+            erase_btn: false,
+            arrange_btn: true,
+            reset_btn: false,
+            save_btn: false,
+            load_btn: false,
+            settings_btn: true,
+            insert_btn: true,
+            insert_menu_items: { derivation: true, function: true, textbox: true },
+            use_hold_menu: false,
+            display_labels: false,
+            btn_size: 'xs',
+            ask_confirmation_on_closing: false,
+            vertical_scroll: true,
+            allow_fullscreen: false,
+            use_degrees: true,
+            show_balance_button: false,
+            substitute_parentheses: true,
+            auto_simplify_distribute: true,
+            add_like_fractions: true,
+            show_ellipsis: true,
+            multiplication_sign: 'times',
+            hide_multiplication: 'hide_where_possible',
+        });
+        
+        const fontSize = window.innerWidth < 480 ? 26 :
+            window.innerWidth < 768 ? 32 :
+            36;
+        gmCanvas.controller.set_font_size(fontSize);
+        
+        if (!window.__currentWordProblem) {
+            const derivation = gmCanvas.model.createElement('derivation', {
+                eq: eq,
+                pos: { x: 'center', y: 100 },
+            });
+            if (derivation && typeof derivation.enableAutoSimplify === 'function') {
+                derivation.enableAutoSimplify();
+            }
+        }
+        
+        gmCanvas.model.on('el_changed', function(evt) {
+            if (isSolved || !currentAnswer || !evt || !evt.last_eq) return;
+            if (normaliseEq(evt.last_eq) === normaliseEq(currentAnswer)) {
+                isSolved = true;
+                const canvasWrap = document.getElementById('fs-canvas-wrap');
+                if (canvasWrap) canvasWrap.classList.add('solved');
+                if (gmCanvas) gmCanvas.showHint('✓ Correct! Well done!');
+            }
+        });
+        
+    } catch (e) {
+        if (canvasEl) {
+            canvasEl.innerHTML = '';
+            const fb = document.createElement('div');
+            fb.className = 'eq-fallback-fs';
+            fb.textContent = eq;
+            if (wrap) wrap.appendChild(fb);
+        }
+        console.warn('GM render failed:', eq, e);
+    }
+}
+
+// ============================================
+// GENERATE — Gemini with class context
+// ============================================
+async function generateQuestion() {
+    const pageBtn = document.getElementById('gen-btn');
+    const fsBtn = document.getElementById('fs-new-btn');
+    
+    if (!currentClassId) {
+        showStatus('error', 'Please select a class level first');
+        return;
+    }
+    if (!currentClassTopic) {
+        showStatus('error', 'Please select a topic');
+        return;
+    }
+    
+    if (pageBtn) {
+        pageBtn.classList.add('loading');
+        pageBtn.disabled = true;
+    }
+    if (fsBtn) {
+        fsBtn.classList.add('loading');
+        fsBtn.disabled = true;
+    }
+    
+    showStatus('info', '✨ PrepBot is generating your equation...');
+    
+    try {
+        const geminiKey = await getGeminiKey();
+        
+        const seed = buildVarietySeed();
+        const avoidClause = recentEquations.length ?
+            `\nDo NOT reuse any of these recent equations: ${recentEquations.join(' | ')}` :
+            '';
+        const isWordProblem = wordProblemTopics.has(currentTopic);
+        const stepRule = topicSteps[currentTopic];
+        const method = document.querySelector('.method-chip.active')?.dataset?.method || 'transfer';
+        const hintInstruction = methodHintInstruction[method];
+        
+        const classData = curriculumTopics[currentClassId];
+        const classContext = classData ? `Student is in ${classData.name} (${classData.level.toUpperCase()} level).` : '';
+        const topicContext = currentClassTopic ? `Selected topic: ${currentClassTopic.label}.` : '';
+        
+        const prompt = `You are PrepBot, an algebra tutor. ${classContext} ${topicContext}
+Generate exactly 1 equation for the topic: ${topicLabels[currentTopic]}.
 
 COMPLEXITY RULE (MOST IMPORTANT — do not violate this):
 ${stepRule}
@@ -269,6 +475,7 @@ ${stepRule}
 VARIETY RULES:
 - Use these seed values so the equation is different each time: a=${seed.a}, b=${seed.b}, c=${seed.c}, target answer≈${seed.x}
 - Vary signs and structure — use negative coefficients or answers sometimes${avoidClause}
+- Ensure the difficulty matches ${classData?.name || 'the selected class'} level
 
 METHOD INSTRUCTION (use this to write the hint):
 ${hintInstruction}
@@ -284,205 +491,266 @@ Examples:
 {"eq": "3x = 18", "answer": "x=6", "hint": "Divide both sides by 3."}
 {"eq": "2x + 3 = 11", "answer": "x=4", "hint": "Subtract 3 from both sides, then divide by 2."}
 {"eq": "5x - 2 > 7", "answer": "x>9/5", "hint": "Transfer −2 to the right as +2, giving 5x > 9."}`;
-     
-     /* ── Call Gemini ── */
-     const res = await fetch(`${GEMINI_URL}?key=${geminiKey}`, {
-       method: 'POST',
-       headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify({
-         systemInstruction: {
-           parts: [{ text: 'You are PrepBot. Respond with raw JSON only, no markdown.' }]
-         },
-         contents: [{ parts: [{ text: prompt }] }],
-         generationConfig: {
-           temperature: 1.0,
-           maxOutputTokens: 300,
-           responseMimeType: 'application/json',
-         },
-       }),
-     });
-     
-     if (!res.ok) throw new Error(`Gemini error ${res.status}`);
-     
-     const data = await res.json();
-     const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-     const clean = raw.replace(/```json|```/gi, '').trim();
-     const q = JSON.parse(clean);
-     
-     if (!q.eq) throw new Error('No equation in response');
-     
-     recentEquations.push(q.eq);
-     if (recentEquations.length > 5) recentEquations.shift();
-     
-     currentAnswer = (q.answer || '').replace(/\s/g, '');
-     
-     hideStatus();
-     sessionCount++;
-     
-     isSolved = false;
-     document.getElementById('fs-canvas-wrap').classList.remove('solved');
-     
-     document.getElementById('fs-topic-badge').textContent = topicLabels[currentTopic];
-     document.getElementById('fs-eq-label').textContent = q.eq;
-     document.getElementById('fs-hint-text').textContent = q.hint;
-     
-     document.getElementById('stat-count').textContent = sessionCount;
-     document.getElementById('stat-topic').textContent = topicLabels[currentTopic];
-     document.getElementById('page-placeholder').style.display = 'none';
-     
-     openOverlay();
-     
-     /* ── Word problem modal ── */
-     const wpBtn = document.getElementById('wp-modal-btn');
-     if (isWordProblem && q.problem) {
-       document.getElementById('wp-modal-text').textContent = q.problem;
-       wpBtn.style.display = '';
-     } else {
-       wpBtn.style.display = 'none';
-       document.getElementById('wp-modal').classList.remove('open');
-     }
-     
-     window.__currentWordProblem = (isWordProblem && q.problem) ? q.problem : null;
-     
-     if (gmReady) {
-       requestAnimationFrame(() => requestAnimationFrame(() => mountEquation(q.eq)));
-     } else {
-       pendingEq = q.eq;
-     }
-     
-   } catch (err) {
-     showStatus('error', `PrepBot error: ${err.message}`);
-     console.error(err);
-   }
-   
-   pageBtn.classList.remove('loading');
-   pageBtn.disabled = false;
-   fsBtn.classList.remove('loading');
-   fsBtn.disabled = false;
- }
- 
- /* ═══════════════════════════════════════════
-    MOUNT EQUATION INTO GM CANVAS
- ═══════════════════════════════════════════ */
- function mountEquation(eq) {
-   const wrap = document.getElementById('fs-canvas-wrap');
-   const canvasEl = document.getElementById('gm-fs-canvas');
-   
-   if (gmCanvas) {
-     try { gmCanvas.remove(); } catch (e) {}
-     gmCanvas = null;
-   }
-   canvasEl.innerHTML = '';
-   const old = wrap.querySelector('.eq-fallback-fs');
-   if (old) old.remove();
-   
-   try {
-     gmCanvas = new gmath.Canvas('#gm-fs-canvas', {
-       undo_btn: true,
-       redo_btn: true,
-       new_sheet_btn: false,
-       font_size_btns: false,
-       formula_btn: false,
-       help_btn: false,
-       help_logo_btn: false,
-       fullscreen_toolbar_btn: false,
-       fullscreen_btn: false,
-       transform_btn: true,
-       keypad_btn: false,
-       scrub_btn: false,
-       draw_btn: false,
-       erase_btn: false,
-       arrange_btn: true,
-       reset_btn: false,
-       save_btn: false,
-       load_btn: false,
-       settings_btn: true,
-       insert_btn: true,
-       insert_menu_items: { derivation: true, function: true, textbox: true },
-       use_hold_menu: false,
-       display_labels: false,
-       btn_size: 'xs',
-       ask_confirmation_on_closing: false,
-       vertical_scroll: true,
-       allow_fullscreen: false,
-       use_degrees: true,
-       show_balance_button: false,
-       substitute_parentheses: true,
-       auto_simplify_distribute: true,
-       add_like_fractions: true,
-       show_ellipsis: true,
-       multiplication_sign: 'times',
-       hide_multiplication: 'hide_where_possible',
-     });
-     
-     /* Responsive font size */
-     const fontSize = window.innerWidth < 480 ? 26 :
-       window.innerWidth < 768 ? 32 :
-       36;
-     gmCanvas.controller.set_font_size(fontSize);
-     
-     /* Word problem topics: leave canvas blank for student to type */
-     if (!window.__currentWordProblem) {
-       const derivation = gmCanvas.model.createElement('derivation', {
-         eq: eq,
-         pos: { x: 'center', y: 100 },
-       });
-       if (derivation && typeof derivation.enableAutoSimplify === 'function') {
-         derivation.enableAutoSimplify();
-       }
-     }
-     
-     /* ── Solved detection ── */
-     gmCanvas.model.on('el_changed', function(evt) {
-       if (isSolved || !currentAnswer || !evt || !evt.last_eq) return;
-       console.log('[GM] last_eq:', evt.last_eq, '| expected:', currentAnswer);
-       if (normaliseEq(evt.last_eq) === normaliseEq(currentAnswer)) {
-         isSolved = true;
-         document.getElementById('fs-canvas-wrap').classList.add('solved');
-         gmCanvas.showHint('\u2713 Correct! Well done!');
-       }
-     });
-     
-   } catch (e) {
-     canvasEl.innerHTML = '';
-     const fb = document.createElement('div');
-     fb.className = 'eq-fallback-fs';
-     fb.textContent = eq;
-     wrap.appendChild(fb);
-     console.warn('GM render failed:', eq, e);
-   }
- }
- 
- /* ═══════════════════════════════════════════
-    NORMALISE
- ═══════════════════════════════════════════ */
- function normaliseEq(str) {
-   return (str || '')
-     .replace(/\s/g, '')
-     .replace(/[()]/g, '')
-     .replace(/\u2264/g, '<=')
-     .replace(/\u2265/g, '>=')
-     .toLowerCase();
- }
- 
- /* ═══════════════════════════════════════════
-    STATUS HELPERS
- ═══════════════════════════════════════════ */
- function showStatus(type, msg) {
-   const bar = document.getElementById('status-bar');
-   bar.className = `status-bar ${type}`;
-   bar.textContent = msg;
- }
- 
- function hideStatus() {
-   document.getElementById('status-bar').className = 'status-bar';
- }
- 
- /* ═══════════════════════════════════════════
-    INIT
- ═══════════════════════════════════════════ */
- updateGroupHighlight();
- 
- document.addEventListener('keydown', e => {
-   if (e.key === 'Escape' && overlayOpen) closeOverlay();
- });
+        
+        const res = await fetch(`${GEMINI_URL}?key=${geminiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                systemInstruction: {
+                    parts: [{ text: 'You are PrepBot. Respond with raw JSON only, no markdown.' }]
+                },
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    temperature: 1.0,
+                    maxOutputTokens: 300,
+                    responseMimeType: 'application/json',
+                },
+            }),
+        });
+        
+        if (!res.ok) throw new Error(`Gemini error ${res.status}`);
+        
+        const data = await res.json();
+        const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const clean = raw.replace(/```json|```/gi, '').trim();
+        const q = JSON.parse(clean);
+        
+        if (!q.eq) throw new Error('No equation in response');
+        
+        recentEquations.push(q.eq);
+        if (recentEquations.length > 5) recentEquations.shift();
+        
+        currentAnswer = (q.answer || '').replace(/\s/g, '');
+        
+        hideStatus();
+        sessionCount++;
+        
+        isSolved = false;
+        const canvasWrap = document.getElementById('fs-canvas-wrap');
+        if (canvasWrap) canvasWrap.classList.remove('solved');
+        
+        const fsTopicBadge = document.getElementById('fs-topic-badge');
+        const fsClassBadge = document.getElementById('fs-class-badge');
+        const fsEqLabel = document.getElementById('fs-eq-label');
+        const fsHintText = document.getElementById('fs-hint-text');
+        
+        if (fsTopicBadge) fsTopicBadge.textContent = currentClassTopic?.label || topicLabels[currentTopic];
+        if (fsClassBadge) fsClassBadge.textContent = classData?.name || '';
+        if (fsEqLabel) fsEqLabel.textContent = q.eq;
+        if (fsHintText) fsHintText.textContent = q.hint;
+        
+        const statCount = document.getElementById('stat-count');
+        const statTopic = document.getElementById('stat-topic');
+        const pagePlaceholder = document.getElementById('page-placeholder');
+        
+        if (statCount) statCount.textContent = sessionCount;
+        if (statTopic) statTopic.textContent = currentClassTopic?.label || topicLabels[currentTopic];
+        if (pagePlaceholder) pagePlaceholder.style.display = 'none';
+        
+        openOverlay();
+        
+        const wpBtn = document.getElementById('wp-modal-btn');
+        if (isWordProblem && q.problem) {
+            const wpText = document.getElementById('wp-modal-text');
+            if (wpText) wpText.textContent = q.problem;
+            if (wpBtn) wpBtn.style.display = '';
+        } else {
+            if (wpBtn) wpBtn.style.display = 'none';
+            const wpModal = document.getElementById('wp-modal');
+            if (wpModal) wpModal.classList.remove('open');
+        }
+        
+        window.__currentWordProblem = (isWordProblem && q.problem) ? q.problem : null;
+        
+        if (gmReady) {
+            requestAnimationFrame(() => requestAnimationFrame(() => mountEquation(q.eq)));
+        } else {
+            pendingEq = q.eq;
+        }
+        
+    } catch (err) {
+        showStatus('error', `PrepBot error: ${err.message}`);
+        console.error(err);
+    }
+    
+    if (pageBtn) {
+        pageBtn.classList.remove('loading');
+        pageBtn.disabled = false;
+    }
+    if (fsBtn) {
+        fsBtn.classList.remove('loading');
+        fsBtn.disabled = false;
+    }
+}
+
+// ============================================
+// TICKER INIT
+// ============================================
+const tickerItems = [
+    "Primary 1-6", "JSS 1-3", "SS 1-3", "Linear Equations", "Quadratic Equations",
+    "Inequalities", "Word Problems", "Simultaneous Equations", "Polynomials",
+    "Calculus", "WAEC Prep", "JAMB Prep", "Interactive Canvas", "AI-Generated"
+];
+
+function injectTicker() {
+    const track = document.getElementById('ticker-track');
+    if (!track) return;
+    const items = [...tickerItems, ...tickerItems];
+    track.innerHTML = items.map(item => 
+        `<span class="ticker-item">${item}<span class="ticker-dot"></span></span>`
+    ).join('');
+}
+
+// ============================================
+// NAVIGATION TOGGLE
+// ============================================
+function initNavToggle() {
+    const toggle = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('nav-links');
+    if (toggle && navLinks) {
+        toggle.addEventListener('click', () => {
+            toggle.classList.toggle('open');
+            navLinks.classList.toggle('open');
+        });
+    }
+}
+
+// ============================================
+// CUSTOM DROPDOWN INITIALIZATION
+// ============================================
+function initCustomDropdown() {
+    const trigger = document.getElementById('cdd-trigger');
+    const panel = document.getElementById('cdd-panel');
+    const valueDisplay = document.getElementById('cdd-value');
+    const options = document.querySelectorAll('.cdd-option');
+    
+    if (!trigger || !panel) return;
+    
+    let currentValue = '';
+    
+    // Close dropdown function
+    function closeDropdown() {
+        trigger.setAttribute('aria-expanded', 'false');
+        panel.classList.remove('open');
+    }
+    
+    // Open dropdown function
+    function openDropdown() {
+        trigger.setAttribute('aria-expanded', 'true');
+        panel.classList.add('open');
+    }
+    
+    // Toggle dropdown
+    function toggleDropdown(e) {
+        e.stopPropagation();
+        const expanded = trigger.getAttribute('aria-expanded') === 'true';
+        if (expanded) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
+    }
+    
+    // Select option function
+    function selectOption(option) {
+        const value = option.getAttribute('data-value');
+        const label = option.textContent;
+        
+        // Update display
+        valueDisplay.textContent = label;
+        currentValue = value;
+        
+        // Update currentClassId
+        currentClassId = value;
+        
+        // Call the onClassChange function with the selected value
+        if (typeof window.onClassChange === 'function') {
+            window.onClassChange(value);
+        }
+        
+        // Close dropdown
+        closeDropdown();
+        
+        // Update selected styling
+        options.forEach(opt => opt.classList.remove('selected'));
+        option.classList.add('selected');
+    }
+    
+    // Trigger click handler
+    trigger.addEventListener('click', toggleDropdown);
+    
+    // Option click handlers
+    options.forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.stopPropagation();
+            selectOption(this);
+        });
+    });
+    
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!trigger.contains(e.target) && !panel.contains(e.target)) {
+            closeDropdown();
+        }
+    });
+    
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('open')) {
+            closeDropdown();
+        }
+    });
+    
+    // Set initial value (Primary 1 by default)
+    const defaultOption = document.querySelector('.cdd-option[data-value="p1"]');
+    if (defaultOption && !currentValue) {
+        selectOption(defaultOption);
+    }
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+    injectTicker();
+    initNavToggle();
+    initCustomDropdown();
+    
+    // Set initial stats
+    const statCount = document.getElementById('stat-count');
+    const statClass = document.getElementById('stat-class');
+    const statTopic = document.getElementById('stat-topic');
+    if (statCount) statCount.textContent = '0';
+    if (statClass) statClass.textContent = '—';
+    if (statTopic) statTopic.textContent = '—';
+});
+
+// Load Graspable Math
+if (typeof loadGM === 'function') {
+    loadGM(function() {
+        if (typeof gmath !== 'undefined') {
+            gmath.setDarkTheme(true);
+        }
+        gmReady = true;
+        if (pendingEq) {
+            const eq = pendingEq;
+            pendingEq = null;
+            requestAnimationFrame(() => requestAnimationFrame(() => mountEquation(eq)));
+        }
+    }, { version: 'latest' });
+}
+
+// ESC key listener
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlayOpen) closeOverlay();
+});
+
+// Make functions available globally
+window.onClassChange = onClassChange;
+window.setClassTopic = setClassTopic;
+window.setMethod = setMethod;
+window.generateQuestion = generateQuestion;
+window.openOverlay = openOverlay;
+window.closeOverlay = closeOverlay;
+window.toggleOverlay = toggleOverlay;
+window.toggleWordProblemModal = toggleWordProblemModal;
