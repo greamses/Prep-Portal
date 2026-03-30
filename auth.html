@@ -844,9 +844,7 @@
       </div>
     </a>
     <ul class="nav-links" id="nav-links">
-      <li><a href="../index.html">Home</a></li>
-      <li><a href="../waec.html">WAEC</a></li>
-      <li><a href="../jamb.html">JAMB</a></li>
+      <li><a href="./dashboard/dashboard.html">Dashboard</a></li>
       <li><a href="account.html" class="active">Account</a></li>
     </ul>
     <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
@@ -1484,11 +1482,11 @@
     auth.onAuthStateChanged(async user => {
       const gate = document.getElementById('auth-gate');
       
-      if (!user) {
-        // Not signed in — redirect to login
-        window.location.href = './dashboard/login.html?next=account/api-keys.html';
-        return;
-      }
+      // if (!user) {
+      //   // Not signed in — redirect to login
+      //   window.location.href = './dashboard/login.html?next=account/api-keys.html';
+      //   return;
+      // }
       
       authUser = user;
       
