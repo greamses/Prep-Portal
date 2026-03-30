@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Keys — Prep Portal 2026</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
+  
+  <link rel="stylesheet" href="../main.css" />
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  
+  <style>
+    /* ══════════════════════════════════════════════════
+       DESIGN TOKENS (inline fallbacks if main.css absent)
+    ══════════════════════════════════════════════════ */
+    :root {
+      --font-display: 'Unbounded', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --ink: #0a0a0a;
+      --bg: #fafaf8;
+      --off: #f0f0ec;
+      --ruled: rgba(10, 10, 10, .1);
+      --muted: rgba(10, 10, 10, .45);
+      --yellow: #ffe500;
+      --green: #00c853;
+      --red: #ff3b30;
+      --blue: #0057ff;
+      --weight-black: 900;
+      --weight-bold: 700;
+      --weight-semi: 600;
+      --tracking-widest: .15em;
+      --tracking-wide: .06em;
+      --z-nav: 100;
+    }
+    
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: var(--font-mono);
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+    
+    /* ── Auth gate overlay ── */
+    #auth-gate {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 9999;
+      transition: opacity .3s ease;
+    }
+    
+    #auth-gate.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .gate-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--ruled);
+      border-top-color: var(--ink);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .gate-lbl {
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: var(--weight-bold);
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    
+    /* ── Page header ── */
+    .pg-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 32px;
+      padding: 40px 40px 0;
+      border-bottom: 2px solid var(--ink);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .pg-header::after {
+      content: 'API KEYS';
+      position: absolute;
+      right: -10px;
+      bottom: -24px;
+      font-family: var(--font-display);
+      font-size: clamp(60px, 10vw, 120px);
+      font-weight: var(--weight-black);
+      color: rgba(10, 10, 10, .04);
+      line-height: 1;
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: -.02em;
+    }
+    
+    .ph-left {
+      flex: 1;
+      padding-bottom: 32px;
+    }
+    
+    .pg-eyebrow {
+      font-family: var(--font-display);
+      font-size: 9px;
+      font-weight: var(--weight-bold);
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    
+    .pg-title {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: var(--weight-black);
+      line-height: .95;
+      letter-spacing: -.02em;
+    }
+    
+    .pg-title em {
+      font-style: normal;
+      color: var(--muted);
+    }
+    
+    .ph-right {
+      max-width: 340px;
+      padding-bottom: 32px;
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--muted);
+    }
+    
+    .ph-right strong {
+      color: var(--ink);
+    }
+    
+    /* ── Status bar ── */
+    .status-bar {
+      height: 0;
+      overflow: hidden;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: var(--weight-semi);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      padding: 0 40px;
+      display: flex;
+      align-items: center;
+      transition: height .3s ease;
+    }
+    
+    .status-bar.info {
+      height: 46px;
+      background: var(--blue);
+      color: #fff;
+    }
+    
+    .status-bar.success {
+      height: 46px;
+      background: var(--green);
+      color: #fff;
+    }
+    
+    .status-bar.error {
+      height: 46px;
+      background: var(--red);
+      color: #fff;
+    }
+    
+    /* ── Main layout ── */
+    .page-body {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 40px 80px;
+    }
+    
+    /* ── Bypass banner ── */
+    #bypass-banner {
+      display: none;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 24px;
+      background: var(--ink);
+      color: var(--yellow);
+      border: 2px solid var(--ink);
+      box-shadow: 6px 6px 0 rgba(10, 10, 10, .15);
+      margin-bottom: 36px;
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: var(--weight-bold);
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
+    }
+    
+    #bypass-banner.visible {
+      display: flex;
+    }
+    
+    .bypass-dot {
+      width: 10px;
+      height: 10px;
+      background: var(--green);
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 4px rgba(0, 200, 83, .25);
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 4px rgba(0, 200, 83, .25);
+      }
+      
+      50% {
+        box-shadow: 0 0 0 8px rgba(0, 200, 83, .08);
+      }
+    }
+    
+    .bypass-txt {
+      flex: 1;
+    }
+    
+    .bypass-edit {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: var(--weight-semi);
+      letter-spacing: var(--tracking-wide);
+      background: transparent;
+      border: 1.5px solid rgba(255, 229, 0, .4);
+      color: var(--yellow);
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: all .2s ease;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    
+    .bypass-edit:hover {
+      background: var(--yellow);
+      color: var(--ink);
+      border-color: var(--yellow);
+    }
+    
+    /* ── Section heading ── */
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: 9px;
+      font-weight: var(--weight-black);
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .section-heading::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--ruled);
+    }
+    
+    /* ── Key card ── */
+    .key-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .key-card {
+      border: 2px solid var(--ink);
+      background: var(--bg);
+      position: relative;
+      transition: box-shadow .2s ease;
+    }
+    
+    .key-card:not(:first-child) {
+      margin-top: -2px;
+    }
+    
+    .key-card:hover {
+      z-index: 1;
+      box-shadow: 6px 6px 0 rgba(10, 10, 10, .12);
+    }
+    
+    /* card header */
+    .kc-head {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--ruled);
+      background: var(--off);
+    }
+    
+    .kc-icon {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      border: 2px solid var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 9px;
+      font-weight: var(--weight-black);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+    
+    .kc-icon.gemini {
+      background: #4285f4;
+      color: #fff;
+      border-color: #4285f4;
+    }
+    
+    .kc-icon.groq {
+      background: var(--ink);
+      color: var(--yellow);
+    }
+    
+    .kc-icon.youtube {
+      background: #ff0000;
+      color: #fff;
+      border-color: #ff0000;
+    }
+    
+    .kc-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .kc-name {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: var(--weight-black);
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
+      color: var(--ink);
+      margin-bottom: 3px;
+    }
+    
+    .kc-desc {
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    /* status pill */
+    .kc-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      font-family: var(--font-display);
+      font-size: 8px;
+      font-weight: var(--weight-black);
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
+      border: 1.5px solid var(--ruled);
+      white-space: nowrap;
+      transition: all .2s ease;
+      flex-shrink: 0;
+    }
+    
+    .kc-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background .2s ease;
+    }
+    
+    .kc-status.idle {
+      color: var(--muted);
+      border-color: var(--ruled);
+    }
+    
+    .kc-status.idle .kc-status-dot {
+      background: var(--muted);
+    }
+    
+    .kc-status.stored {
+      color: var(--green);
+      border-color: var(--green);
+      background: rgba(0, 200, 83, .06);
+    }
+    
+    .kc-status.stored .kc-status-dot {
+      background: var(--green);
+    }
+    
+    .kc-status.ok {
+      color: var(--green);
+      border-color: var(--green);
+      background: rgba(0, 200, 83, .06);
+    }
+    
+    .kc-status.ok .kc-status-dot {
+      background: var(--green);
+    }
+    
+    .kc-status.fail {
+      color: var(--red);
+      border-color: var(--red);
+      background: rgba(255, 59, 48, .06);
+    }
+    
+    .kc-status.fail .kc-status-dot {
+      background: var(--red);
+    }
+    
+    .kc-status.checking {
+      color: var(--blue);
+      border-color: var(--blue);
+      background: rgba(0, 87, 255, .06);
+    }
+    
+    .kc-status.checking .kc-status-dot {
+      background: var(--blue);
+      animation: blink .6s steps(1) infinite;
+    }
+    
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+    
+    /* card body */
+    .kc-body {
+      padding: 20px 22px;
+    }
+    
+    .kc-input-row {
+      display: flex;
+      gap: 0;
+      border: 2px solid var(--ink);
+      transition: box-shadow .2s ease;
+    }
+    
+    .kc-input-row:focus-within {
+      box-shadow: 0 0 0 3px rgba(255, 229, 0, .35);
+    }
+    
+    .kc-input {
+      flex: 1;
+      padding: 13px 16px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: var(--weight-semi);
+      background: var(--bg);
+      border: none;
+      color: var(--ink);
+      min-width: 0;
+      letter-spacing: .04em;
+    }
+    
+    .kc-input:focus {
+      outline: none;
+    }
+    
+    .kc-input::placeholder {
+      color: var(--muted);
+      letter-spacing: 0;
+    }
+    
+    /* input actions */
+    .kc-input-actions {
+      display: flex;
+      flex-shrink: 0;
+      border-left: 2px solid var(--ink);
+    }
+    
+    .kc-btn-icon {
+      width: 46px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--off);
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      border-right: 1px solid var(--ruled);
+      transition: all .2s ease;
+    }
+    
+    .kc-btn-icon:last-child {
+      border-right: none;
+    }
+    
+    .kc-btn-icon:hover {
+      background: var(--ink);
+      color: var(--bg);
+    }
+    
+    .kc-btn-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    /* verify button */
+    .kc-verify-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+      padding: 10px 18px;
+      font-family: var(--font-display);
+      font-size: 9px;
+      font-weight: var(--weight-black);
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
+      background: var(--off);
+      border: 2px solid var(--ink);
+      color: var(--ink);
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+    
+    .kc-verify-btn:hover {
+      background: var(--ink);
+      color: var(--bg);
+      box-shadow: 3px 3px 0 rgba(10, 10, 10, .15);
+    }
+    
+    .kc-verify-btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+    
+    .kc-verify-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+    
+    /* feedback line */
+    .kc-feedback {
+      margin-top: 10px;
+      font-size: 11px;
+      font-weight: var(--weight-semi);
+      min-height: 18px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color .2s ease;
+    }
+    
+    .kc-feedback.ok {
+      color: var(--green);
+    }
+    
+    .kc-feedback.fail {
+      color: var(--red);
+    }
+    
+    .kc-feedback.info {
+      color: var(--blue);
+    }
+    
+    /* ── CTA row ── */
+    .cta-row {
+      margin-top: 36px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 28px;
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: var(--weight-black);
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
+      background: var(--ink);
+      color: var(--yellow);
+      border: 2px solid var(--ink);
+      box-shadow: 5px 5px 0 rgba(10, 10, 10, .15);
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0 rgba(10, 10, 10, .2);
+    }
+    
+    .btn-primary:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 rgba(10, 10, 10, .15);
+    }
+    
+    .btn-primary:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: 5px 5px 0 rgba(10, 10, 10, .1);
+    }
+    
+    .btn-primary svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 22px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: var(--weight-semi);
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--muted);
+      border: 2px solid var(--ruled);
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+    
+    .btn-ghost:hover {
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+    
+    .cta-note {
+      font-size: 11px;
+      color: var(--muted);
+      flex: 1;
+      min-width: 180px;
+    }
+    
+    /* ── Progress bar ── */
+    .progress-bar-wrap {
+      height: 4px;
+      background: var(--ruled);
+      margin-top: 28px;
+      border: 1px solid var(--ruled);
+    }
+    
+    .progress-bar {
+      height: 100%;
+      background: var(--green);
+      width: 0%;
+      transition: width .5s cubic-bezier(.34, 1.2, .64, 1);
+    }
+    
+    /* ── Info accordion ── */
+    .info-section {
+      margin-top: 48px;
+    }
+    
+    .info-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 20px;
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: var(--weight-black);
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
+      background: var(--off);
+      border: 2px solid var(--ink);
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+      transition: background .2s ease, color .2s ease;
+    }
+    
+    .info-toggle.open,
+    .info-toggle:hover {
+      background: var(--ink);
+      color: var(--bg);
+    }
+    
+    .info-toggle.open .info-arrow,
+    .info-toggle:hover .info-arrow {
+      stroke: var(--bg);
+    }
+    
+    .info-toggle.open .info-arrow {
+      transform: rotate(180deg);
+    }
+    
+    .info-arrow {
+      width: 16px;
+      height: 16px;
+      stroke: var(--ink);
+      fill: none;
+      stroke-width: 2.5;
+      flex-shrink: 0;
+      transition: transform .3s cubic-bezier(.34, 1.2, .64, 1), stroke .2s ease;
+    }
+    
+    .info-body {
+      display: none;
+      padding: 24px;
+      border: 2px solid var(--ink);
+      border-top: none;
+      background: var(--bg);
+    }
+    
+    .info-body.open {
+      display: block;
+    }
+    
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--ruled);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    
+    .info-api {
+      font-family: var(--font-display);
+      font-size: 9px;
+      font-weight: var(--weight-black);
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
+      flex-shrink: 0;
+      width: 80px;
+    }
+    
+    .info-link {
+      color: var(--blue);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    
+    .info-link:hover {
+      color: var(--ink);
+    }
+    
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .pg-header {
+        flex-direction: column;
+        padding: 28px 20px 0;
+      }
+      
+      .ph-right {
+        max-width: none;
+      }
+      
+      .page-body {
+        padding: 32px 20px 60px;
+      }
+      
+      .kc-head {
+        flex-wrap: wrap;
+      }
+      
+      .kc-status {
+        width: 100%;
+      }
+      
+      .cta-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .btn-primary,
+      .btn-ghost {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  
+  <!-- ═══════════════════════════════════════════
+     AUTH GATE
+═══════════════════════════════════════════ -->
+  <div id="auth-gate">
+    <div class="gate-spinner"></div>
+    <span class="gate-lbl">Checking authentication…</span>
+  </div>
+  
+  <!-- ═══════════════════════════════════════════
+     NAVIGATION
+═══════════════════════════════════════════ -->
+  <nav class="site-nav">
+    <a href="../index.html" class="nav-logo">
+      <img src="../logo/logo-light.svg" alt="PrepPortal logo" />
+      <div class="logo-brand">
+        <span class="brand-top">Prep</span>
+        <span class="brand-bottom">Portal</span>
+      </div>
+    </a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="../index.html">Home</a></li>
+      <li><a href="../waec.html">WAEC</a></li>
+      <li><a href="../jamb.html">JAMB</a></li>
+      <li><a href="account.html" class="active">Account</a></li>
+    </ul>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  
+  <!-- ═══════════════════════════════════════════
+     TICKER
+═══════════════════════════════════════════ -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track" id="ticker-track"></div>
+  </div>
+  
+  <!-- ═══════════════════════════════════════════
+     PAGE HEADER
+═══════════════════════════════════════════ -->
+  <header class="pg-header">
+    <div class="ph-left">
+      <p class="pg-eyebrow">Account &middot; Configuration</p>
+      <h1 class="pg-title">API<br><em>KEYS</em></h1>
+    </div>
+    <div class="ph-right">
+      <p>
+        Prep Portal uses your own API keys — we never store them in plaintext.<br><br>
+        Keys are encrypted and saved to <strong>your Firebase account</strong>.
+        Once verified, every tool on the platform unlocks immediately.
+      </p>
+    </div>
+  </header>
+  
+  <!-- ═══════════════════════════════════════════
+     STATUS BAR
+═══════════════════════════════════════════ -->
+  <div id="status-bar" class="status-bar" role="status" aria-live="polite"></div>
+  
+  <!-- ═══════════════════════════════════════════
+     PAGE BODY
+═══════════════════════════════════════════ -->
+  <main class="page-body" id="page-body">
+    
+    <!-- Bypass banner (shown when all 3 keys already exist) -->
+    <div id="bypass-banner">
+      <div class="bypass-dot"></div>
+      <span class="bypass-txt">All API keys loaded — platform fully unlocked</span>
+      <button class="bypass-edit" onclick="enterEditMode()">Edit Keys</button>
+    </div>
+    
+    <p class="section-heading">Your API Keys</p>
+    
+    <!-- Progress bar -->
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    
+    <br>
+    
+    <!-- ── Key cards ── -->
+    <div class="key-cards">
+      
+      <!-- 1. GEMINI -->
+      <div class="key-card" id="card-gemini">
+        <div class="kc-head">
+          <div class="kc-icon gemini">GEM</div>
+          <div class="kc-meta">
+            <div class="kc-name">Google Gemini</div>
+            <div class="kc-desc">Theory Analyser · Algebra Lab · Essay Grader</div>
+          </div>
+          <div class="kc-status idle" id="status-gemini">
+            <div class="kc-status-dot"></div>
+            <span id="status-gemini-txt">Not set</span>
+          </div>
+        </div>
+        <div class="kc-body">
+          <div class="kc-input-row">
+            <input type="password" class="kc-input" id="input-gemini" placeholder="AIza…" autocomplete="off" spellcheck="false" aria-label="Gemini API key" />
+            <div class="kc-input-actions">
+              <button class="kc-btn-icon" onclick="toggleVisibility('gemini')" title="Show / hide" aria-label="Toggle visibility">
+                <svg id="eye-gemini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+              <button class="kc-btn-icon" onclick="pasteKey('gemini')" title="Paste" aria-label="Paste from clipboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                </svg>
+              </button>
+              <button class="kc-btn-icon" onclick="clearKey('gemini')" title="Clear" aria-label="Clear field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="kc-feedback" id="feedback-gemini"></div>
+          <button class="kc-verify-btn" id="verify-btn-gemini" onclick="verifySingle('gemini')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Verify Key
+          </button>
+        </div>
+      </div>
+      
+      <!-- 2. GROQ -->
+      <div class="key-card" id="card-groq">
+        <div class="kc-head">
+          <div class="kc-icon groq">GRQ</div>
+          <div class="kc-meta">
+            <div class="kc-name">Groq</div>
+            <div class="kc-desc">PrepBot AI Chatbot · Fast inference</div>
+          </div>
+          <div class="kc-status idle" id="status-groq">
+            <div class="kc-status-dot"></div>
+            <span id="status-groq-txt">Not set</span>
+          </div>
+        </div>
+        <div class="kc-body">
+          <div class="kc-input-row">
+            <input type="password" class="kc-input" id="input-groq" placeholder="gsk_…" autocomplete="off" spellcheck="false" aria-label="Groq API key" />
+            <div class="kc-input-actions">
+              <button class="kc-btn-icon" onclick="toggleVisibility('groq')" title="Show / hide" aria-label="Toggle visibility">
+                <svg id="eye-groq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+              <button class="kc-btn-icon" onclick="pasteKey('groq')" title="Paste" aria-label="Paste from clipboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                </svg>
+              </button>
+              <button class="kc-btn-icon" onclick="clearKey('groq')" title="Clear" aria-label="Clear field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="kc-feedback" id="feedback-groq"></div>
+          <button class="kc-verify-btn" id="verify-btn-groq" onclick="verifySingle('groq')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Verify Key
+          </button>
+        </div>
+      </div>
+      
+      <!-- 3. YOUTUBE -->
+      <div class="key-card" id="card-youtube">
+        <div class="kc-head">
+          <div class="kc-icon youtube">YT</div>
+          <div class="kc-meta">
+            <div class="kc-name">YouTube Data API v3</div>
+            <div class="kc-desc">Theory Practice · Video Resources · Khan Academy</div>
+          </div>
+          <div class="kc-status idle" id="status-youtube">
+            <div class="kc-status-dot"></div>
+            <span id="status-youtube-txt">Not set</span>
+          </div>
+        </div>
+        <div class="kc-body">
+          <div class="kc-input-row">
+            <input type="password" class="kc-input" id="input-youtube" placeholder="AIza…" autocomplete="off" spellcheck="false" aria-label="YouTube API key" />
+            <div class="kc-input-actions">
+              <button class="kc-btn-icon" onclick="toggleVisibility('youtube')" title="Show / hide" aria-label="Toggle visibility">
+                <svg id="eye-youtube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+              <button class="kc-btn-icon" onclick="pasteKey('youtube')" title="Paste" aria-label="Paste from clipboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" />
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                </svg>
+              </button>
+              <button class="kc-btn-icon" onclick="clearKey('youtube')" title="Clear" aria-label="Clear field">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="kc-feedback" id="feedback-youtube"></div>
+          <button class="kc-verify-btn" id="verify-btn-youtube" onclick="verifySingle('youtube')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            Verify Key
+          </button>
+        </div>
+      </div>
+      
+    </div><!-- /key-cards -->
+    
+    <!-- ── CTA row ── -->
+    <div class="cta-row">
+      <button class="btn-primary" id="save-all-btn" onclick="verifyAndSaveAll()" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+          <polyline points="17 21 17 13 7 13 7 21" />
+          <polyline points="7 3 7 8 15 8" />
+        </svg>
+        Verify All &amp; Save
+      </button>
+      <button class="btn-ghost" onclick="window.history.back()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        Back
+      </button>
+      <p class="cta-note" id="cta-note">Enter at least one key to continue.</p>
+    </div>
+    
+    <!-- ── Where to get keys ── -->
+    <div class="info-section">
+      <button class="info-toggle" id="info-toggle" onclick="toggleInfo()">
+        Where do I get these keys?
+        <svg class="info-arrow" id="info-arrow" viewBox="0 0 24 24">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      <div class="info-body" id="info-body">
+        <div class="info-row">
+          <span class="info-api" style="color:#4285f4">Gemini</span>
+          <div>
+            Visit <a class="info-link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com/app/apikey</a> —
+            sign in with Google, click <em>Create API key</em>, copy the key starting with <code>AIza</code>.
+            Free tier includes generous daily quota.
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-api">Groq</span>
+          <div>
+            Visit <a class="info-link" href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a> —
+            create a free account, go to API Keys, click <em>Create API Key</em>.
+            Key starts with <code>gsk_</code>. Free tier is extremely fast.
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-api" style="color:#ff0000">YouTube</span>
+          <div>
+            Visit <a class="info-link" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">console.cloud.google.com/apis/credentials</a> —
+            create a project, enable the <em>YouTube Data API v3</em>, then create an API key.
+            Free quota: 10,000 units/day.
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </main><!-- /page-body -->
+  
+  <!-- ═══════════════════════════════════════════
+     FIREBASE CONFIG + LOGIC
+═══════════════════════════════════════════ -->
+  <script>
+    /* ── Firebase init ──────────────────────────────────────────── */
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "prep-portal-2026.web.app",
+      projectId: "prep-portal-2026",
+      storageBucket: "prep-portal-2026.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    /* ── State ──────────────────────────────────────────────────── */
+    let authUser = null;
+    let editMode = false;
+    const KEYS = ['gemini', 'groq', 'youtube'];
+    const verified = { gemini: false, groq: false, youtube: false };
+    const loaded = { gemini: null, groq: null, youtube: null };
+    
+    /* ══════════════════════════════════════════════════════════════
+       VERIFICATION ENDPOINTS
+    ══════════════════════════════════════════════════════════════ */
+    async function verifyGemini(key) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+      const body = JSON.stringify({ contents: [{ parts: [{ text: "Hi" }] }] });
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `HTTP ${res.status}`);
+      }
+      return true;
+    }
+    
+    async function verifyGroq(key) {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
+        body: JSON.stringify({
+          model: 'llama3-8b-8192',
+          messages: [{ role: 'user', content: 'Hi' }],
+          max_tokens: 1
+        })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `HTTP ${res.status}`);
+      }
+      return true;
+    }
+    
+    async function verifyYouTube(key) {
+      const url = `https://www.googleapis.com/youtube/v3/videos?part=id&id=dQw4w9WgXcQ&key=${key}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `HTTP ${res.status}`);
+      }
+      return true;
+    }
+    
+    const verifiers = { gemini: verifyGemini, groq: verifyGroq, youtube: verifyYouTube };
+    
+    /* ══════════════════════════════════════════════════════════════
+       FIRESTORE — LOAD & SAVE
+    ══════════════════════════════════════════════════════════════ */
+    async function loadKeysFromFirestore() {
+      const snap = await db.collection('users').doc(authUser.uid).get();
+      const data = snap.data() || {};
+      return {
+        gemini: data.geminiKey || null,
+        groq: data.groqKey || null,
+        youtube: data.youtubeKey || null
+      };
+    }
+    
+    async function saveKeysToFirestore(keys) {
+      const payload = {};
+      if (keys.gemini) payload.geminiKey = keys.gemini;
+      if (keys.groq) payload.groqKey = keys.groq;
+      if (keys.youtube) payload.youtubeKey = keys.youtube;
+      await db.collection('users').doc(authUser.uid).set(payload, { merge: true });
+    }
+    
+    /* ══════════════════════════════════════════════════════════════
+       UI HELPERS
+    ══════════════════════════════════════════════════════════════ */
+    function setCardStatus(id, state, text) {
+      const pill = document.getElementById(`status-${id}`);
+      const label = document.getElementById(`status-${id}-txt`);
+      pill.className = `kc-status ${state}`;
+      label.textContent = text;
+    }
+    
+    function setFeedback(id, cls, msg) {
+      const el = document.getElementById(`feedback-${id}`);
+      el.className = `kc-feedback ${cls}`;
+      el.textContent = msg;
+    }
+    
+    function setVerifyBtnLoading(id, loading) {
+      const btn = document.getElementById(`verify-btn-${id}`);
+      btn.disabled = loading;
+      btn.innerHTML = loading ?
+        `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .6s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Verifying…` :
+        `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Verify Key`;
+    }
+    
+    function updateProgress() {
+      const count = KEYS.filter(k => verified[k]).length;
+      document.getElementById('progress-bar').style.width = `${(count / 3) * 100}%`;
+      const saveBtn = document.getElementById('save-all-btn');
+      const note = document.getElementById('cta-note');
+      const anyInput = KEYS.some(k => document.getElementById(`input-${k}`).value.trim());
+      saveBtn.disabled = !anyInput;
+      if (count === 3) {
+        note.textContent = 'All 3 keys verified — ready to save.';
+      } else if (count > 0) {
+        note.textContent = `${count}/3 keys verified.`;
+      } else {
+        note.textContent = 'Enter at least one key to continue.';
+      }
+    }
+    
+    function showStatus(type, msg, duration = 3000) {
+      const bar = document.getElementById('status-bar');
+      bar.className = `status-bar ${type}`;
+      bar.textContent = msg;
+      if (duration) setTimeout(() => { bar.className = 'status-bar'; }, duration);
+    }
+    
+    /* ══════════════════════════════════════════════════════════════
+       VERIFY SINGLE KEY
+    ══════════════════════════════════════════════════════════════ */
+    async function verifySingle(id) {
+      const input = document.getElementById(`input-${id}`);
+      const key = input.value.trim();
+      
+      if (!key) {
+        setFeedback(id, 'fail', 'Please enter a key first.');
+        return;
+      }
+      
+      setVerifyBtnLoading(id, true);
+      setCardStatus(id, 'checking', 'Checking…');
+      setFeedback(id, 'info', 'Sending test request…');
+      
+      try {
+        await verifiers[id](key);
+        verified[id] = true;
+        loaded[id] = key;
+        setCardStatus(id, 'ok', 'Verified');
+        setFeedback(id, 'ok', 'Key is valid and active.');
+        showStatus('success', `${id.charAt(0).toUpperCase() + id.slice(1)} key verified.`);
+      } catch (err) {
+        verified[id] = false;
+        setCardStatus(id, 'fail', 'Invalid');
+        setFeedback(id, 'fail', err.message || 'Verification failed — check the key and try again.');
+        showStatus('error', `${id} key failed: ${err.message}`);
+      } finally {
+        setVerifyBtnLoading(id, false);
+        updateProgress();
+      }
+    }
+    
+    /* ══════════════════════════════════════════════════════════════
+       VERIFY ALL + SAVE
+    ══════════════════════════════════════════════════════════════ */
+    async function verifyAndSaveAll() {
+      const saveBtn = document.getElementById('save-all-btn');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .6s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Verifying…`;
+      
+      showStatus('info', 'Verifying all keys in parallel…', 0);
+      
+      // Collect keys from inputs
+      const toVerify = KEYS.filter(id => document.getElementById(`input-${id}`).value.trim());
+      
+      if (!toVerify.length) {
+        showStatus('error', 'Enter at least one API key.');
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Verify All &amp; Save`;
+        return;
+      }
+      
+      // Verify all in parallel
+      await Promise.all(toVerify.map(id => verifySingle(id)));
+      
+      const allOk = toVerify.every(id => verified[id]);
+      const anyOk = toVerify.some(id => verified[id]);
+      
+      if (!anyOk) {
+        showStatus('error', 'No keys passed verification. Check the values and retry.');
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Verify All &amp; Save`;
+        return;
+      }
+      
+      // Save verified keys to Firestore
+      try {
+        saveBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .6s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Saving…`;
+        await saveKeysToFirestore({
+          gemini: verified.gemini ? loaded.gemini : undefined,
+          groq: verified.groq ? loaded.groq : undefined,
+          youtube: verified.youtube ? loaded.youtube : undefined
+        });
+        
+        broadcastKeys();
+        showStatus('success', allOk ?
+          'All 3 keys verified and saved. Platform fully unlocked!' :
+          'Keys saved. Some keys were not entered — add them any time.');
+        
+        if (KEYS.every(k => verified[k])) {
+          enterBypassMode();
+        }
+        
+        KEYS.forEach(id => {
+          if (verified[id]) setCardStatus(id, 'stored', 'Saved');
+        });
+        
+      } catch (err) {
+        showStatus('error', `Save failed: ${err.message}`);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Verify All &amp; Save`;
+      }
+    }
+    
+    /* ══════════════════════════════════════════════════════════════
+       BROADCAST — window.PrepPortalKeys + custom event
+    ══════════════════════════════════════════════════════════════ */
+    function broadcastKeys() {
+      window.PrepPortalKeys = {
+        gemini: loaded.gemini || null,
+        groq: loaded.groq || null,
+        youtube: loaded.youtube || null,
+        ready: KEYS.every(k => !!loaded[k])
+      };
+      window.dispatchEvent(new CustomEvent('prepportal:keysReady', {
+        detail: window.PrepPortalKeys
+      }));
+    }
+    
+    /* ══════════════════════════════════════════════════════════════
+       BYPASS MODE — all 3 keys already in Firestore
+    ══════════════════════════════════════════════════════════════ */
+    function enterBypassMode() {
+      document.getElementById('bypass-banner').classList.add('visible');
+      // Mask inputs (already password type)
+      KEYS.forEach(id => {
+        const inp = document.getElementById(`input-${id}`);
+        if (loaded[id]) {
+          inp.value = '•'.repeat(32);
+          inp.disabled = true;
+          document.getElementById(`verify-btn-${id}`).disabled = true;
+          setCardStatus(id, 'stored', 'Saved');
+        }
+      });
+      document.getElementById('save-all-btn').disabled = true;
+      editMode = false;
+    }
+    
+    function enterEditMode() {
+      document.getElementById('bypass-banner').classList.remove('visible');
+      KEYS.forEach(id => {
+        const inp = document.getElementById(`input-${id}`);
+        inp.value = '';
+        inp.disabled = false;
+        document.getElementById(`verify-btn-${id}`).disabled = false;
+        setCardStatus(id, 'idle', 'Not set');
+        setFeedback(id, '', '');
+        verified[id] = false;
+        loaded[id] = null;
+      });
+      document.getElementById('save-all-btn').disabled = false;
+      document.getElementById('progress-bar').style.width = '0%';
+      editMode = true;
+      window.PrepPortalKeys = null;
+    }
+    
+    /* ══════════════════════════════════════════════════════════════
+       INPUT HELPERS
+    ══════════════════════════════════════════════════════════════ */
+    function toggleVisibility(id) {
+      const inp = document.getElementById(`input-${id}`);
+      const eye = document.getElementById(`eye-${id}`);
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        eye.innerHTML = `
+      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>`;
+      } else {
+        inp.type = 'password';
+        eye.innerHTML = `
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>`;
+      }
+    }
+    
+    async function pasteKey(id) {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text.trim()) {
+          document.getElementById(`input-${id}`).value = text.trim();
+          updateProgress();
+        }
+      } catch { /* permissions denied — ignore */ }
+    }
+    
+    function clearKey(id) {
+      document.getElementById(`input-${id}`).value = '';
+      verified[id] = false;
+      loaded[id] = null;
+      setCardStatus(id, 'idle', 'Not set');
+      setFeedback(id, '', '');
+      updateProgress();
+    }
+    
+    /* ══════════════════════════════════════════════════════════════
+       INFO ACCORDION
+    ══════════════════════════════════════════════════════════════ */
+    function toggleInfo() {
+      const toggle = document.getElementById('info-toggle');
+      const body = document.getElementById('info-body');
+      toggle.classList.toggle('open');
+      body.classList.toggle('open');
+    }
+    
+    /* ══════════════════════════════════════════════════════════════
+       TICKER
+    ══════════════════════════════════════════════════════════════ */
+    function injectTicker() {
+      const items = [
+        'Gemini API', 'Groq', 'YouTube Data v3', 'Secure Storage',
+        'Firebase', 'Instant Unlock', 'PrepBot', 'Theory Analyser',
+        'Essay Grader', 'Algebra Lab', 'Video Resources', 'WAEC Prep'
+      ];
+      const track = document.getElementById('ticker-track');
+      if (!track) return;
+      const doubled = [...items, ...items];
+      track.innerHTML = doubled.map(i =>
+        `<span class="ticker-item">${i}<span class="ticker-dot"></span></span>`
+      ).join('');
+    }
+    
+    /* ══════════════════════════════════════════════════════════════
+       NAV TOGGLE
+    ══════════════════════════════════════════════════════════════ */
+    function initNav() {
+      const toggle = document.getElementById('nav-toggle');
+      const links = document.getElementById('nav-links');
+      if (toggle && links) {
+        toggle.addEventListener('click', () => {
+          toggle.classList.toggle('open');
+          links.classList.toggle('open');
+        });
+      }
+    }
+    
+    /* ══════════════════════════════════════════════════════════════
+       AUTH — entry point
+    ══════════════════════════════════════════════════════════════ */
+    auth.onAuthStateChanged(async user => {
+      const gate = document.getElementById('auth-gate');
+      
+      if (!user) {
+        // Not signed in — redirect to login
+        window.location.href = './dashboard/login.html?next=account/api-keys.html';
+        return;
+      }
+      
+      authUser = user;
+      
+      // Signed in — dismiss gate
+      gate.classList.add('hidden');
+      setTimeout(() => gate.remove(), 400);
+      
+      injectTicker();
+      initNav();
+      
+      // Enable inputs (require input to trigger save button)
+      KEYS.forEach(id => {
+        document.getElementById(`input-${id}`)
+          .addEventListener('input', updateProgress);
+      });
+      
+      // Load existing keys from Firestore
+      try {
+        const stored = await loadKeysFromFirestore();
+        
+        let allPresent = true;
+        KEYS.forEach(id => {
+          if (stored[id]) {
+            loaded[id] = stored[id];
+            verified[id] = true;
+            setCardStatus(id, 'stored', 'Saved');
+            setFeedback(id, 'ok', 'Key loaded from your account.');
+          } else {
+            allPresent = false;
+          }
+        });
+        
+        updateProgress();
+        
+        if (allPresent) {
+          // Bypass: all keys already stored — broadcast immediately
+          broadcastKeys();
+          enterBypassMode();
+          showStatus('success', 'All API keys loaded — platform ready.');
+        } else {
+          const count = KEYS.filter(k => stored[k]).length;
+          if (count > 0) {
+            showStatus('info', `${count} of 3 keys found. Add the remaining keys below.`);
+          }
+        }
+      } catch (err) {
+        showStatus('error', `Could not load saved keys: ${err.message}`);
+      }
+    });
+  </script>
+</body>
+
+</html>
