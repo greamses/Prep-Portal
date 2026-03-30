@@ -6,7 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login — Prep Portal 2026</title>
   
-  <!-- FONTS -->
+  <!-- ═══ SEO & META ═══ -->
+  <meta name="description" content="Sign in or create your free Prep Portal 2026 account. Access WAEC, JAMB, IGCSE, and Cambridge past papers, theory drills, and AI-powered exam tools tailored for Nigerian and international students." />
+  <meta name="keywords" content="Prep Portal login, exam preparation sign in, WAEC student portal, JAMB study account, Nigeria exam portal" />
+  <meta name="author" content="Prep Portal" />
+  <meta name="robots" content="noindex, follow" />
+  
+  <!-- ═══ OPEN GRAPH ═══ -->
+  <meta property="og:title" content="Login — Prep Portal 2026" />
+  <meta property="og:description" content="Sign in or create a free account to access past papers, theory drills, and AI-powered revision tools." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://prep-portal-2026.web.app/dashboard/login.html" />
+  <meta property="og:locale" content="en_NG" />
+  
+  <!-- ═══ TWITTER CARD ═══ -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Login — Prep Portal 2026" />
+  <meta name="twitter:description" content="Sign in to your Prep Portal account and continue revising." />
+  
+  <!-- ═══ FONTS ═══ -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
@@ -16,21 +34,31 @@
 </head>
 
 <body>
+  
   <!-- ═══ ADVANCED TRI-CORE LOADER ═══ -->
   <div id="loader">
     <div id="loader-wrapper">
       <div class="logo-cluster"></div> <!-- JS will inject the 3 images here -->
     </div>
     <div class="loader-word"><span>Login</span></div>
-    <!-- <div class="loader-word"><span></span></div> -->
     <div class="loader-bar"></div>
   </div>
   
+  <!-- ═══ NAVIGATION ═══ -->
   <nav class="site-nav">
-    <a href="index.html" class="nav-logo">Prep<span>Portal</span></a>
-    <a href="index.html" class="nav-back">← Home</a>
+    <a href="../index.html" class="nav-logo">
+      <!-- SVG logo icon -->
+      <img src="../logo/logo-light.svg" alt="PrepPortal logo" />
+      <!-- Stacked text branding -->
+      <div class="logo-brand">
+        <span class="brand-top">Prep</span>
+        <span class="brand-bottom">Portal</span>
+      </div>
+    </a>
+    <a href="../index.html" class="nav-back">← Home</a>
   </nav>
   
+  <!-- ═══ TICKER ═══ -->
   <div class="ticker" aria-hidden="true">
     <div class="ticker-track">
       <span class="ticker-item">Welcome Back<span class="ticker-dot">◆</span></span>
@@ -43,6 +71,7 @@
     </div>
   </div>
   
+  <!-- ═══ MAIN ═══ -->
   <main class="page-wrap">
     <div class="login-card">
       <div class="card-header">
@@ -57,7 +86,7 @@
       <div class="card-body">
         <div class="msg" id="msg"></div>
         
-        <!-- LOGIN PANEL -->
+        <!-- ── LOGIN PANEL ── -->
         <div class="panel active" id="panel-login">
           <div class="field">
             <label for="login-email">Email Address</label>
@@ -86,7 +115,7 @@
           </button>
         </div>
         
-        <!-- REGISTER PANEL -->
+        <!-- ── REGISTER PANEL ── -->
         <div class="panel" id="panel-register">
           <div class="field">
             <label for="reg-name">Full Name</label>
@@ -100,7 +129,7 @@
             <label for="reg-pw">Password</label>
             <div class="pw-wrap">
               <input type="password" id="reg-pw" placeholder="Min. 8 characters" />
-              <button class="pw-toggle" type="button" data-target="reg-pw">👁</button>
+              <button class="pw-toggle" type="button" data-target="reg-pw"></button>
             </div>
           </div>
           <button class="submit-btn" id="btn-register">Create Account</button>
@@ -125,10 +154,9 @@
     </div>
   </main>
   
-  <!-- FIREBASE LOGIC -->
-  <script type="module" src="./login.js">
+  <!-- ═══ FIREBASE LOGIC ═══ -->
+  <script type="module" src="./login.js"></script>
   
-  </script>
 </body>
 
 </html>

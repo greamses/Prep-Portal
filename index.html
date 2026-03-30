@@ -4,19 +4,37 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Prep Portal 2026 | Your Exam Vault</title>
+    <title>Prep Portal 2026 | Dashboard</title>
     
-    <!-- FONTS -->
+    <!-- ═══ SEO & META ═══ -->
+    <meta name="description" content="Prep Portal 2026 is Nigeria's premier exam preparation platform. Access WAEC, JAMB, IGCSE, Cambridge, and Common Entrance past papers, theory drills, worked solutions, and AI-powered study tools. Built for students who take results seriously." />
+    <meta name="keywords" content="exam preparation, past papers, WAEC, NECO, JAMB, IGCSE, Cambridge, Common Entrance, theory drills, practice questions, revision kits, Nigeria exams, 2026 exams, PrepBot, scholastic prep" />
+    <meta name="author" content="Prep Portal" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- ═══ OPEN GRAPH ═══ -->
+    <meta property="og:title" content="Prep Portal 2026 | Exam Archives & Theory Drills" />
+    <meta property="og:description" content="Nigeria's curated vault of past papers, worked solutions, and prep kits for WAEC, JAMB, Cambridge, and more. Start revising now." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://prep-portal-2026.web.app/" />
+    <meta property="og:locale" content="en_NG" />
+    
+    <!-- ═══ TWITTER CARD ═══ -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Prep Portal 2026 | Exam Success Hub" />
+    <meta name="twitter:description" content="Access 1000+ exam questions, subject drills, and instant feedback. Raise your grade with Prep Portal." />
+    
+    <!-- ═══ FONTS ═══ -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     
-
     <script src="./utils/loader/loader.js"></script>
     
     <link rel="stylesheet" href="./style.css">
     <link rel="stylesheet" href="./main.css">
 </head>
+
 <body>
     
     <!-- ═══ ADVANCED TRI-CORE LOADER ═══ -->
@@ -25,17 +43,13 @@
             <div class="logo-cluster"></div> <!-- JS will inject the 3 images here -->
         </div>
         <div class="loader-word"><span>Home Page</span></div>
-        <!-- <div class="loader-word"><span></span></div> -->
         <div class="loader-bar"></div>
     </div>
     
-    <!-- NAVIGATION -->
+    <!-- ═══ NAVIGATION ═══ -->
     <nav class="site-nav">
         <a href="/" class="nav-logo">
-            <!-- Icon -->
             <img src="./logo/logo-light.svg" alt="PrepPortal logo" />
-            
-            <!-- Stacked Text Branding -->
             <div class="logo-brand">
                 <span class="brand-top">Prep</span>
                 <span class="brand-bottom">Portal</span>
@@ -43,19 +57,19 @@
         </a>
         
         <div class="nav-right">
-            <!-- This is the button that will change -->
+            <!-- onAuthStateChanged in redirect.js swaps this to "Dashboard" if logged in -->
             <a href="./dashboard/login.html" class="nav-cta" id="auth-status-btn">Sign In</a>
         </div>
     </nav>
     
-    <!-- TICKER -->
+    <!-- ═══ TICKER ═══ -->
     <div class="ticker" aria-hidden="true">
         <div class="ticker-track" id="ticker-track">
             <!-- populated by JS -->
         </div>
     </div>
     
-    <!-- HERO SECTION -->
+    <!-- ═══ HERO ═══ -->
     <section class="hero">
         <div class="hero-content">
             <p class="eyebrow">Track 2026</p>
@@ -65,14 +79,14 @@
             <p class="hero-tagline">A curated vault of past papers, worked solutions, and prep kits — built for students who take results seriously.</p>
             
             <div class="hero-btns">
-                <a href="login.html" class="main-cta">Start Practicing Now →</a>
+                <a href="./dashboard/login.html" class="main-cta">Start Practicing Now →</a>
             </div>
         </div>
         
         <div class="hero-stats" id="hero-stats"></div>
     </section>
     
-    <!-- CORE FEATURES (DETAILS) -->
+    <!-- ═══ CORE FEATURES ═══ -->
     <section class="info-strip" id="details">
         <div class="info-cell">
             <span class="info-label">Archives</span>
@@ -91,13 +105,13 @@
         </div>
     </section>
     
-    <!-- FINAL CTA -->
+    <!-- ═══ FINAL CTA ═══ -->
     <section class="cta-band">
         <h2>Ready to <em>raise your grade?</em></h2>
-        <a href="login.html" class="cta-btn">Create Free Account</a>
+        <a href="./dashboard/login.html" class="cta-btn">Create Free Account</a>
     </section>
     
-    <!-- FOOTER -->
+    <!-- ═══ FOOTER ═══ -->
     <footer class="site-footer">
         <div class="footer-bottom">
             <p>&copy; 2026 Prep Portal. All rights reserved.</p>
@@ -108,15 +122,19 @@
         </div>
     </footer>
     
-    <!-- DATA & LOGIC -->
-    <script src="./data.js"></script>
+    <!-- ═══ SCRIPTS ═══ -->
+    <!-- firebase-init.js must be first — it initialises the Firebase app & exports auth -->
+    <script type="module" src="./firebase-init.js"></script>
+    
+    <!-- redirect.js imports auth from firebase-init.js (no duplicate initialisation) -->
     <script type="module" src="./redirect.js"></script>
     
-    <!-- Firebase Initialization MUST come first if other modules use it -->
-    <script type="module" src="./firebase-init.js"></script> 
+    <!-- data.js is non-module (exposes siteData globally) -->
+    <script src="./data.js"></script>
     
-    <!-- Your main index.js as a module -->
-    <script type="module" src="./index.js"></script> 
+    <!-- index.js renders ticker + stats from siteData -->
+    <script type="module" src="./index.js"></script>
     
 </body>
+
 </html>
