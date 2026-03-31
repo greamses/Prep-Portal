@@ -1,32 +1,13 @@
 // ============================================
-// FIREBASE — AUTH & KEY FETCH
+// FIREBASE — KEY FETCH
+// Uses shared Firebase instance (already initialised)
 // ============================================
-let authUser = null;
-
-const firebaseConfig = {
-    apiKey: "AIzaSyA2N3uI_XfSIVsto2Ku1g_qSezmD3qFmbk",
-    authDomain: "prep-portal-2026.web.app",
-    projectId: "prep-portal-2026",
-    storageBucket: "prep-portal-2026.firebasestorage.app",
-    messagingSenderId: "837672918701",
-    appId: "1:837672918701:web:e64c0c25dc01b542e23024",
-    measurementId: "G-2PDS7LL77R"
-};
-
-// Initialize Firebase if config exists
-if (firebaseConfig.apiKey) {
-    firebase.initializeApp(firebaseConfig);
-    
-    firebase.auth().onAuthStateChanged(user => {
-        authUser = user;
-    });
-}
-
 async function getGeminiKey() {
-    if (!authUser) throw new Error('Please sign in to use PrepBot');
+    const user = firebase.auth().currentUser;
+    if (!user) throw new Error('Please sign in to use PrepBot');
     const snap = await firebase.firestore()
         .collection('users')
-        .doc(authUser.uid)
+        .doc(user.uid)
         .get();
     const key = snap.data()?.geminiKey;
     if (!key) throw new Error('No Gemini key found. Add one in Account Settings.');
@@ -43,74 +24,122 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GE
 // CLASS CURRICULUM DATA - Primary 1 to SS3
 // ============================================
 const curriculumTopics = {
-    p1: { name: "Primary 1", level: "primary", topics: [
-        { id: "p1-counting", label: "Counting & Number Patterns", difficulty: "easy", mappedTopic: "one-step" },
-        { id: "p1-addition", label: "Simple Addition", difficulty: "easy", mappedTopic: "one-step" },
-        { id: "p1-subtraction", label: "Simple Subtraction", difficulty: "easy", mappedTopic: "one-step" },
-        { id: "p1-missing", label: "Find the Missing Number", difficulty: "easy", mappedTopic: "one-step" }
-    ]},
-    p2: { name: "Primary 2", level: "primary", topics: [
-        { id: "p2-addition", label: "Addition with Unknown", difficulty: "easy", mappedTopic: "one-step" },
-        { id: "p2-subtraction", label: "Subtraction with Unknown", difficulty: "easy", mappedTopic: "one-step" },
-        { id: "p2-multiplication", label: "Simple Multiplication", difficulty: "easy", mappedTopic: "one-step" },
-        { id: "p2-division", label: "Simple Division", difficulty: "easy", mappedTopic: "one-step" }
-    ]},
-    p3: { name: "Primary 3", level: "primary", topics: [
-        { id: "p3-mult-step", label: "Multi-step Operations", difficulty: "easy-medium", mappedTopic: "two-step" },
-        { id: "p3-fractions", label: "Simple Fractions", difficulty: "medium", mappedTopic: "fractions" },
-        { id: "p3-word-problems", label: "Word Problems", difficulty: "medium", mappedTopic: "age-problems" }
-    ]},
-    p4: { name: "Primary 4", level: "primary", topics: [
-        { id: "p4-equations", label: "Simple Equations", difficulty: "medium", mappedTopic: "one-step" },
-        { id: "p4-variables", label: "Variables & Expressions", difficulty: "medium", mappedTopic: "both-sides" },
-        { id: "p4-inequalities", label: "Simple Inequalities", difficulty: "medium", mappedTopic: "inequalities" }
-    ]},
-    p5: { name: "Primary 5", level: "primary", topics: [
-        { id: "p5-one-step", label: "One-Step Equations", difficulty: "medium", mappedTopic: "one-step" },
-        { id: "p5-two-step", label: "Two-Step Equations", difficulty: "medium", mappedTopic: "two-step" },
-        { id: "p5-decimals", label: "Equations with Decimals", difficulty: "medium", mappedTopic: "decimals" }
-    ]},
-    p6: { name: "Primary 6", level: "primary", topics: [
-        { id: "p6-variables-both", label: "Variables on Both Sides", difficulty: "medium-hard", mappedTopic: "both-sides" },
-        { id: "p6-fractions", label: "Equations with Fractions", difficulty: "hard", mappedTopic: "fractions" },
-        { id: "p6-word-problems", label: "Advanced Word Problems", difficulty: "hard", mappedTopic: "age-problems" }
-    ]},
-    jss1: { name: "JSS 1", level: "jss", topics: [
-        { id: "jss1-linear", label: "Linear Equations", difficulty: "medium", mappedTopic: "both-sides" },
-        { id: "jss1-simultaneous", label: "Simultaneous Equations", difficulty: "medium-hard", mappedTopic: "substitution" },
-        { id: "jss1-inequalities", label: "Inequalities", difficulty: "medium", mappedTopic: "inequalities" },
-        { id: "jss1-word-problems", label: "Word Problems", difficulty: "hard", mappedTopic: "age-problems" }
-    ]},
-    jss2: { name: "JSS 2", level: "jss", topics: [
-        { id: "jss2-quadratic", label: "Quadratic Equations", difficulty: "hard", mappedTopic: "quadratic" },
-        { id: "jss2-factorization", label: "Factorization", difficulty: "hard", mappedTopic: "quadratic" },
-        { id: "jss2-algebraic-fractions", label: "Algebraic Fractions", difficulty: "hard", mappedTopic: "fractions" },
-        { id: "jss2-graphs", label: "Graphical Solutions", difficulty: "hard", mappedTopic: "graphical" }
-    ]},
-    jss3: { name: "JSS 3", level: "jss", topics: [
-        { id: "jss3-complex", label: "Complex Equations", difficulty: "hard", mappedTopic: "both-sides" },
-        { id: "jss3-simultaneous-quad", label: "Simultaneous Quadratics", difficulty: "hard", mappedTopic: "substitution" },
-        { id: "jss3-inequalities-advanced", label: "Advanced Inequalities", difficulty: "hard", mappedTopic: "compound-ineq" },
-        { id: "jss3-exam-practice", label: "Exam Practice", difficulty: "hard", mappedTopic: "quadratic" }
-    ]},
-    ss1: { name: "SS 1", level: "ss", topics: [
-        { id: "ss1-polynomials", label: "Polynomials", difficulty: "advanced", mappedTopic: "quadratic" },
-        { id: "ss1-logarithms", label: "Logarithms", difficulty: "advanced", mappedTopic: "inequalities" },
-        { id: "ss1-indices", label: "Indices & Surds", difficulty: "advanced", mappedTopic: "both-sides" },
-        { id: "ss1-sequences", label: "Sequences & Series", difficulty: "advanced", mappedTopic: "quadratic" }
-    ]},
-    ss2: { name: "SS 2", level: "ss", topics: [
-        { id: "ss2-calculus", label: "Introduction to Calculus", difficulty: "advanced", mappedTopic: "quadratic" },
-        { id: "ss2-trigonometry", label: "Trigonometric Equations", difficulty: "advanced", mappedTopic: "quadratic" },
-        { id: "ss2-exponential", label: "Exponential Functions", difficulty: "advanced", mappedTopic: "both-sides" },
-        { id: "ss2-logarithmic", label: "Logarithmic Equations", difficulty: "advanced", mappedTopic: "inequalities" }
-    ]},
-    ss3: { name: "SS 3", level: "ss", topics: [
-        { id: "ss3-differentiation", label: "Differentiation", difficulty: "advanced", mappedTopic: "quadratic" },
-        { id: "ss3-integration", label: "Integration", difficulty: "advanced", mappedTopic: "quadratic" },
-        { id: "ss3-waec-prep", label: "WAEC Prep", difficulty: "advanced", mappedTopic: "quadratic" },
-        { id: "ss3-jamb-prep", label: "JAMB Prep", difficulty: "advanced", mappedTopic: "both-sides" }
-    ]}
+    p1: {
+        name: "Primary 1",
+        level: "primary",
+        topics: [
+            { id: "p1-counting", label: "Counting & Number Patterns", difficulty: "easy", mappedTopic: "one-step" },
+            { id: "p1-addition", label: "Simple Addition", difficulty: "easy", mappedTopic: "one-step" },
+            { id: "p1-subtraction", label: "Simple Subtraction", difficulty: "easy", mappedTopic: "one-step" },
+            { id: "p1-missing", label: "Find the Missing Number", difficulty: "easy", mappedTopic: "one-step" }
+        ]
+    },
+    p2: {
+        name: "Primary 2",
+        level: "primary",
+        topics: [
+            { id: "p2-addition", label: "Addition with Unknown", difficulty: "easy", mappedTopic: "one-step" },
+            { id: "p2-subtraction", label: "Subtraction with Unknown", difficulty: "easy", mappedTopic: "one-step" },
+            { id: "p2-multiplication", label: "Simple Multiplication", difficulty: "easy", mappedTopic: "one-step" },
+            { id: "p2-division", label: "Simple Division", difficulty: "easy", mappedTopic: "one-step" }
+        ]
+    },
+    p3: {
+        name: "Primary 3",
+        level: "primary",
+        topics: [
+            { id: "p3-mult-step", label: "Multi-step Operations", difficulty: "easy-medium", mappedTopic: "two-step" },
+            { id: "p3-fractions", label: "Simple Fractions", difficulty: "medium", mappedTopic: "fractions" },
+            { id: "p3-word-problems", label: "Word Problems", difficulty: "medium", mappedTopic: "age-problems" }
+        ]
+    },
+    p4: {
+        name: "Primary 4",
+        level: "primary",
+        topics: [
+            { id: "p4-equations", label: "Simple Equations", difficulty: "medium", mappedTopic: "one-step" },
+            { id: "p4-variables", label: "Variables & Expressions", difficulty: "medium", mappedTopic: "both-sides" },
+            { id: "p4-inequalities", label: "Simple Inequalities", difficulty: "medium", mappedTopic: "inequalities" }
+        ]
+    },
+    p5: {
+        name: "Primary 5",
+        level: "primary",
+        topics: [
+            { id: "p5-one-step", label: "One-Step Equations", difficulty: "medium", mappedTopic: "one-step" },
+            { id: "p5-two-step", label: "Two-Step Equations", difficulty: "medium", mappedTopic: "two-step" },
+            { id: "p5-decimals", label: "Equations with Decimals", difficulty: "medium", mappedTopic: "decimals" }
+        ]
+    },
+    p6: {
+        name: "Primary 6",
+        level: "primary",
+        topics: [
+            { id: "p6-variables-both", label: "Variables on Both Sides", difficulty: "medium-hard", mappedTopic: "both-sides" },
+            { id: "p6-fractions", label: "Equations with Fractions", difficulty: "hard", mappedTopic: "fractions" },
+            { id: "p6-word-problems", label: "Advanced Word Problems", difficulty: "hard", mappedTopic: "age-problems" }
+        ]
+    },
+    jss1: {
+        name: "JSS 1",
+        level: "jss",
+        topics: [
+            { id: "jss1-linear", label: "Linear Equations", difficulty: "medium", mappedTopic: "both-sides" },
+            { id: "jss1-simultaneous", label: "Simultaneous Equations", difficulty: "medium-hard", mappedTopic: "substitution" },
+            { id: "jss1-inequalities", label: "Inequalities", difficulty: "medium", mappedTopic: "inequalities" },
+            { id: "jss1-word-problems", label: "Word Problems", difficulty: "hard", mappedTopic: "age-problems" }
+        ]
+    },
+    jss2: {
+        name: "JSS 2",
+        level: "jss",
+        topics: [
+            { id: "jss2-quadratic", label: "Quadratic Equations", difficulty: "hard", mappedTopic: "quadratic" },
+            { id: "jss2-factorization", label: "Factorization", difficulty: "hard", mappedTopic: "quadratic" },
+            { id: "jss2-algebraic-fractions", label: "Algebraic Fractions", difficulty: "hard", mappedTopic: "fractions" },
+            { id: "jss2-graphs", label: "Graphical Solutions", difficulty: "hard", mappedTopic: "graphical" }
+        ]
+    },
+    jss3: {
+        name: "JSS 3",
+        level: "jss",
+        topics: [
+            { id: "jss3-complex", label: "Complex Equations", difficulty: "hard", mappedTopic: "both-sides" },
+            { id: "jss3-simultaneous-quad", label: "Simultaneous Quadratics", difficulty: "hard", mappedTopic: "substitution" },
+            { id: "jss3-inequalities-advanced", label: "Advanced Inequalities", difficulty: "hard", mappedTopic: "compound-ineq" },
+            { id: "jss3-exam-practice", label: "Exam Practice", difficulty: "hard", mappedTopic: "quadratic" }
+        ]
+    },
+    ss1: {
+        name: "SS 1",
+        level: "ss",
+        topics: [
+            { id: "ss1-polynomials", label: "Polynomials", difficulty: "advanced", mappedTopic: "quadratic" },
+            { id: "ss1-logarithms", label: "Logarithms", difficulty: "advanced", mappedTopic: "inequalities" },
+            { id: "ss1-indices", label: "Indices & Surds", difficulty: "advanced", mappedTopic: "both-sides" },
+            { id: "ss1-sequences", label: "Sequences & Series", difficulty: "advanced", mappedTopic: "quadratic" }
+        ]
+    },
+    ss2: {
+        name: "SS 2",
+        level: "ss",
+        topics: [
+            { id: "ss2-calculus", label: "Introduction to Calculus", difficulty: "advanced", mappedTopic: "quadratic" },
+            { id: "ss2-trigonometry", label: "Trigonometric Equations", difficulty: "advanced", mappedTopic: "quadratic" },
+            { id: "ss2-exponential", label: "Exponential Functions", difficulty: "advanced", mappedTopic: "both-sides" },
+            { id: "ss2-logarithmic", label: "Logarithmic Equations", difficulty: "advanced", mappedTopic: "inequalities" }
+        ]
+    },
+    ss3: {
+        name: "SS 3",
+        level: "ss",
+        topics: [
+            { id: "ss3-differentiation", label: "Differentiation", difficulty: "advanced", mappedTopic: "quadratic" },
+            { id: "ss3-integration", label: "Integration", difficulty: "advanced", mappedTopic: "quadratic" },
+            { id: "ss3-waec-prep", label: "WAEC Prep", difficulty: "advanced", mappedTopic: "quadratic" },
+            { id: "ss3-jamb-prep", label: "JAMB Prep", difficulty: "advanced", mappedTopic: "both-sides" }
+        ]
+    }
 };
 
 // ============================================
@@ -596,7 +625,7 @@ function injectTicker() {
     const track = document.getElementById('ticker-track');
     if (!track) return;
     const items = [...tickerItems, ...tickerItems];
-    track.innerHTML = items.map(item => 
+    track.innerHTML = items.map(item =>
         `<span class="ticker-item">${item}<span class="ticker-dot"></span></span>`
     ).join('');
 }
