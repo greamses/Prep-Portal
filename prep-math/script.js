@@ -1,17 +1,68 @@
 // ============================================
-// FIREBASE — KEY FETCH
-// Uses shared Firebase instance (already initialised)
+// FIREBASE — KEY FETCH (UPDATED FOR MODULAR FIREBASE)
+// Uses shared Firebase instance from firebase-init.js
 // ============================================
+import { auth, db } from '../../firebase-init.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
+
 async function getGeminiKey() {
-    const user = firebase.auth().currentUser;
-    if (!user) throw new Error('Please sign in to use PrepBot');
-    const snap = await firebase.firestore()
-        .collection('users')
-        .doc(user.uid)
-        .get();
-    const key = snap.data()?.geminiKey;
-    if (!key) throw new Error('No Gemini key found. Add one in Account Settings.');
-    return key;
+    // Wait for auth to be ready
+    if (!auth) {
+        throw new Error('Firebase auth not initialized');
+    }
+    
+    // Wait for user to be authenticated (up to 5 seconds)
+    let user = auth.currentUser;
+    if (!user) {
+        console.log('Waiting for user authentication...');
+        await new Promise((resolve) => {
+            const unsubscribe = auth.onAuthStateChanged((user) => {
+                if (user) {
+                    unsubscribe();
+                    resolve();
+                }
+            });
+            setTimeout(() => {
+                unsubscribe();
+                resolve();
+            }, 5000);
+        });
+        user = auth.currentUser;
+    }
+    
+    if (!user) {
+        throw new Error('Please sign in to use PrepBot. Go to Account Settings to add your Gemini API key.');
+    }
+    
+    console.log('Fetching Gemini key for user:', user.uid);
+    
+    try {
+        // Try users/{uid} document first
+        const userSnap = await getDoc(doc(db, 'users', user.uid));
+        if (userSnap.exists()) {
+            const geminiKey = userSnap.data().geminiKey;
+            if (geminiKey && geminiKey.trim()) {
+                console.log('Found Gemini key in users document');
+                return geminiKey;
+            }
+        }
+        
+        // Try users/{uid}/settings/keys subcollection
+        const settingsSnap = await getDoc(doc(db, 'users', user.uid, 'settings', 'keys'));
+        if (settingsSnap.exists()) {
+            const geminiKey = settingsSnap.data().geminiKey;
+            if (geminiKey && geminiKey.trim()) {
+                console.log('Found Gemini key in settings document');
+                return geminiKey;
+            }
+        }
+        
+        throw new Error('No Gemini key found. Add one in Account Settings.');
+        
+    } catch (err) {
+        console.error('Error fetching Gemini key:', err);
+        throw new Error(`Could not retrieve API key: ${err.message}`);
+    }
 }
 
 // ============================================
@@ -266,11 +317,9 @@ function hideStatus() {
 // CLASS & TOPIC SELECTION FUNCTIONS
 // ============================================
 function onClassChange(selectedValue) {
-    // If called from dropdown, use the passed value
     if (selectedValue) {
         currentClassId = selectedValue;
     } else {
-        // Fallback to select element for backward compatibility
         const select = document.getElementById('class-select');
         if (select) {
             currentClassId = select.value;
@@ -657,19 +706,16 @@ function initCustomDropdown() {
     
     let currentValue = '';
     
-    // Close dropdown function
     function closeDropdown() {
         trigger.setAttribute('aria-expanded', 'false');
         panel.classList.remove('open');
     }
     
-    // Open dropdown function
     function openDropdown() {
         trigger.setAttribute('aria-expanded', 'true');
         panel.classList.add('open');
     }
     
-    // Toggle dropdown
     function toggleDropdown(e) {
         e.stopPropagation();
         const expanded = trigger.getAttribute('aria-expanded') === 'true';
@@ -680,35 +726,26 @@ function initCustomDropdown() {
         }
     }
     
-    // Select option function
     function selectOption(option) {
         const value = option.getAttribute('data-value');
         const label = option.textContent;
         
-        // Update display
         valueDisplay.textContent = label;
         currentValue = value;
-        
-        // Update currentClassId
         currentClassId = value;
         
-        // Call the onClassChange function with the selected value
         if (typeof window.onClassChange === 'function') {
             window.onClassChange(value);
         }
         
-        // Close dropdown
         closeDropdown();
         
-        // Update selected styling
         options.forEach(opt => opt.classList.remove('selected'));
         option.classList.add('selected');
     }
     
-    // Trigger click handler
     trigger.addEventListener('click', toggleDropdown);
     
-    // Option click handlers
     options.forEach(option => {
         option.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -716,21 +753,18 @@ function initCustomDropdown() {
         });
     });
     
-    // Close when clicking outside
     document.addEventListener('click', function(e) {
         if (!trigger.contains(e.target) && !panel.contains(e.target)) {
             closeDropdown();
         }
     });
     
-    // Close on escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && panel.classList.contains('open')) {
             closeDropdown();
         }
     });
     
-    // Set initial value (Primary 1 by default)
     const defaultOption = document.querySelector('.cdd-option[data-value="p1"]');
     if (defaultOption && !currentValue) {
         selectOption(defaultOption);
@@ -745,13 +779,24 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavToggle();
     initCustomDropdown();
     
-    // Set initial stats
     const statCount = document.getElementById('stat-count');
     const statClass = document.getElementById('stat-class');
     const statTopic = document.getElementById('stat-topic');
     if (statCount) statCount.textContent = '0';
     if (statClass) statClass.textContent = '—';
     if (statTopic) statTopic.textContent = '—';
+    
+    // Check if user is logged in and display status
+    if (auth && auth.currentUser) {
+        console.log('User logged in:', auth.currentUser.email);
+    } else if (auth) {
+        console.log('Waiting for user login...');
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                console.log('User logged in:', user.email);
+            }
+        });
+    }
 });
 
 // Load Graspable Math
