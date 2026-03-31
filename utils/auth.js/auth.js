@@ -1,6 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// API KEYS MODULE
+// API KEYS MODULE - Auto-sign-in compatible
+// Uses shared Firebase instance from firebase-init.js
 // ─────────────────────────────────────────────────────────────────────────────
+
+import { auth, db } from "../firebase-init.js";
 
 // Gemini models (as provided)
 const GEMINI_MODELS = [
@@ -11,26 +14,19 @@ const GEMINI_MODELS = [
   'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent',
 ];
 
-// Firebase config (replace with your actual config)
-const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "prep-portal-2026.web.app",
-  projectId: "prep-portal-2026",
-  storageBucket: "prep-portal-2026.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+// API Icons (online CDN links)
+const API_ICONS = {
+  gemini: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/google.svg',
+  groq: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/groq.svg',
+  youtube: 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/youtube.svg'
 };
 
-// Initialize Firebase (if not already initialized)
-let auth, db;
-if (typeof firebase !== 'undefined' && !firebase.apps?.length) {
-  firebase.initializeApp(firebaseConfig);
-  auth = firebase.auth();
-  db = firebase.firestore();
-} else if (typeof firebase !== 'undefined') {
-  auth = firebase.auth();
-  db = firebase.firestore();
-}
+// Fallback icons in case CDN fails
+const FALLBACK_ICONS = {
+  gemini: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234285F4"%3E%3Cpath d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"%3E%3C/path%3E%3C/svg%3E',
+  groq: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23F55036"%3E%3Ccircle cx="12" cy="12" r="10"/%3E%3C/svg%3E',
+  youtube: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FF0000"%3E%3Cpath d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"%3E%3C/path%3E%3C/svg%3E'
+};
 
 // State
 let authUser = null;
@@ -41,6 +37,7 @@ let loaded = { gemini: null, groq: null, youtube: null };
 
 // DOM element references
 let elements = {};
+let isInitialized = false;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // VERIFICATION FUNCTIONS
@@ -137,7 +134,7 @@ function updateProgress() {
   
   const anyInput = KEYS.some(k => {
     const input = elements[`input-${k}`];
-    return input && input.value.trim();
+    return input && input.value && input.value.trim() && input.value.trim() !== '•'.repeat(32);
   });
   if (elements['save-all-btn']) {
     elements['save-all-btn'].disabled = !anyInput;
@@ -168,13 +165,22 @@ function showStatus(type, msg, duration = 3000) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FIRESTORE OPERATIONS (with null checks)
+// FIRESTORE OPERATIONS (Using shared db instance)
 // ─────────────────────────────────────────────────────────────────────────────
 async function loadKeysFromFirestore() {
-  if (!authUser || !db) return { gemini: null, groq: null, youtube: null };
+  if (!authUser) {
+    console.log('No auth user, cannot load keys');
+    return { gemini: null, groq: null, youtube: null };
+  }
+  if (!db) {
+    console.log('Firestore not ready');
+    return { gemini: null, groq: null, youtube: null };
+  }
   try {
-    const snap = await db.collection('users').doc(authUser.uid).get();
+    const docRef = db.collection('users').doc(authUser.uid);
+    const snap = await docRef.get();
     const data = snap.data() || {};
+    console.log(`Loaded Firestore data for user ${authUser.uid}:`, data);
     return {
       gemini: data.geminiKey || null,
       groq: data.groqKey || null,
@@ -182,6 +188,7 @@ async function loadKeysFromFirestore() {
     };
   } catch (err) {
     console.warn('Firestore load error:', err);
+    // Don't throw, just return empty keys
     return { gemini: null, groq: null, youtube: null };
   }
 }
@@ -194,6 +201,7 @@ async function saveKeysToFirestore(keys) {
   if (keys.groq !== undefined) payload.groqKey = keys.groq;
   if (keys.youtube !== undefined) payload.youtubeKey = keys.youtube;
   await db.collection('users').doc(authUser.uid).set(payload, { merge: true });
+  console.log('Saved keys to Firestore for user:', authUser.uid);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -209,6 +217,7 @@ function broadcastKeys() {
   window.dispatchEvent(new CustomEvent('prepportal:keysReady', {
     detail: window.PrepPortalKeys
   }));
+  console.log('Keys broadcasted:', window.PrepPortalKeys);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -219,7 +228,7 @@ async function verifySingle(id) {
   if (!input) return;
   const key = input.value.trim();
   
-  if (!key) {
+  if (!key || key === '•'.repeat(32)) {
     setFeedback(id, 'fail', 'Please enter a key first.');
     return;
   }
@@ -258,7 +267,8 @@ async function verifyAndSaveAll() {
   
   const toVerify = KEYS.filter(id => {
     const input = elements[`input-${id}`];
-    return input && input.value.trim();
+    const value = input && input.value && input.value.trim();
+    return value && value !== '•'.repeat(32);
   });
   
   if (!toVerify.length) {
@@ -387,7 +397,7 @@ async function pasteKey(id) {
       updateProgress();
     }
   } catch (e) {
-    // permissions denied — ignore
+    console.log('Clipboard paste failed:', e);
   }
 }
 
@@ -411,6 +421,9 @@ function toggleInfo() {
   }
 }
 
+// Make toggleInfo available globally
+window.toggleInfo = toggleInfo;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // INITIALIZATION
 // ─────────────────────────────────────────────────────────────────────────────
@@ -431,6 +444,8 @@ function initDOMCache() {
     elements[`verify-btn-${key}`] = document.getElementById(`verify-btn-${key}`);
     elements[`eye-${key}`] = document.getElementById(`eye-${key}`);
   });
+  
+  console.log('DOM cache initialized');
 }
 
 function initEventListeners() {
@@ -467,18 +482,41 @@ function initNav() {
   }
 }
 
+// Function to load API icons into the DOM
+function loadAPIIcons() {
+  KEYS.forEach(key => {
+    const iconContainer = document.getElementById(`icon-${key}`);
+    if (iconContainer) {
+      const img = document.createElement('img');
+      img.src = API_ICONS[key];
+      img.alt = `${key} icon`;
+      img.style.width = '32px';
+      img.style.height = '32px';
+      img.style.objectFit = 'contain';
+      img.onerror = () => {
+        // Fallback to SVG if CDN fails
+        img.src = FALLBACK_ICONS[key];
+      };
+      iconContainer.appendChild(img);
+    }
+  });
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// AUTHENTICATION
+// AUTHENTICATION HANDLER - Uses shared auth instance
 // ─────────────────────────────────────────────────────────────────────────────
-async function onAuthStateChanged(user) {
+async function handleAuthStateChanged(user) {
+  console.log('Auth state changed:', user ? `User: ${user.uid} (${user.email})` : 'No user');
+  
   const gate = document.getElementById('auth-gate');
   
   if (!user) {
+    // No user signed in - show login prompt
     if (gate) {
       gate.innerHTML = `
         <div class="gate-spinner"></div>
         <span class="gate-lbl">No active session — please sign in</span>
-        <button class="btn-primary" style="margin-top:20px; background:var(--ink); color:var(--yellow); border:none; padding:12px 24px; cursor:pointer;" onclick="window.location.href='../dashboard/login.html'">
+        <button class="btn-primary" style="margin-top:20px; background:var(--ink); color:var(--yellow); border:none; padding:12px 24px; cursor:pointer;" onclick="window.location.href='../login/login.html'">
           Go to Login
         </button>
       `;
@@ -486,8 +524,11 @@ async function onAuthStateChanged(user) {
     return;
   }
   
+  // ✅ User IS signed in (auto-sign-in worked!)
   authUser = user;
+  console.log('User authenticated via auto-sign-in:', authUser.email);
   
+  // Hide the auth gate
   if (gate) {
     gate.classList.add('hidden');
     setTimeout(() => {
@@ -495,15 +536,22 @@ async function onAuthStateChanged(user) {
     }, 400);
   }
   
+  // Initialize UI elements
   injectTicker();
   initNav();
+  loadAPIIcons(); // Load API icons
   
+  // Load user's saved keys from Firestore
   try {
     const stored = await loadKeysFromFirestore();
+    console.log('Loaded keys from Firestore:', stored);
     
     let allPresent = true;
+    let hasAnyKeys = false;
+    
     KEYS.forEach(id => {
       if (stored[id]) {
+        hasAnyKeys = true;
         loaded[id] = stored[id];
         verified[id] = true;
         setCardStatus(id, 'stored', 'Saved');
@@ -516,16 +564,23 @@ async function onAuthStateChanged(user) {
     updateProgress();
     
     if (allPresent) {
+      // User has all 3 keys saved - enter bypass mode
+      console.log('All keys present - entering bypass mode');
       broadcastKeys();
       enterBypassMode();
       showStatus('success', 'All API keys loaded — platform ready.');
+    } else if (hasAnyKeys) {
+      // User has some keys saved, but not all
+      console.log('Some keys present - showing remaining fields');
+      showStatus('info', `${KEYS.filter(k => stored[k]).length} of 3 keys found. Add the remaining keys below.`);
     } else {
-      const count = KEYS.filter(k => stored[k]).length;
-      if (count > 0) {
-        showStatus('info', `${count} of 3 keys found. Add the remaining keys below.`);
-      }
+      // New user or no keys saved yet
+      console.log('No keys saved - showing empty fields');
+      showStatus('info', 'Add your API keys below to unlock all features.');
     }
+    
   } catch (err) {
+    console.error('Error loading keys:', err);
     showStatus('error', `Could not load saved keys: ${err.message}`);
   }
 }
@@ -534,25 +589,36 @@ async function onAuthStateChanged(user) {
 // MAIN INIT FUNCTION
 // ─────────────────────────────────────────────────────────────────────────────
 function init() {
+  if (isInitialized) {
+    console.log('Already initialized');
+    return;
+  }
+  
+  console.log('Initializing API Keys module...');
+  
+  // Cache DOM elements
   initDOMCache();
   initEventListeners();
+  
+  // Set up auth listener with the shared auth instance
   if (auth) {
-    auth.onAuthStateChanged(onAuthStateChanged);
+    console.log('Setting up auth listener with shared Firebase instance');
+    auth.onAuthStateChanged(handleAuthStateChanged);
+    isInitialized = true;
   } else {
-    console.warn('Firebase auth not available. Please check Firebase initialization.');
-    // Show gate with error
+    console.error('Auth not available from firebase-init.js');
     const gate = document.getElementById('auth-gate');
     if (gate) {
       gate.innerHTML = `
         <div class="gate-spinner"></div>
-        <span class="gate-lbl">Firebase not initialized. Check your configuration.</span>
+        <span class="gate-lbl">Firebase auth not available. Please refresh the page.</span>
       `;
     }
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// EXPORTS (for module usage)
+// EXPORTS
 // ─────────────────────────────────────────────────────────────────────────────
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -570,7 +636,7 @@ if (typeof module !== 'undefined' && module.exports) {
   };
 }
 
-// For browser global usage - attach to window
+// For browser global usage
 if (typeof window !== 'undefined') {
   window.APIModule = {
     verifySingle,
