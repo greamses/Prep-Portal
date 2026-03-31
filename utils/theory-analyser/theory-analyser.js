@@ -22,12 +22,19 @@
   ];
   const QUOTA = new Set([429, 503, 529]);
   
+  /* ─── Key resolver — reads from PrepPortalKeys (set by auth.js) ─── */
+  function _getKey() {
+    return (_cfg && _cfg.geminiKey) || window.PrepPortalKeys?.gemini || null;
+  }
+
   /* ─── Gemini post ─── */
   async function _post(body) {
+    const key = _getKey();
+    if (!key) throw new Error('No Gemini key found. Please sign in and add your key in Account Settings.');
     for (let i = _midx; i < MODELS.length; i++) {
       let res;
       try {
-        res = await fetch(`${MODELS[i]}?key=${_cfg.geminiKey}`, {
+        res = await fetch(`${MODELS[i]}?key=${key}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -411,7 +418,8 @@ RESPOND ONLY WITH VALID JSON:
   const TheoryAnalyser = {
     
     init(config = {}) {
-      ['geminiKey', 'subject', 'level'].forEach(k => {
+      // geminiKey is now optional — resolved at call-time from window.PrepPortalKeys (set by auth.js)
+      ['subject', 'level'].forEach(k => {
         if (!config[k]) throw new Error(`TheoryAnalyser.init: missing "${k}"`);
       });
       _cfg = { mountId: 'theory-results', ...config };

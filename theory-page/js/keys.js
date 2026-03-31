@@ -16,7 +16,7 @@ async function saveKeyToFirestore(field, value) {
   if (!uid) return;
   try {
     const db = getFirestore();
-    await setDoc(doc(db, 'users', uid, 'settings', 'keys'), { [field]: value }, { merge: true });
+    await setDoc(doc(db, 'users', uid), { [field]: value }, { merge: true });
   } catch (e) {
     console.warn('Could not save key to Firestore:', e);
   }
@@ -27,7 +27,7 @@ async function loadKeysFromFirestore() {
   if (!uid) return null;
   try {
     const db = getFirestore();
-    const snap = await getDoc(doc(db, 'users', uid, 'settings', 'keys'));
+    const snap = await getDoc(doc(db, 'users', uid));
     return snap.exists() ? snap.data() : null;
   } catch (e) {
     console.warn('Could not load keys from Firestore:', e);
@@ -183,7 +183,7 @@ export function setYTKeyRaw(raw, verified) {
     verBtn.textContent = 'Verified';
     sub.textContent = 'Real embedded videos with thumbnails are enabled';
     sessionStorage.setItem('pp_yt_key', key);
-    saveKeyToFirestore('ytKey', key); // <-- persist to Firebase
+    saveKeyToFirestore('youtubeKey', key); // <-- persist to Firebase
   }
 }
 
@@ -221,10 +221,10 @@ export async function initYTKey() {
 
   // Try Firestore first, fall back to sessionStorage
   const stored = await loadKeysFromFirestore();
-  const saved = stored?.ytKey || sessionStorage.getItem('pp_yt_key') || '';
+  const saved = stored?.youtubeKey || sessionStorage.getItem('pp_yt_key') || '';
   if (saved) {
     document.getElementById('yt-apikey-input').value = saved;
-    setYTKeyRaw(saved, !!stored?.ytKey);
+    setYTKeyRaw(saved, !!stored?.youtubeKey);
   }
 
   document.getElementById('yt-apikey-input').addEventListener('input', function () {

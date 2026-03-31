@@ -549,11 +549,12 @@ function renderStudyTips(tips) {
 ═══════════════════════════════════════════════════════ */
 
 /* ── API ── */
-const p1 = 'AIzaSyAvWD'
-const p2 = 'v5YiltSkQV'
-const p3 = 't_5aP1sIxYY'
-const p4 = 'jrZbcq38'
-const GEMINI_KEY = p1 + p2 + p3 + p4;
+// Key is managed by auth.js — read from window.PrepPortalKeys at call time
+function _getGeminiKey() {
+  const key = window.PrepPortalKeys?.gemini || null;
+  if (!key) throw new Error('No Gemini key found. Please sign in and add your key in Account Settings.');
+  return key;
+}
 
 /*
  * Model fallback chain — tried in order.
@@ -588,7 +589,7 @@ async function geminiPost(body) {
     const model = GEMINI_MODELS[i];
     let res;
     try {
-      res = await fetch(`${model.url}?key=${GEMINI_KEY}`, {
+      res = await fetch(`${model.url}?key=${_getGeminiKey()}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
