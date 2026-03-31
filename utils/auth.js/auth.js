@@ -5,6 +5,14 @@
 
 import { auth, db } from "../../firebase-init.js";
 
+// ✅ FIX 1: Import modular Firestore functions — db is a modular instance,
+//    so .collection().doc() compat API does not exist on it.
+import {
+  doc,
+  getDoc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
 // Gemini models (as provided)
 const GEMINI_MODELS = [
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent',
@@ -131,7 +139,7 @@ function updateProgress() {
   if (elements['progress-bar']) {
     elements['progress-bar'].style.width = `${(count / 3) * 100}%`;
   }
-  
+
   const anyInput = KEYS.some(k => {
     const input = elements[`input-${k}`];
     return input && input.value && input.value.trim() && input.value.trim() !== '•'.repeat(32);
@@ -139,7 +147,7 @@ function updateProgress() {
   if (elements['save-all-btn']) {
     elements['save-all-btn'].disabled = !anyInput;
   }
-  
+
   if (elements['cta-note']) {
     if (count === 3) {
       elements['cta-note'].textContent = 'All 3 keys verified — ready to save.';
@@ -165,7 +173,9 @@ function showStatus(type, msg, duration = 3000) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FIRESTORE OPERATIONS (Using shared db instance)
+// FIRESTORE OPERATIONS
+// ✅ FIX 2: Use modular Firestore API (doc/getDoc/setDoc) instead of
+//    compat-style db.collection().doc().get() — db is a modular instance.
 // ─────────────────────────────────────────────────────────────────────────────
 async function loadKeysFromFirestore() {
   if (!authUser) {
@@ -177,8 +187,8 @@ async function loadKeysFromFirestore() {
     return { gemini: null, groq: null, youtube: null };
   }
   try {
-    const docRef = db.collection('users').doc(authUser.uid);
-    const snap = await docRef.get();
+    const docRef = doc(db, 'users', authUser.uid);   // ✅ modular API
+    const snap = await getDoc(docRef);               // ✅ modular API
     const data = snap.data() || {};
     console.log(`Loaded Firestore data for user ${authUser.uid}:`, data);
     return {
@@ -188,7 +198,6 @@ async function loadKeysFromFirestore() {
     };
   } catch (err) {
     console.warn('Firestore load error:', err);
-    // Don't throw, just return empty keys
     return { gemini: null, groq: null, youtube: null };
   }
 }
@@ -200,7 +209,8 @@ async function saveKeysToFirestore(keys) {
   if (keys.gemini !== undefined) payload.geminiKey = keys.gemini;
   if (keys.groq !== undefined) payload.groqKey = keys.groq;
   if (keys.youtube !== undefined) payload.youtubeKey = keys.youtube;
-  await db.collection('users').doc(authUser.uid).set(payload, { merge: true });
+  // ✅ modular API
+  await setDoc(doc(db, 'users', authUser.uid), payload, { merge: true });
   console.log('Saved keys to Firestore for user:', authUser.uid);
 }
 
@@ -227,16 +237,16 @@ async function verifySingle(id) {
   const input = elements[`input-${id}`];
   if (!input) return;
   const key = input.value.trim();
-  
+
   if (!key || key === '•'.repeat(32)) {
     setFeedback(id, 'fail', 'Please enter a key first.');
     return;
   }
-  
+
   setVerifyBtnLoading(id, true);
   setCardStatus(id, 'checking', 'Checking…');
   setFeedback(id, 'info', 'Sending test request…');
-  
+
   try {
     await verifiers[id](key);
     verified[id] = true;
@@ -260,26 +270,26 @@ async function verifySingle(id) {
 // ─────────────────────────────────────────────────────────────────────────────
 async function verifyAndSaveAll() {
   if (!elements['save-all-btn']) return;
-  
+
   elements['save-all-btn'].disabled = true;
   elements['save-all-btn'].innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .6s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Verifying…`;
   showStatus('info', 'Verifying all keys in parallel…', 0);
-  
+
   const toVerify = KEYS.filter(id => {
     const input = elements[`input-${id}`];
     const value = input && input.value && input.value.trim();
     return value && value !== '•'.repeat(32);
   });
-  
+
   if (!toVerify.length) {
     showStatus('error', 'Enter at least one API key.');
     elements['save-all-btn'].disabled = false;
     elements['save-all-btn'].innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Verify All &amp; Save`;
     return;
   }
-  
+
   await Promise.all(toVerify.map(id => verifySingle(id)));
-  
+
   const anyOk = toVerify.some(id => verified[id]);
   if (!anyOk) {
     showStatus('error', 'No keys passed verification. Check the values and retry.');
@@ -287,31 +297,31 @@ async function verifyAndSaveAll() {
     elements['save-all-btn'].innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Verify All &amp; Save`;
     return;
   }
-  
+
   try {
     elements['save-all-btn'].innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .6s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Saving…`;
-    
+
     await saveKeysToFirestore({
       gemini: verified.gemini ? loaded.gemini : undefined,
       groq: verified.groq ? loaded.groq : undefined,
       youtube: verified.youtube ? loaded.youtube : undefined
     });
-    
+
     broadcastKeys();
-    
+
     const allOk = KEYS.every(k => verified[k]);
     showStatus('success', allOk ?
       'All 3 keys verified and saved. Platform fully unlocked!' :
       'Keys saved. Some keys were not entered — add them any time.');
-    
+
     if (KEYS.every(k => verified[k])) {
       enterBypassMode();
     }
-    
+
     KEYS.forEach(id => {
       if (verified[id]) setCardStatus(id, 'stored', 'Saved');
     });
-    
+
   } catch (err) {
     showStatus('error', `Save failed: ${err.message}`);
   } finally {
@@ -327,7 +337,7 @@ function enterBypassMode() {
   if (elements['bypass-banner']) {
     elements['bypass-banner'].classList.add('visible');
   }
-  
+
   KEYS.forEach(id => {
     const inp = elements[`input-${id}`];
     const verifyBtn = elements[`verify-btn-${id}`];
@@ -340,7 +350,7 @@ function enterBypassMode() {
       setCardStatus(id, 'stored', 'Saved');
     }
   });
-  
+
   if (elements['save-all-btn']) elements['save-all-btn'].disabled = true;
   editMode = false;
 }
@@ -349,7 +359,7 @@ function enterEditMode() {
   if (elements['bypass-banner']) {
     elements['bypass-banner'].classList.remove('visible');
   }
-  
+
   KEYS.forEach(id => {
     const inp = elements[`input-${id}`];
     const verifyBtn = elements[`verify-btn-${id}`];
@@ -363,10 +373,10 @@ function enterEditMode() {
     verified[id] = false;
     loaded[id] = null;
   });
-  
+
   if (elements['save-all-btn']) elements['save-all-btn'].disabled = false;
   if (elements['progress-bar']) elements['progress-bar'].style.width = '0%';
-  
+
   editMode = true;
   window.PrepPortalKeys = null;
 }
@@ -378,7 +388,7 @@ function toggleVisibility(id) {
   const inp = elements[`input-${id}`];
   const eye = elements[`eye-${id}`];
   if (!inp || !eye) return;
-  
+
   if (inp.type === 'password') {
     inp.type = 'text';
     eye.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
@@ -421,9 +431,6 @@ function toggleInfo() {
   }
 }
 
-// Make toggleInfo available globally
-window.toggleInfo = toggleInfo;
-
 // ─────────────────────────────────────────────────────────────────────────────
 // INITIALIZATION
 // ─────────────────────────────────────────────────────────────────────────────
@@ -435,7 +442,7 @@ function initDOMCache() {
   ids.forEach(id => {
     elements[id] = document.getElementById(id);
   });
-  
+
   KEYS.forEach(key => {
     elements[`input-${key}`] = document.getElementById(`input-${key}`);
     elements[`status-${key}`] = document.getElementById(`status-${key}`);
@@ -444,7 +451,7 @@ function initDOMCache() {
     elements[`verify-btn-${key}`] = document.getElementById(`verify-btn-${key}`);
     elements[`eye-${key}`] = document.getElementById(`eye-${key}`);
   });
-  
+
   console.log('DOM cache initialized');
 }
 
@@ -482,7 +489,6 @@ function initNav() {
   }
 }
 
-// Function to load API icons into the DOM
 function loadAPIIcons() {
   KEYS.forEach(key => {
     const iconContainer = document.getElementById(`icon-${key}`);
@@ -494,7 +500,6 @@ function loadAPIIcons() {
       img.style.height = '32px';
       img.style.objectFit = 'contain';
       img.onerror = () => {
-        // Fallback to SVG if CDN fails
         img.src = FALLBACK_ICONS[key];
       };
       iconContainer.appendChild(img);
@@ -503,15 +508,14 @@ function loadAPIIcons() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AUTHENTICATION HANDLER - Uses shared auth instance
+// AUTHENTICATION HANDLER
 // ─────────────────────────────────────────────────────────────────────────────
 async function handleAuthStateChanged(user) {
   console.log('Auth state changed:', user ? `User: ${user.uid} (${user.email})` : 'No user');
-  
+
   const gate = document.getElementById('auth-gate');
-  
+
   if (!user) {
-    // No user signed in - show login prompt
     if (gate) {
       gate.innerHTML = `
         <div class="gate-spinner"></div>
@@ -523,32 +527,28 @@ async function handleAuthStateChanged(user) {
     }
     return;
   }
-  
-  // ✅ User IS signed in (auto-sign-in worked!)
+
   authUser = user;
   console.log('User authenticated via auto-sign-in:', authUser.email);
-  
-  // Hide the auth gate
+
   if (gate) {
     gate.classList.add('hidden');
     setTimeout(() => {
       if (gate && gate.parentNode) gate.remove();
     }, 400);
   }
-  
-  // Initialize UI elements
+
   injectTicker();
   initNav();
-  loadAPIIcons(); // Load API icons
-  
-  // Load user's saved keys from Firestore
+  loadAPIIcons();
+
   try {
     const stored = await loadKeysFromFirestore();
     console.log('Loaded keys from Firestore:', stored);
-    
+
     let allPresent = true;
     let hasAnyKeys = false;
-    
+
     KEYS.forEach(id => {
       if (stored[id]) {
         hasAnyKeys = true;
@@ -560,25 +560,22 @@ async function handleAuthStateChanged(user) {
         allPresent = false;
       }
     });
-    
+
     updateProgress();
-    
+
     if (allPresent) {
-      // User has all 3 keys saved - enter bypass mode
       console.log('All keys present - entering bypass mode');
       broadcastKeys();
       enterBypassMode();
       showStatus('success', 'All API keys loaded — platform ready.');
     } else if (hasAnyKeys) {
-      // User has some keys saved, but not all
       console.log('Some keys present - showing remaining fields');
       showStatus('info', `${KEYS.filter(k => stored[k]).length} of 3 keys found. Add the remaining keys below.`);
     } else {
-      // New user or no keys saved yet
       console.log('No keys saved - showing empty fields');
       showStatus('info', 'Add your API keys below to unlock all features.');
     }
-    
+
   } catch (err) {
     console.error('Error loading keys:', err);
     showStatus('error', `Could not load saved keys: ${err.message}`);
@@ -586,21 +583,19 @@ async function handleAuthStateChanged(user) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MAIN INIT FUNCTION
+// MAIN INIT
 // ─────────────────────────────────────────────────────────────────────────────
 function init() {
   if (isInitialized) {
     console.log('Already initialized');
     return;
   }
-  
+
   console.log('Initializing API Keys module...');
-  
-  // Cache DOM elements
+
   initDOMCache();
   initEventListeners();
-  
-  // Set up auth listener with the shared auth instance
+
   if (auth) {
     console.log('Setting up auth listener with shared Firebase instance');
     auth.onAuthStateChanged(handleAuthStateChanged);
@@ -618,8 +613,31 @@ function init() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// EXPORTS
+// ✅ FIX 3: Expose ALL functions directly on window — not just window.APIModule.
+//    type="module" scripts are scoped; onclick="window.verifySingle(...)" requires
+//    explicit window assignment for each function the HTML calls.
 // ─────────────────────────────────────────────────────────────────────────────
+window.verifySingle      = verifySingle;
+window.verifyAndSaveAll  = verifyAndSaveAll;
+window.enterEditMode     = enterEditMode;
+window.toggleVisibility  = toggleVisibility;
+window.pasteKey          = pasteKey;
+window.clearKey          = clearKey;
+window.toggleInfo        = toggleInfo;
+
+// Also keep APIModule for any external scripts that use it
+window.APIModule = {
+  verifySingle,
+  verifyAndSaveAll,
+  enterEditMode,
+  toggleVisibility,
+  pasteKey,
+  clearKey,
+  toggleInfo,
+  init
+};
+
+// CommonJS export (for any build tooling)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     verifySingle,
@@ -636,23 +654,9 @@ if (typeof module !== 'undefined' && module.exports) {
   };
 }
 
-// For browser global usage
-if (typeof window !== 'undefined') {
-  window.APIModule = {
-    verifySingle,
-    verifyAndSaveAll,
-    enterEditMode,
-    toggleVisibility,
-    pasteKey,
-    clearKey,
-    toggleInfo,
-    init
-  };
-  
-  // Auto-init when DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+// Auto-init when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
 }
