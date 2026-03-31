@@ -1,7 +1,7 @@
 import chatbotcss from './prepbotcss.js';
 // Removed initializeApp import as per instruction
-import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
+import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 
 /* ═══════════════════════════════════════════════════════════
    PREPBOT — The Ultimate AI Study Assistant
@@ -139,7 +139,7 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10
       // Initialize the chat interface
       const messagesEl = document.getElementById('chat-messages');
       if (messagesEl) {
-        messagesEl.innerHTML = '<div class="chat-intro-card"><div class="intro-label">🤖 SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
+        messagesEl.innerHTML = '<div class="chat-intro-card"><div class="intro-label">SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
       }
       
       addQuizNavigationPill();
@@ -411,7 +411,7 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10
 
       <div class="chat-messages" id="chat-messages">
         <div class="chat-intro-card">
-          <div class="intro-label">🔄 LOADING</div>
+          <div class="intro-label">LOADING</div>
           <p>Checking for API key...</p>
         </div>
       </div>
@@ -1028,7 +1028,7 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
       keyLoadAttempted = true;
       enableChatInputs();
       if (messages) {
-        messages.innerHTML = '<div class="chat-intro-card"><div class="intro-label">🤖 SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
+        messages.innerHTML = '<div class="chat-intro-card"><div class="intro-label"> SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
       }
       addQuizNavigationPill();
       updateQuizNavigationPill();
