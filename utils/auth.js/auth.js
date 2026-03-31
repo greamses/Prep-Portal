@@ -1,10 +1,6 @@
-// ─────────────────────────────────────────────────────────────────────────────
 // API KEYS MODULE - Auto-sign-in compatible
 // Uses shared Firebase instance from firebase-init.js
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { auth, db } from "../../firebase-init.js";
-
 
 //    so .collection().doc() compat API does not exist on it.
 import {
@@ -47,9 +43,7 @@ let loaded = { gemini: null, groq: null, youtube: null };
 let elements = {};
 let isInitialized = false;
 
-// ─────────────────────────────────────────────────────────────────────────────
 // VERIFICATION FUNCTIONS
-// ─────────────────────────────────────────────────────────────────────────────
 async function verifyGemini(key) {
   let lastError;
   for (const modelUrl of GEMINI_MODELS) {
@@ -79,7 +73,7 @@ async function verifyGroq(key) {
       'Authorization': `Bearer ${key}`
     },
     body: JSON.stringify({
-      model: 'llama3-8b-8192',
+      model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: 'Hi' }],
       max_tokens: 1
     })
@@ -103,9 +97,7 @@ async function verifyYouTube(key) {
 
 const verifiers = { gemini: verifyGemini, groq: verifyGroq, youtube: verifyYouTube };
 
-// ─────────────────────────────────────────────────────────────────────────────
 // UI HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
 function setCardStatus(id, state, text) {
   const pill = elements[`status-${id}`];
   const label = elements[`status-${id}-txt`];
@@ -139,7 +131,7 @@ function updateProgress() {
   if (elements['progress-bar']) {
     elements['progress-bar'].style.width = `${(count / 3) * 100}%`;
   }
-  
+
   const anyInput = KEYS.some(k => {
     const input = elements[`input-${k}`];
     return input && input.value && input.value.trim() && input.value.trim() !== '•'.repeat(32);
@@ -147,7 +139,7 @@ function updateProgress() {
   if (elements['save-all-btn']) {
     elements['save-all-btn'].disabled = !anyInput;
   }
-  
+
   if (elements['cta-note']) {
     if (count === 3) {
       elements['cta-note'].textContent = 'All 3 keys verified — ready to save.';
@@ -172,11 +164,8 @@ function showStatus(type, msg, duration = 3000) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // FIRESTORE OPERATIONS
-// ✅ FIX 2: Use modular Firestore API (doc/getDoc/setDoc) instead of
 //    compat-style db.collection().doc().get() — db is a modular instance.
-// ─────────────────────────────────────────────────────────────────────────────
 async function loadKeysFromFirestore() {
   if (!authUser) {
     console.log('No auth user, cannot load keys');
@@ -187,8 +176,8 @@ async function loadKeysFromFirestore() {
     return { gemini: null, groq: null, youtube: null };
   }
   try {
-    const docRef = doc(db, 'users', authUser.uid); // ✅ modular API
-    const snap = await getDoc(docRef); // ✅ modular API
+    const docRef = doc(db, 'users', authUser.uid);   // ✅ modular API
+    const snap = await getDoc(docRef);               // ✅ modular API
     const data = snap.data() || {};
     console.log(`Loaded Firestore data for user ${authUser.uid}:`, data);
     return {
@@ -214,9 +203,7 @@ async function saveKeysToFirestore(keys) {
   console.log('Saved keys to Firestore for user:', authUser.uid);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // BROADCAST KEYS
-// ─────────────────────────────────────────────────────────────────────────────
 function broadcastKeys() {
   window.PrepPortalKeys = {
     gemini: loaded.gemini || null,
@@ -230,23 +217,21 @@ function broadcastKeys() {
   console.log('Keys broadcasted:', window.PrepPortalKeys);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // VERIFY SINGLE KEY
-// ─────────────────────────────────────────────────────────────────────────────
 async function verifySingle(id) {
   const input = elements[`input-${id}`];
   if (!input) return;
   const key = input.value.trim();
-  
+
   if (!key || key === '•'.repeat(32)) {
     setFeedback(id, 'fail', 'Please enter a key first.');
     return;
   }
-  
+
   setVerifyBtnLoading(id, true);
   setCardStatus(id, 'checking', 'Checking…');
   setFeedback(id, 'info', 'Sending test request…');
-  
+
   try {
     await verifiers[id](key);
     verified[id] = true;
@@ -265,31 +250,29 @@ async function verifySingle(id) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // VERIFY ALL & SAVE
-// ─────────────────────────────────────────────────────────────────────────────
 async function verifyAndSaveAll() {
   if (!elements['save-all-btn']) return;
-  
+
   elements['save-all-btn'].disabled = true;
   elements['save-all-btn'].innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .6s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Verifying…`;
   showStatus('info', 'Verifying all keys in parallel…', 0);
-  
+
   const toVerify = KEYS.filter(id => {
     const input = elements[`input-${id}`];
     const value = input && input.value && input.value.trim();
     return value && value !== '•'.repeat(32);
   });
-  
+
   if (!toVerify.length) {
     showStatus('error', 'Enter at least one API key.');
     elements['save-all-btn'].disabled = false;
     elements['save-all-btn'].innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Verify All &amp; Save`;
     return;
   }
-  
+
   await Promise.all(toVerify.map(id => verifySingle(id)));
-  
+
   const anyOk = toVerify.some(id => verified[id]);
   if (!anyOk) {
     showStatus('error', 'No keys passed verification. Check the values and retry.');
@@ -297,31 +280,31 @@ async function verifyAndSaveAll() {
     elements['save-all-btn'].innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Verify All &amp; Save`;
     return;
   }
-  
+
   try {
     elements['save-all-btn'].innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .6s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Saving…`;
-    
+
     await saveKeysToFirestore({
       gemini: verified.gemini ? loaded.gemini : undefined,
       groq: verified.groq ? loaded.groq : undefined,
       youtube: verified.youtube ? loaded.youtube : undefined
     });
-    
+
     broadcastKeys();
-    
+
     const allOk = KEYS.every(k => verified[k]);
     showStatus('success', allOk ?
       'All 3 keys verified and saved. Platform fully unlocked!' :
       'Keys saved. Some keys were not entered — add them any time.');
-    
+
     if (KEYS.every(k => verified[k])) {
       enterBypassMode();
     }
-    
+
     KEYS.forEach(id => {
       if (verified[id]) setCardStatus(id, 'stored', 'Saved');
     });
-    
+
   } catch (err) {
     showStatus('error', `Save failed: ${err.message}`);
   } finally {
@@ -330,14 +313,12 @@ async function verifyAndSaveAll() {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // BYPASS MODE
-// ─────────────────────────────────────────────────────────────────────────────
 function enterBypassMode() {
   if (elements['bypass-banner']) {
     elements['bypass-banner'].classList.add('visible');
   }
-  
+
   KEYS.forEach(id => {
     const inp = elements[`input-${id}`];
     const verifyBtn = elements[`verify-btn-${id}`];
@@ -350,7 +331,7 @@ function enterBypassMode() {
       setCardStatus(id, 'stored', 'Saved');
     }
   });
-  
+
   if (elements['save-all-btn']) elements['save-all-btn'].disabled = true;
   editMode = false;
 }
@@ -359,7 +340,7 @@ function enterEditMode() {
   if (elements['bypass-banner']) {
     elements['bypass-banner'].classList.remove('visible');
   }
-  
+
   KEYS.forEach(id => {
     const inp = elements[`input-${id}`];
     const verifyBtn = elements[`verify-btn-${id}`];
@@ -373,22 +354,20 @@ function enterEditMode() {
     verified[id] = false;
     loaded[id] = null;
   });
-  
+
   if (elements['save-all-btn']) elements['save-all-btn'].disabled = false;
   if (elements['progress-bar']) elements['progress-bar'].style.width = '0%';
-  
+
   editMode = true;
   window.PrepPortalKeys = null;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // INPUT HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
 function toggleVisibility(id) {
   const inp = elements[`input-${id}`];
   const eye = elements[`eye-${id}`];
   if (!inp || !eye) return;
-  
+
   if (inp.type === 'password') {
     inp.type = 'text';
     eye.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
@@ -421,9 +400,7 @@ function clearKey(id) {
   updateProgress();
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // INFO ACCORDION
-// ─────────────────────────────────────────────────────────────────────────────
 function toggleInfo() {
   if (elements['info-toggle'] && elements['info-body']) {
     elements['info-toggle'].classList.toggle('open');
@@ -431,9 +408,7 @@ function toggleInfo() {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // INITIALIZATION
-// ─────────────────────────────────────────────────────────────────────────────
 function initDOMCache() {
   const ids = [
     'progress-bar', 'save-all-btn', 'cta-note', 'status-bar',
@@ -442,7 +417,7 @@ function initDOMCache() {
   ids.forEach(id => {
     elements[id] = document.getElementById(id);
   });
-  
+
   KEYS.forEach(key => {
     elements[`input-${key}`] = document.getElementById(`input-${key}`);
     elements[`status-${key}`] = document.getElementById(`status-${key}`);
@@ -451,7 +426,7 @@ function initDOMCache() {
     elements[`verify-btn-${key}`] = document.getElementById(`verify-btn-${key}`);
     elements[`eye-${key}`] = document.getElementById(`eye-${key}`);
   });
-  
+
   console.log('DOM cache initialized');
 }
 
@@ -507,14 +482,12 @@ function loadAPIIcons() {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // AUTHENTICATION HANDLER
-// ─────────────────────────────────────────────────────────────────────────────
 async function handleAuthStateChanged(user) {
   console.log('Auth state changed:', user ? `User: ${user.uid} (${user.email})` : 'No user');
-  
+
   const gate = document.getElementById('auth-gate');
-  
+
   if (!user) {
     if (gate) {
       gate.innerHTML = `
@@ -527,28 +500,28 @@ async function handleAuthStateChanged(user) {
     }
     return;
   }
-  
+
   authUser = user;
   console.log('User authenticated via auto-sign-in:', authUser.email);
-  
+
   if (gate) {
     gate.classList.add('hidden');
     setTimeout(() => {
       if (gate && gate.parentNode) gate.remove();
     }, 400);
   }
-  
+
   injectTicker();
   initNav();
   loadAPIIcons();
-  
+
   try {
     const stored = await loadKeysFromFirestore();
     console.log('Loaded keys from Firestore:', stored);
-    
+
     let allPresent = true;
     let hasAnyKeys = false;
-    
+
     KEYS.forEach(id => {
       if (stored[id]) {
         hasAnyKeys = true;
@@ -560,9 +533,9 @@ async function handleAuthStateChanged(user) {
         allPresent = false;
       }
     });
-    
+
     updateProgress();
-    
+
     if (allPresent) {
       console.log('All keys present - entering bypass mode');
       broadcastKeys();
@@ -575,27 +548,25 @@ async function handleAuthStateChanged(user) {
       console.log('No keys saved - showing empty fields');
       showStatus('info', 'Add your API keys below to unlock all features.');
     }
-    
+
   } catch (err) {
     console.error('Error loading keys:', err);
     showStatus('error', `Could not load saved keys: ${err.message}`);
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // MAIN INIT
-// ─────────────────────────────────────────────────────────────────────────────
 function init() {
   if (isInitialized) {
     console.log('Already initialized');
     return;
   }
-  
+
   console.log('Initializing API Keys module...');
-  
+
   initDOMCache();
   initEventListeners();
-  
+
   if (auth) {
     console.log('Setting up auth listener with shared Firebase instance');
     auth.onAuthStateChanged(handleAuthStateChanged);
@@ -612,18 +583,14 @@ function init() {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ✅ FIX 3: Expose ALL functions directly on window — not just window.APIModule.
-//    type="module" scripts are scoped; onclick="window.verifySingle(...)" requires
 //    explicit window assignment for each function the HTML calls.
-// ─────────────────────────────────────────────────────────────────────────────
-window.verifySingle = verifySingle;
-window.verifyAndSaveAll = verifyAndSaveAll;
-window.enterEditMode = enterEditMode;
-window.toggleVisibility = toggleVisibility;
-window.pasteKey = pasteKey;
-window.clearKey = clearKey;
-window.toggleInfo = toggleInfo;
+window.verifySingle      = verifySingle;
+window.verifyAndSaveAll  = verifyAndSaveAll;
+window.enterEditMode     = enterEditMode;
+window.toggleVisibility  = toggleVisibility;
+window.pasteKey          = pasteKey;
+window.clearKey          = clearKey;
+window.toggleInfo        = toggleInfo;
 
 // Also keep APIModule for any external scripts that use it
 window.APIModule = {
