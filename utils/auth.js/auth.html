@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
   
-  <link rel="stylesheet" href="../main.css" />
+  <link rel="stylesheet" href="../../main.css" />
   
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -866,14 +866,13 @@
 ═══════════════════════════════════════════ -->
   <nav class="site-nav">
     <a href="../index.html" class="nav-logo">
-      <img src="../logo/logo-light.svg" alt="PrepPortal logo" style="display:none;" />
       <div class="logo-brand">
         <span class="brand-top">Prep</span>
         <span class="brand-bottom">Portal</span>
       </div>
     </a>
     <ul class="nav-links" id="nav-links">
-      <li><a href="./dashboard/dashboard.html">Dashboard</a></li>
+      <li><a href="./dashboard.html">Dashboard</a></li>
       <li><a href="account.html" class="active">Account</a></li>
     </ul>
     <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
@@ -918,7 +917,7 @@
     <div id="bypass-banner">
       <div class="bypass-dot"></div>
       <span class="bypass-txt">All API keys loaded — platform fully unlocked</span>
-      <button class="bypass-edit" onclick="enterEditMode()">Edit Keys</button>
+      <button class="bypass-edit" onclick="window.enterEditMode()">Edit Keys</button>
     </div>
     
     <p class="section-heading">Your API Keys</p>
@@ -945,22 +944,22 @@
           <div class="kc-input-row">
             <input type="password" class="kc-input" id="input-gemini" placeholder="AIza…" autocomplete="off" spellcheck="false" aria-label="Gemini API key" />
             <div class="kc-input-actions">
-              <button class="kc-btn-icon" onclick="toggleVisibility('gemini')"><svg id="eye-gemini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="kc-btn-icon" onclick="window.toggleVisibility('gemini')"><svg id="eye-gemini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                   <circle cx="12" cy="12" r="3" />
                 </svg></button>
-              <button class="kc-btn-icon" onclick="pasteKey('gemini')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="kc-btn-icon" onclick="window.pasteKey('gemini')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" />
                   <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                 </svg></button>
-              <button class="kc-btn-icon" onclick="clearKey('gemini')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="kc-btn-icon" onclick="window.clearKey('gemini')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg></button>
             </div>
           </div>
           <div class="kc-feedback" id="feedback-gemini"></div>
-          <button class="kc-verify-btn" id="verify-btn-gemini" onclick="verifySingle('gemini')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <button class="kc-verify-btn" id="verify-btn-gemini" onclick="window.verifySingle('gemini')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12" />
             </svg>Verify Key</button>
         </div>
@@ -981,22 +980,22 @@
           <div class="kc-input-row">
             <input type="password" class="kc-input" id="input-groq" placeholder="gsk_…" />
             <div class="kc-input-actions">
-              <button class="kc-btn-icon" onclick="toggleVisibility('groq')"><svg id="eye-groq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="kc-btn-icon" onclick="window.toggleVisibility('groq')"><svg id="eye-groq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                   <circle cx="12" cy="12" r="3" />
                 </svg></button>
-              <button class="kc-btn-icon" onclick="pasteKey('groq')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="kc-btn-icon" onclick="window.pasteKey('groq')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" />
                   <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                 </svg></button>
-              <button class="kc-btn-icon" onclick="clearKey('groq')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="kc-btn-icon" onclick="window.clearKey('groq')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg></button>
             </div>
           </div>
           <div class="kc-feedback" id="feedback-groq"></div>
-          <button class="kc-verify-btn" id="verify-btn-groq" onclick="verifySingle('groq')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <button class="kc-verify-btn" id="verify-btn-groq" onclick="window.verifySingle('groq')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12" />
             </svg>Verify Key</button>
         </div>
@@ -1017,22 +1016,22 @@
           <div class="kc-input-row">
             <input type="password" class="kc-input" id="input-youtube" placeholder="AIza…" />
             <div class="kc-input-actions">
-              <button class="kc-btn-icon" onclick="toggleVisibility('youtube')"><svg id="eye-youtube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="kc-btn-icon" onclick="window.toggleVisibility('youtube')"><svg id="eye-youtube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                   <circle cx="12" cy="12" r="3" />
                 </svg></button>
-              <button class="kc-btn-icon" onclick="pasteKey('youtube')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="kc-btn-icon" onclick="window.pasteKey('youtube')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" />
                   <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                 </svg></button>
-              <button class="kc-btn-icon" onclick="clearKey('youtube')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <button class="kc-btn-icon" onclick="window.clearKey('youtube')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg></button>
             </div>
           </div>
           <div class="kc-feedback" id="feedback-youtube"></div>
-          <button class="kc-verify-btn" id="verify-btn-youtube" onclick="verifySingle('youtube')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <button class="kc-verify-btn" id="verify-btn-youtube" onclick="window.verifySingle('youtube')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12" />
             </svg>Verify Key</button>
         </div>
@@ -1040,7 +1039,7 @@
     </div>
     
     <div class="cta-row">
-      <button class="btn-primary" id="save-all-btn" onclick="verifyAndSaveAll()" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <button class="btn-primary" id="save-all-btn" onclick="window.verifyAndSaveAll()" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
           <polyline points="17 21 17 13 7 13 7 21" />
           <polyline points="7 3 7 8 15 8" />
@@ -1053,7 +1052,7 @@
     </div>
     
     <div class="info-section">
-      <button class="info-toggle" id="info-toggle" onclick="toggleInfo()">
+      <button class="info-toggle" id="info-toggle" onclick="window.toggleInfo()">
         Where do I get these keys?
         <svg class="info-arrow" id="info-arrow" viewBox="0 0 24 24">
           <polyline points="6 9 12 15 18 9" />
@@ -1073,10 +1072,8 @@
     </div>
   </main>
   
-  
-  <script src="auth.js" type="module">
-  
-  </script>
+  <!-- IMPORTANT: Load the module script -->
+  <script type="module" src="auth.js"></script>
 </body>
 
 </html>

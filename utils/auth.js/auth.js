@@ -3,7 +3,7 @@
 // Uses shared Firebase instance from firebase-init.js
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { auth, db } from "../firebase-init.js";
+import { auth, db } from "../../firebase-init.js";
 
 // Gemini models (as provided)
 const GEMINI_MODELS = [
