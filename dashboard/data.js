@@ -26,7 +26,7 @@ const siteData = {
         { text: "Subjects", href: "#subjects" },
         { text: "Theory Drill", href: "#theory" },
         { text: "About", href: "#about" },
-        { text: "Authentication", href: "../auth.html" }
+        { text: "Authentication", href: "../utils/auth/auth.html" }
     ],
     ctaButton: { text: "Start Revising", href: "#exams" },
     
