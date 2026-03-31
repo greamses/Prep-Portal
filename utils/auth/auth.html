@@ -12,15 +12,13 @@
   
   <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
   
-  <script src="../../utils/loader/loader.js"/>
+  <!-- Remove the loader script if it's not needed, or ensure it doesn't conflict -->
+  <script src="../../utils/loader/loader.js"></script>
   
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <link rel="stylesheet" href="../../main.css"/>
-<link rel="stylesheet" href="./auth.css">
-
+  <!-- NO Firebase script tags here - they're imported via modules -->
+  
+  <link rel="stylesheet" href="../../main.css" />
+  <link rel="stylesheet" href="./auth.css">
 </head>
 
 <body>
@@ -30,10 +28,9 @@
 ═══════════════════════════════════════════ -->
   <div id="loader">
     <div id="loader-wrapper">
-      <div class="logo-cluster"></div> <!-- JS will inject the 3 images here -->
+      <div class="logo-cluster"></div>
     </div>
     <div class="loader-word"><span>Auth</span></div>
-    <!--     <div class="loader-word"><span>Portal.</span></div> -->
     <div class="loader-bar"></div>
   </div>
   <div id="auth-gate">
@@ -42,10 +39,9 @@
   </div>
   
   <!-- ═══════════════════════════════════════════
-     NAVIGATION (simplified for demo)
+     NAVIGATION
 ═══════════════════════════════════════════ -->
   <nav class="site-nav">
-
     <a href="../index.html" class="nav-logo">
       <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
       <div class="logo-brand">
@@ -113,7 +109,7 @@
       <!-- GEMINI -->
       <div class="key-card" id="card-gemini">
         <div class="kc-head">
-          <div class="kc-icon gemini">GEM</div>
+          <div class="kc-icon" id="icon-gemini"></div>
           <div class="kc-meta">
             <div class="kc-name">Google Gemini</div>
             <div class="kc-desc">Theory Analyser · Algebra Lab · Essay Grader</div>
@@ -149,7 +145,7 @@
       <!-- GROQ -->
       <div class="key-card" id="card-groq">
         <div class="kc-head">
-          <div class="kc-icon groq">GRQ</div>
+          <div class="kc-icon" id="icon-groq"></div>
           <div class="kc-meta">
             <div class="kc-name">Groq</div>
             <div class="kc-desc">PrepBot AI Chatbot · Fast inference</div>
@@ -185,7 +181,7 @@
       <!-- YOUTUBE -->
       <div class="key-card" id="card-youtube">
         <div class="kc-head">
-          <div class="kc-icon youtube">YT</div>
+          <div class="kc-icon" id="icon-youtube"></div>
           <div class="kc-meta">
             <div class="kc-name">YouTube Data API v3</div>
             <div class="kc-desc">Theory Practice · Video Resources · Khan Academy</div>
@@ -254,7 +250,7 @@
     </div>
   </main>
   
-  <!-- IMPORTANT: Load the module script -->
+  <!-- Load the auth module -->
   <script type="module" src="auth.js"></script>
 </body>
 

@@ -1,4 +1,4 @@
-// firebase-init.js (central file)
+// firebase-init.js - Central Firebase configuration
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
@@ -13,6 +13,11 @@ const firebaseConfig = {
   measurementId: "G-2PDS7LL77R"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+console.log('Firebase initialized:', app.name);
+
+export { auth, db };

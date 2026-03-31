@@ -1,14 +1,13 @@
-
-  import chatbotcss from './prepbotcss.js';
+import chatbotcss from './prepbotcss.js';
 // Removed initializeApp import as per instruction
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 /* ═══════════════════════════════════════════════════════════
    PREPBOT — The Ultimate AI Study Assistant
    Features: Context-Scraping, Quiz-Sync, Voice (STT/TTS),
              MathJax, Question Nav, Smart Nudges.
-   UPDATED: Groq key gate, Firestore key persistence
+   UPDATED: Auto-detects Groq key from user's Firestore settings
 ═══════════════════════════════════════════════════════════ */
 
 (function() {
@@ -25,148 +24,131 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
   const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
   const BOT_NAME = 'PrepBot';
   let GROQ_KEY = '';
-  
-  // Removed Firebase config and initializeApp call as per instruction.
-  // We will assume Firebase is initialized elsewhere in the parent application.
+  let keyLoadAttempted = false;
   
   /* ── 2b. FIRESTORE KEY HELPERS ── */
   function currentUID() {
-    // It's safer to wrap getAuth() in a try-catch block here
-    // to prevent the "No Firebase App" error if Firebase isn't initialized yet.
     try {
-      return getAuth().currentUser?.uid ?? null;
+      const auth = getAuth();
+      return auth.currentUser?.uid ?? null;
     } catch (e) {
-      // console.warn('Firebase Auth not available:', e.message); // For debugging
+      console.warn('Firebase Auth not available:', e.message);
       return null;
-    }
-  }
-  
-  async function saveGroqKeyToFirestore(key) {
-    const uid = currentUID();
-    if (!uid) {
-      console.warn('Cannot save Groq key: No user logged in or Firebase not initialized.');
-      return;
-    }
-    try {
-      const db = getFirestore();
-      await setDoc(doc(db, 'users', uid, 'settings', 'keys'), { groqKey: key }, { merge: true });
-    } catch (e) {
-      console.warn('Could not save Groq key to Firestore (Firebase possibly not initialized or other error):', e);
     }
   }
   
   async function loadGroqKeyFromFirestore() {
     const uid = currentUID();
     if (!uid) {
-      // console.log('Cannot load Groq key: No user logged in or Firebase not initialized.'); // For debugging
+      console.log('Cannot load Groq key: No user logged in.');
       return null;
     }
+    
     try {
       const db = getFirestore();
-      const snap = await getDoc(doc(db, 'users', uid, 'settings', 'keys'));
-      return snap.exists() ? snap.data().groqKey || null : null;
+      // First try to get from the main user document (where the auth module saves keys)
+      const userDocRef = doc(db, 'users', uid);
+      const userDocSnap = await getDoc(userDocRef);
+      
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        // Check for groqKey in the main user document
+        if (userData.groqKey) {
+          console.log('Found Groq key in user document');
+          return userData.groqKey;
+        }
+      }
+      
+      // Fallback: check in settings subcollection (for backward compatibility)
+      const settingsDocRef = doc(db, 'users', uid, 'settings', 'keys');
+      const settingsSnap = await getDoc(settingsDocRef);
+      
+      if (settingsSnap.exists()) {
+        const settingsData = settingsSnap.data();
+        if (settingsData.groqKey) {
+          console.log('Found Groq key in settings document');
+          return settingsData.groqKey;
+        }
+      }
+      
+      console.log('No Groq key found in Firestore for user');
+      return null;
     } catch (e) {
-      console.warn('Could not load Groq key from Firestore (Firebase possibly not initialized or other error):', e);
+      console.warn('Could not load Groq key from Firestore:', e);
       return null;
     }
   }
   
-  /* ── 2c. KEY GATE ── */
-  function isKeySet() { return !!GROQ_KEY.trim(); }
+  /* ── 2c. KEY CHECK ── */
+  function isKeySet() {
+    return !!GROQ_KEY && GROQ_KEY.trim().length > 0;
+  }
   
-  function showKeyGate() {
+  /* ── 2d. SHOW ERROR MESSAGE (NO INPUT) ── */
+  function showNoKeyMessage() {
     const messagesEl = document.getElementById('chat-messages');
     if (!messagesEl) return;
+    
     messagesEl.innerHTML = `
-<div class="chat-intro-card" id="key-gate-card" style="display:flex;flex-direction:column;gap:14px">
-  <div class="intro-label">API KEY REQUIRED</div>
-  <p style="margin:0;font-size:13px;line-height:1.6">
-    PrepBot needs a free <strong>Groq API key</strong> to work.<br>
-    Get yours at <a href="https://console.groq.com/keys" target="_blank" rel="noopener"
-      style="color:var(--blue,#0b57d0);text-decoration:underline">console.groq.com/keys</a> — it is free.
-  </p>
-  <div style="display:flex;gap:8px;align-items:center">
-    <input id="groq-key-input" type="password" placeholder="Paste Groq key here…"
-      style="flex:1;padding:8px 10px;border:2px solid var(--ink,#1f1f1f);font-family:inherit;font-size:13px;outline:none;background:var(--bg,#fff)"
-      autocomplete="off" spellcheck="false">
-    <button id="groq-key-show" type="button"
-      style="padding:8px 10px;border:2px solid var(--ink,#1f1f1f);background:var(--off,#f7f4ee);cursor:pointer;font-family:inherit;font-size:12px">
-      Show
-    </button>
-  </div>
-  <div id="groq-key-status" style="font-size:12px;color:var(--muted,#888);min-height:16px"></div>
-  <button id="groq-key-verify" type="button"
-    style="padding:10px 16px;border:2px solid var(--ink,#1f1f1f);background:var(--yellow,#ffe500);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:3px 3px 0 var(--ink,#1f1f1f)">
-    Verify and Save →
-  </button>
-</div>`;
+      <div class="chat-intro-card" style="display:flex;flex-direction:column;gap:14px">
+        <div class="intro-label">⚠️ API KEY NOT FOUND</div>
+        <p style="margin:0;font-size:13px;line-height:1.6">
+          PrepBot needs a <strong>Groq API key</strong> to work.<br><br>
+          Please add your Groq API key in the 
+          <a href="../auth/account.html" style="color:var(--blue,#0b57d0);text-decoration:underline;font-weight:bold;">
+            API Keys Settings
+          </a> page first.
+        </p>
+        <p style="margin:8px 0 0;font-size:12px;color:var(--muted,#666);">
+          Get your free key at 
+          <a href="https://console.groq.com/keys" target="_blank" rel="noopener" style="color:var(--blue,#0b57d0);">
+            console.groq.com/keys
+          </a>
+        </p>
+        <button id="retry-key-check" type="button"
+          style="margin-top:8px;padding:8px 16px;border:2px solid var(--ink,#1f1f1f);background:var(--yellow,#ffe500);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;border-radius:4px;">
+          Retry Loading Key
+        </button>
+      </div>`;
     
-    document.getElementById('groq-key-show').addEventListener('click', function() {
-      const inp = document.getElementById('groq-key-input');
-      const hidden = inp.type === 'password';
-      inp.type = hidden ? 'text' : 'password';
-      this.textContent = hidden ? 'Hide' : 'Show';
-    });
+    const retryBtn = document.getElementById('retry-key-check');
+    if (retryBtn) {
+      retryBtn.addEventListener('click', async () => {
+        retryBtn.textContent = 'Checking...';
+        retryBtn.disabled = true;
+        await initializePrepBot();
+        retryBtn.textContent = 'Retry Loading Key';
+        retryBtn.disabled = false;
+      });
+    }
+  }
+  
+  /* ── 3. INITIALIZE PREPBOT (AUTO-LOAD KEY) ── */
+  async function initializePrepBot() {
+    // Don't try to load multiple times
+    if (keyLoadAttempted && GROQ_KEY) return;
+    keyLoadAttempted = true;
     
-    document.getElementById('groq-key-verify').addEventListener('click', async function() {
-      const raw = document.getElementById('groq-key-input').value.trim();
-      const status = document.getElementById('groq-key-status');
-      if (!raw) { status.textContent = 'Paste your key first.'; return; }
+    // Try to load key from Firestore
+    const loadedKey = await loadGroqKeyFromFirestore();
+    
+    if (loadedKey && loadedKey.trim()) {
+      GROQ_KEY = loadedKey;
+      console.log('Groq key loaded successfully, starting PrepBot...');
       
-      this.textContent = 'Checking…';
-      this.disabled = true;
-      status.textContent = 'Verifying with Groq…';
-      
-      try {
-        const res = await fetch(GROQ_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${raw}` },
-          body: JSON.stringify({
-            model: 'llama3-8b-8192',
-            messages: [{ role: 'user', content: 'Say ok' }],
-            max_tokens: 3
-          })
-        });
-        
-        if (res.ok || res.status === 400) {
-          GROQ_KEY = raw;
-          
-          // Attempt to save to Firestore only if a user is logged in and Firebase is presumably initialized
-          const uidForSave = currentUID();
-          if (uidForSave) {
-            await saveGroqKeyToFirestore(raw);
-          } else {
-            console.log("No user logged in, skipping Firestore save for Groq key.");
-          }
-          
-          status.style.color = 'green';
-          status.textContent = 'Key verified. Starting PrepBot…';
-          
-          setTimeout(() => {
-            const messagesEl = document.getElementById('chat-messages');
-            if (messagesEl) {
-              messagesEl.innerHTML = '<div class="chat-intro-card"><div class="intro-label">SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
-            }
-            addQuizNavigationPill();
-            updateQuizNavigationPill();
-            startNudgeInterval();
-          }, 800);
-        }
-        else if (res.status === 401) {
-          status.style.color = 'red';
-          status.textContent = 'Invalid key — check and re-paste from Groq console.';
-          this.textContent = 'Retry →';
-          this.disabled = false;
-        } else {
-          throw new Error(`HTTP ${res.status}`);
-        }
-      } catch (err) {
-        status.style.color = 'red';
-        status.textContent = `Could not reach Groq (${err.message})`;
-        this.textContent = 'Retry →';
-        this.disabled = false;
+      // Initialize the chat interface
+      const messagesEl = document.getElementById('chat-messages');
+      if (messagesEl) {
+        messagesEl.innerHTML = '<div class="chat-intro-card"><div class="intro-label">🤖 SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
       }
-    });
+      
+      addQuizNavigationPill();
+      updateQuizNavigationPill();
+      startNudgeInterval();
+    } else {
+      console.log('No Groq key found, showing setup message');
+      showNoKeyMessage();
+    }
   }
   
   /* ── SITE MAP — for non-quiz page nudges ── */
@@ -279,7 +261,7 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
   let lastBotReply = '';
   let lastUserMessage = '';
   
-  /* ── 3. DOM & QUIZ SCRAPER ── */
+  /* ── 4. DOM & QUIZ SCRAPER ── */
   function getPageContext() {
     const quizData = window.__prepbotQuizData || null;
     const currentIdx = window.__prepbotCurrentQuestionIndex || 0;
@@ -387,7 +369,7 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
     return { text, prompt: `Help me understand this page: ${topic}` };
   }
   
-  /* ── 4. INJECT HTML ── */
+  /* ── 5. INJECT HTML ── */
   const mount = document.getElementById('prepbot');
   if (!mount) return;
   
@@ -429,17 +411,17 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
 
       <div class="chat-messages" id="chat-messages">
         <div class="chat-intro-card">
-          <div class="intro-label">SYSTEM READY</div>
-          <p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p>
+          <div class="intro-label">🔄 LOADING</div>
+          <p>Checking for API key...</p>
         </div>
       </div>
       <div class="chat-suggestions" id="chat-suggestions"></div>
       <div class="chat-input-row">
-        <div class="chat-input-wrap"><textarea id="chat-input" rows="1" placeholder="Type or click Mic..."></textarea></div>
-        <button id="chat-mic" title="Voice Input">
+        <div class="chat-input-wrap"><textarea id="chat-input" rows="1" placeholder="Type or click Mic..." disabled></textarea></div>
+        <button id="chat-mic" title="Voice Input" disabled>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         </button>
-        <button id="chat-send">
+        <button id="chat-send" disabled>
           <svg class="send-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           <div class="send-spinner"></div>
         </button>
@@ -451,7 +433,7 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
     </div>
   `;
   
-  /* ── 5. REFS & STATE ── */
+  /* ── 6. REFS & STATE ── */
   const win = document.getElementById('chat-window'),
     fabWrap = document.getElementById('chat-fab-wrap'),
     input = document.getElementById('chat-input'),
@@ -481,7 +463,7 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
     questionStartTime = null,
     userProficiency = 'beginner';
   
-  /* ── 6. VOICE ENGINE ── */
+  /* ── 7. VOICE ENGINE ── */
   if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
@@ -505,7 +487,7 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
     synth.speak(utter);
   }
   
-  /* ── 7. GET SOLUTION STEPS ── */
+  /* ── 8. GET SOLUTION STEPS ── */
   function getSolutionSteps(questionData) {
     if (!questionData) return [];
     let steps = [];
@@ -524,7 +506,7 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
     return steps.filter(s => s.length > 0);
   }
   
-  /* ── 8. PROGRESSIVE HINT GENERATION ── */
+  /* ── 9. PROGRESSIVE HINT GENERATION ── */
   function generateProgressiveHint() {
     const quizData = window.__prepbotQuizData;
     const currentIdx = window.__prepbotCurrentQuestionIndex || 0;
@@ -583,7 +565,7 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
     return { suggestionText, promptForAI, stepIndex };
   }
   
-  /* ── 9. ADD QUIZ NAVIGATION PILL ── */
+  /* ── 10. ADD QUIZ NAVIGATION PILL ── */
   function addQuizNavigationPill() {
     const messagesContainer = document.getElementById('chat-messages');
     if (!messagesContainer) return;
@@ -627,9 +609,12 @@ import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/fireb
     pill.innerHTML = `Question ${currentIdx + 1} of ${total}`;
   }
   
-  /* ── 10. SEND MESSAGE ── */
+  /* ── 11. SEND MESSAGE ── */
   async function sendMessage(text) {
-    if (!isKeySet()) { toggleChat(true); return; }
+    if (!isKeySet()) {
+      initializePrepBot(); // Try to reload key
+      return;
+    }
     
     text = text || input.value.trim();
     if (!text || isBusy) return;
@@ -699,7 +684,7 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
     sendBtn.classList.remove('loading');
   }
   
-  /* ── 11. AI-GENERATED SUGGESTION CHIPS ── */
+  /* ── 12. AI-GENERATED SUGGESTION CHIPS ── */
   function parseSuggestions(raw) {
     const pattern = /\[SUGGESTIONS:\s*([^\]]+)\]\s*$/is;
     const match = raw.match(pattern);
@@ -733,7 +718,7 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
     });
   }
   
-  /* ── 12. UI RENDERERS WITH MATHJAX SUPPORT ── */
+  /* ── 13. UI RENDERERS WITH MATHJAX SUPPORT ── */
   async function appendMessage(role, text) {
     const wrap = document.createElement('div');
     wrap.className = `msg ${role}`;
@@ -808,12 +793,15 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
       fabWrap.classList.add('fab-hidden');
       popup.classList.remove('visible');
       if (!isKeySet()) {
-        showKeyGate();
+        initializePrepBot();
         return;
       }
       updateQuizNavBar();
       addQuizNavigationPill();
       updateQuizNavigationPill();
+      if (input) input.disabled = false;
+      if (sendBtn) sendBtn.disabled = false;
+      if (micBtn && recognition) micBtn.disabled = false;
       setTimeout(() => input.focus(), 300);
     } else {
       if (!document.getElementById('chat-fab-restore').classList.contains('fab-restore-visible')) {
@@ -855,7 +843,7 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
     qbBar.style.display = 'block';
   }
   
-  /* ── 13. POPUP SUGGESTION — MathJax-first, site-aware ── */
+  /* ── 14. POPUP SUGGESTION — MathJax-first, site-aware ── */
   async function showPopupSuggestion() {
     if (!isKeySet()) return;
     if (win.classList.contains('open') || isBusy || fabWrap.classList.contains('fab-hidden')) return;
@@ -897,7 +885,7 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
     }, 10000);
   }
   
-  /* ── 14. NUDGE INTERVAL — 40 to 50 seconds ── */
+  /* ── 15. NUDGE INTERVAL — 40 to 50 seconds ── */
   function startNudgeInterval() {
     if (nudgeInterval) clearInterval(nudgeInterval);
     
@@ -923,7 +911,14 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
     }
   }
   
-  /* ── 15. EVENT LISTENERS ── */
+  /* ── 16. ENABLE INPUTS WHEN KEY IS LOADED ── */
+  function enableChatInputs() {
+    if (input) input.disabled = false;
+    if (sendBtn) sendBtn.disabled = false;
+    if (micBtn && recognition) micBtn.disabled = false;
+  }
+  
+  /* ── 17. EVENT LISTENERS ── */
   document.getElementById('chat-fab').onclick = () => toggleChat();
   document.getElementById('chat-close').onclick = () => toggleChat(false);
   document.getElementById('chat-clear-btn').onclick = () => document.getElementById('chat-clear-bar').classList.add('visible');
@@ -936,7 +931,7 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
     updateQuizNavigationPill();
   };
   sendBtn.onclick = () => sendMessage();
-  micBtn.onclick = () => { if (recognition) recognition.start(); };
+  micBtn.onclick = () => { if (recognition && isKeySet()) recognition.start(); };
   input.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault();
       sendMessage(); } };
   
@@ -1004,39 +999,8 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
     if (!nudgeInterval && isKeySet()) startNudgeInterval();
   };
   
-  /* ── 16. INIT — load key from Firestore if not already in sessionStorage ── */
-  (async () => {
-    // Attempt to load key from Firestore only if a user is logged in
-    // and Firebase is presumably initialized elsewhere.
-    const uidForLoad = currentUID(); // This now has a try-catch
-    if (uidForLoad) {
-      const saved = await loadGroqKeyFromFirestore();
-      if (saved) {
-        GROQ_KEY = saved;
-        console.log("Groq key loaded from Firestore.");
-        startNudgeInterval();
-        // If the chat window is already open and showing key gate, close it.
-        // This scenario is less likely if key is loaded on init, but good for robustness.
-        const keyGateCard = document.getElementById('key-gate-card');
-        if (keyGateCard) {
-          const messagesEl = document.getElementById('chat-messages');
-          if (messagesEl) {
-            messagesEl.innerHTML = '<div class="chat-intro-card"><div class="intro-label">SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
-          }
-          addQuizNavigationPill();
-          updateQuizNavigationPill();
-        }
-        return; // Key loaded, no need to show key gate.
-      } else {
-        console.log("No Groq key found in Firestore for logged-in user.");
-      }
-    } else {
-      console.log("No user logged in, or Firebase not initialized. Skipping Firestore key load.");
-    }
-    // If no key was loaded (either no user, Firebase error, or no key in Firestore), show the key gate.
-    showKeyGate(); // This will display the key input field.
-  })();
-  
+  /* ── 18. INIT ── */
+  initializePrepBot();
   
   window.addEventListener('prepbot:quizUpdated', () => {
     if (qbBar.style.display === 'block') buildQuizNav();
@@ -1056,6 +1020,22 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
     }
   });
   
+  // Listen for key updates from the auth module
+  window.addEventListener('prepportal:keysReady', (event) => {
+    if (event.detail && event.detail.groq) {
+      console.log('Received Groq key from auth module');
+      GROQ_KEY = event.detail.groq;
+      keyLoadAttempted = true;
+      enableChatInputs();
+      if (messages) {
+        messages.innerHTML = '<div class="chat-intro-card"><div class="intro-label">🤖 SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
+      }
+      addQuizNavigationPill();
+      updateQuizNavigationPill();
+      startNudgeInterval();
+    }
+  });
+  
   setTimeout(() => {
     updateQuizNavBar();
     addQuizNavigationPill();
@@ -1069,15 +1049,5 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
     if (qbBar.style.display === 'block' && window.__prepbotQuizData) buildQuizNav();
   };
   
-  console.log(`${BOT_NAME} ready — Groq key gate, Firestore persistence, MathJax-first popup, 40-50s nudge interval`);
+  console.log(`${BOT_NAME} ready — Auto-detects Groq key from Firestore`);
 })();
-
-// The global currentUID function should also be wrapped for safety
-function currentUID() {
-  try {
-    return getAuth().currentUser?.uid ?? null;
-  } catch (e) {
-    // console.warn('Firebase Auth not available (global currentUID):', e.message);
-    return null;
-  }
-}

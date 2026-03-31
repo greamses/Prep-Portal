@@ -313,7 +313,7 @@ body {
   width: 36px;
   height: 36px;
   flex-shrink: 0;
-  border: 2px solid var(--ink);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -324,27 +324,7 @@ body {
   text-transform: uppercase;
 }
 
-.kc-icon.gemini {
-  background: #4285f4;
-  color: #fff;
-  border-color: #4285f4;
-}
 
-.kc-icon.groq {
-  background: var(--ink);
-  color: var(--yellow);
-}
-
-.kc-icon.youtube {
-  background: #ff0000;
-  color: #fff;
-  border-color: #ff0000;
-}
-
-.kc-meta {
-  flex: 1;
-  min-width: 0;
-}
 
 .kc-name {
   font-family: var(--font-display);
