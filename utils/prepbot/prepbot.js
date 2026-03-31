@@ -1,7 +1,8 @@
 import chatbotcss from './prepbotcss.js';
-// Import Firebase modular SDK
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
-import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
+
+// REPLACE the Firebase imports at the top of prepbot.js with:
+import { auth, db } from '../../firebase-init.js';
+import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 
 /* ═══════════════════════════════════════════════════════════
    PREPBOT — The Ultimate AI Study Assistant
@@ -26,115 +27,122 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12
   let GROQ_KEY = '';
   let keyLoadAttempted = false;
   let firebaseReady = false;
+  
+  /* ── 2b. KEY RESOLUTION — use shared Firebase instances ── */
   let authInstance = null;
   let dbInstance = null;
+  let _cachedKey = null; // <-- ADD THIS MISSING VARIABLE
   
-  /* ── 2b. FIREBASE HELPERS WITH RETRY ── */
-  function waitForFirebase(maxAttempts = 10, delay = 500) {
+  // Wait for Firebase to be ready
+  async function waitForFirebase() {
+    if (auth && db) {
+      authInstance = auth;
+      dbInstance = db;
+      console.log('PrepBot: Firebase ready');
+      return true;
+    }
+    
+    // Wait for Firebase to initialize (up to 5 seconds)
     return new Promise((resolve) => {
       let attempts = 0;
-      
-      const checkFirebase = () => {
+      const checkInterval = setInterval(() => {
         attempts++;
-        
-        try {
-          // Try to get auth instance
-          const auth = getAuth();
-          const db = getFirestore();
-          
-          if (auth && db) {
-            console.log('Firebase is ready for PrepBot');
-            authInstance = auth;
-            dbInstance = db;
-            firebaseReady = true;
-            resolve(true);
-            return;
-          }
-        } catch (e) {
-          console.log(`Firebase not ready yet (attempt ${attempts}/${maxAttempts}):`, e.message);
-        }
-        
-        if (attempts < maxAttempts) {
-          setTimeout(checkFirebase, delay);
-        } else {
-          console.warn('Firebase not ready after max attempts, continuing without Firebase');
+        if (auth && db) {
+          authInstance = auth;
+          dbInstance = db;
+          clearInterval(checkInterval);
+          console.log('PrepBot: Firebase ready after check');
+          resolve(true);
+        } else if (attempts >= 50) { // 5 seconds max
+          clearInterval(checkInterval);
+          console.warn('PrepBot: Firebase not available after 5 seconds');
           resolve(false);
         }
-      };
-      
-      checkFirebase();
+      }, 100);
     });
   }
   
-  function currentUID() {
-    if (!authInstance) return null;
+  /* ── IMPROVED FIRESTORE KEY LOADER ── */
+  async function tryLoadFromFirestore() {
     try {
-      return authInstance.currentUser?.uid ?? null;
-    } catch (e) {
-      console.warn('Error getting current user:', e.message);
-      return null;
-    }
-  }
-  
-  async function loadGroqKeyFromFirestore() {
-    const uid = currentUID();
-    if (!uid) {
-      console.log('Cannot load Groq key: No user logged in.');
-      return null;
-    }
-    
-    if (!dbInstance) {
-      console.log('Firestore not initialized');
-      return null;
-    }
-    
-    try {
-      // First try to get from the main user document (where the auth module saves keys)
-      const userDocRef = doc(dbInstance, 'users', uid);
-      const userDocSnap = await getDoc(userDocRef);
+      // Wait for Firebase to be ready
+      await waitForFirebase();
       
-      if (userDocSnap.exists()) {
-        const userData = userDocSnap.data();
-        // Check for groqKey in the main user document
-        if (userData.groqKey) {
-          console.log('Found Groq key in user document');
-          return userData.groqKey;
+      if (!authInstance || !dbInstance) {
+        console.log('Firebase not available');
+        return null;
+      }
+      
+      const user = authInstance.currentUser;
+      if (!user) {
+        console.log('No user logged in');
+        return null;
+      }
+      
+      console.log('Loading Groq key for user:', user.uid);
+      
+      // Try users/{uid} document first
+      const userSnap = await getDoc(doc(dbInstance, 'users', user.uid));
+      if (userSnap.exists()) {
+        const groqKey = userSnap.data().groqKey;
+        if (groqKey && groqKey.trim()) {
+          console.log('Found Groq key in users document');
+          return groqKey;
         }
       }
       
-      // Fallback: check in settings subcollection (for backward compatibility)
-      const settingsDocRef = doc(dbInstance, 'users', uid, 'settings', 'keys');
-      const settingsSnap = await getDoc(settingsDocRef);
-      
+      // Try users/{uid}/settings/keys subcollection
+      const settingsSnap = await getDoc(doc(dbInstance, 'users', user.uid, 'settings', 'keys'));
       if (settingsSnap.exists()) {
-        const settingsData = settingsSnap.data();
-        if (settingsData.groqKey) {
+        const groqKey = settingsSnap.data().groqKey;
+        if (groqKey && groqKey.trim()) {
           console.log('Found Groq key in settings document');
-          return settingsData.groqKey;
+          return groqKey;
         }
       }
       
-      console.log('No Groq key found in Firestore for user');
-      return null;
+      console.log('No Groq key found for user');
     } catch (e) {
-      console.warn('Could not load Groq key from Firestore:', e.message);
-      return null;
+      console.warn('Firestore key load error:', e.message);
     }
+    return null;
   }
   
-  /* ── 2c. KEY CHECK ── */
+  /* ── 2c. KEY READY HANDLER ── */
+  function onKeyReady(key) {
+    GROQ_KEY = key;
+    keyLoadAttempted = true;
+    
+    const messagesEl = document.getElementById('chat-messages');
+    if (messagesEl) {
+      messagesEl.innerHTML = '<div class="chat-intro-card"><div class="intro-label"> SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
+    }
+    
+    const inp = document.getElementById('chat-input');
+    const sndBtn = document.getElementById('chat-send');
+    const micB = document.getElementById('chat-mic');
+    if (inp) inp.disabled = false;
+    if (sndBtn) sndBtn.disabled = false;
+    if (micB) micB.disabled = false;
+    
+    addQuizNavigationPill();
+    updateQuizNavigationPill();
+    startNudgeInterval();
+  }
+  
+  /* ── 2d. KEY CHECK ── */
   function isKeySet() {
     return !!GROQ_KEY && GROQ_KEY.trim().length > 0;
   }
   
-  /* ── 2d. SHOW ERROR MESSAGE (NO INPUT) ── */
+  /* ── 2e. SHOW ERROR MESSAGE (NO INPUT) ── */
   function showNoKeyMessage() {
     const messagesEl = document.getElementById('chat-messages');
     if (!messagesEl) return;
     
     messagesEl.innerHTML = `
       <div class="chat-intro-card" style="display:flex;flex-direction:column;gap:14px">
-        <div class="intro-label">⚠️ API KEY NOT FOUND</div>
+        <div class="intro-label"> API KEY NOT FOUND</div>
         <p style="margin:0;font-size:13px;line-height:1.6">
           PrepBot needs a <strong>Groq API key</strong> to work.<br><br>
           Please add your Groq API key in the 
@@ -159,6 +167,7 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12
       retryBtn.addEventListener('click', async () => {
         retryBtn.textContent = 'Checking...';
         retryBtn.disabled = true;
+        keyLoadAttempted = false; // Reset so we can try again
         await initializePrepBot();
         retryBtn.textContent = 'Retry Loading Key';
         retryBtn.disabled = false;
@@ -166,41 +175,75 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12
     }
   }
   
-  /* ── 3. INITIALIZE PREPBOT (AUTO-LOAD KEY) ── */
+  /* ── 3. INITIALIZE PREPBOT ── */
   async function initializePrepBot() {
-    // Don't try to load multiple times if we already have a key
-    if (keyLoadAttempted && GROQ_KEY) return;
-    keyLoadAttempted = true;
+    if (keyLoadAttempted && GROQ_KEY) {
+      console.log('PrepBot: Already initialized with key');
+      return;
+    }
     
-    // Wait for Firebase to be ready
+    // First, ensure Firebase is ready
     await waitForFirebase();
     
-    // Try to load key from Firestore
-    const loadedKey = await loadGroqKeyFromFirestore();
-    
-    if (loadedKey && loadedKey.trim()) {
-      GROQ_KEY = loadedKey;
-      console.log('Groq key loaded successfully, starting PrepBot...');
-      
-      // Initialize the chat interface
-      const messagesEl = document.getElementById('chat-messages');
-      if (messagesEl) {
-        messagesEl.innerHTML = '<div class="chat-intro-card"><div class="intro-label">🤖 SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
+    // Listen for keysReady event from API keys module
+    window.addEventListener('prepportal:keysReady', (e) => {
+      if (e.detail?.groq && !GROQ_KEY) {
+        console.log('PrepBot: Received keys from event');
+        _cachedKey = e.detail.groq;
+        onKeyReady(_cachedKey);
       }
+    });
+    
+    // ① Check if keys are already available from window
+    if (window.PrepPortalKeys?.groq) {
+      console.log('PrepBot: using key from window.PrepPortalKeys');
+      onKeyReady(window.PrepPortalKeys.groq);
+      return;
+    }
+    
+    // ② Try Firestore directly with current user
+    if (authInstance && authInstance.currentUser) {
+      const firestoreKey = await tryLoadFromFirestore();
+      if (firestoreKey) {
+        console.log('PrepBot: got key from Firestore directly');
+        onKeyReady(firestoreKey);
+        return;
+      }
+    }
+    
+    // ③ Wait for keysReady event (user might be logging in)
+    if (!keyLoadAttempted) {
+      keyLoadAttempted = true;
+      console.log('PrepBot: Waiting for keysReady event...');
       
-      // Enable inputs
-      const input = document.getElementById('chat-input');
-      const sendBtn = document.getElementById('chat-send');
-      const micBtn = document.getElementById('chat-mic');
-      if (input) input.disabled = false;
-      if (sendBtn) sendBtn.disabled = false;
-      if (micBtn) micBtn.disabled = false;
+      // Wait up to 10 seconds for the event
+      await new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+          console.log('PrepBot: Timeout waiting for keys');
+          resolve();
+        }, 10000);
+        
+        const handler = (e) => {
+          if (e.detail?.groq) {
+            clearTimeout(timeout);
+            window.removeEventListener('prepportal:keysReady', handler);
+            resolve();
+          }
+        };
+        window.addEventListener('prepportal:keysReady', handler);
+      });
       
-      addQuizNavigationPill();
-      updateQuizNavigationPill();
-      startNudgeInterval();
-    } else {
-      console.log('No Groq key found, showing setup message');
+      // Check again after waiting
+      if (window.PrepPortalKeys?.groq && !GROQ_KEY) {
+        console.log('PrepBot: got key after waiting');
+        onKeyReady(window.PrepPortalKeys.groq);
+        return;
+      }
+    }
+    
+    // ④ No key found - show setup message
+    if (!GROQ_KEY) {
+      console.warn('PrepBot: no key found, showing setup message');
       showNoKeyMessage();
     }
   }
@@ -986,8 +1029,12 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
   };
   sendBtn.onclick = () => sendMessage();
   micBtn.onclick = () => { if (recognition && isKeySet()) recognition.start(); };
-  input.onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault();
-      sendMessage(); } };
+  input.onkeydown = e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
   
   if (quizNavPrev) {
     quizNavPrev.onclick = () => {
@@ -1052,7 +1099,6 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
     document.getElementById('chat-fab-restore').classList.remove('fab-restore-visible');
     if (!nudgeInterval && isKeySet()) startNudgeInterval();
   };
-  
   /* ── 18. INIT ── */
   // Start initialization after a short delay to ensure DOM is ready
   setTimeout(() => {
@@ -1074,22 +1120,6 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
         questionStartTime = Date.now();
         suggestionHistory = [];
       }
-    }
-  });
-  
-  // Listen for key updates from the auth module
-  window.addEventListener('prepportal:keysReady', (event) => {
-    if (event.detail && event.detail.groq) {
-      console.log('Received Groq key from auth module');
-      GROQ_KEY = event.detail.groq;
-      keyLoadAttempted = true;
-      enableChatInputs();
-      if (messages) {
-        messages.innerHTML = '<div class="chat-intro-card"><div class="intro-label">🤖 SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
-      }
-      addQuizNavigationPill();
-      updateQuizNavigationPill();
-      startNudgeInterval();
     }
   });
   
