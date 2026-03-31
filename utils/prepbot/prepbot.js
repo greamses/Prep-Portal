@@ -1,13 +1,13 @@
 import chatbotcss from './prepbotcss.js';
-// Removed initializeApp import as per instruction
-import { getAuth } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
+// Import Firebase modular SDK
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
 import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 
 /* ═══════════════════════════════════════════════════════════
    PREPBOT — The Ultimate AI Study Assistant
    Features: Context-Scraping, Quiz-Sync, Voice (STT/TTS),
              MathJax, Question Nav, Smart Nudges.
-   UPDATED: Auto-detects Groq key from user's Firestore settings
+   UPDATED: Waits for Firebase initialization
 ═══════════════════════════════════════════════════════════ */
 
 (function() {
@@ -25,14 +25,53 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12
   const BOT_NAME = 'PrepBot';
   let GROQ_KEY = '';
   let keyLoadAttempted = false;
+  let firebaseReady = false;
+  let authInstance = null;
+  let dbInstance = null;
   
-  /* ── 2b. FIRESTORE KEY HELPERS ── */
+  /* ── 2b. FIREBASE HELPERS WITH RETRY ── */
+  function waitForFirebase(maxAttempts = 10, delay = 500) {
+    return new Promise((resolve) => {
+      let attempts = 0;
+      
+      const checkFirebase = () => {
+        attempts++;
+        
+        try {
+          // Try to get auth instance
+          const auth = getAuth();
+          const db = getFirestore();
+          
+          if (auth && db) {
+            console.log('Firebase is ready for PrepBot');
+            authInstance = auth;
+            dbInstance = db;
+            firebaseReady = true;
+            resolve(true);
+            return;
+          }
+        } catch (e) {
+          console.log(`Firebase not ready yet (attempt ${attempts}/${maxAttempts}):`, e.message);
+        }
+        
+        if (attempts < maxAttempts) {
+          setTimeout(checkFirebase, delay);
+        } else {
+          console.warn('Firebase not ready after max attempts, continuing without Firebase');
+          resolve(false);
+        }
+      };
+      
+      checkFirebase();
+    });
+  }
+  
   function currentUID() {
+    if (!authInstance) return null;
     try {
-      const auth = getAuth();
-      return auth.currentUser?.uid ?? null;
+      return authInstance.currentUser?.uid ?? null;
     } catch (e) {
-      console.warn('Firebase Auth not available:', e.message);
+      console.warn('Error getting current user:', e.message);
       return null;
     }
   }
@@ -44,10 +83,14 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12
       return null;
     }
     
+    if (!dbInstance) {
+      console.log('Firestore not initialized');
+      return null;
+    }
+    
     try {
-      const db = getFirestore();
       // First try to get from the main user document (where the auth module saves keys)
-      const userDocRef = doc(db, 'users', uid);
+      const userDocRef = doc(dbInstance, 'users', uid);
       const userDocSnap = await getDoc(userDocRef);
       
       if (userDocSnap.exists()) {
@@ -60,7 +103,7 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12
       }
       
       // Fallback: check in settings subcollection (for backward compatibility)
-      const settingsDocRef = doc(db, 'users', uid, 'settings', 'keys');
+      const settingsDocRef = doc(dbInstance, 'users', uid, 'settings', 'keys');
       const settingsSnap = await getDoc(settingsDocRef);
       
       if (settingsSnap.exists()) {
@@ -74,7 +117,7 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12
       console.log('No Groq key found in Firestore for user');
       return null;
     } catch (e) {
-      console.warn('Could not load Groq key from Firestore:', e);
+      console.warn('Could not load Groq key from Firestore:', e.message);
       return null;
     }
   }
@@ -125,9 +168,12 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12
   
   /* ── 3. INITIALIZE PREPBOT (AUTO-LOAD KEY) ── */
   async function initializePrepBot() {
-    // Don't try to load multiple times
+    // Don't try to load multiple times if we already have a key
     if (keyLoadAttempted && GROQ_KEY) return;
     keyLoadAttempted = true;
+    
+    // Wait for Firebase to be ready
+    await waitForFirebase();
     
     // Try to load key from Firestore
     const loadedKey = await loadGroqKeyFromFirestore();
@@ -139,8 +185,16 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12
       // Initialize the chat interface
       const messagesEl = document.getElementById('chat-messages');
       if (messagesEl) {
-        messagesEl.innerHTML = '<div class="chat-intro-card"><div class="intro-label">SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
+        messagesEl.innerHTML = '<div class="chat-intro-card"><div class="intro-label">🤖 SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
       }
+      
+      // Enable inputs
+      const input = document.getElementById('chat-input');
+      const sendBtn = document.getElementById('chat-send');
+      const micBtn = document.getElementById('chat-mic');
+      if (input) input.disabled = false;
+      if (sendBtn) sendBtn.disabled = false;
+      if (micBtn) micBtn.disabled = false;
       
       addQuizNavigationPill();
       updateQuizNavigationPill();
@@ -411,7 +465,7 @@ import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/12
 
       <div class="chat-messages" id="chat-messages">
         <div class="chat-intro-card">
-          <div class="intro-label">LOADING</div>
+          <div class="intro-label">🔄 LOADING</div>
           <p>Checking for API key...</p>
         </div>
       </div>
@@ -1000,7 +1054,10 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
   };
   
   /* ── 18. INIT ── */
-  initializePrepBot();
+  // Start initialization after a short delay to ensure DOM is ready
+  setTimeout(() => {
+    initializePrepBot();
+  }, 500);
   
   window.addEventListener('prepbot:quizUpdated', () => {
     if (qbBar.style.display === 'block') buildQuizNav();
@@ -1028,7 +1085,7 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
       keyLoadAttempted = true;
       enableChatInputs();
       if (messages) {
-        messages.innerHTML = '<div class="chat-intro-card"><div class="intro-label"> SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
+        messages.innerHTML = '<div class="chat-intro-card"><div class="intro-label">🤖 SYSTEM READY</div><p>I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</p></div>';
       }
       addQuizNavigationPill();
       updateQuizNavigationPill();

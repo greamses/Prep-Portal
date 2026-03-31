@@ -20,7 +20,7 @@ const GEMINI_MODELS = [
 // API Icons (online CDN links)
 const API_ICONS = {
   gemini: 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Google_Gemini_icon_2025.svg',
-  groq: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/groq-icon.png',
+  groq: '',
   youtube: 'https://upload.wikimedia.org/wikipedia/commons/0/09/YouTube_full-color_icon_%282017%29.svg'
 };
 
