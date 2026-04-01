@@ -508,7 +508,7 @@ import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase
 
       <div class="chat-messages" id="chat-messages">
         <div class="chat-intro-card">
-          <div class="intro-label">🔄 LOADING</div>
+          <div class="intro-label">LOADING</div>
           <p>Checking for API key...</p>
         </div>
       </div>
