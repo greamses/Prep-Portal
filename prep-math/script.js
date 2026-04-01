@@ -66,10 +66,24 @@ async function getGeminiKey() {
 }
 
 // ============================================
-// GEMINI CONFIG
+// GEMINI CONFIG - UPDATED MODELS
 // ============================================
-const GEMINI_MODEL = 'gemini-1.5-flash';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const GEMINI_MODELS = [
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent',
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent',
+  'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent',
+  'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent',
+  'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent',
+];
+
+let currentModelIndex = 0;
+
+// Helper function to get next model URL
+function getNextModelUrl() {
+    const modelUrl = GEMINI_MODELS[currentModelIndex];
+    currentModelIndex = (currentModelIndex + 1) % GEMINI_MODELS.length;
+    return modelUrl;
+}
 
 // ============================================
 // CLASS CURRICULUM DATA - Primary 1 to SS3
@@ -502,7 +516,7 @@ function mountEquation(eq) {
 }
 
 // ============================================
-// GENERATE — Gemini with class context
+// GENERATE — Gemini with class context and model rotation
 // ============================================
 async function generateQuestion() {
     const pageBtn = document.getElementById('gen-btn');
@@ -530,6 +544,7 @@ async function generateQuestion() {
     
     try {
         const geminiKey = await getGeminiKey();
+        const modelUrl = getNextModelUrl();
         
         const seed = buildVarietySeed();
         const avoidClause = recentEquations.length ?
@@ -570,7 +585,7 @@ Examples:
 {"eq": "2x + 3 = 11", "answer": "x=4", "hint": "Subtract 3 from both sides, then divide by 2."}
 {"eq": "5x - 2 > 7", "answer": "x>9/5", "hint": "Transfer −2 to the right as +2, giving 5x > 9."}`;
         
-        const res = await fetch(`${GEMINI_URL}?key=${geminiKey}`, {
+        const res = await fetch(`${modelUrl}?key=${geminiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
