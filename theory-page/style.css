@@ -1049,8 +1049,61 @@ body {
 }
 
 /* ════════════════════════════════════════════════════
-   API KEY ROW
+   API KEY SECTION
 ════════════════════════════════════════════════════ */
+#apikey-section {
+  margin-top: 0;
+}
+
+.setup-card {
+  border: var(--border);
+  background: var(--bg);
+  padding: var(--padding-md);
+}
+
+.setup-card-hd {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.step-badge {
+  width: 30px;
+  height: 30px;
+  background: var(--yellow);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: var(--border);
+  line-height: var(--leading-none);
+}
+
+.setup-card-title {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--ink);
+  margin-bottom: 6px;
+  line-height: var(--leading-snug);
+}
+
+.setup-card-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: .03em;
+  line-height: 1.6;
+}
+
+/* API Key Row */
 .apikey-row {
   display: flex;
   align-items: stretch;
@@ -1150,16 +1203,24 @@ body {
   color: var(--bg);
 }
 
-.apikey-status {
+/* API Key Status Row */
+.apikey-status-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  min-height: 22px;
+}
+
+.apikey-status-text {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: var(--weight-semibold);
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: .07em;
   color: var(--muted);
+  flex: 1;
   transition: color .2s;
 }
 
@@ -1186,102 +1247,7 @@ body {
   border-radius: 0;
 }
 
-.apikey-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: var(--weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--blue);
-  text-decoration: none;
-  border-bottom: 1.5px solid transparent;
-  transition: border-color .15s;
-}
-
-.apikey-link:hover {
-  border-color: var(--blue);
-}
-
-/* ════════════════════════════════════════════════════
-   YOUTUBE API KEY SECTION
-   Injected after #apikey-section by theory-practice.js
-════════════════════════════════════════════════════ */
-#yt-apikey-section {
-  border: var(--border);
-  border-top: none;
-  background: var(--bg);
-  box-shadow: var(--shadow-lg);
-  padding: var(--padding-md);
-}
-
-.setup-card-hd {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  margin-bottom: 18px;
-}
-
-/* ★ badge — square yellow, mirrors .step-num */
-.step-badge {
-  width: 30px;
-  height: 30px;
-  background: var(--yellow);
-  color: var(--ink);
-  font-family: var(--font-display);
-  font-weight: var(--weight-black);
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: var(--border);
-  line-height: var(--leading-none);
-}
-
-.setup-card-title {
-  font-family: var(--font-display);
-  font-weight: var(--weight-bold);
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-widest);
-  color: var(--ink);
-  margin-bottom: 6px;
-  line-height: var(--leading-snug);
-}
-
-.setup-card-sub {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--muted);
-  letter-spacing: .03em;
-  line-height: 1.6;
-}
-
-/* Status row */
-.apikey-status-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 12px;
-  margin-bottom: 4px;
-  min-height: 22px;
-}
-
-.apikey-status-text {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: var(--weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  color: var(--muted);
-  flex: 1;
-  transition: color .2s;
-}
-
-/* ✓ verified badge */
+/* Verified badge */
 .done-badge {
   font-family: var(--font-mono);
   font-size: 10px;
@@ -1296,7 +1262,30 @@ body {
   animation: pop .3s var(--ease-bounce) both;
 }
 
-/* Skip button — ghost variant of .apikey-verify-btn */
+/* Optional badge */
+.optional-badge {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  background: var(--off);
+  color: var(--muted);
+  border: 1.5px solid var(--ruled);
+  padding: 2px 7px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+/* YouTube API Key Section (injected) */
+#yt-apikey-section {
+  border: var(--border);
+  border-top: none;
+  background: var(--bg);
+  box-shadow: var(--shadow-lg);
+  padding: var(--padding-md);
+}
+
 #yt-apikey-skip-btn {
   background: var(--off) !important;
   color: var(--muted) !important;
@@ -1309,6 +1298,28 @@ body {
   background: var(--ruled) !important;
   color: var(--ink) !important;
   transform: none !important;
+}
+
+/* Animation for spinning dot */
+@keyframes spinDot {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Animation for pop effect */
+@keyframes pop {
+  0% {
+    transform: scale(.8);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* ── Optional badge inline label ── */

@@ -366,7 +366,6 @@
     font-weight: var(--weight-bold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-widest);
-    border: none;
     border-right: 2px solid var(--ink);
     background: var(--off);
     color: var(--ink);
@@ -485,7 +484,8 @@
 .fs-overlay {
     position: fixed;
     inset: 0;
-    z-index: calc(var(--z-nav) + 100);
+    /* z-index: calc(var(--z-nav) + 100); */
+    z-index: 15000;
     background: #0c0c0c;
     display: flex;
     flex-direction: column;
@@ -493,6 +493,7 @@
     transform: translateY(10px);
     transition: opacity var(--duration-normal) var(--ease-bounce),
                 transform var(--duration-normal) var(--ease-bounce);
+    isolation: isolate;
 }
 
 .fs-overlay.open {
@@ -500,68 +501,27 @@
     transform: translateY(0);
 }
 
-/* ── Overlay header ── */
+/* ── Overlay header — New + Close only ── */
 .fs-hdr {
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 0 20px;
-    height: 56px;
+    gap: 10px;
+    padding: 0 16px;
+    height: 52px;
     background: #111111;
     border-bottom: 2px solid rgba(255, 255, 255, 0.08);
-    overflow: hidden;
-}
-
-.fs-hdr-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-    min-width: 0;
-    flex-wrap: wrap;
-}
-
-.fs-topic-badge {
-    font-family: var(--font-display);
-    font-size: 9px;
-    font-weight: var(--weight-black);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-ultra);
-    background: var(--yellow);
-    color: #0a0a0a;
-    padding: 5px 11px;
-    flex-shrink: 0;
-    white-space: nowrap;
-    line-height: 1;
-}
-
-.fs-eq-label {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    font-weight: var(--weight-semibold);
-    color: rgba(255, 255, 255, 0.5);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    letter-spacing: var(--tracking-wide);
-}
-
-.fs-hdr-right {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
 }
 
 /* ── FS header buttons ── */
-.fs-wp-btn,
 .fs-new-btn {
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    padding: 8px 14px;
+    padding: 8px 16px;
     font-family: var(--font-mono);
     font-size: 10px;
     font-weight: var(--weight-semibold);
@@ -572,22 +532,6 @@
     white-space: nowrap;
     transition: all 0.2s ease;
     line-height: var(--leading-none);
-}
-
-.fs-wp-btn {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.6);
-    border: 1.5px solid rgba(255, 255, 255, 0.12);
-}
-
-.fs-wp-btn:hover {
-    background: var(--blue);
-    color: #fff;
-    border-color: var(--blue);
-    transform: translateY(-1px);
-}
-
-.fs-new-btn {
     background: var(--yellow);
     color: #0a0a0a;
 }
@@ -618,11 +562,14 @@
     transform: rotate(90deg);
 }
 
-/* ── GM Canvas wrapper ── */
+
 .fs-canvas-wrap {
     flex: 1;
-    overflow: hidden;
+    min-height: 0;
     position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    z-index: 1;
     transition: box-shadow var(--duration-smooth);
 }
 
@@ -640,7 +587,10 @@
     }
 }
 
+
 #gm-fs-canvas {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
 }
@@ -670,6 +620,8 @@
     background: #111111;
     border-top: 2px solid rgba(255, 255, 255, 0.08);
     flex-wrap: wrap;
+    position: relative;
+    z-index: 10;
 }
 
 .fs-hint-row {
@@ -695,6 +647,34 @@
     font-size: var(--text-mono-xl);
     color: rgba(255, 255, 255, 0.7);
     line-height: var(--leading-snug);
+}
+
+/* Word-problem button (lives in footer now) */
+.fs-wp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: var(--weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-widest);
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    line-height: var(--leading-none);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.6);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+}
+
+.fs-wp-btn:hover {
+    background: var(--blue);
+    color: #fff;
+    border-color: var(--blue);
+    transform: translateY(-1px);
 }
 
 .fs-dismiss-btn {
@@ -899,10 +879,6 @@
    RESPONSIVE — tablet
 ════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
-    .fs-eq-label {
-        display: none;
-    }
-    
     .class-dropdown {
         padding: 14px 18px;
         font-size: 13px;
@@ -924,20 +900,9 @@
 ════════════════════════════════════════════════════ */
 @media (max-width: 560px) {
     .fs-hdr {
-        height: auto;
-        padding: 10px 14px;
+        height: 48px;
+        padding: 0 12px;
         gap: 8px;
-        flex-wrap: wrap;
-    }
-    
-    .fs-hdr-left {
-        flex: none;
-        width: 100%;
-    }
-    
-    .fs-hdr-right {
-        width: 100%;
-        justify-content: flex-end;
     }
     
     .fs-ftr {
@@ -988,8 +953,7 @@
 }
 
 /* ════════════════════════════════════════════════════
-   CUSTOM CLASS DROPDOWN — add to style.css
-   (replaces .class-dropdown native-select rules)
+   CUSTOM CLASS DROPDOWN
 ════════════════════════════════════════════════════ */
 
 /* ── Wrapper ── */
@@ -1064,7 +1028,7 @@
 /* ── Dropdown panel ── */
 .cdd-panel {
   position: absolute;
-  top: calc(100% - 2px);   /* overlap trigger border */
+  top: calc(100% - 2px);
   left: 0;
   right: 0;
   background: var(--bg);
@@ -1102,7 +1066,7 @@
   border-bottom: none;
 }
 
-/* ── Group label (replaces <optgroup>) ── */
+/* ── Group label ── */
 .cdd-group-label {
   padding: 9px 16px 6px;
   font-family: var(--font-display);
@@ -1113,7 +1077,6 @@
   color: var(--muted);
   background: var(--off);
   border-bottom: 1px solid var(--ruled);
-  /* left accent bar */
   border-left: 3px solid var(--yellow);
   padding-left: 13px;
 }
@@ -1142,7 +1105,7 @@
 .cdd-option:hover {
   background: var(--ink);
   color: var(--bg);
-  padding-left: 26px;     /* nudge on hover */
+  padding-left: 26px;
 }
 
 .cdd-option:focus-visible {
@@ -1160,7 +1123,7 @@
 }
 
 /* ════════════════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE — dropdown
 ════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .cdd-trigger {

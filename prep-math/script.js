@@ -430,6 +430,13 @@ function toggleWordProblemModal() {
 function mountEquation(eq) {
     const wrap = document.getElementById('fs-canvas-wrap');
     const canvasEl = document.getElementById('gm-fs-canvas');
+
+    // Guard: if the container hasn't been laid out yet, retry once
+    if (wrap && wrap.offsetHeight === 0) {
+        console.warn('Canvas wrap has no height yet — retrying in 200ms');
+        setTimeout(() => mountEquation(eq), 200);
+        return;
+    }
     
     if (gmCanvas) {
         try { gmCanvas.remove(); } catch (e) {}
@@ -441,22 +448,25 @@ function mountEquation(eq) {
     
     try {
         gmCanvas = new gmath.Canvas('#gm-fs-canvas', {
+            // ── History ──
             undo_btn: true,
             redo_btn: true,
+            // ── Sheet ──
             new_sheet_btn: false,
             font_size_btns: false,
+            // ── Tools (all enabled for students) ──
             formula_btn: false,
             help_btn: false,
             help_logo_btn: false,
             fullscreen_toolbar_btn: false,
             fullscreen_btn: false,
             transform_btn: true,
-            keypad_btn: false,
+            keypad_btn: true,       // ← enabled: on-screen keypad
             scrub_btn: false,
-            draw_btn: false,
-            erase_btn: false,
+            draw_btn: true,         // ← enabled: freehand drawing
+            erase_btn: true,        // ← enabled: eraser
             arrange_btn: true,
-            reset_btn: false,
+            reset_btn: true,        // ← enabled: clear canvas
             save_btn: false,
             load_btn: false,
             settings_btn: true,
@@ -483,14 +493,13 @@ function mountEquation(eq) {
             36;
         gmCanvas.controller.set_font_size(fontSize);
         
-        if (!window.__currentWordProblem) {
-            const derivation = gmCanvas.model.createElement('derivation', {
-                eq: eq,
-                pos: { x: 'center', y: 100 },
-            });
-            if (derivation && typeof derivation.enableAutoSimplify === 'function') {
-                derivation.enableAutoSimplify();
-            }
+        // Always add the equation — word problems still need the equation on the canvas
+        const derivation = gmCanvas.model.createElement('derivation', {
+            eq: eq,
+            pos: { x: 'center', y: 100 },
+        });
+        if (derivation && typeof derivation.enableAutoSimplify === 'function') {
+            derivation.enableAutoSimplify();
         }
         
         gmCanvas.model.on('el_changed', function(evt) {
@@ -622,26 +631,11 @@ Examples:
         const canvasWrap = document.getElementById('fs-canvas-wrap');
         if (canvasWrap) canvasWrap.classList.remove('solved');
         
-        const fsTopicBadge = document.getElementById('fs-topic-badge');
-        const fsClassBadge = document.getElementById('fs-class-badge');
-        const fsEqLabel = document.getElementById('fs-eq-label');
+        // Update footer hint
         const fsHintText = document.getElementById('fs-hint-text');
-        
-        if (fsTopicBadge) fsTopicBadge.textContent = currentClassTopic?.label || topicLabels[currentTopic];
-        if (fsClassBadge) fsClassBadge.textContent = classData?.name || '';
-        if (fsEqLabel) fsEqLabel.textContent = q.eq;
         if (fsHintText) fsHintText.textContent = q.hint;
         
-        const statCount = document.getElementById('stat-count');
-        const statTopic = document.getElementById('stat-topic');
-        const pagePlaceholder = document.getElementById('page-placeholder');
-        
-        if (statCount) statCount.textContent = sessionCount;
-        if (statTopic) statTopic.textContent = currentClassTopic?.label || topicLabels[currentTopic];
-        if (pagePlaceholder) pagePlaceholder.style.display = 'none';
-        
-        openOverlay();
-        
+        // Word problem button (lives in footer)
         const wpBtn = document.getElementById('wp-modal-btn');
         if (isWordProblem && q.problem) {
             const wpText = document.getElementById('wp-modal-text');
@@ -655,8 +649,22 @@ Examples:
         
         window.__currentWordProblem = (isWordProblem && q.problem) ? q.problem : null;
         
+        // Update page stats
+        const statCount = document.getElementById('stat-count');
+        const statTopic = document.getElementById('stat-topic');
+        const pagePlaceholder = document.getElementById('page-placeholder');
+        
+        if (statCount) statCount.textContent = sessionCount;
+        if (statTopic) statTopic.textContent = currentClassTopic?.label || topicLabels[currentTopic];
+        if (pagePlaceholder) pagePlaceholder.style.display = 'none';
+        
+        openOverlay();
+        
         if (gmReady) {
-            requestAnimationFrame(() => requestAnimationFrame(() => mountEquation(q.eq)));
+            // Wait for the overlay CSS transition + flex reflow to complete
+            // before GM tries to measure the canvas container.
+            // Double-RAF is ~16ms — not enough for a 300ms CSS transition.
+            setTimeout(() => mountEquation(q.eq), 320);
         } else {
             pendingEq = q.eq;
         }
@@ -824,7 +832,8 @@ if (typeof loadGM === 'function') {
         if (pendingEq) {
             const eq = pendingEq;
             pendingEq = null;
-            requestAnimationFrame(() => requestAnimationFrame(() => mountEquation(eq)));
+            // Give the overlay layout time to settle before GM measures
+            setTimeout(() => mountEquation(eq), 320);
         }
     }, { version: 'latest' });
 }

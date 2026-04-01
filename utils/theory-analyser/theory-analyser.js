@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   THEORY ANALYSER  v7.0 (Theory-Only · No Calculations)
+   THEORY ANALYSER  v7.1 (Theory-Only · No Calculations)
    Multi-question · Auto-gen · Level-calibrated · Print-exact
    ─────────────────────────────────────────────────────
    TheoryAnalyser.init({ geminiKey, subject, level, mountId?, onResult? })
@@ -22,31 +22,114 @@
   ];
   const QUOTA = new Set([429, 503, 529]);
   
-  /* ─── Key resolver — reads from PrepPortalKeys (set by auth.js) ─── */
+  /* ─── Key resolver — checks multiple sources ─── */
   function _getKey() {
-    return (_cfg && _cfg.geminiKey) || window.PrepPortalKeys?.gemini || null;
+    // Priority 1: Config passed directly to init()
+    if (_cfg && _cfg.geminiKey && typeof _cfg.geminiKey === 'string' && _cfg.geminiKey.trim()) {
+      console.log('[TA] Using key from config');
+      return _cfg.geminiKey.trim();
+    }
+    
+    // Priority 2: Global PrepPortalKeys (set by keys.js)
+    if (global.PrepPortalKeys && global.PrepPortalKeys.gemini && typeof global.PrepPortalKeys.gemini === 'string' && global.PrepPortalKeys.gemini.trim()) {
+      console.log('[TA] Using key from PrepPortalKeys');
+      return global.PrepPortalKeys.gemini.trim();
+    }
+    
+    // Priority 3: Try to import state dynamically (if available)
+    try {
+      // This is a hack to get state if it's available globally
+      if (global.state && global.state.GEMINI_KEY && global.state.KEY_VERIFIED) {
+        console.log('[TA] Using key from global state');
+        return global.state.GEMINI_KEY.trim();
+      }
+    } catch (e) {
+      // Ignore - state not available
+    }
+    
+    // Priority 4: Check session storage as last resort (for backward compatibility)
+    try {
+      const sessionKey = sessionStorage.getItem('pp_gemini_key');
+      if (sessionKey && sessionKey.trim()) {
+        console.log('[TA] Using key from session storage (legacy)');
+        return sessionKey.trim();
+      }
+    } catch (e) {
+      // Session storage not available
+    }
+    
+    console.error('[TA] No Gemini key found in any source');
+    return null;
   }
-
-  /* ─── Gemini post ─── */
+  
+  /* ─── Gemini post with key validation ─── */
   async function _post(body) {
     const key = _getKey();
-    if (!key) throw new Error('No Gemini key found. Please sign in and add your key in Account Settings.');
+    if (!key) {
+      throw new Error('No Gemini API key found. Please add your key in the setup section and verify it works.');
+    }
+    
+    // Validate key format (basic check)
+    if (key.length < 20 || !key.match(/^AIza/)) {
+      console.warn('[TA] Key may be invalid - should start with "AIza" and be at least 20 chars');
+    }
+    
+    let lastError = null;
+    
     for (let i = _midx; i < MODELS.length; i++) {
       let res;
       try {
-        res = await fetch(`${MODELS[i]}?key=${key}`, {
+        console.log(`[TA] Trying model ${i + 1}/${MODELS.length}: ${MODELS[i].split('/').pop()}`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        
+        res = await fetch(`${MODELS[i]}?key=${encodeURIComponent(key)}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
+          signal: controller.signal
         });
-      } catch (e) { console.warn('[TA] Network error, trying next model'); continue; }
-      if (QUOTA.has(res.status)) { _midx = i + 1; continue; }
-      if (!res.ok) throw new Error(`API ${res.status}: ${await res.text().catch(() => '')}`);
+        
+        clearTimeout(timeoutId);
+        
+      } catch (e) {
+        console.warn(`[TA] Network error on model ${i + 1}:`, e.message);
+        lastError = e;
+        continue;
+      }
+      
+      if (QUOTA.has(res.status)) {
+        console.warn(`[TA] Model ${i + 1} over quota (${res.status}), trying next...`);
+        _midx = i + 1;
+        continue;
+      }
+      
+      if (!res.ok) {
+        let errorText = '';
+        try {
+          errorText = await res.text();
+        } catch (e) {}
+        
+        // Special handling for auth errors
+        if (res.status === 401 || res.status === 403) {
+          throw new Error(`Invalid Gemini API key (${res.status}). Please check your key and verify it in the setup section.`);
+        }
+        
+        throw new Error(`API ${res.status}: ${errorText.slice(0, 200)}`);
+      }
+      
       _midx = i;
-      return await res.json();
+      const data = await res.json();
+      console.log(`[TA] Successfully used model ${i + 1}`);
+      return data;
     }
+    
     _midx = 0;
-    throw new Error('All Gemini models are over quota. Please try again later.');
+    if (lastError && lastError.name === 'AbortError') {
+      throw new Error('Request timed out after 30 seconds. Please check your internet connection.');
+    }
+    throw new Error('All Gemini models are currently unavailable or over quota. Please try again later.');
   }
   
   function _esc(s) {
@@ -61,7 +144,12 @@
       e = raw.lastIndexOf('}');
     if (s < 0 || e < 0) throw new Error('No JSON in AI response');
     const jsonStr = raw.slice(s, e + 1).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]+/g, '');
-    return JSON.parse(jsonStr);
+    try {
+      return JSON.parse(jsonStr);
+    } catch (err) {
+      console.error('[TA] Failed to parse JSON:', jsonStr.slice(0, 500));
+      throw new Error(`Failed to parse AI response: ${err.message}`);
+    }
   }
   
   /* ─────────────────────────────────────────────────────
@@ -418,29 +506,69 @@ RESPOND ONLY WITH VALID JSON:
   const TheoryAnalyser = {
     
     init(config = {}) {
-      // geminiKey is now optional — resolved at call-time from window.PrepPortalKeys (set by auth.js)
+      // Validate required fields
       ['subject', 'level'].forEach(k => {
         if (!config[k]) throw new Error(`TheoryAnalyser.init: missing "${k}"`);
       });
-      _cfg = { mountId: 'theory-results', ...config };
+      
+      // Store config
+      _cfg = {
+        mountId: 'theory-results',
+        ...config
+      };
+      
       _midx = 0;
-      console.info(`[TA] Ready — ${_cfg.subject} (${_cfg.level})`);
+      
+      // Log key status (without exposing the key)
+      const hasKey = !!_getKey();
+      console.info(`[TA] Ready — ${_cfg.subject} (${_cfg.level}) | Key: ${hasKey ? '✓' : '✗'}`);
+      
+      if (!hasKey) {
+        console.warn('[TA] No Gemini key available. Please add and verify your key in the setup section.');
+      }
+      
+      return this;
     },
     
     async generateQuestions(count = 1, existingTopics = []) {
       if (!_cfg) throw new Error('Call init() first');
+      
+      // Validate key before attempting generation
+      const key = _getKey();
+      if (!key) {
+        throw new Error('No Gemini API key found. Please add your key in the setup section and verify it works.');
+      }
+      
       const raw = await _post({
         systemInstruction: { parts: [{ text: _genPrompt(count, existingTopics) }] },
         contents: [{ parts: [{ text: `Generate ${count} theory question(s) for ${_cfg.subject}, ${_cfg.level}.` }] }],
         generationConfig: { responseMimeType: 'application/json', temperature: 0.85, maxOutputTokens: 1200 },
       });
+      
       const text = raw.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      if (!text) {
+        throw new Error('Empty response from Gemini API');
+      }
+      
       const data = _parseJSON(text);
-      return data.questions || [];
+      const questions = data.questions || [];
+      
+      if (questions.length === 0) {
+        throw new Error('No questions generated');
+      }
+      
+      return questions;
     },
     
     async analyseAll(questionsArr, answersArr, studentName, submissionDate) {
       if (!_cfg) throw new Error('Call init() first');
+      
+      // Validate key before attempting analysis
+      const key = _getKey();
+      if (!key) {
+        throw new Error('No Gemini API key found. Please add your key in the setup section and verify it works.');
+      }
+      
       const el = document.getElementById(_cfg.mountId);
       if (!el) throw new Error(`No element #${_cfg.mountId}`);
       
@@ -455,6 +583,10 @@ RESPOND ONLY WITH VALID JSON:
         });
         
         const text = raw.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        if (!text) {
+          throw new Error('Empty response from Gemini API');
+        }
+        
         const combined = _parseJSON(text);
         
         const results = (combined.questions || []).map((q, i) => ({
@@ -469,6 +601,7 @@ RESPOND ONLY WITH VALID JSON:
         return { combined, results };
         
       } catch (err) {
+        console.error('[TA] Marking failed:', err);
         el.innerHTML = `<div class="ta-root"><div class="ta-error"><strong>Marking failed</strong><br>${_esc(err.message)}</div></div>`;
         return null;
       }
@@ -477,9 +610,16 @@ RESPOND ONLY WITH VALID JSON:
     reconfigure(partial = {}) {
       if (!_cfg) throw new Error('Call init() first');
       _cfg = { ..._cfg, ...partial };
+      console.info('[TA] Reconfigured:', Object.keys(partial));
+      return this;
     },
     
     getConfig() { return _cfg ? { ..._cfg } : null; },
+    
+    // Helper to check if key is available
+    hasKey() {
+      return !!_getKey();
+    }
   };
   
   global.TheoryAnalyser = TheoryAnalyser;

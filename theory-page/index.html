@@ -221,6 +221,36 @@
     </div>
   </section>
   
+  <!-- API Key Section -->
+<section class="setup-section" id="apikey-section">
+  <div class="setup-eyebrow">API Keys</div>
+  <h2>Gemini API Key</h2>
+  <div class="setup-box">
+    <div class="setup-card">
+      <div class="setup-card-hd">
+        <div class="step-badge"></div>
+        <div>
+          <div class="setup-card-title">Gemini API Key</div>
+          <div class="setup-card-sub">Get your key from <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a> (free)</div>
+        </div>
+      </div>
+      <div class="apikey-row">
+        <input id="apikey-input" class="apikey-input" type="password"
+          placeholder="Paste your Gemini API key…" autocomplete="off" spellcheck="false">
+        <button id="apikey-toggle" class="apikey-toggle" type="button">Show</button>
+      </div>
+      <div class="apikey-status-row">
+        <span class="apikey-dot" id="apikey-dot"></span>
+        <span class="apikey-status-text" id="apikey-status-text">Paste your key, then click Verify</span>
+        <span class="done-badge" id="done-key">✓</span>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <button id="apikey-verify-btn" class="apikey-verify-btn" type="button" disabled>Verify →</button>
+      </div>
+    </div>
+  </div>
+</section>
+  
   <!-- MODAL -->
   <div class="modal-bd" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
     <div class="modal-wrap">
@@ -286,8 +316,7 @@
   <div id="prepbot"></div>
   
   <script type="module" src="../utils/theory-analyser/theory-analyser.js"></script>
-  <script src="../firebase-init.js" type="module"></script>
-  <script type="module" src="../utils/chatbot/chatbot.js"></script>
+  <script type="module" src="../utils/prepbot/prepbot.js"></script>
   <script type="module" src="./main.js"></script>
   
 </body>
