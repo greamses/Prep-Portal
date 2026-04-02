@@ -43,7 +43,7 @@ const canvasFullscreenSettings = {
     reset_btn: true,
     save_btn: false,
     load_btn: false,
-    settings_btn: false,
+    settings_btn: true,
     insert_btn: true,
     insert_menu_items: {
         derivation: true,
@@ -268,20 +268,34 @@ function getResponsiveFontSettings() {
 }
 
 // Handle window resize for responsive font sizing
+// Handle window resize for responsive font sizing
 function handleResponsiveResize() {
-    if (appState.gmCanvas && appState.layoutManager) {
-        const settings = getResponsiveFontSettings();
-        appState.layoutManager = gmath.autoLayout.autoLayoutCanvasForOutlier(
-            appState.gmCanvas,
-            settings
-        );
-        
-        // Adjust font size if needed
-        if (settings.mayAdjustFontSize && appState.gmCanvas.controller) {
-            const currentFontSize = appState.gmCanvas.controller.get_font_size();
-            if (currentFontSize > settings.maxFontSize) {
-                appState.gmCanvas.controller.set_font_size(settings.maxFontSize);
+    if (appState.gmCanvas) {
+        try {
+            const settings = getResponsiveFontSettings();
+            
+            // Try to use layoutManager if it exists and has the method
+            if (appState.layoutManager && typeof appState.layoutManager.updateLayout === 'function') {
+                appState.layoutManager = gmath.autoLayout.autoLayoutCanvasForOutlier(
+                    appState.gmCanvas,
+                    settings
+                );
             }
+            
+            // Adjust font size if needed
+            if (settings.mayAdjustFontSize && appState.gmCanvas.controller) {
+                const currentFontSize = appState.gmCanvas.controller.get_font_size();
+                if (currentFontSize > settings.maxFontSize) {
+                    appState.gmCanvas.controller.set_font_size(settings.maxFontSize);
+                }
+            }
+            
+            // Force view update as fallback
+            if (appState.gmCanvas.view && typeof appState.gmCanvas.view.update === 'function') {
+                appState.gmCanvas.view.update();
+            }
+        } catch (error) {
+            console.warn('[AlgebraLab] Resize handling error:', error);
         }
     }
 }
@@ -480,17 +494,19 @@ window.generateQuestion = async () => {
 
 // ─── 9. CANVAS INTEGRATION WITH RESPONSIVE FONTS ──────────────
 
+// ─── 9. CANVAS INTEGRATION WITH RESPONSIVE FONTS ──────────────
+
 function openOverlay(data) {
     const overlay = document.getElementById('fs-overlay');
     overlay.classList.add('open');
     overlay.style.pointerEvents = 'auto';
-
+    
     document.getElementById('fs-hint-text').innerText = data.hint;
     appState.currentGoal = data.goal.replace(/\s/g, '');
-
+    
     const canvasWrap = document.getElementById('gm-fs-canvas');
     canvasWrap.innerHTML = '';
-
+    
     // Get responsive settings based on screen size
     const responsiveSettings = getResponsiveFontSettings();
     
@@ -502,18 +518,54 @@ function openOverlay(data) {
         const initialFontSize = Math.min(40, responsiveSettings.maxFontSize);
         appState.gmCanvas.controller.set_font_size(initialFontSize);
     }
-
+    
     const derivation = appState.gmCanvas.model.createElement('derivation', {
         eq: data.eq,
         ...singleLineDerivationSettings
     });
-
+    
     // Apply auto-layout with responsive settings
-    appState.layoutManager = gmath.autoLayout.autoLayoutCanvasForOutlier(
-        appState.gmCanvas,
-        responsiveSettings
-    );
-
+    try {
+        const layoutResult = gmath.autoLayout.autoLayoutCanvasForOutlier(
+            appState.gmCanvas,
+            responsiveSettings
+        );
+        
+        // Check what was returned and store appropriately
+        if (layoutResult && typeof layoutResult.updateLayout === 'function') {
+            appState.layoutManager = layoutResult;
+        } else if (layoutResult && typeof layoutResult === 'object') {
+            // Some versions might return a different structure
+            appState.layoutManager = {
+                updateLayout: () => {
+                    // Try to manually trigger a layout update
+                    if (appState.gmCanvas && appState.gmCanvas.view) {
+                        appState.gmCanvas.view.update();
+                    }
+                }
+            };
+        } else {
+            // Fallback: create a simple layout manager wrapper
+            appState.layoutManager = {
+                updateLayout: () => {
+                    if (appState.gmCanvas && appState.gmCanvas.view) {
+                        appState.gmCanvas.view.update();
+                    }
+                }
+            };
+        }
+    } catch (layoutError) {
+        console.warn('[AlgebraLab] Auto-layout error:', layoutError);
+        // Create a dummy layout manager to prevent future errors
+        appState.layoutManager = {
+            updateLayout: () => {
+                if (appState.gmCanvas && appState.gmCanvas.view) {
+                    appState.gmCanvas.view.update();
+                }
+            }
+        };
+    }
+    
     derivation.events.on('change', () => {
         const currentASCII = derivation.getLastModel().to_ascii().replace(/\s/g, '');
         if (currentASCII === appState.currentGoal) handleSuccess();
@@ -521,8 +573,11 @@ function openOverlay(data) {
     
     // Add a small delay to ensure proper rendering
     setTimeout(() => {
-        if (appState.layoutManager) {
+        if (appState.layoutManager && typeof appState.layoutManager.updateLayout === 'function') {
             appState.layoutManager.updateLayout();
+        } else if (appState.gmCanvas && appState.gmCanvas.view) {
+            // Fallback: manually update the view
+            appState.gmCanvas.view.update();
         }
     }, 100);
 }
