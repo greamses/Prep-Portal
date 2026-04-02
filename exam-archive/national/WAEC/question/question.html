@@ -1,865 +1,174 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WASSCE Practice | Prep Portal</title>
-
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
-
+    
     <script>
-    MathJax = {
-        tex: {
-            inlineMath:  [['$','$'], ['\\(','\\)']],
-            displayMath: [['$$','$$'], ['\\[','\\]']],
-            processEscapes: true
-        },
-        options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] },
-        startup: { typeset: false }
-    };
+        MathJax = {
+            tex: {
+                inlineMath: [
+                    ['$', '$'],
+                    ['\\(', '\\)']
+                ],
+                displayMath: [
+                    ['$$', '$$'],
+                    ['\\[', '\\]']
+                ],
+                processEscapes: true
+            },
+            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] },
+            startup: { typeset: false }
+        };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
-
-<link rel="stylesheet" href="./question.css">
+    
+    <link rel="stylesheet" href="./question.css">
 </head>
+
 <body>
-
-<!-- ── QUIZ SCREEN ──────────────────────────────────────────── -->
-<div class="quiz-shell" id="quiz-screen">
-    <div class="exam-header">
-        <div class="exam-header-left">
-            <div class="exam-eyebrow">Prep Portal &middot; WASSCE</div>
-            <h1 id="display-subject">Loading&hellip;</h1>
+    
+    <!-- ── QUIZ SCREEN ──────────────────────────────────────────── -->
+    <div class="quiz-shell" id="quiz-screen">
+        <div class="exam-header">
+            <div class="exam-header-left">
+                <div class="exam-eyebrow">Prep Portal &middot; WASSCE</div>
+                <h1 id="display-subject">Loading&hellip;</h1>
+            </div>
+            <div class="exam-meta" id="display-meta">—</div>
         </div>
-        <div class="exam-meta" id="display-meta">—</div>
-    </div>
-
-    <div class="progress-track">
-        <div class="progress-fill" id="progress-fill"></div>
-    </div>
-
-    <div class="q-counter-row">
-        <span id="q-counter-label">Q — of —</span>
-        <div class="q-dots" id="q-dots"></div>
-    </div>
-
-    <div id="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Loading questions&hellip;</p>
-    </div>
-
-    <div class="question-card" id="question-card" style="display:none">
-        <span class="q-number-badge" id="q-number-badge">Q 1</span>
-        <div class="q-text" id="q-text"></div>
-        <div id="q-image-wrap"></div>
-        <div id="q-options"></div>
-    </div>
-
-    <div class="feedback-strip" id="feedback-strip">
-        <span class="feedback-label" id="feedback-label"></span>
-        <div id="feedback-expl"></div>
-        <div class="feedback-actions" id="feedback-actions"></div>
-    </div>
-
-    <div class="nav-bar" id="nav-bar" style="display:none">
-        <div class="nav-left">
-            <a href="#" class="quit-link" id="quit-link">← Quit</a>
+        
+        <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
         </div>
-        <div class="nav-mid">
-            <button class="btn" id="prev-btn" onclick="navigate(-1)" disabled>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 1L3 6l5 5"/></svg>
-                Prev
+        
+        <div class="q-counter-row">
+            <span id="q-counter-label">Q — of —</span>
+            <div class="q-dots" id="q-dots"></div>
+        </div>
+        
+        <div id="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Loading questions&hellip;</p>
+        </div>
+        
+        <div class="question-card" id="question-card" style="display:none">
+            <span class="q-number-badge" id="q-number-badge">Q 1</span>
+            <div class="q-text" id="q-text"></div>
+            <div id="q-image-wrap"></div>
+            <div id="q-options"></div>
+        </div>
+        
+        <div class="feedback-strip" id="feedback-strip">
+            <span class="feedback-label" id="feedback-label"></span>
+            <div id="feedback-expl"></div>
+            <div class="feedback-actions" id="feedback-actions"></div>
+        </div>
+        
+        <div class="nav-bar" id="nav-bar" style="display:none">
+            <div class="nav-left">
+                <a href="#" class="quit-link" id="quit-link">← Quit</a>
+            </div>
+            <div class="nav-mid">
+                <button class="btn" id="prev-btn" onclick="navigate(-1)" disabled>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M8 1L3 6l5 5" />
+                    </svg>
+                    Prev
+                </button>
+            </div>
+            <div class="nav-right">
+                <button class="btn btn-yellow" id="next-btn" onclick="navigate(1)">
+                    Next
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M4 1l5 5-5 5" />
+                    </svg>
+                </button>
+                <button class="btn btn-ink" id="submit-btn" onclick="confirmSubmit()" style="display:none">
+                    Submit
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 6h8M7 3l3 3-3 3" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ── RESULTS SCREEN ──────────────────────────────────────── -->
+    <div class="quiz-shell" id="results-screen" style="display:none;flex-direction:column;">
+        
+        <div class="print-header" id="print-header">Prep Portal &middot; WASSCE &mdash; Printed Results</div>
+        
+        <div class="results-header">
+            <div class="eyebrow">Exam Complete</div>
+            <div class="score-display" id="res-score">—</div>
+            <div class="score-label" id="res-grade">—</div>
+        </div>
+        
+        <div class="results-grid">
+            <div class="res-stat green"><strong id="res-correct">0</strong><span>Correct</span></div>
+            <div class="res-stat red"> <strong id="res-wrong">0</strong> <span>Wrong</span></div>
+            <div class="res-stat"> <strong id="res-skipped">0</strong><span>Skipped</span></div>
+        </div>
+        
+        <div class="review-list" id="review-list"></div>
+        
+        <div class="results-actions no-print">
+            <button class="btn" onclick="window.history.back()">← Back</button>
+            <button class="btn btn-yellow" onclick="retakeQuiz()">Retake</button>
+            <button class="btn btn-ink" onclick="printResults()">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="8" height="6" />
+                    <path d="M4 4V1h4v3M4 8h4" />
+                </svg>
+                Print Results
             </button>
         </div>
-        <div class="nav-right">
-            <button class="btn btn-yellow" id="next-btn" onclick="navigate(1)">
-                Next
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 1l5 5-5 5"/></svg>
-            </button>
-            <button class="btn btn-ink" id="submit-btn" onclick="confirmSubmit()" style="display:none">
-                Submit
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6h8M7 3l3 3-3 3"/></svg>
-            </button>
+    </div>
+    
+    <!-- ── PREPBOT PANEL ────────────────────────────────────────── -->
+    <div id="prepbot-panel">
+        <div class="prepbot-box">
+            <div class="prepbot-hd">
+                <span class="prepbot-hd-title">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px">
+                        <circle cx="6" cy="5" r="3" />
+                        <path d="M1 11c0-2.2 2.2-4 5-4s5 1.8 5 4" />
+                    </svg>
+                    PrepBot Explanation
+                </span>
+                <button class="prepbot-close" onclick="closePrepBot()">&#x2715;</button>
+            </div>
+            <div class="prepbot-context" id="prepbot-context"></div>
+            <div class="prepbot-msgs" id="prepbot-msgs"></div>
+            <div class="prepbot-input-row">
+                <input class="prepbot-input" id="prepbot-input" placeholder="Ask a follow-up question…" autocomplete="off">
+                <button class="prepbot-send" id="prepbot-send" onclick="sendPrepBot()">Send</button>
+            </div>
         </div>
     </div>
-</div>
-
-<!-- ── RESULTS SCREEN ──────────────────────────────────────── -->
-<div class="quiz-shell" id="results-screen" style="display:none;flex-direction:column;">
-
-    <div class="print-header" id="print-header">Prep Portal &middot; WASSCE &mdash; Printed Results</div>
-
-    <div class="results-header">
-        <div class="eyebrow">Exam Complete</div>
-        <div class="score-display" id="res-score">—</div>
-        <div class="score-label"  id="res-grade">—</div>
-    </div>
-
-    <div class="results-grid">
-        <div class="res-stat green"><strong id="res-correct">0</strong><span>Correct</span></div>
-        <div class="res-stat red">  <strong id="res-wrong">0</strong>  <span>Wrong</span></div>
-        <div class="res-stat">      <strong id="res-skipped">0</strong><span>Skipped</span></div>
-    </div>
-
-    <div class="review-list" id="review-list"></div>
-
-    <div class="results-actions no-print">
-        <button class="btn" onclick="window.history.back()">← Back</button>
-        <button class="btn btn-yellow" onclick="retakeQuiz()">Retake</button>
-        <button class="btn btn-ink" onclick="printResults()">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="8" height="6"/><path d="M4 4V1h4v3M4 8h4"/></svg>
-            Print Results
-        </button>
-    </div>
-</div>
-
-<!-- ── PREPBOT PANEL ────────────────────────────────────────── -->
-<div id="prepbot-panel">
-    <div class="prepbot-box">
-        <div class="prepbot-hd">
-            <span class="prepbot-hd-title">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px"><circle cx="6" cy="5" r="3"/><path d="M1 11c0-2.2 2.2-4 5-4s5 1.8 5 4"/></svg>
-                PrepBot Explanation
-            </span>
-            <button class="prepbot-close" onclick="closePrepBot()">&#x2715;</button>
-        </div>
-        <div class="prepbot-context" id="prepbot-context"></div>
-        <div class="prepbot-msgs"   id="prepbot-msgs"></div>
-        <div class="prepbot-input-row">
-            <input class="prepbot-input" id="prepbot-input"
-                   placeholder="Ask a follow-up question…" autocomplete="off">
-            <button class="prepbot-send" id="prepbot-send" onclick="sendPrepBot()">Send</button>
+    
+    <!-- ── CONFIRM MODAL ────────────────────────────────────────── -->
+    <div id="pp-confirm-overlay">
+        <div class="pp-confirm-box">
+            <div class="pp-confirm-title">Submit Paper?</div>
+            <p class="pp-confirm-body" id="confirm-body"></p>
+            <div class="pp-confirm-ftr">
+                <button class="btn" onclick="closeConfirm()">Go Back</button>
+                <button class="btn btn-ink" onclick="submitQuiz()">Yes, Submit</button>
+            </div>
         </div>
     </div>
-</div>
-
-<!-- ── CONFIRM MODAL ────────────────────────────────────────── -->
-<div id="pp-confirm-overlay">
-    <div class="pp-confirm-box">
-        <div class="pp-confirm-title">Submit Paper?</div>
-        <p class="pp-confirm-body" id="confirm-body"></p>
-        <div class="pp-confirm-ftr">
-            <button class="btn" onclick="closeConfirm()">Go Back</button>
-            <button class="btn btn-ink" onclick="submitQuiz()">Yes, Submit</button>
-        </div>
-    </div>
-</div>
-
-<script>
-// ─── 1. STATE ──────────────────────────────────────────────────
-const urlParams = new URLSearchParams(window.location.search);
-const config = {
-    year:     urlParams.get('year'),
-    subjects: urlParams.get('subjects')?.split(',') || [],
-    types:    urlParams.get('types')?.split(',')    || []
-};
-
-let allQuestions  = [];
-let currentIndex  = 0;
-let userAnswers   = {};   // idx → option text | textarea string
-let submitted     = false;
-let theoryMarks   = {};   // idx → { score, feedback, outOf }
-let prepbotCtx    = null; // current question context for PrepBot
-let prepbotHistory= [];   // [{role,content}] for multi-turn
-
-const GEMINI_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-
-// ─── 2. ANSWER RESOLVER ────────────────────────────────────────
-function resolveAnswer(q) {
-    const opts = q.options || [];
-    // Index-based fields
-    for (const f of ['correctIndex','correct_index','answerIndex','answer_index']) {
-        if (q[f] !== undefined && q[f] !== null) {
-            const i = parseInt(q[f], 10);
-            if (!isNaN(i) && opts[i] !== undefined) return opts[i];
-        }
-    }
-    const raw = q.answer ?? q.correct ?? q.correctAnswer ??
-                q.correctOption ?? q.correct_answer ?? q.key ?? null;
-    if (raw === null) return null;
-    if (typeof raw === 'number') return opts[raw] ?? null;
-    const s = String(raw).trim();
-    if (/^[A-Ea-e]$/.test(s)) return opts[s.toUpperCase().charCodeAt(0) - 65] ?? null;
-    if (/^\d$/.test(s)) return opts[parseInt(s,10)] ?? null;
-    return s || null;
-}
-
-// ─── 3. HELPERS ────────────────────────────────────────────────
-function esc(str) {
-    if (!str) return '';
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function typeset(el) {
-    if (typeof MathJax === 'undefined' || !MathJax.typesetPromise) return;
-    const targets = el ? [el] : [
-        document.getElementById('question-card'),
-        document.getElementById('feedback-strip')
-    ];
-    MathJax.typesetPromise(targets).catch(() => {});
-}
-
-function typesetEl(el) {
-    if (!el || typeof MathJax === 'undefined' || !MathJax.typesetPromise) return;
-    MathJax.typesetPromise([el]).catch(() => {});
-}
-
-function geminiKey() {
-    return window.PrepPortalKeys?.gemini || window.state?.GEMINI_KEY || null;
-}
-
-async function callGemini(prompt) {
-    const key = geminiKey();
-    if (!key) throw new Error('No Gemini key');
-    let lastErr = null;
-    for (const model of GEMINI_MODELS) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
-        try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.4, maxOutputTokens: 600 }
-                })
-            });
-            if (res.status === 404) continue;
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const d = await res.json();
-            return d?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-        } catch (e) { lastErr = e; }
-    }
-    throw lastErr || new Error('All models failed');
-}
-
-async function callGeminiChat(messages) {
-    const key = geminiKey();
-    if (!key) throw new Error('No Gemini key');
-    const contents = messages.map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }]
-    }));
-    let lastErr = null;
-    for (const model of GEMINI_MODELS) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
-        try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents, generationConfig: { temperature: 0.6, maxOutputTokens: 600 } })
-            });
-            if (res.status === 404) continue;
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const d = await res.json();
-            return d?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-        } catch (e) { lastErr = e; }
-    }
-    throw lastErr || new Error('All models failed');
-}
-
-// ─── 4. BOOTSTRAP ──────────────────────────────────────────────
-document.getElementById('display-meta').textContent =
-    `WASSCE ${config.year||'—'} • ${(config.types||[]).join(' & ').toUpperCase()}`;
-document.getElementById('display-subject').textContent =
-    (config.subjects||[]).join(' & ') || 'Practice Paper';
-document.getElementById('print-header').textContent =
-    `Prep Portal · WASSCE ${config.year||''} · ${(config.subjects||[]).join(' & ')} · Printed Results`;
-
-document.getElementById('quit-link').addEventListener('click', e => {
-    e.preventDefault(); window.history.back();
-});
-document.getElementById('prepbot-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendPrepBot(); }
-});
-
-function normalizeName(n) { return n.toLowerCase().replace(/\s+/g,''); }
-
-function injectScript(src) {
-    return new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = src; s.onload = resolve; s.onerror = reject;
-        document.head.appendChild(s);
-    });
-}
-
-async function loadAndRender() {
-    const sets = [];
-    for (const sub of config.subjects) {
-        const subKey = normalizeName(sub);
-        for (const type of config.types) {
-            const path = `./${subKey}/${config.year}/${type}.js`;
-            try {
-                await injectScript(path);
-                const vName = `${subKey}${type.charAt(0).toUpperCase()+type.slice(1)}`;
-                let data;
-                try { data = window[vName] || eval(vName); } catch(_) {}
-                if (data) sets.push({ sub, type, data });
-            } catch(_) { console.warn('Could not load:', path); }
-        }
-    }
-
-    for (const { sub, type, data } of sets) {
-        if (type === 'objective') {
-            data.forEach(q => {
-                const obj = { ...q, subject: sub, type };
-                obj._answer = resolveAnswer(obj);
-                allQuestions.push(obj);
-            });
-        } else {
-            // Theory: may be array or object
-            const items = Array.isArray(data) ? data : Object.values(data);
-            items.forEach(q => {
-                if (typeof q === 'string') {
-                    allQuestions.push({ subject: sub, type, question: q, _answer: null });
-                } else {
-                    allQuestions.push({ ...q, subject: sub, type, _answer: null });
-                }
-            });
-        }
-    }
-
-    document.getElementById('loading-state').style.display = 'none';
-
-    if (allQuestions.length === 0) {
-        document.getElementById('question-card').style.display = 'flex';
-        document.getElementById('question-card').innerHTML =
-            `<div style="padding:40px;text-align:center">
-                <strong style="font-family:var(--font-display);font-size:15px">No Questions Found</strong>
-                <p style="font-size:12px;opacity:.6;margin-top:8px">Check your file paths and variable names.</p>
-             </div>`;
-        return;
-    }
-
-    buildDotMap();
-    renderQuestion(0);
-    document.getElementById('question-card').style.display = 'flex';
-    document.getElementById('nav-bar').style.display = 'grid';
-}
-
-// ─── 5. DOT MAP ────────────────────────────────────────────────
-function buildDotMap() {
-    const c = document.getElementById('q-dots');
-    c.innerHTML = '';
-    allQuestions.forEach((_, i) => {
-        const d = document.createElement('button');
-        d.className = 'q-dot';
-        d.title = `Q${i+1}`;
-        d.addEventListener('click', () => renderQuestion(i));
-        c.appendChild(d);
-    });
-    updateDots();
-}
-
-function updateDots() {
-    document.querySelectorAll('.q-dot').forEach((d, i) => {
-        d.classList.remove('answered','current','correct','wrong','theory-marked');
-        const q = allQuestions[i]; const chosen = userAnswers[i]; const ans = q._answer;
-        if (submitted) {
-            if (q.type !== 'objective') {
-                d.classList.add(theoryMarks[i] ? 'theory-marked' : (chosen ? 'answered' : ''));
-            } else if (!chosen) {
-                /* unanswered */
-            } else if (ans === null) { d.classList.add('answered'); }
-            else if (chosen === ans) { d.classList.add('correct'); }
-            else                     { d.classList.add('wrong'); }
-        } else {
-            if (i === currentIndex) d.classList.add('current');
-            else if (chosen !== undefined) d.classList.add('answered');
-        }
-    });
-}
-
-// ─── 6. RENDER QUESTION ────────────────────────────────────────
-function renderQuestion(idx) {
-    currentIndex = idx;
-    const q = allQuestions[idx]; const total = allQuestions.length; const ans = q._answer;
-
-    document.getElementById('q-counter-label').textContent = `Q ${idx+1} of ${total}`;
-    document.getElementById('progress-fill').style.width   = `${((idx+1)/total)*100}%`;
-    document.getElementById('q-number-badge').textContent  =
-        `Q ${idx+1}  •  ${q.subject}  •  ${q.type.toUpperCase()}`;
-
-    document.getElementById('q-text').innerHTML = esc(q.question);
-
-    // Image
-    const imgWrap = document.getElementById('q-image-wrap');
-    imgWrap.innerHTML = '';
-    if (q.image) {
-        const img = document.createElement('img');
-        img.className = 'q-image'; img.src = q.image;
-        img.alt = `Question ${idx+1} diagram`;
-        imgWrap.appendChild(img);
-    }
-
-    const optWrap = document.getElementById('q-options');
-    optWrap.innerHTML = '';
-
-    if (q.type === 'objective') {
-        const grid = document.createElement('div'); grid.className = 'options-grid';
-        const letters = ['A','B','C','D','E'];
-        (q.options||[]).forEach((opt, oi) => {
-            const btn = document.createElement('button'); btn.className = 'option-btn';
-            if (submitted) {
-                btn.disabled = true;
-                if (ans !== null && opt === ans)             btn.classList.add('correct-ans');
-                else if (userAnswers[idx] === opt)           btn.classList.add('wrong-ans');
-            } else if (userAnswers[idx] === opt) btn.classList.add('selected');
-            btn.innerHTML = `<span class="opt-letter">${letters[oi]||oi+1}</span><span>${esc(opt)}</span>`;
-            btn.addEventListener('click', () => selectOption(opt, btn, grid, idx));
-            grid.appendChild(btn);
-        });
-        optWrap.appendChild(grid);
-
-        if (!submitted && q.hint) {
-            const h = document.createElement('div'); h.className = 'hint-row';
-            h.innerHTML = `<span class="hint-lbl">Hint</span><span>${esc(q.hint)}</span>`;
-            optWrap.appendChild(h);
-        }
-    } else {
-        // Theory
-        const ta = document.createElement('textarea'); ta.className = 'theory-box';
-        ta.placeholder = 'Write your answer here…';
-        ta.value = userAnswers[idx] || '';
-        if (submitted) ta.disabled = true;
-        ta.addEventListener('input', () => { userAnswers[idx] = ta.value; updateDots(); });
-        optWrap.appendChild(ta);
-
-        // Show AI mark if already done
-        if (submitted && theoryMarks[idx]) {
-            const m = theoryMarks[idx];
-            const mEl = document.createElement('div');
-            mEl.style.cssText = 'margin-top:12px;padding:12px;border:2px solid var(--blue);background:rgba(0,71,255,.05)';
-            mEl.innerHTML = `
-                <div class="theory-score-badge">AI Mark: ${m.score}/${m.outOf}</div>
-                <div class="theory-mark-text">${esc(m.feedback)}</div>`;
-            optWrap.appendChild(mEl);
-        } else if (submitted && userAnswers[idx]) {
-            const sp = document.createElement('div'); sp.className = 'ai-marking-row';
-            sp.innerHTML = `<div class="ai-spin"></div> AI Marking in progress…`;
-            optWrap.appendChild(sp);
-        }
-    }
-
-    renderFeedback(idx);
-
-    document.getElementById('prev-btn').disabled = (idx === 0);
-    const isLast = idx === total - 1;
-    document.getElementById('next-btn').style.display   = isLast ? 'none'        : 'inline-flex';
-    document.getElementById('submit-btn').style.display = isLast ? 'inline-flex' : 'none';
-
-    updateDots();
-    typeset();
-}
-
-// ─── 7. FEEDBACK STRIP ─────────────────────────────────────────
-function renderFeedback(idx) {
-    const strip  = document.getElementById('feedback-strip');
-    const label  = document.getElementById('feedback-label');
-    const expl   = document.getElementById('feedback-expl');
-    const acts   = document.getElementById('feedback-actions');
-    const q      = allQuestions[idx]; const ans = q._answer;
-
-    strip.className = 'feedback-strip';
-    expl.innerHTML  = ''; acts.innerHTML = '';
-
-    if (!submitted) return;
-
-    function buildExpl(raw) {
-        if (!raw) return '';
-        const lines = Array.isArray(raw) ? raw : [raw];
-        return lines.map(l => `<p class="expl-line">${esc(l)}</p>`).join('');
-    }
-
-    function addPrepBotBtn(question, explText) {
-        const btn = document.createElement('button');
-        btn.className = 'prepbot-btn';
-        btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5.5" cy="4.5" r="3"/><path d="M1 10c0-2 2-3.5 4.5-3.5S10 8 10 10"/></svg> Ask PrepBot`;
-        btn.addEventListener('click', () => openPrepBot(question, explText));
-        acts.appendChild(btn);
-    }
-
-    if (q.type === 'theory') {
-        const mark = theoryMarks[idx];
-        if (mark) {
-            strip.classList.add('neutral');
-            label.textContent = `AI Mark: ${mark.score}/${mark.outOf}`;
-            expl.innerHTML = `<p class="expl-line">${esc(mark.feedback)}</p>`;
-        } else if (userAnswers[idx]) {
-            strip.classList.add('neutral');
-            label.textContent = 'Theory — marking with AI…';
-        } else {
-            strip.classList.add('wrong');
-            label.textContent = 'Theory — no answer submitted.';
-        }
-        addPrepBotBtn(q.question, '');
-        return;
-    }
-
-    const chosen = userAnswers[idx];
-    const explText = Array.isArray(q.explanation)
-        ? q.explanation.join('\n') : (q.explanation || '');
-
-    if (!chosen) {
-        strip.classList.add('wrong');
-        label.textContent = 'Not answered.';
-        expl.innerHTML = ans
-            ? `<p class="expl-line">Correct answer: <strong>${esc(ans)}</strong></p>` + buildExpl(q.explanation)
-            : '<p class="expl-line">No answer key for this question.</p>';
-    } else if (ans === null) {
-        strip.classList.add('neutral');
-        label.textContent = `You selected: ${chosen}`;
-        expl.innerHTML = '<p class="expl-line">No answer key — cannot verify.</p>';
-    } else if (chosen === ans) {
-        strip.classList.add('correct');
-        label.textContent = 'Correct!';
-        expl.innerHTML = buildExpl(q.explanation);
-    } else {
-        strip.classList.add('wrong');
-        label.textContent = `Wrong — you chose: ${chosen}`;
-        expl.innerHTML =
-            `<p class="expl-line">Correct answer: <strong>${esc(ans)}</strong></p>` +
-            buildExpl(q.explanation);
-    }
-
-    addPrepBotBtn(q.question, explText);
-}
-
-// ─── 8. SELECT OPTION ──────────────────────────────────────────
-function selectOption(opt, btn, grid, idx) {
-    if (submitted) return;
-    grid.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    userAnswers[idx] = opt;
-    updateDots();
-}
-
-// ─── 9. NAVIGATE ───────────────────────────────────────────────
-function navigate(delta) {
-    const n = currentIndex + delta;
-    if (n < 0 || n >= allQuestions.length) return;
-    renderQuestion(n);
-}
-
-// ─── 10. SUBMIT CONFIRM ────────────────────────────────────────
-function confirmSubmit() {
-    const answered = Object.keys(userAnswers).filter(k =>
-        userAnswers[k] !== undefined && userAnswers[k] !== '').length;
-    const total = allQuestions.length;
-    document.getElementById('confirm-body').textContent =
-        `You have answered ${answered} of ${total} questions.` +
-        (answered < total ? ` ${total-answered} unanswered will be skipped.` : ' Ready to submit?');
-    document.getElementById('pp-confirm-overlay').classList.add('open');
-}
-function closeConfirm() {
-    document.getElementById('pp-confirm-overlay').classList.remove('open');
-}
-
-// ─── 11. SUBMIT ────────────────────────────────────────────────
-function submitQuiz() {
-    closeConfirm();
-    submitted = true;
-    renderQuestion(currentIndex);
-    const sb = document.getElementById('submit-btn');
-    sb.disabled = true; sb.textContent = 'Submitted';
-
-    // Kick off theory marking in background
-    runTheoryMarking();
-
-    setTimeout(showResults, 900);
-}
-
-// ─── 12. THEORY AI MARKING ─────────────────────────────────────
-async function runTheoryMarking() {
-    for (let i = 0; i < allQuestions.length; i++) {
-        const q = allQuestions[i];
-        if (q.type !== 'theory' && q.type !== 'essay') continue;
-        const answer = userAnswers[i] || '';
-        if (!answer.trim()) continue;
-        if (!geminiKey()) continue;
-        try {
-            const result = await markTheoryQuestion(q.question, answer);
-            theoryMarks[i] = result;
-            updateDots();
-            // If this question is currently shown, re-render
-            if (currentIndex === i) renderQuestion(i);
-            // Update review item if results screen is showing
-            updateReviewTheoryMark(i, result);
-        } catch (e) {
-            console.warn(`Theory marking failed for Q${i+1}:`, e.message);
-        }
-    }
-}
-
-async function markTheoryQuestion(question, studentAnswer) {
-    const prompt = `You are an experienced WAEC examiner marking a Nigerian secondary school student's theory answer.
-
-QUESTION:
-${question}
-
-STUDENT'S ANSWER:
-${studentAnswer}
-
-Mark this answer out of 10. Be fair and constructive. Focus on correctness, completeness, and clarity.
-
-Respond ONLY as a raw JSON object with no markdown or fences:
-{"score":7,"outOf":10,"feedback":"Your explanation of X was correct. You missed Y and Z."}`;
-
-    const raw = await callGemini(prompt);
-    const clean = raw.replace(/```[a-z]*\n?/gi,'').replace(/```/g,'').trim();
-    const parsed = JSON.parse(clean);
-    if (parsed.score === undefined || !parsed.feedback) throw new Error('Bad response');
-    return { score: parsed.score, outOf: parsed.outOf || 10, feedback: parsed.feedback };
-}
-
-function updateReviewTheoryMark(idx, mark) {
-    const el = document.getElementById(`review-theory-mark-${idx}`);
-    if (!el) return;
-    el.innerHTML = `
-        <div class="theory-score-badge">AI Mark: ${mark.score}/${mark.outOf}</div>
-        <div class="theory-mark-text">${esc(mark.feedback)}</div>`;
-    typesetEl(el);
-}
-
-// ─── 13. RESULTS ───────────────────────────────────────────────
-function showResults() {
-    document.getElementById('quiz-screen').style.display    = 'none';
-    document.getElementById('results-screen').style.display = 'flex';
-
-    let correct = 0, wrong = 0, skipped = 0;
-    const scorable = allQuestions.filter(q => q.type === 'objective' && q._answer !== null);
-
-    allQuestions.forEach((q, i) => {
-        if (q.type !== 'objective') return;
-        const chosen = userAnswers[i]; const ans = q._answer;
-        if (!chosen) skipped++;
-        else if (ans === null) { /* no key */ }
-        else if (chosen === ans) correct++;
-        else wrong++;
-    });
-
-    const pct = scorable.length > 0 ? Math.round((correct / scorable.length) * 100) : 0;
-    document.getElementById('res-score').textContent   = scorable.length > 0 ? `${pct}%` : 'N/A';
-    document.getElementById('res-correct').textContent = correct;
-    document.getElementById('res-wrong').textContent   = wrong;
-    document.getElementById('res-skipped').textContent = skipped;
-
-    let grade = 'No answer key available.';
-    if (scorable.length > 0) {
-        if (pct >= 80)      grade = 'Distinction — Excellent work!';
-        else if (pct >= 65) grade = 'Credit — Well done.';
-        else if (pct >= 50) grade = 'Pass — Keep working.';
-        else                grade = 'Fail — Keep practising.';
-    }
-    document.getElementById('res-grade').textContent = grade;
-
-    buildReviewList();
-}
-
-function buildReviewList() {
-    const el = document.getElementById('review-list');
-    el.innerHTML = '';
-
-    allQuestions.forEach((q, i) => {
-        const chosen = userAnswers[i]; const ans = q._answer;
-
-        const item = document.createElement('div'); item.className = 'review-item';
-
-        // Number badge
-        const numEl = document.createElement('div'); numEl.className = 'review-q-num';
-        numEl.textContent = i + 1;
-
-        const body = document.createElement('div'); body.className = 'review-body';
-
-        // Full question text with MathJax
-        const qTxt = document.createElement('div'); qTxt.className = 'review-q-text';
-        qTxt.innerHTML = esc(q.question);
-        body.appendChild(qTxt);
-
-        // Image if present
-        if (q.image) {
-            const img = document.createElement('img');
-            img.className = 'review-img'; img.src = q.image;
-            img.alt = `Q${i+1} image`;
-            body.appendChild(img);
-        }
-
-        // Answer line
-        const ansEl = document.createElement('div'); ansEl.className = 'review-ans';
-
-        // Explanation block (for objective)
-        const explEl = document.createElement('div'); explEl.className = 'review-expl';
-        explEl.style.display = 'none';
-
-        if (q.type === 'objective') {
-            if (!chosen) {
-                numEl.classList.add('rq-skip');
-                ansEl.textContent = ans ? `Not answered — Correct: ${ans}` : 'Not answered — No key';
-            } else if (ans === null) {
-                numEl.classList.add('rq-skip');
-                ansEl.textContent = `You: ${chosen}  |  No answer key`;
-            } else if (chosen === ans) {
-                numEl.classList.add('rq-ok'); ansEl.classList.add('ok');
-                ansEl.textContent = `Correct: ${chosen}`;
-            } else {
-                numEl.classList.add('rq-bad'); ansEl.classList.add('bad');
-                ansEl.innerHTML =
-                    `You: <strong>${esc(chosen)}</strong>  |  Correct: <strong>${esc(ans)}</strong>`;
-            }
-
-            // Explanation
-            if (q.explanation) {
-                const lines = Array.isArray(q.explanation) ? q.explanation : [q.explanation];
-                explEl.innerHTML = lines.map(l => `<p class="expl-line">${esc(l)}</p>`).join('');
-                explEl.style.display = 'block';
-            }
-        } else {
-            // Theory
-            numEl.classList.add(chosen ? 'rq-ai' : 'rq-skip');
-            ansEl.classList.add('ai');
-
-            // Theory mark placeholder (updated async by runTheoryMarking)
-            const markEl = document.createElement('div');
-            markEl.id = `review-theory-mark-${i}`;
-            if (theoryMarks[i]) {
-                const m = theoryMarks[i];
-                markEl.innerHTML = `
-                    <div class="theory-score-badge">AI Mark: ${m.score}/${m.outOf}</div>
-                    <div class="theory-mark-text">${esc(m.feedback)}</div>`;
-            } else if (chosen) {
-                markEl.innerHTML = `<div class="ai-marking-row"><div class="ai-spin"></div> Marking with AI…</div>`;
-            }
-
-            // Show student's answer
-            if (chosen) {
-                ansEl.textContent = `Your answer: ${chosen.length > 100 ? chosen.slice(0,100)+'…' : chosen}`;
-                body.appendChild(ansEl);
-                body.appendChild(markEl);
-            } else {
-                ansEl.textContent = 'Theory — not answered';
-                body.appendChild(ansEl);
-            }
-        }
-
-        if (q.type === 'objective') {
-            body.appendChild(ansEl);
-            if (explEl.style.display !== 'none') body.appendChild(explEl);
-        }
-
-        item.appendChild(numEl);
-        item.appendChild(body);
-        el.appendChild(item);
-    });
-
-    // Typeset the whole review list for MathJax
-    typesetEl(el);
-}
-
-// ─── 14. PREPBOT ───────────────────────────────────────────────
-function openPrepBot(questionText, explanationText) {
-    prepbotCtx = { questionText, explanationText };
-    prepbotHistory = [];
-
-    document.getElementById('prepbot-context').textContent =
-        `Q: ${questionText.length > 200 ? questionText.slice(0,200)+'…' : questionText}`;
-
-    const msgs = document.getElementById('prepbot-msgs');
-    msgs.innerHTML = '';
-
-    // System seed — first message from PrepBot
-    const seedMsg = `I'm here to help you understand this question. Ask me anything about it — the concept, why the answer is correct, or how to approach similar problems.`;
-    appendPrepBotMsg('bot', seedMsg);
-
-    // Seed history for context
-    prepbotHistory = [
-        {
-            role: 'user',
-            content: `You are PrepBot, a friendly Nigerian secondary school exam tutor. The student is reviewing this question:\n\n"${questionText}"${explanationText ? `\n\nThe explanation is: ${explanationText}` : ''}\n\nHelp the student understand it deeply. Be concise and use simple language.`
-        },
-        { role: 'assistant', content: seedMsg }
-    ];
-
-    document.getElementById('prepbot-panel').classList.add('open');
-    document.getElementById('prepbot-input').focus();
-
-    // Also try to trigger the platform PrepBot if available
-    window.dispatchEvent(new CustomEvent('prepportal:prepbotContext', {
-        detail: { question: questionText, explanation: explanationText }
-    }));
-}
-
-function closePrepBot() {
-    document.getElementById('prepbot-panel').classList.remove('open');
-    prepbotCtx = null;
-}
-
-async function sendPrepBot() {
-    const input  = document.getElementById('prepbot-input');
-    const sendBtn = document.getElementById('prepbot-send');
-    const text = input.value.trim();
-    if (!text) return;
-
-    input.value = ''; sendBtn.disabled = true;
-    appendPrepBotMsg('user', text);
-    const thinking = appendPrepBotMsg('bot', 'Thinking…', true);
-
-    prepbotHistory.push({ role: 'user', content: text });
-
-    try {
-        const reply = await callGeminiChat(prepbotHistory);
-        thinking.remove();
-        appendPrepBotMsg('bot', reply);
-        prepbotHistory.push({ role: 'assistant', content: reply });
-    } catch (e) {
-        thinking.remove();
-        appendPrepBotMsg('bot', `Sorry, I could not connect right now. (${e.message})`);
-    }
-    sendBtn.disabled = false;
-    input.focus();
-}
-
-function appendPrepBotMsg(role, text, thinking = false) {
-    const msgs = document.getElementById('prepbot-msgs');
-    const el = document.createElement('div');
-    el.className = `prepbot-msg ${role}${thinking ? ' thinking' : ''}`;
-    el.textContent = text;
-    msgs.appendChild(el);
-    msgs.scrollTop = msgs.scrollHeight;
-    return el;
-}
-
-// ─── 15. PRINT ─────────────────────────────────────────────────
-function printResults() {
-    // Make sure MathJax is done before printing
-    if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
-        MathJax.typesetPromise([document.getElementById('review-list')])
-            .then(() => window.print())
-            .catch(() => window.print());
-    } else {
-        window.print();
-    }
-}
-
-// ─── 16. RETAKE ────────────────────────────────────────────────
-function retakeQuiz() {
-    userAnswers  = {};
-    theoryMarks  = {};
-    currentIndex = 0;
-    submitted    = false;
-
-    document.getElementById('results-screen').style.display = 'none';
-    document.getElementById('quiz-screen').style.display    = 'flex';
-
-    const sb = document.getElementById('submit-btn');
-    sb.disabled = false;
-    sb.innerHTML = `Submit <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6h8M7 3l3 3-3 3"/></svg>`;
-
-    buildDotMap();
-    renderQuestion(0);
-}
-
-loadAndRender();
-</script>
+    
+    <script src="./question.js">
+    
+    </script>
 </body>
+
 </html>
