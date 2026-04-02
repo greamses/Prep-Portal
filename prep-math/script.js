@@ -62,8 +62,8 @@ const singleLineDerivationSettings = {
     pos: { x: 'center', y: 'center' },
     keep_in_container: false,
     draggable: true,
-    no_handles: true,
-    collapsed_mode: true,
+    no_handles: false,
+    collapsed_mode: false,
     show_bg: false,
 };
 
