@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prep Portal 2026 | </title>
+    <title>Prep Portal 2026 | Algebra Lab</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,8 +15,8 @@
     <link rel="stylesheet" href="../theory-page/style.css">
     <link rel="stylesheet" href="./style.css">
     
-    <!-- Inside <head> -->
-   <script src="https://graspablemath.com/shared/libs/gmath/gm-inject.js"></script>
+    <!-- Graspable Math -->
+    <script src="https://graspablemath.com/shared/libs/gmath/gm-inject.js"></script>
     
     <script src="../utils/loader/loader.js"></script>
     
@@ -96,6 +96,26 @@
         .key-dot--missing {
             background: #ef5350;
             border-color: #b71c1c;
+        }
+        
+        /* Responsive styles for canvas */
+        @media (max-width: 768px) {
+            #gm-fs-canvas {
+                min-height: 200px;
+            }
+            .fs-canvas-wrap {
+                padding: 10px;
+            }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            #gm-fs-canvas {
+                min-height: 250px;
+            }
+        }
+        @media (min-width: 1025px) {
+            #gm-fs-canvas {
+                min-height: 300px;
+            }
         }
     </style>
 </head>
@@ -231,9 +251,6 @@
                         <span class="step-title">Hint Method</span>
                     </div>
                     <div class="method-row">
-                        
-                        
-                        <!-- To this: -->
                         <button class="method-chip active" data-method="transfer">Transfer</button>
                         <button class="method-chip" data-method="balancing">Balancing</button>
                     </div>
@@ -254,7 +271,7 @@
                 </div>
             </div>
             
-            <!-- API Key Status — mirrors the YT key pattern; filled by script.js after Firestore load -->
+            <!-- API Key Status — Gemini only -->
             <div class="setup-row full key-status-row">
                 <div class="setup-cell">
                     <div class="step-label">
@@ -348,13 +365,8 @@
         Open Canvas
     </button>
     
-    
-    
-    <!-- Graspable Math -->
-    
     <!-- Main Algebra Script -->
-    
-    <script type="module" src="../../theory-page/js/keys.js"></script>
+    <script type="module" src="../theory-page/js/keys.js"></script>
     <script type="module" src="./script.js"></script>
     
 </body>

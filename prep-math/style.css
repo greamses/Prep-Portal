@@ -98,6 +98,10 @@
   z-index: 1;
 }
 
+#yt-apikey-section{
+  display: none;
+}
+
 .topic-chip::before {
   content: '';
   position: absolute;
