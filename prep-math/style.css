@@ -489,7 +489,7 @@
   position: fixed;
   inset: 0;
   /* z-index: calc(var(--z-nav) + 100); */
-  z-index: 15000;
+  z-index: 400;
   background: #0c0c0c;
   display: flex;
   flex-direction: column;

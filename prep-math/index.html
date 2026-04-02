@@ -10,14 +10,94 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
     
-    <!-- Dashboard styles for navigation and ticker -->
     <link rel="stylesheet" href="../main.css">
     <!-- Base theory styles -->
     <link rel="stylesheet" href="../theory-page/style.css">
-    <!-- Algebra-specific styles (includes custom dropdown & accordion) -->
     <link rel="stylesheet" href="./style.css">
     
+    <!-- Inside <head> -->
+   <script src="https://graspablemath.com/shared/libs/gmath/gm-inject.js"></script>
+    
     <script src="../utils/loader/loader.js"></script>
+    
+    <style>
+        /* ── Key Status Row ───────────────────────────────────────────── */
+        .key-status-row {
+            margin-top: 4px;
+        }
+        
+        .key-status-grid {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .key-status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 160px;
+        }
+        
+        .key-status-label {
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--color-ink, #1a1a1a);
+            white-space: nowrap;
+            min-width: 52px;
+        }
+        
+        /* The filled input — readonly, masked, matches neobrutalist borders */
+        .key-status-input {
+            flex: 1;
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-size: 12px;
+            padding: 6px 10px;
+            border: 2px solid var(--color-ink, #1a1a1a);
+            background: var(--color-bg, #f5f0e8);
+            color: var(--color-ink, #1a1a1a);
+            outline: none;
+            cursor: default;
+            /* show placeholder when empty */
+            transition: background 0.2s, border-color 0.2s;
+            min-width: 0;
+            /* neobrutalist offset shadow */
+            box-shadow: 2px 2px 0 var(--color-ink, #1a1a1a);
+        }
+        
+        /* When the key IS loaded — green tint + stronger shadow */
+        .key-status-input.key-filled {
+            background: #e8f5e9;
+            border-color: #2e7d32;
+            box-shadow: 2px 2px 0 #2e7d32;
+            color: #1b5e20;
+        }
+        
+        /* Status dot */
+        .key-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid var(--color-ink, #1a1a1a);
+            flex-shrink: 0;
+            background: #ccc;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        
+        .key-dot--ok {
+            background: #4caf50;
+            border-color: #2e7d32;
+        }
+        
+        .key-dot--missing {
+            background: #ef5350;
+            border-color: #b71c1c;
+        }
+    </style>
 </head>
 
 <body>
@@ -151,8 +231,11 @@
                         <span class="step-title">Hint Method</span>
                     </div>
                     <div class="method-row">
-                        <button class="method-chip active" data-method="transfer" onclick="setMethod(this)">Transfer</button>
-                        <button class="method-chip" data-method="balancing" onclick="setMethod(this)">Balancing</button>
+                        
+                        
+                        <!-- To this: -->
+                        <button class="method-chip active" data-method="transfer">Transfer</button>
+                        <button class="method-chip" data-method="balancing">Balancing</button>
                     </div>
                     <p class="step-sub">How should PrepBot phrase the hint?</p>
                 </div>
@@ -168,6 +251,28 @@
                         </svg>
                         Generate Equation
                     </button>
+                </div>
+            </div>
+            
+            <!-- API Key Status — mirrors the YT key pattern; filled by script.js after Firestore load -->
+            <div class="setup-row full key-status-row">
+                <div class="setup-cell">
+                    <div class="step-label">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0">
+                            <circle cx="5.5" cy="5.5" r="3.5" />
+                            <path d="M8.5 8.5l4 4" />
+                            <path d="M5.5 4v3M4 5.5h3" />
+                        </svg>
+                        <span class="step-title">API Keys</span>
+                    </div>
+                    <div class="key-status-grid">
+                        <!-- Gemini key display -->
+                        <div class="key-status-item">
+                            <span class="key-status-label">Gemini</span>
+                            <input type="password" id="gemini-key-display" class="key-status-input" readonly placeholder="Not loaded" tabindex="-1" aria-label="Gemini API key status" />
+                            <span class="key-dot" id="gemini-key-dot" title="Gemini key status"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -248,6 +353,8 @@
     <!-- Graspable Math -->
     
     <!-- Main Algebra Script -->
+    
+    <script type="module" src="../../theory-page/js/keys.js"></script>
     <script type="module" src="./script.js"></script>
     
 </body>
