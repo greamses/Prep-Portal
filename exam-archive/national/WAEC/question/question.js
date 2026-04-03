@@ -6,7 +6,13 @@
 'use strict';
 
 // ── CONFIG ─────────────────────────────────────────────────────
-const GEMINI_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+const GEMINI_MODELS = [
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent',
+    'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent',
+    'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent',
+    'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent',
+];
 
 const urlParams = new URLSearchParams(window.location.search);
 const PAGE_CONFIG = {
@@ -36,8 +42,8 @@ async function callGemini(prompt, maxTokens = 600) {
     const key = geminiKey();
     if (!key) throw new Error('No Gemini key. Add your key in API Keys.');
     let lastErr = null;
-    for (const model of GEMINI_MODELS) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+    for (const modelUrl of GEMINI_MODELS) {
+        const url = `${modelUrl}?key=${encodeURIComponent(key)}`;
         try {
             const res = await fetch(url, {
                 method: 'POST',
@@ -64,8 +70,8 @@ async function callGeminiChat(messages, maxTokens = 700) {
         parts: [{ text: m.content }]
     }));
     let lastErr = null;
-    for (const model of GEMINI_MODELS) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+    for (const modelUrl of GEMINI_MODELS) {
+        const url = `${modelUrl}?key=${encodeURIComponent(key)}`;
         try {
             const res = await fetch(url, {
                 method: 'POST',
@@ -225,29 +231,122 @@ const Quiz = (() => {
         
         // Create confirm overlay if not exists
         ensureConfirmOverlay();
+        
+        // FIX: Add results screen button listeners
+        attachResultsListeners();
+    }
+    
+    // FIX: New function to attach results screen listeners
+    function attachResultsListeners() {
+        const backBtn = document.getElementById('back-to-quiz-btn');
+        const retakeBtn = document.getElementById('retake-btn');
+        const printBtn = document.getElementById('print-results-btn');
+        
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                if (elements.resultsScreen) elements.resultsScreen.style.display = 'none';
+                if (elements.quizScreen) elements.quizScreen.style.display = 'flex';
+                // Re-render current question
+                renderQuestion(currentIndex);
+            });
+        }
+        
+        if (retakeBtn) {
+            retakeBtn.addEventListener('click', () => retake());
+        }
+        
+        if (printBtn) {
+            printBtn.addEventListener('click', () => printResults());
+        }
     }
     
     function ensureConfirmOverlay() {
-        if (document.getElementById('pp-confirm-overlay')) return;
-        
-        const overlay = document.createElement('div');
-        overlay.id = 'pp-confirm-overlay';
-        overlay.className = 'confirm-overlay';
-        overlay.innerHTML = `
-            <div class="confirm-modal">
-                <div class="confirm-title">Submit Exam</div>
-                <div class="confirm-body" id="confirm-body">Are you sure you want to submit?</div>
-                <div class="confirm-actions">
-                    <button class="confirm-cancel" id="confirm-cancel">Cancel</button>
-                    <button class="confirm-submit" id="confirm-submit">Submit</button>
-                </div>
+        document.getElementById('prepbot').style.display = "none"
+    if (document.getElementById('pp-confirm-overlay')) return;
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'pp-confirm-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(10, 10, 10, 0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    `;
+    
+    overlay.innerHTML = `
+        <div class="pp-confirm-box">
+            <div class="pp-confirm-title">Submit Exam</div>
+            <div class="pp-confirm-body" id="confirm-body">Are you sure you want to submit?</div>
+            <div class="pp-confirm-ftr">
+                <button class="confirm-cancel" id="confirm-cancel">Cancel</button>
+                <button class="confirm-submit" id="confirm-submit">Submit</button>
             </div>
-        `;
-        document.body.appendChild(overlay);
-        
-        document.getElementById('confirm-cancel')?.addEventListener('click', () => closeConfirm());
-        document.getElementById('confirm-submit')?.addEventListener('click', () => submit());
-    }
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    // Add styles for the buttons inside the modal
+    const style = document.createElement('style');
+    style.textContent = `
+        .pp-confirm-box {
+            background: var(--bg, #f5f0e8);
+            border: 2.5px solid var(--ink, #1a1a1a);
+            box-shadow: 6px 6px 0 var(--ink, #1a1a1a);
+            max-width: 400px;
+            width: 100%;
+            padding: 28px 24px 22px;
+        }
+        .pp-confirm-title {
+            font-family: var(--font-display, 'Unbounded', sans-serif);
+            font-size: 13px;
+            font-weight: 900;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .pp-confirm-body {
+            font-size: 13px;
+            line-height: 1.65;
+            margin-bottom: 20px;
+        }
+        .pp-confirm-ftr {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .confirm-cancel, .confirm-submit {
+            font-family: var(--font-display, 'Unbounded', sans-serif);
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            border: 2.5px solid var(--ink, #1a1a1a);
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: transform .1s, box-shadow .1s;
+            background: var(--white, #fffef8);
+            color: var(--ink, #1a1a1a);
+        }
+        .confirm-submit {
+            background: var(--yellow, #ffe600);
+        }
+        .confirm-cancel:hover, .confirm-submit:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0 var(--ink, #1a1a1a);
+        }
+        #pp-confirm-overlay.open {
+            display: flex;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.getElementById('confirm-cancel')?.addEventListener('click', () => closeConfirm());
+    document.getElementById('confirm-submit')?.addEventListener('click', () => submit());
+}
     
     async function loadAndRender() {
         for (const sub of PAGE_CONFIG.subjects) {
@@ -343,99 +442,107 @@ const Quiz = (() => {
     }
     
     function renderQuestion(idx) {
-        currentIndex = idx;
-        const q = allQuestions[idx];
-        const total = allQuestions.length;
-        
-        if (elements.qCounterLabel) elements.qCounterLabel.textContent = `Q ${idx+1} of ${total}`;
-        if (elements.progressFill) elements.progressFill.style.width = `${((idx+1)/total)*100}%`;
-        if (elements.qNumberBadge) elements.qNumberBadge.textContent =
-            `Q ${idx+1}  •  ${q.subject}  •  ${q.type.toUpperCase()}`;
-        
-        if (elements.qText) {
-            elements.qText.innerHTML = esc(q.question);
-        }
-        
-        // Image
-        if (elements.qImageWrap) {
-            elements.qImageWrap.innerHTML = '';
-            if (q.image) {
-                const img = document.createElement('img');
-                img.className = 'q-image';
-                img.src = q.image;
-                img.alt = `Q${idx+1} diagram`;
-                elements.qImageWrap.appendChild(img);
-            }
-        }
-        
-        // Options
-        if (elements.qOptions) {
-            elements.qOptions.innerHTML = '';
-            
-            if (q.type === 'objective') {
-                const grid = document.createElement('div');
-                grid.className = 'options-grid';
-                const letters = ['A', 'B', 'C', 'D', 'E'];
-                (q.options || []).forEach((opt, oi) => {
-                    const btn = document.createElement('button');
-                    btn.className = 'option-btn';
-                    if (submitted) {
-                        btn.disabled = true;
-                        if (q._answer !== null && opt === q._answer) btn.classList.add('correct-ans');
-                        else if (userAnswers[idx] === opt) btn.classList.add('wrong-ans');
-                    } else if (userAnswers[idx] === opt) {
-                        btn.classList.add('selected');
-                    }
-                    btn.innerHTML = `<span class="opt-letter">${letters[oi]||oi+1}</span><span>${esc(opt)}</span>`;
-                    btn.addEventListener('click', () => selectOption(opt, btn, grid, idx));
-                    grid.appendChild(btn);
-                });
-                elements.qOptions.appendChild(grid);
-                
-                if (!submitted && q.hint) {
-                    const h = document.createElement('div');
-                    h.className = 'hint-row';
-                    h.innerHTML = `<span class="hint-lbl">Hint</span><span>${esc(q.hint)}</span>`;
-                    elements.qOptions.appendChild(h);
-                }
-            } else {
-                // Theory
-                const ta = document.createElement('textarea');
-                ta.className = 'theory-box';
-                ta.placeholder = 'Write your answer here…';
-                ta.value = userAnswers[idx] || '';
-                if (submitted) ta.disabled = true;
-                ta.addEventListener('input', () => { 
-                    userAnswers[idx] = ta.value;
-                    updateDots(); 
-                });
-                elements.qOptions.appendChild(ta);
-                
-                if (submitted && theoryMarks[idx]) {
-                    const m = theoryMarks[idx];
-                    const mEl = document.createElement('div');
-                    mEl.style.cssText = 'margin-top:12px;padding:12px;border:2px solid var(--blue);background:rgba(0,85,255,.05)';
-                    mEl.innerHTML = `
-                        <div class="theory-score-badge">AI Mark: ${m.score}/${m.outOf}</div>
-                        <div class="theory-mark-text">${esc(m.feedback)}</div>`;
-                    elements.qOptions.appendChild(mEl);
-                } else if (submitted && userAnswers[idx]) {
-                    const sp = document.createElement('div');
-                    sp.className = 'ai-marking-row';
-                    sp.innerHTML = `<div class="ai-spin"></div>AI Marking…`;
-                    elements.qOptions.appendChild(sp);
-                }
-            }
-        }
-        
-        renderFeedback(idx);
-        updateNavButtons(idx, total);
-        updateDots();
-        
-        // Typeset math on the card
-        if (elements.questionCard) typesetEl(elements.questionCard);
-        if (elements.feedbackStrip) typesetEl(elements.feedbackStrip);
+    currentIndex = idx;
+    const q = allQuestions[idx];
+    const total = allQuestions.length;
+    
+    if (elements.qCounterLabel) elements.qCounterLabel.textContent = `Q ${idx+1} of ${total}`;
+    if (elements.progressFill) elements.progressFill.style.width = `${((idx+1)/total)*100}%`;
+    if (elements.qNumberBadge) elements.qNumberBadge.textContent =
+        `Q ${idx+1}  •  ${q.subject}  •  ${q.type.toUpperCase()}`;
+    
+    if (elements.qText) {
+        elements.qText.innerHTML = esc(q.question);
     }
+    
+    // Image
+    if (elements.qImageWrap) {
+        elements.qImageWrap.innerHTML = '';
+        if (q.image) {
+            const img = document.createElement('img');
+            img.className = 'q-image';
+            img.src = q.image;
+            img.alt = `Q${idx+1} diagram`;
+            elements.qImageWrap.appendChild(img);
+        }
+    }
+    
+    // Options
+    if (elements.qOptions) {
+        elements.qOptions.innerHTML = '';
+        
+        if (q.type === 'objective') {
+            const grid = document.createElement('div');
+            grid.className = 'options-grid';
+            const letters = ['A', 'B', 'C', 'D', 'E'];
+            (q.options || []).forEach((opt, oi) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                if (submitted) {
+                    btn.disabled = true;
+                    if (q._answer !== null && opt === q._answer) btn.classList.add('correct-ans');
+                    else if (userAnswers[idx] === opt) btn.classList.add('wrong-ans');
+                } else if (userAnswers[idx] === opt) {
+                    btn.classList.add('selected');
+                }
+                btn.innerHTML = `<span class="opt-letter">${letters[oi]||oi+1}</span><span>${esc(opt)}</span>`;
+                btn.addEventListener('click', () => selectOption(opt, btn, grid, idx));
+                grid.appendChild(btn);
+            });
+            elements.qOptions.appendChild(grid);
+            
+            if (!submitted && q.hint) {
+                const h = document.createElement('div');
+                h.className = 'hint-row';
+                h.innerHTML = `<span class="hint-lbl">💡 Hint</span><span>${esc(q.hint)}</span>`;
+                elements.qOptions.appendChild(h);
+            }
+        } else {
+            // THEORY/ESSAY - IMPROVED STYLING
+            const theoryCard = document.createElement('div');
+            theoryCard.className = 'theory-card';
+            
+            const ta = document.createElement('textarea');
+            ta.className = 'theory-box';
+            ta.placeholder = '✍️ Write your answer here…\n\nBe specific, show your working, and explain your reasoning.';
+            ta.value = userAnswers[idx] || '';
+            if (submitted) ta.disabled = true;
+            ta.addEventListener('input', () => {
+                userAnswers[idx] = ta.value;
+                updateDots();
+            });
+            theoryCard.appendChild(ta);
+            
+            if (submitted) {
+                if (theoryMarks[idx]) {
+                    const m = theoryMarks[idx];
+                    const feedbackDiv = document.createElement('div');
+                    feedbackDiv.className = 'theory-feedback';
+                    feedbackDiv.innerHTML = `
+                        <div class="theory-score-badge">🎯 AI Mark: ${m.score}/${m.outOf}</div>
+                        <div class="theory-feedback-text">${esc(m.feedback)}</div>
+                    `;
+                    theoryCard.appendChild(feedbackDiv);
+                } else if (userAnswers[idx] && userAnswers[idx].trim()) {
+                    const loadingDiv = document.createElement('div');
+                    loadingDiv.className = 'theory-marking';
+                    loadingDiv.innerHTML = `<div class="ai-spin"></div><span>AI is evaluating your answer…</span>`;
+                    theoryCard.appendChild(loadingDiv);
+                }
+            }
+            
+            elements.qOptions.appendChild(theoryCard);
+        }
+    }
+    
+    renderFeedback(idx);
+    updateNavButtons(idx, total);
+    updateDots();
+    
+    // Typeset math on the card
+    if (elements.questionCard) typesetEl(elements.questionCard);
+    if (elements.feedbackStrip) typesetEl(elements.feedbackStrip);
+}
     
     function updateNavButtons(idx, total) {
         if (elements.prevBtn) elements.prevBtn.disabled = (idx === 0);
@@ -574,10 +681,10 @@ const Quiz = (() => {
         if (overlay) overlay.classList.add('open');
     }
     
-    function closeConfirm() {
-        const overlay = document.getElementById('pp-confirm-overlay');
-        if (overlay) overlay.classList.remove('open');
-    }
+function closeConfirm() {
+    const overlay = document.getElementById('pp-confirm-overlay');
+    if (overlay) overlay.classList.remove('open');
+}
     
     function submit() {
         closeConfirm();
@@ -674,93 +781,101 @@ Respond ONLY as raw JSON (no markdown):
     }
     
     function buildReviewList() {
-        if (!elements.reviewList) return;
-        elements.reviewList.innerHTML = '';
+    if (!elements.reviewList) return;
+    elements.reviewList.innerHTML = '';
+    
+    allQuestions.forEach((q, i) => {
+        const chosen = userAnswers[i];
+        const ans = q._answer;
+        const item = document.createElement('div');
+        item.className = 'review-item';
         
-        allQuestions.forEach((q, i) => {
-            const chosen = userAnswers[i];
-            const ans = q._answer;
-            const item = document.createElement('div');
-            item.className = 'review-item';
-            
-            const numEl = document.createElement('div');
-            numEl.className = 'review-q-num';
-            numEl.textContent = i + 1;
-            
-            const body = document.createElement('div');
-            body.className = 'review-body';
-            
-            const qTxt = document.createElement('div');
-            qTxt.className = 'review-q-text';
-            qTxt.innerHTML = esc(q.question);
-            body.appendChild(qTxt);
-            
-            if (q.image) {
-                const img = document.createElement('img');
-                img.className = 'review-img';
-                img.src = q.image;
-                img.alt = `Q${i+1}`;
-                body.appendChild(img);
-            }
-            
-            const ansEl = document.createElement('div');
-            ansEl.className = 'review-ans';
-            
-            if (q.type === 'objective') {
-                if (!chosen) {
-                    numEl.classList.add('rq-skip');
-                    ansEl.textContent = ans ? `Not answered — Correct: ${ans}` : 'Not answered';
-                } else if (ans === null) {
-                    numEl.classList.add('rq-skip');
-                    ansEl.textContent = `You: ${chosen}  |  No key`;
-                } else if (chosen === ans) {
-                    numEl.classList.add('rq-ok');
-                    ansEl.classList.add('ok');
-                    ansEl.textContent = `Correct: ${chosen}`;
-                } else {
-                    numEl.classList.add('rq-bad');
-                    ansEl.classList.add('bad');
-                    ansEl.innerHTML = `You: <strong>${esc(chosen)}</strong>  |  Correct: <strong>${esc(ans)}</strong>`;
-                }
-                body.appendChild(ansEl);
-                
-                if (q.explanation) {
-                    const explEl = document.createElement('div');
-                    explEl.className = 'review-expl';
-                    const lines = Array.isArray(q.explanation) ? q.explanation : [q.explanation];
-                    explEl.innerHTML = lines.map(l => `<p class="expl-line">${esc(l)}</p>`).join('');
-                    body.appendChild(explEl);
-                }
+        const numEl = document.createElement('div');
+        numEl.className = 'review-q-num';
+        numEl.textContent = i + 1;
+        
+        const body = document.createElement('div');
+        body.className = 'review-body';
+        
+        const qTxt = document.createElement('div');
+        qTxt.className = 'review-q-text';
+        qTxt.innerHTML = esc(q.question);
+        body.appendChild(qTxt);
+        
+        if (q.image) {
+            const img = document.createElement('img');
+            img.className = 'review-img';
+            img.src = q.image;
+            img.alt = `Q${i+1}`;
+            body.appendChild(img);
+        }
+        
+        const ansEl = document.createElement('div');
+        ansEl.className = 'review-ans';
+        
+        if (q.type === 'objective') {
+            if (!chosen) {
+                numEl.classList.add('rq-skip');
+                ansEl.textContent = ans ? `Not answered — Correct: ${ans}` : 'Not answered';
+            } else if (ans === null) {
+                numEl.classList.add('rq-skip');
+                ansEl.textContent = `You: ${chosen}  |  No key`;
+            } else if (chosen === ans) {
+                numEl.classList.add('rq-ok');
+                ansEl.classList.add('ok');
+                ansEl.textContent = `✓ Correct: ${chosen}`;
             } else {
-                numEl.classList.add(chosen ? 'rq-ai' : 'rq-skip');
+                numEl.classList.add('rq-bad');
+                ansEl.classList.add('bad');
+                ansEl.innerHTML = `✗ You: <strong>${esc(chosen)}</strong>  |  ✓ Correct: <strong>${esc(ans)}</strong>`;
+            }
+            body.appendChild(ansEl);
+            
+            if (q.explanation) {
+                const explEl = document.createElement('div');
+                explEl.className = 'review-expl';
+                const lines = Array.isArray(q.explanation) ? q.explanation : [q.explanation];
+                explEl.innerHTML = lines.map(l => `<p class="expl-line">📘 ${esc(l)}</p>`).join('');
+                body.appendChild(explEl);
+            }
+        } else {
+            // THEORY/ESSAY - FIXED STYLING
+            if (chosen && chosen.trim()) {
+                numEl.classList.add('rq-ai');
                 ansEl.classList.add('ai');
-                if (chosen) {
-                    ansEl.textContent = `Answer: ${chosen.length>120 ? chosen.slice(0,120)+'…' : chosen}`;
-                } else {
-                    ansEl.textContent = 'Theory — not answered';
-                }
+                ansEl.innerHTML = `<strong>Your answer:</strong><br>${esc(chosen.length > 200 ? chosen.slice(0, 200) + '…' : chosen)}`;
                 body.appendChild(ansEl);
-                
-                const markEl = document.createElement('div');
-                markEl.id = `review-theory-mark-${i}`;
-                if (theoryMarks[i]) {
-                    const m = theoryMarks[i];
-                    markEl.innerHTML = `
-                        <div class="theory-score-badge">AI Mark: ${m.score}/${m.outOf}</div>
-                        <div class="theory-mark-text">${esc(m.feedback)}</div>`;
-                } else if (chosen) {
-                    markEl.innerHTML = `<div class="ai-marking-row"><div class="ai-spin"></div>Marking…</div>`;
-                }
-                body.appendChild(markEl);
+            } else {
+                numEl.classList.add('rq-skip');
+                ansEl.classList.add('neutral');
+                ansEl.textContent = '❌ Not answered';
+                body.appendChild(ansEl);
             }
             
-            item.appendChild(numEl);
-            item.appendChild(body);
-            elements.reviewList.appendChild(item);
-        });
+            // AI Marking feedback
+            const markContainer = document.createElement('div');
+            markContainer.className = 'theory-feedback-container';
+            markContainer.id = `review-theory-mark-${i}`;
+            
+            if (theoryMarks[i]) {
+                const m = theoryMarks[i];
+                markContainer.innerHTML = `
+                    <div class="theory-score-badge">🤖 AI Mark: ${m.score}/${m.outOf}</div>
+                    <div class="theory-mark-text">${esc(m.feedback)}</div>
+                `;
+            } else if (chosen && chosen.trim()) {
+                markContainer.innerHTML = `<div class="ai-marking-row"><div class="ai-spin"></div>AI Marking in progress…</div>`;
+            }
+            body.appendChild(markContainer);
+        }
         
-        typesetEl(elements.reviewList);
-    }
+        item.appendChild(numEl);
+        item.appendChild(body);
+        elements.reviewList.appendChild(item);
+    });
+    
+    typesetEl(elements.reviewList);
+}
     
     function printResults() {
         if (elements.reviewList && typeof MathJax !== 'undefined' && MathJax.typesetPromise) {

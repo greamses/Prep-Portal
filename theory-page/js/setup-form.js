@@ -57,24 +57,24 @@ function cleanMathForDisplay(text) {
 
 /* ── Helper to ensure Gemini key is ready ── */
 async function ensureGeminiKey() {
-    // Check if we already have the key in state
+  // Check if we already have the key in state
+  if (state.GEMINI_KEY && state.KEY_VERIFIED) {
+    console.log('Gemini key already ready');
+    return true;
+  }
+  
+  // Wait for key to become available (up to 5 seconds)
+  console.log('Waiting for Gemini key to be ready...');
+  for (let i = 0; i < 50; i++) {
     if (state.GEMINI_KEY && state.KEY_VERIFIED) {
-        console.log('Gemini key already ready');
-        return true;
+      console.log('Gemini key is now ready');
+      return true;
     }
-    
-    // Wait for key to become available (up to 5 seconds)
-    console.log('Waiting for Gemini key to be ready...');
-    for (let i = 0; i < 50; i++) {
-        if (state.GEMINI_KEY && state.KEY_VERIFIED) {
-            console.log('Gemini key is now ready');
-            return true;
-        }
-        await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    
-    console.error('Gemini key not ready after waiting');
-    return false;
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  
+  console.error('Gemini key not ready after waiting');
+  return false;
 }
 
 /* ── Exported helpers ── */
@@ -107,22 +107,38 @@ export function checkReady() {
   document.getElementById('begin-btn').disabled = !ok;
   
   const s = document.getElementById('setup-status');
-  if (!state.KEY_VERIFIED) { s.textContent = 'Paste and verify your Gemini API key to continue';
-    s.className = 'setup-status'; }
-  else if (!state.st.name) { s.textContent = 'Enter your name to continue';
-    s.className = 'setup-status'; }
-  else if (!state.st.cls) { s.textContent = 'Select your class';
-    s.className = 'setup-status'; }
-  else if (needsTrack) { s.textContent = 'Select your SS track (Science / Arts / Commercial)';
-    s.className = 'setup-status'; }
-  else if (!state.st.subject) { s.textContent = 'Choose a subject';
-    s.className = 'setup-status'; }
-  else if (!qPanelVisible) { s.textContent = 'Select topics or skip, then proceed to questions';
-    s.className = 'setup-status'; }
-  else if (!allQsFilled) { s.textContent = `Enter or auto-gen all ${state.st.count} question(s)`;
-    s.className = 'setup-status'; }
-  else { s.textContent = '✓ Ready — click Begin Practice';
-    s.className = 'setup-status ready'; }
+  if (!state.KEY_VERIFIED) {
+    s.textContent = 'Paste and verify your Gemini API key to continue';
+    s.className = 'setup-status';
+  }
+  else if (!state.st.name) {
+    s.textContent = 'Enter your name to continue';
+    s.className = 'setup-status';
+  }
+  else if (!state.st.cls) {
+    s.textContent = 'Select your class';
+    s.className = 'setup-status';
+  }
+  else if (needsTrack) {
+    s.textContent = 'Select your SS track (Science / Arts / Commercial)';
+    s.className = 'setup-status';
+  }
+  else if (!state.st.subject) {
+    s.textContent = 'Choose a subject';
+    s.className = 'setup-status';
+  }
+  else if (!qPanelVisible) {
+    s.textContent = 'Select topics or skip, then proceed to questions';
+    s.className = 'setup-status';
+  }
+  else if (!allQsFilled) {
+    s.textContent = `Enter or auto-gen all ${state.st.count} question(s)`;
+    s.className = 'setup-status';
+  }
+  else {
+    s.textContent = '✓ Ready — click Begin Practice';
+    s.className = 'setup-status ready';
+  }
 }
 
 export function rebuildSlots() {
@@ -212,8 +228,10 @@ function _buildTopicPicker(classKey, subject) {
       chip.addEventListener('click', () => {
         if (chip.classList.contains('disabled-max')) return;
         const idx = _selectedTopics.indexOf(key);
-        if (idx >= 0) { _selectedTopics.splice(idx, 1);
-          chip.classList.remove('checked'); }
+        if (idx >= 0) {
+          _selectedTopics.splice(idx, 1);
+          chip.classList.remove('checked');
+        }
         else {
           if (_selectedTopics.length >= MAX_TOPICS) return;
           _selectedTopics.push(key);
@@ -358,75 +376,75 @@ function _buildSlot(i, { text = '', marks = '', compulsory = false } = {}) {
 }
 
 async function _autoGenOne(idx) {
-    // Ensure Gemini key is ready before proceeding
-    const keyReady = await ensureGeminiKey();
-    if (!keyReady) {
-        alert('Gemini key not ready. Please wait a moment and try again.');
-        return;
+  // Ensure Gemini key is ready before proceeding
+  const keyReady = await ensureGeminiKey();
+  if (!keyReady) {
+    alert('Gemini key not ready. Please wait a moment and try again.');
+    return;
+  }
+  
+  if (!state.st.cls || !state.st.subject) {
+    alert('Please select a class and subject first');
+    return;
+  }
+  
+  const slot = document.querySelector(`.q-slot[data-idx="${idx}"]`);
+  if (!slot) return;
+  
+  const btn = slot.querySelector('.q-autogen-btn');
+  btn.disabled = true;
+  btn.classList.add('loading');
+  btn.textContent = '⚡ Generating…';
+  
+  const existing = [];
+  document.querySelectorAll('.q-slot-editor').forEach(ed => {
+    const text = ed.innerText.trim();
+    if (text) existing.push(text.slice(0, 80));
+  });
+  
+  // Log key state for debugging
+  console.log('Auto-gen using Gemini key:', !!state.GEMINI_KEY, 'Verified:', state.KEY_VERIFIED);
+  
+  // Initialize TheoryAnalyser with current config
+  TheoryAnalyser.init({
+    geminiKey: state.GEMINI_KEY,
+    subject: state.st.subject,
+    level: state.st.cls + (state.st.track ? ` (${state.st.track})` : ''),
+    topics: getSelectedTopicLabels(),
+    mountId: 'theory-results',
+  });
+  
+  try {
+    const [q] = await TheoryAnalyser.generateQuestions(1, existing);
+    if (q) {
+      const editor = slot.querySelector('.q-slot-editor');
+      const mi = slot.querySelector('.marks-input');
+      
+      // Clean the question text for display
+      let cleanQuestion = cleanMathForDisplay(q.text);
+      cleanQuestion = cleanMalformedMath(cleanQuestion);
+      editor.innerHTML = cleanQuestion;
+      editor.classList.add('autofilled');
+      
+      // Render MathJax
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        window.MathJax.typesetPromise([editor]).catch(console.warn);
+      }
+      
+      if (q.suggestedMarks) mi.value = q.suggestedMarks;
+      checkReady();
+      console.log('Question generated successfully');
+    } else {
+      throw new Error('No question generated');
     }
-    
-    if (!state.st.cls || !state.st.subject) {
-        alert('Please select a class and subject first');
-        return;
-    }
-    
-    const slot = document.querySelector(`.q-slot[data-idx="${idx}"]`);
-    if (!slot) return;
-    
-    const btn = slot.querySelector('.q-autogen-btn');
-    btn.disabled = true;
-    btn.classList.add('loading');
-    btn.textContent = '⚡ Generating…';
-    
-    const existing = [];
-    document.querySelectorAll('.q-slot-editor').forEach(ed => {
-        const text = ed.innerText.trim();
-        if (text) existing.push(text.slice(0, 80));
-    });
-    
-    // Log key state for debugging
-    console.log('Auto-gen using Gemini key:', !!state.GEMINI_KEY, 'Verified:', state.KEY_VERIFIED);
-    
-    // Initialize TheoryAnalyser with current config
-    TheoryAnalyser.init({
-        geminiKey: state.GEMINI_KEY,
-        subject: state.st.subject,
-        level: state.st.cls + (state.st.track ? ` (${state.st.track})` : ''),
-        topics: getSelectedTopicLabels(),
-        mountId: 'theory-results',
-    });
-    
-    try {
-        const [q] = await TheoryAnalyser.generateQuestions(1, existing);
-        if (q) {
-            const editor = slot.querySelector('.q-slot-editor');
-            const mi = slot.querySelector('.marks-input');
-            
-            // Clean the question text for display
-            let cleanQuestion = cleanMathForDisplay(q.text);
-            cleanQuestion = cleanMalformedMath(cleanQuestion);
-            editor.innerHTML = cleanQuestion;
-            editor.classList.add('autofilled');
-            
-            // Render MathJax
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                window.MathJax.typesetPromise([editor]).catch(console.warn);
-            }
-            
-            if (q.suggestedMarks) mi.value = q.suggestedMarks;
-            checkReady();
-            console.log('Question generated successfully');
-        } else {
-            throw new Error('No question generated');
-        }
-    } catch (err) {
-        console.error('Auto-gen error:', err);
-        alert('Auto-gen failed: ' + err.message);
-    }
-    
-    btn.disabled = false;
-    btn.classList.remove('loading');
-    btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Auto-gen`;
+  } catch (err) {
+    console.error('Auto-gen error:', err);
+    alert('Auto-gen failed: ' + err.message);
+  }
+  
+  btn.disabled = false;
+  btn.classList.remove('loading');
+  btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Auto-gen`;
 }
 
 /* ── Select instances ── */
@@ -534,13 +552,13 @@ export function initSetupForm() {
     // Ensure Gemini key is ready before proceeding
     const keyReady = await ensureGeminiKey();
     if (!keyReady) {
-        alert('Gemini key not ready. Please wait a moment and try again.');
-        return;
+      alert('Gemini key not ready. Please wait a moment and try again.');
+      return;
     }
     
     if (!state.st.cls || !state.st.subject) {
-        alert('Please select a class and subject first');
-        return;
+      alert('Please select a class and subject first');
+      return;
     }
     
     const btn = document.getElementById('autogen-all-btn');
@@ -551,46 +569,46 @@ export function initSetupForm() {
     console.log('Auto-gen all using Gemini key:', !!state.GEMINI_KEY, 'Verified:', state.KEY_VERIFIED);
     
     TheoryAnalyser.init({
-        geminiKey: state.GEMINI_KEY,
-        subject: state.st.subject,
-        level: state.st.cls + (state.st.track ? ` (${state.st.track})` : ''),
-        topics: getSelectedTopicLabels(),
-        mountId: 'theory-results',
+      geminiKey: state.GEMINI_KEY,
+      subject: state.st.subject,
+      level: state.st.cls + (state.st.track ? ` (${state.st.track})` : ''),
+      topics: getSelectedTopicLabels(),
+      mountId: 'theory-results',
     });
     
     try {
-        const questions = await TheoryAnalyser.generateQuestions(state.st.count);
+      const questions = await TheoryAnalyser.generateQuestions(state.st.count);
+      
+      if (!questions || questions.length === 0) {
+        throw new Error('No questions generated');
+      }
+      
+      questions.forEach((q, i) => {
+        const slot = document.querySelector(`.q-slot[data-idx="${i}"]`);
+        if (!slot) return;
+        const editor = slot.querySelector('.q-slot-editor');
+        const mi = slot.querySelector('.marks-input');
         
-        if (!questions || questions.length === 0) {
-            throw new Error('No questions generated');
+        // Clean the question text
+        let cleanQuestion = cleanMathForDisplay(q.text);
+        cleanQuestion = cleanMalformedMath(cleanQuestion);
+        editor.innerHTML = cleanQuestion;
+        editor.classList.add('autofilled');
+        
+        // Render MathJax
+        if (window.MathJax && window.MathJax.typesetPromise) {
+          window.MathJax.typesetPromise([editor]).catch(console.warn);
         }
         
-        questions.forEach((q, i) => {
-            const slot = document.querySelector(`.q-slot[data-idx="${i}"]`);
-            if (!slot) return;
-            const editor = slot.querySelector('.q-slot-editor');
-            const mi = slot.querySelector('.marks-input');
-            
-            // Clean the question text
-            let cleanQuestion = cleanMathForDisplay(q.text);
-            cleanQuestion = cleanMalformedMath(cleanQuestion);
-            editor.innerHTML = cleanQuestion;
-            editor.classList.add('autofilled');
-            
-            // Render MathJax
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                window.MathJax.typesetPromise([editor]).catch(console.warn);
-            }
-            
-            if (q.suggestedMarks) mi.value = q.suggestedMarks;
-        });
-        
-        checkReady();
-        console.log(`Generated ${questions.length} questions successfully`);
-        
+        if (q.suggestedMarks) mi.value = q.suggestedMarks;
+      });
+      
+      checkReady();
+      console.log(`Generated ${questions.length} questions successfully`);
+      
     } catch (err) {
-        console.error('Auto-gen all error:', err);
-        alert('Auto-generate failed: ' + err.message);
+      console.error('Auto-gen all error:', err);
+      alert('Auto-generate failed: ' + err.message);
     }
     
     btn.disabled = false;
