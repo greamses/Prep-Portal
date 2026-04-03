@@ -5,6 +5,22 @@
 
 'use strict';
 
+// Parse URL parameters from main page
+function loadPageConfig() {
+    const params = new URLSearchParams(window.location.search);
+    
+    window.PAGE_CONFIG = {
+        examType: params.get('examType')?.toLowerCase() || 'waec',
+        year: params.get('year') || '2024',
+        stream: params.get('stream') || '',
+        subjects: params.get('subjects')?.split(',') || [],
+        types: params.get('types')?.split(',') || []
+    };
+}
+
+// Call before init
+loadPageConfig();
+
 const Quiz = (() => {
 
     let allQuestions  = [];

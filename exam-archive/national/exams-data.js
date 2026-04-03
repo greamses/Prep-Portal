@@ -1,9 +1,9 @@
 // Exam types configuration
 const EXAM_TYPES = [
-  { id: 'waec', name: 'WAEC (WASSCE)', live: true },
-  { id: 'neco', name: 'NECO (SSCE)', live: false },
-  { id: 'jamb', name: 'JAMB (UTME)', live: false },
-  { id: 'common-entrance', name: 'Common Entrance', live: false }
+  { id: 'WAEC', name: 'WAEC (WASSCE)', live: true },
+  { id: 'NECO', name: 'NECO (SSCE)', live: false },
+  { id: 'JAMB', name: 'JAMB (UTME)', live: false },
+  { id: 'Common-ntrance', name: 'Common Entrance', live: false }
 ];
 
 // Years configuration
@@ -290,8 +290,15 @@ function initLoader() {
   }, 1000);
 }
 
-// Generate button handler
+// Generate button handler - REDIRECT to question page with exam type
 beginBtn.onclick = () => {
+  // Validate all selections before redirect
+  if (!state.examType || !state.year || !state.stream || state.subjects.length === 0 || state.types.length === 0) {
+    setupStatusSpan.innerHTML = 'Please complete all selections before generating.';
+    return;
+  }
+  
+  // Build URL parameters including exam type
   const params = new URLSearchParams({
     examType: state.examType,
     year: state.year,
@@ -299,9 +306,10 @@ beginBtn.onclick = () => {
     subjects: state.subjects.join(','),
     types: state.types.join(',')
   });
-  alert(`Paper generation initiated!\n\nExam: ${state.examType.toUpperCase()}\nYear: ${state.year}\nStream: ${state.stream}\nSubjects: ${state.subjects.length}\nFormat: ${state.types.join(', ')}\n\nIn production, this would redirect to the question paper page.`);
-  console.log('Generate with params:', params.toString());
-  // window.location.href = `./question/question.html?${params.toString()}`;
+  
+  // Redirect to question.html with all parameters including exam type
+  // The question page will use PAGE_CONFIG.examType to load correct exam data
+  window.location.href = `./question/question.html?${params.toString()}`;
 };
 
 function init() {
