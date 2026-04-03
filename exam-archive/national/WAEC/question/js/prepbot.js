@@ -1,5 +1,6 @@
 // ══════════════════════════════════════════════════════════════
 //  PREPBOT (Groq first, then Gemini 2.5/3.x)
+//  With integrated YouTube video player - Popular Channels First
 // ══════════════════════════════════════════════════════════════
 const PrepBot = (() => {
 
@@ -11,6 +12,7 @@ const PrepBot = (() => {
     let recognition  = null;
     let micActive    = false;
     let popupTimer   = null;
+    let activeVideoPlayer = null;
 
     const SYSTEM_PROMPT = `You are PrepBot, a friendly and expert Nigerian secondary school exam tutor. You help students understand WAEC, JAMB, IGCSE, and Common Entrance exam questions. Be concise, clear, and encouraging. Use simple language. When explaining chemistry, biology, physics or maths, be precise. Do not use bullet points in every response — write naturally.
 
@@ -32,6 +34,87 @@ IMPORTANT: AI can make mistakes. Always verify important information with your t
         { label: 'Gemini 2.5 Flash', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent' },
         { label: 'Gemini 2.5 Pro', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent' }
     ];
+
+    // Popular education channels prioritized (no WAEC/JAMB keywords)
+    const POPULAR_CHANNELS = {
+        math: [
+            { name: 'Khan Academy', handle: 'khanacademy', priority: 1 },
+            { name: 'The Organic Chemistry Tutor', handle: 'theorganicchemistrytutorm', priority: 2 },
+            { name: '3Blue1Brown', handle: '3blue1brown', priority: 3 },
+            { name: 'blackpenredpen', handle: 'blackpenredpen', priority: 4 },
+            { name: 'Eddie Woo', handle: 'misterwootube', priority: 5 },
+            { name: 'Professor Leonard', handle: 'professorleonard', priority: 6 },
+            { name: 'Numberphile', handle: 'numberphile', priority: 7 },
+            { name: 'Mathologer', handle: 'mathologer', priority: 8 }
+        ],
+        physics: [
+            { name: 'Khan Academy', handle: 'khanacademy', priority: 1 },
+            { name: 'The Organic Chemistry Tutor', handle: 'theorganicchemistrytutorm', priority: 2 },
+            { name: 'Veritasium', handle: 'veritasium', priority: 3 },
+            { name: 'MinutePhysics', handle: 'minutephysics', priority: 4 },
+            { name: 'Physics Girl', handle: 'physicsgirl', priority: 5 },
+            { name: 'Flipping Physics', handle: 'flippingphysics', priority: 6 },
+            { name: 'SciShow', handle: 'scishow', priority: 7 }
+        ],
+        chemistry: [
+            { name: 'Khan Academy', handle: 'khanacademy', priority: 1 },
+            { name: 'The Organic Chemistry Tutor', handle: 'theorganicchemistrytutorm', priority: 2 },
+            { name: 'Tyler DeWitt', handle: 'tylerdewitt', priority: 3 },
+            { name: 'NileRed', handle: 'nilered', priority: 4 },
+            { name: 'Periodic Videos', handle: 'periodicvideos', priority: 5 },
+            { name: 'Professor Dave Explains', handle: 'professordaveexplains', priority: 6 }
+        ],
+        biology: [
+            { name: 'Khan Academy', handle: 'khanacademy', priority: 1 },
+            { name: 'Amoeba Sisters', handle: 'amoebasisters', priority: 2 },
+            { name: 'Kurzgesagt', handle: 'kurzgesagt', priority: 3 },
+            { name: 'Professor Dave Explains', handle: 'professordaveexplains', priority: 4 },
+            { name: 'SciShow', handle: 'scishow', priority: 5 },
+            { name: 'CrashCourse', handle: 'crashcourse', priority: 6 }
+        ],
+        english: [
+            { name: 'Khan Academy', handle: 'khanacademy', priority: 1 },
+            { name: 'CrashCourse', handle: 'crashcourse', priority: 2 },
+            { name: 'TED-Ed', handle: 'teded', priority: 3 },
+            { name: 'English with Lucy', handle: 'englishwithlucy', priority: 4 },
+            { name: 'BBC Learning English', handle: 'bbclearningenglish', priority: 5 }
+        ],
+        general: [
+            { name: 'Khan Academy', handle: 'khanacademy', priority: 1 },
+            { name: 'CrashCourse', handle: 'crashcourse', priority: 2 },
+            { name: 'TED-Ed', handle: 'teded', priority: 3 },
+            { name: 'Kurzgesagt', handle: 'kurzgesagt', priority: 4 },
+            { name: 'SciShow', handle: 'scishow', priority: 5 },
+            { name: 'Professor Dave Explains', handle: 'professordaveexplains', priority: 6 }
+        ]
+    };
+
+    function detectSubject(questionText) {
+        const text = questionText.toLowerCase();
+        if (text.match(/math|algebra|geometry|calculus|trigonometry|equation|solve for|find x|differentiate|integral/i)) {
+            return 'math';
+        }
+        if (text.match(/physics|force|velocity|acceleration|energy|momentum|electric|magnetic|circuit|newton|gravity/i)) {
+            return 'physics';
+        }
+        if (text.match(/chemistry|chemical|reaction|molecule|atom|bond|acid|base|solution|compound|periodic table/i)) {
+            return 'chemistry';
+        }
+        if (text.match(/biology|cell|organism|dna|protein|enzyme|photosynthesis|respiration|evolution|ecosystem/i)) {
+            return 'biology';
+        }
+        if (text.match(/english|grammar|vocabulary|essay|writing|reading comprehension|literature|poem|novel/i)) {
+            return 'english';
+        }
+        return 'general';
+    }
+
+    function getPrioritizedChannels(questionText) {
+        const subject = detectSubject(questionText);
+        const channels = POPULAR_CHANNELS[subject] || POPULAR_CHANNELS.general;
+        // Sort by priority
+        return [...channels].sort((a, b) => a.priority - b.priority);
+    }
 
     function groqKey() {
         return window.PrepPortalKeys?.groq || null;
@@ -96,7 +179,6 @@ IMPORTANT: AI can make mistakes. Always verify important information with your t
         
         let lastError = null;
         
-        // Try models in order: Flash-Lite -> Flash -> Pro (fastest to most capable)
         for (const model of GEMINI_MODELS) {
             try {
                 const url = `${model.url}?key=${encodeURIComponent(key)}`;
@@ -137,15 +219,13 @@ IMPORTANT: AI can make mistakes. Always verify important information with your t
         throw lastError || new Error('All Gemini models failed');
     }
 
-    // Smart router: try Groq first (fastest), then Gemini fallback
+    // Smart router: try Groq first, then Gemini fallback
     async function callSmartAI(messages, maxTokens = 500) {
-        // Try Groq first for quick responses
         try {
             return await callGroq(messages, maxTokens);
         } catch (groqError) {
             console.warn('Groq failed, falling back to Gemini:', groqError.message);
             showThinkingIndicator('Switching to Gemini AI...');
-            // Fall back to Gemini with slightly higher token limit
             return await callGemini(messages, Math.min(maxTokens + 200, 800));
         }
     }
@@ -161,6 +241,179 @@ IMPORTANT: AI can make mistakes. Always verify important information with your t
                 }
             }, 2000);
         }
+    }
+
+    // Search YouTube using specific channel (no WAEC/JAMB keywords)
+    async function searchChannelVideo(channelHandle, topicQuery) {
+        const key = ytKey();
+        if (!key) return null;
+        
+        // Clean query - remove WAEC/JAMB and exam references
+        let cleanQuery = topicQuery
+            .replace(/WAEC|JAMB|NECO|exam|question|practice test/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        // Add channel-specific search
+        const searchQuery = `${cleanQuery} ${channelHandle} lesson`;
+        
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=3&channelId=${channelHandle}&q=${encodeURIComponent(cleanQuery)}&key=${encodeURIComponent(key)}`;
+        
+        try {
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data.items && data.items.length > 0) {
+                const item = data.items[0];
+                return {
+                    videoId: item.id.videoId,
+                    title: item.snippet.title,
+                    channel: item.snippet.channelTitle,
+                    thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || ''
+                };
+            }
+        } catch (error) {
+            console.warn(`Search failed for channel ${channelHandle}:`, error);
+        }
+        return null;
+    }
+
+    // Search YouTube by topic without channel restriction (no WAEC/JAMB)
+    async function searchByTopic(topicQuery) {
+        const key = ytKey();
+        if (!key) return null;
+        
+        let cleanQuery = topicQuery
+            .replace(/WAEC|JAMB|NECO|exam|question|practice test/gi, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=5&q=${encodeURIComponent(cleanQuery + ' lesson tutorial')}&key=${encodeURIComponent(key)}`;
+        
+        try {
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data.items && data.items.length > 0) {
+                const item = data.items[0];
+                return {
+                    videoId: item.id.videoId,
+                    title: item.snippet.title,
+                    channel: item.snippet.channelTitle,
+                    thumb: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url || ''
+                };
+            }
+        } catch (error) {
+            console.warn('Topic search failed:', error);
+        }
+        return null;
+    }
+
+    // Main video search - prioritizes popular channels
+    async function findBestVideo(questionText) {
+        // Extract core concept from question (remove question numbers, etc.)
+        let coreConcept = questionText
+            .replace(/^Q\d+:\s*/i, '')
+            .replace(/\?.*$/, '')
+            .replace(/[\(\)]/g, '')
+            .split('.')[0]
+            .trim();
+        
+        // Limit length
+        if (coreConcept.length > 80) {
+            coreConcept = coreConcept.slice(0, 80);
+        }
+        
+        // Get prioritized channels for this subject
+        const channels = getPrioritizedChannels(questionText);
+        
+        // Try each popular channel in priority order
+        for (const channel of channels) {
+            const video = await searchChannelVideo(channel.handle, coreConcept);
+            if (video) {
+                console.log(`Found video on ${channel.name} channel`);
+                return video;
+            }
+        }
+        
+        // Fallback to topic search if no channel videos found
+        console.log('No channel videos found, trying topic search');
+        return await searchByTopic(coreConcept);
+    }
+
+    // ── YouTube Video Player in Chat ─────────────────────────
+    function createVideoPlayerInChat(videoId, title, channel) {
+        if (activeVideoPlayer && activeVideoPlayer.parentNode) {
+            activeVideoPlayer.remove();
+        }
+        
+        const playerDiv = document.createElement('div');
+        playerDiv.className = 'chat-video-player';
+        playerDiv.innerHTML = `
+            <div class="chat-video-header">
+                <div class="chat-video-title">${esc(title)}</div>
+                <div class="chat-video-channel">${esc(channel)}</div>
+                <button class="chat-video-close" title="Close video">✕</button>
+            </div>
+            <div class="chat-video-container">
+                <iframe 
+                    src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1" 
+                    title="YouTube video player" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+        `;
+        
+        const closeBtn = playerDiv.querySelector('.chat-video-close');
+        closeBtn.addEventListener('click', () => {
+            playerDiv.remove();
+            activeVideoPlayer = null;
+        });
+        
+        activeVideoPlayer = playerDiv;
+        return playerDiv;
+    }
+
+    async function searchAndPlayVideo() {
+        if (!contextQ) return;
+        
+        const thinkingEl = appendMsg('bot', 'Searching for video from top educators...', true);
+        
+        try {
+            const video = await findBestVideo(contextQ.questionText);
+            thinkingEl.remove();
+            
+            if (!video) {
+                appendMsg('bot', 'No video found for this topic. Try a different question or search manually on YouTube.');
+                return;
+            }
+            
+            const player = createVideoPlayerInChat(video.videoId, video.title, video.channel);
+            
+            const msgs = document.getElementById('chat-messages');
+            const playerWrapper = document.createElement('div');
+            playerWrapper.className = 'chat-msg bot';
+            playerWrapper.appendChild(player);
+            msgs.appendChild(playerWrapper);
+            msgs.scrollTop = msgs.scrollHeight;
+            
+        } catch (error) {
+            thinkingEl.remove();
+            appendMsg('bot', `Could not load video: ${error.message}`);
+        }
+    }
+
+    function addVideoPlayChip() {
+        const wrap = document.getElementById('suggestion-chips');
+        if (wrap.querySelector('.video-play-chip')) return;
+        
+        const btn = document.createElement('button');
+        btn.className = 'suggestion-chip video-play-chip';
+        btn.innerHTML = `▶ Watch Video Lesson`;
+        btn.addEventListener('click', () => searchAndPlayVideo());
+        wrap.appendChild(btn);
     }
 
     function init() {
@@ -473,12 +726,13 @@ IMPORTANT: AI can make mistakes. Always verify important information with your t
         const thinkingEl = appendMsg('bot', 'Thinking...', true);
 
         try {
-            // Use smart router: Groq first, then Gemini
             const reply = await callSmartAI(chatHistory);
             thinkingEl.remove();
             appendMsg('bot', reply);
             chatHistory.push({ role: 'assistant', content: reply });
-            if (ytKey() && contextQ) addVideoChip();
+            if (ytKey() && contextQ) {
+                addVideoPlayChip();
+            }
             addFollowUpChips(reply);
         } catch(e) {
             thinkingEl.remove();
@@ -494,12 +748,13 @@ IMPORTANT: AI can make mistakes. Always verify important information with your t
         sendBtn.disabled = true;
         const thinkingEl = appendMsg('bot', 'Thinking...', true);
         try {
-            // Use smart router: Groq first, then Gemini
             const reply = await callSmartAI(chatHistory);
             thinkingEl.remove();
             chatHistory.push({ role: 'assistant', content: reply });
             appendMsg('bot', reply);
-            if (ytKey() && contextQ) addVideoChip();
+            if (ytKey() && contextQ) {
+                addVideoPlayChip();
+            }
             addFollowUpChips(reply);
         } catch(e) {
             thinkingEl.remove();
@@ -541,7 +796,7 @@ IMPORTANT: AI can make mistakes. Always verify important information with your t
         const chips = match[1].split('|').map(s => s.trim()).filter(Boolean);
         const wrap  = document.getElementById('suggestion-chips');
         wrap.innerHTML = '';
-        chips.forEach(chip => {
+        chips.slice(0, 3).forEach(chip => {
             const btn = document.createElement('button');
             btn.className = 'suggestion-chip';
             btn.textContent = chip;
@@ -551,49 +806,6 @@ IMPORTANT: AI can make mistakes. Always verify important information with your t
             });
             wrap.appendChild(btn);
         });
-    }
-
-    function addVideoChip() {
-        const wrap = document.getElementById('suggestion-chips');
-        if (wrap.querySelector('.yt-chip')) return;
-        const btn = document.createElement('button');
-        btn.className = 'suggestion-chip yt-chip';
-        btn.innerHTML = `Search YouTube`;
-        btn.addEventListener('click', () => searchAndShowVideos());
-        wrap.appendChild(btn);
-    }
-
-    async function searchAndShowVideos() {
-        if (!contextQ) return;
-        clearSuggestions();
-        const loadMsg = appendMsg('bot', 'Searching YouTube...', true);
-        const query   = `WAEC ${contextQ.questionText.slice(0, 80)}`;
-        const videos  = await searchYouTube(query, 3);
-        loadMsg.remove();
-
-        if (!videos.length) { appendMsg('bot', 'No relevant YouTube videos found.'); return; }
-
-        const wrap = document.createElement('div'); wrap.className = 'chat-msg bot';
-        const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
-        bubble.innerHTML = `<div style="font-weight:700;font-size:.78rem;margin-bottom:8px">Related Videos</div>`;
-        const cards = document.createElement('div'); cards.className = 'prepbot-video-cards';
-        videos.forEach(v => {
-            const a = document.createElement('a');
-            a.className = 'prepbot-video-card';
-            a.href = `https://www.youtube.com/watch?v=${v.id}`;
-            a.target = '_blank'; a.rel = 'noopener';
-            a.innerHTML = `
-                <img src="${v.thumb}" alt="${esc(v.title)}">
-                <div class="prepbot-video-card-meta">
-                    <div class="prepbot-video-card-title">${esc(v.title)}</div>
-                    <div class="prepbot-video-card-channel">${esc(v.channel)}</div>
-                </div>`;
-            cards.appendChild(a);
-        });
-        bubble.appendChild(cards);
-        wrap.appendChild(bubble);
-        document.getElementById('chat-messages').appendChild(wrap);
-        document.getElementById('chat-messages').scrollTop = 9999;
     }
 
     function toggleMic() {
