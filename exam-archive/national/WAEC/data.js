@@ -301,7 +301,7 @@ beginBtn.onclick = () => {
     types: state.types.join(',')
   });
   // This stays the same because question.html is in the same folder
-  window.location.href = `./question.html?${params.toString()}`;
+  window.location.href = `./question/question.html?${params.toString()}`;
 };
 }
 init();

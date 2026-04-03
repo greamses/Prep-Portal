@@ -350,7 +350,7 @@ export async function initYTKey() {
   
   const anchor = document.getElementById('apikey-section') || document.querySelector('main') || document.body;
   anchor.insertAdjacentHTML('afterend', `
-<section class="setup-card" id="yt-apikey-section">
+<section class="setup-card" id="yt-apikey-section" style="display: none">
     <div class="setup-card-hd">
         <div class="step-badge">★</div>
         <div>

@@ -3206,3 +3206,6 @@ mjx-container {
   padding: 8px;
 }
 
+#yt-apikey-section {
+  display: none;
+}

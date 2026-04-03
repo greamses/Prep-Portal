@@ -6,10 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WASSCE Practice | Prep Portal</title>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./question.css">
     
+    <!-- MathJax 3 — $...$ inline, $$...$$ display -->
     <script>
         MathJax = {
             tex: {
@@ -28,16 +27,15 @@
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
-    
-    <link rel="stylesheet" href="./question.css">
 </head>
 
 <body>
     
-    <!-- ── QUIZ SCREEN ──────────────────────────────────────────── -->
+    <!-- ── QUIZ SCREEN ──────────────────────────────────────── -->
     <div class="quiz-shell" id="quiz-screen">
+        
         <div class="exam-header">
-            <div class="exam-header-left">
+            <div>
                 <div class="exam-eyebrow">Prep Portal &middot; WASSCE</div>
                 <h1 id="display-subject">Loading&hellip;</h1>
             </div>
@@ -76,7 +74,7 @@
                 <a href="#" class="quit-link" id="quit-link">← Quit</a>
             </div>
             <div class="nav-mid">
-                <button class="btn" id="prev-btn" onclick="navigate(-1)" disabled>
+                <button class="btn" id="prev-btn" disabled>
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M8 1L3 6l5 5" />
                     </svg>
@@ -84,13 +82,13 @@
                 </button>
             </div>
             <div class="nav-right">
-                <button class="btn btn-yellow" id="next-btn" onclick="navigate(1)">
+                <button class="btn btn-yellow" id="next-btn">
                     Next
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M4 1l5 5-5 5" />
                     </svg>
                 </button>
-                <button class="btn btn-ink" id="submit-btn" onclick="confirmSubmit()" style="display:none">
+                <button class="btn btn-ink" id="submit-btn" style="display:none">
                     Submit
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M2 6h8M7 3l3 3-3 3" />
@@ -100,10 +98,10 @@
         </div>
     </div>
     
-    <!-- ── RESULTS SCREEN ──────────────────────────────────────── -->
+    <!-- ── RESULTS SCREEN ───────────────────────────────────── -->
     <div class="quiz-shell" id="results-screen" style="display:none;flex-direction:column;">
         
-        <div class="print-header" id="print-header">Prep Portal &middot; WASSCE &mdash; Printed Results</div>
+        <div class="print-header" id="print-header">Prep Portal &middot; WASSCE — Results</div>
         
         <div class="results-header">
             <div class="eyebrow">Exam Complete</div>
@@ -120,55 +118,23 @@
         <div class="review-list" id="review-list"></div>
         
         <div class="results-actions no-print">
-            <button class="btn" onclick="window.history.back()">← Back</button>
-            <button class="btn btn-yellow" onclick="retakeQuiz()">Retake</button>
-            <button class="btn btn-ink" onclick="printResults()">
+            <button class="btn">← Back</button>
+            <button class="btn btn-yellow">Retake</button>
+            <button class="btn btn-ink">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="2" y="4" width="8" height="6" />
                     <path d="M4 4V1h4v3M4 8h4" />
                 </svg>
-                Print Results
+                Print
             </button>
         </div>
     </div>
     
-    <!-- ── PREPBOT PANEL ────────────────────────────────────────── -->
-    <div id="prepbot-panel">
-        <div class="prepbot-box">
-            <div class="prepbot-hd">
-                <span class="prepbot-hd-title">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px">
-                        <circle cx="6" cy="5" r="3" />
-                        <path d="M1 11c0-2.2 2.2-4 5-4s5 1.8 5 4" />
-                    </svg>
-                    PrepBot Explanation
-                </span>
-                <button class="prepbot-close" onclick="closePrepBot()">&#x2715;</button>
-            </div>
-            <div class="prepbot-context" id="prepbot-context"></div>
-            <div class="prepbot-msgs" id="prepbot-msgs"></div>
-            <div class="prepbot-input-row">
-                <input class="prepbot-input" id="prepbot-input" placeholder="Ask a follow-up question…" autocomplete="off">
-                <button class="prepbot-send" id="prepbot-send" onclick="sendPrepBot()">Send</button>
-            </div>
-        </div>
-    </div>
     
-    <!-- ── CONFIRM MODAL ────────────────────────────────────────── -->
-    <div id="pp-confirm-overlay">
-        <div class="pp-confirm-box">
-            <div class="pp-confirm-title">Submit Paper?</div>
-            <p class="pp-confirm-body" id="confirm-body"></p>
-            <div class="pp-confirm-ftr">
-                <button class="btn" onclick="closeConfirm()">Go Back</button>
-                <button class="btn btn-ink" onclick="submitQuiz()">Yes, Submit</button>
-            </div>
-        </div>
-    </div>
-    
-    <script src="./question.js">
-    
-    </script>
+    <div id="prepbot"></div>
+    <script type="module" src="../../../../theory-page/js/keys.js"></script>
+    <script type="module" src="./question.js"></script>
+    <script src="../../../../utils/prepbot/prepbot.js" type="module"></script>
 </body>
 
 </html>
