@@ -1096,6 +1096,270 @@ body {
   stroke: var(--white);
 }
 
+/* ── PREPBOT ACTION PILLS ───────────────────────────────── */
+.prepbot-action-bar {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1.5px dashed var(--ruled);
+}
+
+.prepbot-action-bar--qnav {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prepbot-nav-label {
+  font-family: var(--font-display);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.prepbot-qpills-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+
+.prepbot-pill {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border: var(--border);
+  background: var(--white);
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+  box-shadow: 2px 2px 0 var(--ruled);
+}
+
+.prepbot-pill:hover {
+  background: var(--yellow);
+  border-color: var(--ink);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.prepbot-pill--primary {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.prepbot-pill--primary:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--white);
+}
+
+.prepbot-pill svg {
+  flex-shrink: 0;
+}
+
+/* ── QUESTION NAVIGATION PILLS ──────────────────────────── */
+.prepbot-qpill {
+  width: 36px;
+  height: 36px;
+  border: var(--border);
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  box-shadow: 2px 2px 0 var(--ruled);
+  flex-shrink: 0;
+}
+
+.prepbot-qpill:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.prepbot-qpill.qpill--current {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--white);
+  box-shadow: none;
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+
+.prepbot-qpill.qpill--correct {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--white);
+  box-shadow: none;
+}
+
+.prepbot-qpill.qpill--wrong {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--white);
+  box-shadow: none;
+}
+
+.prepbot-qpill.qpill--answered {
+  background: var(--yellow);
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+/* ── CHAT BOT RESPONSE FORMATTING ───────────────────────── */
+/* Style for bold text (wrapped in ** or __) */
+.msg-bubble strong,
+.msg-bubble b {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Style for italic text (wrapped in * or _) */
+.msg-bubble em,
+.msg-bubble i {
+  font-style: italic;
+  font-family: var(--font-hand);
+  color: var(--blue);
+}
+
+/* Style for bold+italic (wrapped in *** or ___ ) */
+.msg-bubble strong em,
+.msg-bubble em strong,
+.msg-bubble b i,
+.msg-bubble i b {
+  font-weight: 700;
+  font-style: italic;
+  color: var(--ink);
+  background: linear-gradient(120deg, var(--yellow) 0%, var(--yellow) 40%, transparent 40%);
+  background-size: 100% 30%;
+  background-repeat: no-repeat;
+  background-position: bottom;
+  padding: 0 2px;
+}
+
+/* Inline code formatting (if any) */
+.msg-bubble code {
+  font-family: var(--font-mono);
+  background: var(--off);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  border: 1px solid var(--ruled);
+}
+
+/* Lists in bot responses */
+.msg-bubble ul,
+.msg-bubble ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.msg-bubble li {
+  margin: 4px 0;
+  line-height: 1.6;
+}
+
+/* Headers in bot responses */
+.msg-bubble h1,
+.msg-bubble h2,
+.msg-bubble h3,
+.msg-bubble h4 {
+  font-family: var(--font-display);
+  margin: 12px 0 6px;
+  font-weight: 700;
+}
+
+.msg-bubble h1 { font-size: 1.1rem; }
+.msg-bubble h2 { font-size: 1rem; }
+.msg-bubble h3 { font-size: 0.9rem; }
+.msg-bubble h4 { font-size: 0.85rem; }
+
+/* Blockquotes in bot responses */
+.msg-bubble blockquote {
+  border-left: 3px solid var(--blue);
+  margin: 8px 0;
+  padding: 6px 12px;
+  background: var(--off);
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* Line breaks and spacing */
+.msg-bubble p {
+  margin: 0 0 8px;
+}
+
+.msg-bubble p:last-child {
+  margin-bottom: 0;
+}
+
+/* Horizontal rule */
+.msg-bubble hr {
+  border: none;
+  border-top: 2px dashed var(--ruled);
+  margin: 12px 0;
+}
+
+/* Dark mode adjustments for user messages */
+.chat-msg.user .msg-bubble strong,
+.chat-msg.user .msg-bubble b {
+  color: var(--yellow);
+}
+
+.chat-msg.user .msg-bubble em,
+.chat-msg.user .msg-bubble i {
+  color: var(--off);
+}
+
+.chat-msg.user .msg-bubble code {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.chat-msg.user .msg-bubble blockquote {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── RESPONSIVE ADJUSTMENTS ─────────────────────────────── */
+@media (max-width: 600px) {
+  .prepbot-pill {
+    padding: 6px 12px;
+    font-size: 0.65rem;
+  }
+  
+  .prepbot-qpill {
+    width: 32px;
+    height: 32px;
+    font-size: 0.65rem;
+  }
+  
+  .prepbot-qpills-scroll {
+    max-height: 100px;
+  }
+}
+
 .chat-header-info h4 {
   font-family: var(--font-display);
   font-size: .78rem;
@@ -1810,3 +2074,4 @@ body {
 .print-header {
   display: none;
 }
+

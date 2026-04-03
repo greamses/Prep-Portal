@@ -285,37 +285,6 @@ const Quiz = (() => {
                 `<p class="expl-line">Correct answer: <strong>${esc(ans)}</strong></p>` +
                 buildExpl(q.explanation);
         }
-        
-        // Add this inside renderFeedback function, where addVideoBtn is defined
-function addVideoBtn() {
-    const btn = document.createElement('button');
-    btn.className = 'search-videos-btn';
-    btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="4,2 10,5.5 4,9"/></svg> Videos`;
-    btn.addEventListener('click', async () => {
-        const container = document.createElement('div');
-        container.className = 'video-search-container';
-        btn.insertAdjacentElement('afterend', container);
-        btn.style.display = 'none';
-        
-        await VideoSearch.searchAndShow(
-            container,
-            q.question,
-            q.subject,
-            PAGE_CONFIG.year || 'WAEC'
-        );
-        
-        // Restore button when panel closes
-        const observer = new MutationObserver(() => {
-            if (!container.classList.contains('video-panel-open')) {
-                btn.style.display = '';
-                observer.disconnect();
-                container.remove();
-            }
-        });
-        observer.observe(container, { attributes: true, attributeFilter: ['class'] });
-    });
-    acts.appendChild(btn);
-}
     }
 
     function selectOption(opt, btn, grid, idx) {
