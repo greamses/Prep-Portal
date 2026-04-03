@@ -1,14 +1,14 @@
 // Exam types configuration
 const EXAM_TYPES = [
   { id: 'waec', name: 'WAEC (WASSCE)', live: true },
-  { id: 'neco', name: 'NECO (SSCE)', live: true },
-  { id: 'jamb', name: 'JAMB (UTME)', live: true },
-  { id: 'common-entrance', name: 'Common Entrance', live: true }
+  { id: 'neco', name: 'NECO (SSCE)', live: false },
+  { id: 'jamb', name: 'JAMB (UTME)', live: false },
+  { id: 'common-entrance', name: 'Common Entrance', live: false }
 ];
 
 // Years configuration
 const YEARS = Array.from({ length: 16 }, (_, i) => 2010 + i);
-const LIVE_YEARS = [2023, 2024, 2025];
+const LIVE_YEARS = [2024];
 
 // Subject pools per stream
 const BASE_SUBJECTS = {
@@ -17,7 +17,7 @@ const BASE_SUBJECTS = {
   commercial: ['Commerce', 'Financial Accounting', 'Economics', 'Marketing', 'Insurance', 'Business Management', 'Office Practice']
 };
 
-const COMPULSORY_CORE = ['English Language', 'Mathematics'];
+const COMPULSORY_CORE = ['Chemistry'];
 
 // Application state
 let state = {
