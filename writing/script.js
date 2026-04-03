@@ -21,20 +21,20 @@ const $ = id => document.getElementById(id);
 /* ─────────────────────────────────────────────────────
    DOM REFS  (elements assumed present in the HTML)
 ─────────────────────────────────────────────────────── */
-const elTopicBox   = $('topic-box');
-const elTopic      = $('topic-display');
-const elTextarea   = $('writing-area');
-const elWordCount  = $('word-count');
-const elSubmitBtn  = $('submit-btn');
-const elEditorSec  = $('editor-section');
+const elTopicBox = $('topic-box');
+const elTopic = $('topic-display');
+const elTextarea = $('writing-area');
+const elWordCount = $('word-count');
+const elSubmitBtn = $('submit-btn');
+const elEditorSec = $('editor-section');
 const elResultsSec = $('results-section');
-const elLoading    = $('loading-overlay');
-const elRubric     = $('rubric-content');
-const elAnnotated  = $('annotated-text');
-const elStamp      = $('score-stamp');
-const elRetryBtn   = $('retry-btn');
-const elPopover    = $('mark-popover');
-const elModal      = $('topic-modal');
+const elLoading = $('loading-overlay');
+const elRubric = $('rubric-content');
+const elAnnotated = $('annotated-text');
+const elStamp = $('score-stamp');
+const elRetryBtn = $('retry-btn');
+const elPopover = $('mark-popover');
+const elModal = $('topic-modal');
 
 /* Persistent comment popover (singleton — appended once) */
 const elCommentPop = document.createElement('div');
@@ -44,12 +44,12 @@ document.body.appendChild(elCommentPop);
 /* ─────────────────────────────────────────────────────
    SHARED STATE  (mutated by api.js / render.js / popover.js)
 ─────────────────────────────────────────────────────── */
-let currentTopic   = "";
-let activeEl       = null;
+let currentTopic = "";
+let activeEl = null;
 let commentCounter = 0;
-let commentStore   = {};
-let moveSourceEl   = null;
-let moveHandler    = null;
+let commentStore = {};
+let moveSourceEl = null;
+let moveHandler = null;
 
 /* ─────────────────────────────────────────────────────
    WORD COUNT  — enable submit button at 20 words
@@ -57,7 +57,7 @@ let moveHandler    = null;
 elTextarea.addEventListener('input', () => {
   const words = elTextarea.value.trim() ? elTextarea.value.trim().split(/\s+/).length : 0;
   elWordCount.textContent = words;
-  elSubmitBtn.disabled    = words < 20;
+  elSubmitBtn.disabled = words < 20;
 });
 
 /* ─────────────────────────────────────────────────────
@@ -91,25 +91,25 @@ elSubmitBtn.addEventListener('click', async () => {
 elRetryBtn?.addEventListener('click', () => {
   elResultsSec.classList.remove('active');
   elEditorSec.style.display = 'block';
-  elTextarea.value          = '';
-  elWordCount.textContent   = '0';
-  elSubmitBtn.disabled      = true;
-  commentCounter            = 0;
-  commentStore              = {};
-
+  elTextarea.value = '';
+  elWordCount.textContent = '0';
+  elSubmitBtn.disabled = true;
+  commentCounter = 0;
+  commentStore = {};
+  
   /* Remove stale elements */
   document.getElementById('para-nav')?.remove();
   document.getElementById('rewrite-info-btn')?.remove();
   document.getElementById('rewrite-info-note')?.remove();
-
+  
   /* Reset paragraph nav state */
-  paragraphChunks     = [];
+  paragraphChunks = [];
   currentParagraphIdx = 0;
-  paraNavShowAll      = false;
-
+  paraNavShowAll = false;
+  
   /* Clear previous results panels */
   _clearResultsAccordions();
-
+  
   /* Re-expand topic accordion and sync topic display */
   const body = $('acc-body-topic');
   if (body) {
@@ -118,7 +118,7 @@ elRetryBtn?.addEventListener('click', () => {
     if (chevron) chevron.classList.add('open');
   }
   syncTopicDisplay();
-
+  
   /* Scroll back to top so editor is fully visible */
   window.scrollTo({ top: 0, behavior: 'smooth' });
   elTextarea.focus();
@@ -214,9 +214,9 @@ function _injectRewriteStyles() {
 ═══════════════════════════════════════════════════════ */
 
 /* ── Paragraph nav state ── */
-let paragraphChunks      = [];
-let currentParagraphIdx  = 0;
-let paraNavShowAll       = false;
+let paragraphChunks = [];
+let currentParagraphIdx = 0;
+let paraNavShowAll = false;
 
 /* ─────────────────────────────────────────────────────
    PARSE ANNOTATED HTML → RAW SPAN TAGS
@@ -227,31 +227,31 @@ function parseAnnotatedHtml(raw) {
     .replace(/\\n\\n/g, '\n\n')
     .replace(/\n\n/g, '<br><br>')
     .replace(/\n/g, '<br>');
-
+  
   /* 1. Standard <mark> error tags */
   html = html.replace(
     /<mark\s+type=['"]([^'"]+)['"]\s*(?:fix=['"]([^'"]*?)['"])?\s*(?:loss=['"]([^'"]*?)['"])?>([\s\S]*?)<\/mark>/gi,
     (_, type, fix, loss, content) => {
-      const fixAttr   = fix  ? ` data-fix="${safe(fix)}"`   : '';
-      const lossAttr  = loss ? ` data-loss="${safe(loss)}"` : '';
+      const fixAttr = fix ? ` data-fix="${safe(fix)}"` : '';
+      const lossAttr = loss ? ` data-loss="${safe(loss)}"` : '';
       const deduction = loss ? `<span class="deduction">${safe(loss)}</span>` : '';
-      const label     = (ERROR_TYPES[type] || { name: type }).name;
+      const label = (ERROR_TYPES[type] || { name: type }).name;
       return `<span class="doodle doodle-${safe(type)}"${fixAttr}${lossAttr} tabindex="0" role="button" aria-label="${label}: click for options">${content}${deduction}</span>`;
     }
   );
-
+  
   /* 2. Colour highlights */
   html = html.replace(
     /<hl\s+cat=['"]([^'"]+)['"]>([\s\S]*?)<\/hl>/gi,
     (_, cat, content) => `<span class="hl-${safe(cat)}">${content}</span>`
   );
-
+  
   /* 3. Positive feedback */
   html = html.replace(
     /<good\s+reason=['"]([^'"]+)['"]>([\s\S]*?)<\/good>/gi,
     (_, reason, content) => `<span class="hl-good" title="${safe(reason)}">${content}</span>`
   );
-
+  
   /* 4. Margin comments */
   html = html.replace(
     /<comment\s+text=['"]([^'"]+)['"]>([\s\S]*?)<\/comment>/gi,
@@ -261,21 +261,21 @@ function parseAnnotatedHtml(raw) {
       return `<button class="margin-comment-marker" data-cid="${id}">${id}</button>`;
     }
   );
-
+  
   /* 5. Word substitutions */
   html = html.replace(
     /<sub\s+opts=['"]([^'"]+)['"]>([^<]+)<\/sub>/gi,
     (_, opts, word) =>
-      `<span class="sub-word" data-opts="${safe(opts)}" data-type="word">${word}</span>`
+    `<span class="sub-word" data-opts="${safe(opts)}" data-type="word">${word}</span>`
   );
-
+  
   /* 6. Sentence rewrites */
   html = html.replace(
     /<sent\s+opts=['"]([^'"]+)['"]>([\s\S]*?)<\/sent>/gi,
     (_, opts, sentence) =>
-      `<span class="sent-sub" data-opts="${safe(opts)}" data-type="sent">${sentence}</span>`
+    `<span class="sent-sub" data-opts="${safe(opts)}" data-type="sent">${sentence}</span>`
   );
-
+  
   return html;
 }
 
@@ -285,18 +285,22 @@ function parseAnnotatedHtml(raw) {
 ─────────────────────────────────────────────────────── */
 function attachAnnotationListeners(container) {
   container.querySelectorAll('.doodle').forEach(el => {
-    el.addEventListener('click', e => { e.stopPropagation(); openAnnotationPopover(el); });
+    el.addEventListener('click', e => { e.stopPropagation();
+      openAnnotationPopover(el); });
     el.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAnnotationPopover(el); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault();
+        openAnnotationPopover(el); }
     });
   });
-
+  
   container.querySelectorAll('.sub-word, .sent-sub').forEach(el => {
-    el.addEventListener('click', e => { e.stopPropagation(); openAnnotationPopover(el); });
+    el.addEventListener('click', e => { e.stopPropagation();
+      openAnnotationPopover(el); });
   });
-
+  
   container.querySelectorAll('.margin-comment-marker').forEach(marker => {
-    marker.addEventListener('click', e => { e.stopPropagation(); showComment(marker); });
+    marker.addEventListener('click', e => { e.stopPropagation();
+      showComment(marker); });
   });
 }
 
@@ -305,9 +309,9 @@ function attachAnnotationListeners(container) {
 ─────────────────────────────────────────────────────── */
 function buildParagraphNav() {
   document.getElementById('para-nav')?.remove();
-
+  
   if (paragraphChunks.length <= 1) return;
-
+  
   const nav = document.createElement('div');
   nav.id = 'para-nav';
   nav.innerHTML = `
@@ -315,18 +319,18 @@ function buildParagraphNav() {
     <span id="para-nav-label">Paragraph ${currentParagraphIdx + 1} of ${paragraphChunks.length}</span>
     <button class="para-nav-btn" id="para-next" ${currentParagraphIdx === paragraphChunks.length - 1 ? 'disabled' : ''}>Next →</button>
     <button class="para-nav-btn show-all" id="para-showall">${paraNavShowAll ? 'Collapse' : 'Show All'}</button>`;
-
+  
   const paper = elAnnotated.closest('.annotated-paper') || elAnnotated.parentNode;
   paper.parentNode.insertBefore(nav, paper);
-
+  
   document.getElementById('para-prev').addEventListener('click', () => {
     if (currentParagraphIdx > 0) showParagraph(currentParagraphIdx - 1);
   });
-
+  
   document.getElementById('para-next').addEventListener('click', () => {
     if (currentParagraphIdx < paragraphChunks.length - 1) showParagraph(currentParagraphIdx + 1);
   });
-
+  
   document.getElementById('para-showall').addEventListener('click', () => {
     paraNavShowAll = !paraNavShowAll;
     if (paraNavShowAll) {
@@ -341,7 +345,7 @@ function buildParagraphNav() {
 
 function showParagraph(index) {
   currentParagraphIdx = index;
-  paraNavShowAll      = false;
+  paraNavShowAll = false;
   elAnnotated.innerHTML = paragraphChunks[index];
   attachAnnotationListeners(elAnnotated);
   buildParagraphNav();
@@ -360,37 +364,37 @@ function _clearResultsAccordions() {
 /* Show the REWRITE stamp with a toggleable 'i' info note */
 function _showRewriteStamp(reason) {
   /* Clear any previous results content */
-  elRubric.innerHTML    = '';
+  elRubric.innerHTML = '';
   elAnnotated.innerHTML = '';
   _clearResultsAccordions();
   document.getElementById('para-nav')?.remove();
-
+  
   /* Stamp */
   elStamp.textContent = 'REWRITE';
-  elStamp.className   = 'score-stamp rewrite-stamp';
-
+  elStamp.className = 'score-stamp rewrite-stamp';
+  
   /* Remove old info elements if retrying off-topic twice */
   document.getElementById('rewrite-info-btn')?.remove();
   document.getElementById('rewrite-info-note')?.remove();
-
+  
   /* Create the info (ℹ) button */
   const infoBtn = document.createElement('button');
-  infoBtn.id          = 'rewrite-info-btn';
+  infoBtn.id = 'rewrite-info-btn';
   infoBtn.textContent = 'i';
   infoBtn.setAttribute('aria-label', 'Why REWRITE?');
   infoBtn.title = 'Tap to see why';
-
+  
   /* Create the hidden note */
   const infoNote = document.createElement('div');
   infoNote.id = 'rewrite-info-note';
   infoNote.textContent = reason || 'Your essay does not address the given writing prompt.';
   infoNote.hidden = true;
-
+  
   infoBtn.addEventListener('click', e => {
     e.stopPropagation();
     infoNote.hidden = !infoNote.hidden;
   });
-
+  
   /* Append next to the stamp */
   const stampParent = elStamp.parentNode;
   stampParent.appendChild(infoBtn);
@@ -401,7 +405,7 @@ function _showRewriteStamp(reason) {
    MAIN RENDER
 ─────────────────────────────────────────────────────── */
 function renderResults(data, originalText) {
-
+  
   /* ── Off-topic: show REWRITE stamp, skip everything else ── */
   if (data.offTopic) {
     _showRewriteStamp(data.offTopicReason || '');
@@ -410,16 +414,16 @@ function renderResults(data, originalText) {
     elResultsSec.classList.add('active');
     return;
   }
-
+  
   /* ── Remove any stale REWRITE info elements ── */
   document.getElementById('rewrite-info-btn')?.remove();
   document.getElementById('rewrite-info-note')?.remove();
-
+  
   /* ── Score stamp ── */
   const score = Math.min(100, Math.max(0, data.totalScore || 0));
   elStamp.textContent = `${score}%`;
-  elStamp.className   = `score-stamp${score < 55 ? ' fail' : score < 70 ? ' avg' : ''}`;
-
+  elStamp.className = `score-stamp${score < 55 ? ' fail' : score < 70 ? ' avg' : ''}`;
+  
   /* ── Rubric bars ── */
   elRubric.innerHTML = '';
   const frag = document.createDocumentFragment();
@@ -439,27 +443,27 @@ function renderResults(data, originalText) {
     frag.appendChild(row);
   });
   elRubric.appendChild(frag);
-
+  
   requestAnimationFrame(() => requestAnimationFrame(() => {
     elRubric.querySelectorAll('.rubric-bar-fill').forEach(bar => {
       bar.style.width = bar.dataset.pct + '%';
     });
   }));
-
+  
   /* ── Reset comment state ── */
   commentCounter = 0;
-  commentStore   = {};
-
+  commentStore = {};
+  
   /* ── Build annotated HTML from AI response ── */
   const annotatedHtml = parseAnnotatedHtml(data.annotatedText || originalText);
-
+  
   /* ── Split into paragraphs for nav ── */
-  paragraphChunks     = annotatedHtml.split('<br><br>').filter(p => p.trim());
+  paragraphChunks = annotatedHtml.split('<br><br>').filter(p => p.trim());
   currentParagraphIdx = 0;
-  paraNavShowAll      = false;
-
+  paraNavShowAll = false;
+  
   document.getElementById('para-nav')?.remove();
-
+  
   if (paragraphChunks.length > 1) {
     elAnnotated.innerHTML = paragraphChunks[0];
     attachAnnotationListeners(elAnnotated);
@@ -468,11 +472,11 @@ function renderResults(data, originalText) {
     elAnnotated.innerHTML = annotatedHtml;
     attachAnnotationListeners(elAnnotated);
   }
-
+  
   /* ── Suggestions & study tips ── */
   renderSuggestions(data.suggestions || []);
-  renderStudyTips(data.studyTips    || []);
-
+  renderStudyTips(data.studyTips || []);
+  
   /* ── Transition to results view ── */
   elLoading.classList.remove('active');
   elEditorSec.style.display = 'none';
@@ -492,10 +496,10 @@ function renderSuggestions(suggestions) {
       elAnnotated.parentNode;
     anchor.parentNode.insertBefore(container, anchor.nextSibling);
   }
-
+  
   document.getElementById('acc-suggestions')?.remove();
   if (!suggestions.length) return;
-
+  
   const bodyHtml = `
     <div class="sugg-list">
       ${suggestions.map((s, i) => `
@@ -504,10 +508,14 @@ function renderSuggestions(suggestions) {
           <div class="suggestion-text">${safe(s)}</div>
         </div>`).join('')}
     </div>`;
-
+  
   container.appendChild(makeAccordion({
-    id: 'suggestions', title: "Examiner's Suggestions",
-    bodyHtml, startOpen: true, extraClass: 'sugg-acc', count: suggestions.length
+    id: 'suggestions',
+    title: "Examiner's Suggestions",
+    bodyHtml,
+    startOpen: true,
+    extraClass: 'sugg-acc',
+    count: suggestions.length
   }));
 }
 
@@ -521,10 +529,10 @@ function renderStudyTips(tips) {
     container.id = 'results-accordions';
     elResultsSec.appendChild(container);
   }
-
+  
   document.getElementById('acc-studytips')?.remove();
   if (!tips.length) return;
-
+  
   const bodyHtml = `
     <div class="tips-body-grid">
       ${tips.map((t, i) => `
@@ -533,10 +541,13 @@ function renderStudyTips(tips) {
           <div class="study-tip-text">${safe(t.tip   || '')}</div>
         </div>`).join('')}
     </div>`;
-
+  
   container.appendChild(makeAccordion({
-    id: 'studytips', title: 'Study Tips For You',
-    bodyHtml, startOpen: false, extraClass: 'tips-acc'
+    id: 'studytips',
+    title: 'Study Tips For You',
+    bodyHtml,
+    startOpen: false,
+    extraClass: 'tips-acc'
   }));
 }
 
@@ -564,11 +575,11 @@ function _getGeminiKey() {
  */
 const GEMINI_MODELS = [
   { label: 'Gemini 3.1 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent' },
-  { label: 'Gemini 3.1 Pro',        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent'       },
-  { label: 'Gemini 3 Flash',        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent'        },
-  { label: 'Gemini 2.5 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent'             },
-  { label: 'Gemini 2.5 Flash',      url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent'                  },
-  { label: 'Gemini 2.5 Pro',        url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent'                    },
+  { label: 'Gemini 3.1 Pro', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent' },
+  { label: 'Gemini 3 Flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent' },
+  { label: 'Gemini 2.5 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent' },
+  { label: 'Gemini 2.5 Flash', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent' },
+  { label: 'Gemini 2.5 Pro', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent' },
 ];
 
 /* Tracks which model we're currently on so exhausted ones are skipped on the next call */
@@ -599,19 +610,19 @@ async function geminiPost(body) {
       console.warn(`[Gemini] Network error on ${model.label}:`, networkErr);
       continue;
     }
-
+    
     if (_QUOTA_CODES.has(res.status)) {
       console.warn(`[Gemini] ${model.label} quota/overload (${res.status}) — trying next model`);
-      _geminiModelIdx = i + 1;   /* remember: skip this model next time too */
+      _geminiModelIdx = i + 1; /* remember: skip this model next time too */
       continue;
     }
-
+    
     if (!res.ok) {
       /* Non-quota error (e.g. 400 bad request) — don't silently swallow it */
       const errText = await res.text().catch(() => '');
       throw new Error(`API Error ${res.status} (${model.label}): ${errText}`);
     }
-
+    
     /* Success — lock in this model for subsequent calls */
     if (_geminiModelIdx !== i) {
       console.info(`[Gemini] Now using: ${model.label}`);
@@ -620,35 +631,35 @@ async function geminiPost(body) {
     const data = await res.json();
     return { res, data, label: model.label };
   }
-
+  
   /* Every model exhausted */
-  _geminiModelIdx = 0;   /* reset for next page load attempt */
+  _geminiModelIdx = 0; /* reset for next page load attempt */
   throw new Error('API Error: All Gemini models are currently over quota. Please try again later.');
 }
 
 /* ── Error type metadata ── */
 const ERROR_TYPES = {
-  del:   { name: 'Delete Word',               desc: 'This word is unnecessary and should be removed from the sentence.' },
-  ins:   { name: 'Insert Missing Word',        desc: 'A word is missing here. The suggested fix shows what to insert.' },
-  cap:   { name: 'Capitalise',                 desc: 'This word should begin with a capital letter — start of sentence or a proper noun.' },
-  lc:    { name: 'Make Lowercase',             desc: 'This word is incorrectly capitalised in this position.' },
-  trans: { name: 'Transpose / Swap Order',     desc: 'The words in this phrase are in the wrong order and need to be swapped.' },
-  para:  { name: 'New Paragraph',              desc: 'A new paragraph should begin at this point in the text.' },
-  spell: { name: 'Spell Out Abbreviation',     desc: 'Write this abbreviation out in full. Avoid abbreviations in formal writing.' },
-  sp:    { name: 'Misspelling',               desc: 'This word is spelled incorrectly. Check a dictionary for the correct spelling.' },
-  run:   { name: 'Run-on Sentence',           desc: 'Two or more independent clauses are fused without correct punctuation or a coordinating conjunction.' },
-  frag:  { name: 'Sentence Fragment',         desc: 'This is not a complete sentence — it is missing a subject, a predicate, or both.' },
-  punct: { name: 'Wrong Punctuation',         desc: 'The punctuation mark here is incorrect or misplaced for this context.' },
-  ww:    { name: 'Wrong Word',                desc: "Incorrect word choice — likely a homophone (e.g. there/their/they're) or confusion between similar words." },
-  agr:   { name: 'Subject-Verb Agreement',    desc: 'The subject and verb do not agree in number or person. E.g. "The students was" should be "The students were".' },
-  vt:    { name: 'Wrong Verb Tense',          desc: 'The verb tense used here does not match the time frame of the sentence or passage.' },
-  art:   { name: 'Article Error (a/an/the)',  desc: 'Wrong or missing article. Article use depends on context and whether a noun is countable.' },
-  prep:  { name: 'Wrong Preposition',         desc: 'Incorrect preposition used. Many are idiomatic, e.g. "interested in", not "interested on".' },
-  rep:   { name: 'Unnecessary Repetition',    desc: 'This word or phrase appears too soon after its previous use. Vary your vocabulary.' },
-  ref:   { name: 'Unclear Pronoun Reference', desc: 'It is unclear which noun this pronoun refers to. Rewrite to remove the ambiguity.' },
-  cs:    { name: 'Comma Splice',             desc: 'Two independent clauses joined only by a comma. Use a semicolon, a conjunction, or two separate sentences.' },
-  wo:    { name: 'Word Order Error',          desc: 'The words are not in the standard English grammatical order for this phrase or clause.' },
-  par:   { name: 'Faulty Parallel Structure', desc: 'All items in a list must be in the same grammatical form (e.g. all gerunds or all infinitives).' },
+  del: { name: 'Delete Word', desc: 'This word is unnecessary and should be removed from the sentence.' },
+  ins: { name: 'Insert Missing Word', desc: 'A word is missing here. The suggested fix shows what to insert.' },
+  cap: { name: 'Capitalise', desc: 'This word should begin with a capital letter — start of sentence or a proper noun.' },
+  lc: { name: 'Make Lowercase', desc: 'This word is incorrectly capitalised in this position.' },
+  trans: { name: 'Transpose / Swap Order', desc: 'The words in this phrase are in the wrong order and need to be swapped.' },
+  para: { name: 'New Paragraph', desc: 'A new paragraph should begin at this point in the text.' },
+  spell: { name: 'Spell Out Abbreviation', desc: 'Write this abbreviation out in full. Avoid abbreviations in formal writing.' },
+  sp: { name: 'Misspelling', desc: 'This word is spelled incorrectly. Check a dictionary for the correct spelling.' },
+  run: { name: 'Run-on Sentence', desc: 'Two or more independent clauses are fused without correct punctuation or a coordinating conjunction.' },
+  frag: { name: 'Sentence Fragment', desc: 'This is not a complete sentence — it is missing a subject, a predicate, or both.' },
+  punct: { name: 'Wrong Punctuation', desc: 'The punctuation mark here is incorrect or misplaced for this context.' },
+  ww: { name: 'Wrong Word', desc: "Incorrect word choice — likely a homophone (e.g. there/their/they're) or confusion between similar words." },
+  agr: { name: 'Subject-Verb Agreement', desc: 'The subject and verb do not agree in number or person. E.g. "The students was" should be "The students were".' },
+  vt: { name: 'Wrong Verb Tense', desc: 'The verb tense used here does not match the time frame of the sentence or passage.' },
+  art: { name: 'Article Error (a/an/the)', desc: 'Wrong or missing article. Article use depends on context and whether a noun is countable.' },
+  prep: { name: 'Wrong Preposition', desc: 'Incorrect preposition used. Many are idiomatic, e.g. "interested in", not "interested on".' },
+  rep: { name: 'Unnecessary Repetition', desc: 'This word or phrase appears too soon after its previous use. Vary your vocabulary.' },
+  ref: { name: 'Unclear Pronoun Reference', desc: 'It is unclear which noun this pronoun refers to. Rewrite to remove the ambiguity.' },
+  cs: { name: 'Comma Splice', desc: 'Two independent clauses joined only by a comma. Use a semicolon, a conjunction, or two separate sentences.' },
+  wo: { name: 'Word Order Error', desc: 'The words are not in the standard English grammatical order for this phrase or clause.' },
+  par: { name: 'Faulty Parallel Structure', desc: 'All items in a list must be in the same grammatical form (e.g. all gerunds or all infinitives).' },
 };
 
 /*
@@ -661,30 +672,30 @@ const ERROR_TYPES = {
  * ────────────────────────────────────────────────────── */
 const ERROR_ACTIONS = {
   //           d       m      c
-  del:   { d: true,  m: false, c: false },
-  ins:   { d: false, m: false, c: false },
-  cap:   { d: false, m: false, c: true  },
-  lc:    { d: false, m: false, c: true  },
-  sp:    { d: false, m: false, c: true  },
-  ww:    { d: false, m: false, c: true  },
-  vt:    { d: false, m: false, c: true  },
-  art:   { d: false, m: false, c: true  },
-  prep:  { d: false, m: false, c: true  },
-  agr:   { d: false, m: false, c: true  },
-  ref:   { d: false, m: false, c: true  },
-  rep:   { d: true,  m: false, c: true  },
-  cs:    { d: false, m: false, c: true  },
-  wo:    { d: false, m: false, c: true  },
-  trans: { d: false, m: true,  c: false },
-  para:  { d: true,  m: false, c: false },
-  spell: { d: false, m: false, c: true  },
-  run:   { d: false, m: false, c: true  },
-  frag:  { d: false, m: false, c: true  },
-  punct: { d: false, m: false, c: true  },
-  par:   { d: false, m: false, c: true  },
+  del: { d: true, m: false, c: false },
+  ins: { d: false, m: false, c: false },
+  cap: { d: false, m: false, c: true },
+  lc: { d: false, m: false, c: true },
+  sp: { d: false, m: false, c: true },
+  ww: { d: false, m: false, c: true },
+  vt: { d: false, m: false, c: true },
+  art: { d: false, m: false, c: true },
+  prep: { d: false, m: false, c: true },
+  agr: { d: false, m: false, c: true },
+  ref: { d: false, m: false, c: true },
+  rep: { d: true, m: false, c: true },
+  cs: { d: false, m: false, c: true },
+  wo: { d: false, m: false, c: true },
+  trans: { d: false, m: true, c: false },
+  para: { d: true, m: false, c: false },
+  spell: { d: false, m: false, c: true },
+  run: { d: false, m: false, c: true },
+  frag: { d: false, m: false, c: true },
+  punct: { d: false, m: false, c: true },
+  par: { d: false, m: false, c: true },
   // virtual types for sub-word / sent-sub
-  word:  { d: false, m: false, c: true  },
-  sent:  { d: false, m: true,  c: true  },
+  word: { d: false, m: false, c: true },
+  sent: { d: false, m: true, c: true },
 };
 
 
@@ -713,7 +724,7 @@ SUBSTITUTION STYLE — NARRATIVE writing:
     • Use sentence fragments deliberately for effect. Vary length.
     • Inject sensory detail (sight, sound, smell, touch) into rewrites.
     • Version 1 should heighten tension/drama; version 2 should deepen interiority/reflection.`,
-
+    
     descriptive: `
 SUBSTITUTION STYLE — DESCRIPTIVE writing:
   Word subs (<sub>): Target sensory poverty — any word that tells rather than shows.
@@ -723,7 +734,7 @@ SUBSTITUTION STYLE — DESCRIPTIVE writing:
   Sentence rewrites (<sent>): Expand thin sentences into images.
     • Version 1 uses a simile or metaphor. Version 2 uses precise concrete detail (no figurative).
     • Both versions must create a clear picture without telling the reader what to feel.`,
-
+    
     argumentative: `
 SUBSTITUTION STYLE — ARGUMENTATIVE / PERSUASIVE writing:
   Word subs (<sub>): Target imprecise, casual, or emotive words.
@@ -734,7 +745,7 @@ SUBSTITUTION STYLE — ARGUMENTATIVE / PERSUASIVE writing:
   Sentence rewrites (<sent>): Sharpen logic and structure.
     • Version 1 adds a concession-rebuttal pattern (although X, Y).
     • Version 2 tightens with a topic sentence + evidence clause structure.`,
-
+    
     expository: `
 SUBSTITUTION STYLE — EXPOSITORY / INFORMATIVE writing:
   Word subs (<sub>): Target vague or informal diction.
@@ -745,14 +756,14 @@ SUBSTITUTION STYLE — EXPOSITORY / INFORMATIVE writing:
   Sentence rewrites (<sent>): Improve clarity and logical flow.
     • Version 1 uses an active voice topic sentence + supporting clause.
     • Version 2 uses a definition or classification structure for the same idea.`,
-
+    
     general: `
 SUBSTITUTION STYLE — GENERAL:
   Word subs (<sub>): Replace any weak, vague, or overused word with 3 stronger alternatives.
     • Prefer specific over general, active over passive, concrete over abstract.
   Sentence rewrites (<sent>): Offer 2 rewrites — one for clarity, one for impact.`,
   };
-
+  
   return guides[type] || guides.general;
 }
 
@@ -1087,12 +1098,12 @@ RULES:
 ─────────────────────────────────────────────────────── */
 async function fetchGeneratedTopic(type) {
   currentWritingType = type;
-
+  
   if (elTopicBox) elTopicBox.style.opacity = '0.5';
   const textEl = document.getElementById('acc-topic-text');
   if (textEl) textEl.textContent = 'Generating prompt...';
   if (elTopic) elTopic.innerHTML = `Generating ${type} prompt...`;
-
+  
   try {
     const { data } = await geminiPost({
       contents: [{
@@ -1105,15 +1116,15 @@ async function fetchGeneratedTopic(type) {
         maxOutputTokens: 130
       }
     });
-
+    
     let text = (data.candidates?.[0]?.content?.parts?.[0]?.text || "").trim()
       .replace(/^["'"']+|["'"']+$/g, '');
     currentTopic = text || "Write about a memorable experience and what you learned from it.";
     syncTopicDisplay();
-
+    
     const words = elTextarea.value.trim() ? elTextarea.value.trim().split(/\s+/).length : 0;
     elSubmitBtn.disabled = words < 20;
-
+    
   } catch (err) {
     console.error(err);
     if (textEl) textEl.textContent = 'Error generating topic. Please try again.';
@@ -1142,7 +1153,7 @@ async function gradeEssay(userText) {
     }
   });
   let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
+  
   const jsonStart = raw.indexOf('{');
   const jsonEnd = raw.lastIndexOf('}');
   
@@ -1151,9 +1162,9 @@ async function gradeEssay(userText) {
   } else {
     throw new Error("No JSON object found in response");
   }
-
+  
   raw = raw.replace(/[\u0000-\u0009\u000B-\u001F]+/g, "");
-
+  
   return JSON.parse(raw);
 }
 
@@ -1182,15 +1193,16 @@ function safe(str) {
 ─────────────────────────────────────────────────────── */
 function positionPopover(el) {
   const rect = el.getBoundingClientRect();
-  const pw = 340, ph = 360;
+  const pw = 340,
+    ph = 360;
   let left = rect.left;
-  let top  = rect.bottom + 10;
-  if (left + pw > window.innerWidth  - 8) left = window.innerWidth  - pw - 8;
-  if (left < 8)                           left = 8;
-  if (top  + ph > window.innerHeight - 8) top  = rect.top - ph - 8;
-  if (top  < 8)                           top  = 8;
+  let top = rect.bottom + 10;
+  if (left + pw > window.innerWidth - 8) left = window.innerWidth - pw - 8;
+  if (left < 8) left = 8;
+  if (top + ph > window.innerHeight - 8) top = rect.top - ph - 8;
+  if (top < 8) top = 8;
   elPopover.style.left = left + 'px';
-  elPopover.style.top  = top  + 'px';
+  elPopover.style.top = top + 'px';
 }
 
 /* ─────────────────────────────────────────────────────
@@ -1198,7 +1210,7 @@ function positionPopover(el) {
 ─────────────────────────────────────────────────────── */
 function buildRedPenHtml(originalText, fix, optsStr, dataType, type) {
   const original = originalText.replace(/<[^>]+>/g, '').trim();
-
+  
   /* ── Case 1: grammar fix (single correct form) ── */
   if (fix) {
     return `
@@ -1208,25 +1220,25 @@ function buildRedPenHtml(originalText, fix, optsStr, dataType, type) {
         <button class="pop-redpen-fix" data-val="${safe(fix)}">${safe(fix)}</button>
       </div>`;
   }
-
+  
   /* ── Case 2: substitution options ── */
   if (optsStr) {
     const separator = dataType === 'sent' ? '|||' : ',';
     const opts = optsStr.split(separator).map(s => s.trim()).filter(Boolean);
     if (!opts.length) return '';
-
+    
     const isSent = dataType === 'sent';
     const btns = opts.map(o =>
       `<button class="pop-redpen-opt ${isSent ? 'sent' : ''}" data-val="${safe(o)}">${safe(o)}</button>`
     ).join('');
-
+    
     return `
       <div class="pop-redpen ${isSent ? 'pop-redpen--sent' : ''}">
         ${!isSent ? `<span class="pop-redpen-original">${safe(original)}</span><span class="pop-redpen-arrow">→</span>` : ''}
         <div class="pop-redpen-opts">${btns}</div>
       </div>`;
   }
-
+  
   /* ── Case 3: del / trans / para — no replacement needed ── */
   if (type === 'del') {
     return `
@@ -1236,7 +1248,7 @@ function buildRedPenHtml(originalText, fix, optsStr, dataType, type) {
         <span class="pop-redpen-delete">delete</span>
       </div>`;
   }
-
+  
   return '';
 }
 
@@ -1245,48 +1257,48 @@ function buildRedPenHtml(originalText, fix, optsStr, dataType, type) {
 ─────────────────────────────────────────────────────── */
 function openAnnotationPopover(el) {
   activeEl = el;
-
-  const classes     = [...el.classList];
+  
+  const classes = [...el.classList];
   const doodleClass = classes.find(c => c.startsWith('doodle-') && c !== 'doodle');
-  const type        = doodleClass ? doodleClass.replace('doodle-', '') : '';
-  const fix         = el.dataset.fix  || '';
-  const optsStr     = el.dataset.opts || '';
-  const dataType    = el.dataset.type || (optsStr && !type ? 'word' : '');
-  const lossAttr    = el.dataset.loss || el.querySelector?.('.deduction')?.textContent || '';
-
-  const actionKey  = type || dataType || 'word';
-  const actions    = ERROR_ACTIONS[actionKey] || { d: false, m: false, c: true };
-
+  const type = doodleClass ? doodleClass.replace('doodle-', '') : '';
+  const fix = el.dataset.fix || '';
+  const optsStr = el.dataset.opts || '';
+  const dataType = el.dataset.type || (optsStr && !type ? 'word' : '');
+  const lossAttr = el.dataset.loss || el.querySelector?.('.deduction')?.textContent || '';
+  
+  const actionKey = type || dataType || 'word';
+  const actions = ERROR_ACTIONS[actionKey] || { d: false, m: false, c: true };
+  
   const info = ERROR_TYPES[type] || {
     name: dataType === 'sent' ? 'Sentence Rewrite' : 'Word Substitute',
-    desc: dataType === 'sent'
-      ? 'This sentence could be more effective. Click a rewrite option below to replace it.'
-      : 'This word could be stronger. Click a replacement option to upgrade it.'
+    desc: dataType === 'sent' ?
+      'This sentence could be more effective. Click a rewrite option below to replace it.' :
+      'This word could be stronger. Click a replacement option to upgrade it.'
   };
-
+  
   const badgeBg = (() => {
     const tmp = document.querySelector(`.doodle-${type}`);
     if (tmp) {
       const s = getComputedStyle(tmp);
       return s.borderBottomColor !== 'rgba(0, 0, 0, 0)' ? s.borderBottomColor :
-             s.outlineColor       !== 'rgba(0, 0, 0, 0)' ? s.outlineColor : '#0a0a0a';
+        s.outlineColor !== 'rgba(0, 0, 0, 0)' ? s.outlineColor : '#0a0a0a';
     }
     return type ? '#0a0a0a' : (dataType === 'sent' ? '#e67e00' : '#0055ff');
   })();
-
+  
   const redPenHtml = buildRedPenHtml(el.textContent, fix, optsStr, dataType, type);
-
+  
   const actionBtns = [
-    actions.d ? `<button class="pop-action-btn danger"  id="pop-act-delete">Delete</button>`        : '',
-    actions.m ? `<button class="pop-action-btn move"    id="pop-act-move">Move</button>`            : '',
+    actions.d ? `<button class="pop-action-btn danger"  id="pop-act-delete">Delete</button>` : '',
+    actions.m ? `<button class="pop-action-btn move"    id="pop-act-move">Move</button>` : '',
     actions.c ? `<button class="pop-action-btn success" id="pop-act-custom">Custom Replace</button>` : '',
   ].filter(Boolean).join('');
-
+  
   const actionsSection = actionBtns ? `
     <div class="pop-divider"></div>
     <div class="pop-section-label">More actions</div>
     <div class="pop-action-row">${actionBtns}</div>` : '';
-
+  
   elPopover.innerHTML = `
     <div class="pop-header">
       <span class="pop-badge" style="background:${badgeBg}">${type || (dataType === 'sent' ? 'sent' : 'sub')}</span>
@@ -1300,22 +1312,22 @@ function openAnnotationPopover(el) {
       <input class="pop-custom-input" id="pop-custom-text" placeholder="Type replacement text..." />
       <button class="pop-custom-apply" id="pop-custom-go">Apply</button>
     </div>`;
-
+  
   elPopover.classList.add('visible');
   positionPopover(el);
-
+  
   /* ── Wire up action buttons ── */
   document.getElementById('pop-act-delete')?.addEventListener('click', () => {
     deleteAnnotation(el);
     elPopover.classList.remove('visible');
     activeEl = null;
   });
-
+  
   document.getElementById('pop-act-move')?.addEventListener('click', () => {
     elPopover.classList.remove('visible');
     startMoveMode(el);
   });
-
+  
   document.getElementById('pop-act-custom')?.addEventListener('click', () => {
     const area = document.getElementById('pop-custom-area');
     if (!area) return;
@@ -1323,16 +1335,16 @@ function openAnnotationPopover(el) {
     area.style.display = opening ? 'flex' : 'none';
     if (opening) document.getElementById('pop-custom-text')?.focus();
   });
-
+  
   document.getElementById('pop-custom-go')?.addEventListener('click', () => {
     const val = document.getElementById('pop-custom-text')?.value.trim();
     if (val) applyOpt(val);
   });
-
+  
   document.getElementById('pop-custom-text')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') { const val = e.target.value.trim(); if (val) applyOpt(val); }
   });
-
+  
   /* ── Red pen fix/opt buttons ── */
   elPopover.querySelectorAll('.pop-redpen-fix, .pop-redpen-opt').forEach(btn => {
     btn.addEventListener('click', () => applyOpt(btn.dataset.val || btn.textContent.trim()));
@@ -1345,15 +1357,15 @@ function openAnnotationPopover(el) {
 function applyOpt(chosen) {
   if (!activeEl) return;
   activeEl.querySelector('.deduction')?.remove();
-  activeEl.textContent          = chosen;
+  activeEl.textContent = chosen;
   activeEl.style.textDecoration = 'none';
-  activeEl.style.background     = 'rgba(74,222,128,.25)';
-  activeEl.style.color          = 'var(--green,#00a550)';
-  activeEl.style.fontWeight     = '600';
-  activeEl.style.outline        = 'none';
-  activeEl.style.borderBottom   = 'none';
+  activeEl.style.background = 'rgba(74,222,128,.25)';
+  activeEl.style.color = 'var(--green,#00a550)';
+  activeEl.style.fontWeight = '600';
+  activeEl.style.outline = 'none';
+  activeEl.style.borderBottom = 'none';
   [...activeEl.classList]
-    .filter(c => c.startsWith('doodle') || c === 'sub-word' || c === 'sent-sub')
+  .filter(c => c.startsWith('doodle') || c === 'sub-word' || c === 'sent-sub')
     .forEach(c => activeEl.classList.remove(c));
   elPopover.classList.remove('visible');
   activeEl = null;
@@ -1363,9 +1375,9 @@ function applyOpt(chosen) {
    DELETE ANNOTATION
 ─────────────────────────────────────────────────────── */
 function deleteAnnotation(el) {
-  el.style.transition    = 'opacity .35s, text-decoration .35s';
+  el.style.transition = 'opacity .35s, text-decoration .35s';
   el.style.textDecoration = 'line-through';
-  el.style.opacity        = '0.3';
+  el.style.opacity = '0.3';
   setTimeout(() => { el.remove(); }, 380);
 }
 
@@ -1374,94 +1386,103 @@ function deleteAnnotation(el) {
 ─────────────────────────────────────────────────────── */
 function startMoveMode(el) {
   cancelMoveMode();
-
+  
   moveSourceEl = el;
   el.classList.add('move-source');
-
+  
   const preview = el.textContent.replace(/\s+/g, ' ').trim().slice(0, 45) +
     (el.textContent.trim().length > 45 ? '...' : '');
-
+  
   const instr = document.createElement('div');
   instr.id = 'move-instruction';
   instr.innerHTML = `Click where to place <em>"${preview}"</em> <button id="cancel-move">Cancel</button>`;
   document.body.appendChild(instr);
-
+  
   if (elAnnotated) elAnnotated.style.cursor = 'crosshair';
-
+  
   moveHandler = (e) => {
     if (e.target.id === 'cancel-move' || e.target.closest?.('#cancel-move')) {
-      cancelMoveMode(); return;
+      cancelMoveMode();
+      return;
     }
     if (e.target.closest?.('#move-instruction')) return;
     if (!elAnnotated?.contains(e.target) && e.target !== elAnnotated) {
-      cancelMoveMode(); return;
+      cancelMoveMode();
+      return;
     }
-
+    
     e.preventDefault();
     e.stopPropagation();
-
+    
     let range = null;
     if (document.caretRangeFromPoint) {
       range = document.caretRangeFromPoint(e.clientX, e.clientY);
     } else if (document.caretPositionFromPoint) {
       const pos = document.caretPositionFromPoint(e.clientX, e.clientY);
-      if (pos) { range = document.createRange(); range.setStart(pos.offsetNode, pos.offset); range.collapse(true); }
+      if (pos) { range = document.createRange();
+        range.setStart(pos.offsetNode, pos.offset);
+        range.collapse(true); }
     }
-
+    
     if (range && moveSourceEl) {
       const src = moveSourceEl;
       src.remove();
       src.classList.remove('move-source');
       range.insertNode(src);
-      src.addEventListener('click', ev => { ev.stopPropagation(); openAnnotationPopover(src); });
+      src.addEventListener('click', ev => { ev.stopPropagation();
+        openAnnotationPopover(src); });
     }
-
+    
     cancelMoveMode();
   };
-
+  
   document.addEventListener('click', moveHandler, { capture: true });
 }
 
 function cancelMoveMode() {
-  if (moveSourceEl) { moveSourceEl.classList.remove('move-source'); moveSourceEl = null; }
+  if (moveSourceEl) { moveSourceEl.classList.remove('move-source');
+    moveSourceEl = null; }
   document.getElementById('move-instruction')?.remove();
   if (elAnnotated) elAnnotated.style.cursor = '';
-  if (moveHandler) { document.removeEventListener('click', moveHandler, { capture: true }); moveHandler = null; }
+  if (moveHandler) { document.removeEventListener('click', moveHandler, { capture: true });
+    moveHandler = null; }
 }
 
 /* ─────────────────────────────────────────────────────
    COMMENT POPOVER
 ─────────────────────────────────────────────────────── */
 function showComment(marker) {
-  const id   = parseInt(marker.dataset.cid, 10);
+  const id = parseInt(marker.dataset.cid, 10);
   const text = commentStore[id];
   if (!text) return;
-
+  
   if (elCommentPop.classList.contains('visible') && elCommentPop.dataset.activeCid == id) {
     elCommentPop.classList.remove('visible');
     marker.classList.remove('active');
     elCommentPop.dataset.activeCid = '';
     return;
   }
-
+  
   document.querySelectorAll('.margin-comment-marker.active').forEach(m => m.classList.remove('active'));
   marker.classList.add('active');
   elCommentPop.dataset.activeCid = id;
-
+  
   elCommentPop.innerHTML = `
     <div class="comment-pop-label"> Examiner's Note ${id}</div>
     <div class="comment-pop-text">${safe(text)}</div>`;
   elCommentPop.classList.add('visible');
-
+  
   const rect = marker.getBoundingClientRect();
-  const pw = 284, ph = 120;
-  let left = rect.right + 10, top = rect.top - 8;
-  if (left + pw > window.innerWidth  - 8) left = rect.left - pw - 10;
-  if (left < 8)                           left = 8;
-  if (top  + ph > window.innerHeight - 8) top  = window.innerHeight - ph - 8;
-  if (top  < 8)                           top  = 8;
+  const pw = 284,
+    ph = 120;
+  let left = rect.right + 10,
+    top = rect.top - 8;
+  if (left + pw > window.innerWidth - 8) left = rect.left - pw - 10;
+  if (left < 8) left = 8;
+  if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
+  if (top < 8) top = 8;
   elCommentPop.style.left = left + 'px';
-  elCommentPop.style.top  = top  + 'px';
+  elCommentPop.style.top = top + 'px';
 }
 
 /* ── Close comment popover on outside click ── */
@@ -1496,9 +1517,9 @@ function makeAccordion({ id, title, bodyHtml, startOpen = false, extraClass = ''
   const panel = document.createElement('div');
   panel.className = `acc-panel${extraClass ? ' ' + extraClass : ''}`;
   panel.id = `acc-${id}`;
-
+  
   const countSpan = count !== null ? ` <span class="acc-count">(${count})</span>` : '';
-
+  
   panel.innerHTML = `
     <button class="acc-header">
       <span class="acc-header-label">${title}${countSpan}</span>
@@ -1509,14 +1530,14 @@ function makeAccordion({ id, title, bodyHtml, startOpen = false, extraClass = ''
     <div class="acc-body" id="acc-body-${id}" style="${startOpen ? '' : 'display:none'}">
       ${bodyHtml}
     </div>`;
-
-  panel.querySelector('.acc-header').addEventListener('click', function () {
+  
+  panel.querySelector('.acc-header').addEventListener('click', function() {
     const body = document.getElementById(`acc-body-${id}`);
     const opening = body.style.display === 'none';
     body.style.display = opening ? '' : 'none';
     this.querySelector('.acc-chevron').classList.toggle('open', opening);
   });
-
+  
   return panel;
 }
 
@@ -1525,37 +1546,37 @@ function makeAccordion({ id, title, bodyHtml, startOpen = false, extraClass = ''
 ─────────────────────────────────────────────────────── */
 function buildColorKeyHtml() {
   const marks = [
-    { code:'del',   name:'Delete Word',                color:'#dc2626', loss:'-2' },
-    { code:'ins',   name:'Insert Missing Word',         color:'#16a34a', loss:'-2' },
-    { code:'cap',   name:'Capitalise',                  color:'#ea580c', loss:'-2' },
-    { code:'lc',    name:'Make Lowercase',              color:'#0284c7', loss:'-2' },
-    { code:'trans', name:'Transpose / Swap',            color:'#7c3aed', loss:'-2' },
-    { code:'para',  name:'New Paragraph',               color:'#0a0a0a', loss:'-2' },
-    { code:'spell', name:'Spell Out Abbreviation',      color:'#666',    loss:'-1' },
-    { code:'sp',    name:'Misspelling',                 color:'#dc2626', loss:'-2' },
-    { code:'run',   name:'Run-on Sentence',             color:'#b91c1c', loss:'-3' },
-    { code:'frag',  name:'Sentence Fragment',           color:'#dc2626', loss:'-3' },
-    { code:'punct', name:'Wrong Punctuation',           color:'#dc2626', loss:'-2' },
-    { code:'ww',    name:'Wrong Word (homophone)',      color:'#dc2626', loss:'-2' },
-    { code:'agr',   name:'Subject-Verb Agreement',      color:'#ea580c', loss:'-3' },
-    { code:'vt',    name:'Wrong Verb Tense',            color:'#7c3aed', loss:'-2' },
-    { code:'art',   name:'Article Error (a/an/the)',    color:'#0284c7', loss:'-2' },
-    { code:'prep',  name:'Wrong Preposition',           color:'#db2777', loss:'-2' },
-    { code:'rep',   name:'Unnecessary Repetition',      color:'#b45309', loss:'-1' },
-    { code:'ref',   name:'Unclear Pronoun Reference',   color:'#0f766e', loss:'-2' },
-    { code:'cs',    name:'Comma Splice',                color:'#b91c1c', loss:'-3' },
-    { code:'wo',    name:'Word Order Error',            color:'#6366f1', loss:'-2' },
-    { code:'par',   name:'Faulty Parallel Structure',   color:'#059669', loss:'-2' },
+    { code: 'del', name: 'Delete Word', color: '#dc2626', loss: '-2' },
+    { code: 'ins', name: 'Insert Missing Word', color: '#16a34a', loss: '-2' },
+    { code: 'cap', name: 'Capitalise', color: '#ea580c', loss: '-2' },
+    { code: 'lc', name: 'Make Lowercase', color: '#0284c7', loss: '-2' },
+    { code: 'trans', name: 'Transpose / Swap', color: '#7c3aed', loss: '-2' },
+    { code: 'para', name: 'New Paragraph', color: '#0a0a0a', loss: '-2' },
+    { code: 'spell', name: 'Spell Out Abbreviation', color: '#666', loss: '-1' },
+    { code: 'sp', name: 'Misspelling', color: '#dc2626', loss: '-2' },
+    { code: 'run', name: 'Run-on Sentence', color: '#b91c1c', loss: '-3' },
+    { code: 'frag', name: 'Sentence Fragment', color: '#dc2626', loss: '-3' },
+    { code: 'punct', name: 'Wrong Punctuation', color: '#dc2626', loss: '-2' },
+    { code: 'ww', name: 'Wrong Word (homophone)', color: '#dc2626', loss: '-2' },
+    { code: 'agr', name: 'Subject-Verb Agreement', color: '#ea580c', loss: '-3' },
+    { code: 'vt', name: 'Wrong Verb Tense', color: '#7c3aed', loss: '-2' },
+    { code: 'art', name: 'Article Error (a/an/the)', color: '#0284c7', loss: '-2' },
+    { code: 'prep', name: 'Wrong Preposition', color: '#db2777', loss: '-2' },
+    { code: 'rep', name: 'Unnecessary Repetition', color: '#b45309', loss: '-1' },
+    { code: 'ref', name: 'Unclear Pronoun Reference', color: '#0f766e', loss: '-2' },
+    { code: 'cs', name: 'Comma Splice', color: '#b91c1c', loss: '-3' },
+    { code: 'wo', name: 'Word Order Error', color: '#6366f1', loss: '-2' },
+    { code: 'par', name: 'Faulty Parallel Structure', color: '#059669', loss: '-2' },
   ];
-
+  
   const highlights = [
-    { name:'Grammar Cluster',  bg:'rgba(253,224,71,.55)' },
-    { name:'Vocabulary Issue', bg:'rgba(96,165,250,.3)'  },
-    { name:'Structure Issue',  bg:'rgba(251,146,60,.3)'  },
-    { name:'Style Issue',      bg:'rgba(196,181,253,.45)'},
-    { name:'Good Writing',     bg:'rgba(74,222,128,.3)'  },
+    { name: 'Grammar Cluster', bg: 'rgba(253,224,71,.55)' },
+    { name: 'Vocabulary Issue', bg: 'rgba(96,165,250,.3)' },
+    { name: 'Structure Issue', bg: 'rgba(251,146,60,.3)' },
+    { name: 'Style Issue', bg: 'rgba(196,181,253,.45)' },
+    { name: 'Good Writing', bg: 'rgba(74,222,128,.3)' },
   ];
-
+  
   return `
     <p class="ck-section-title">Pen Marks — click any marked word, phrase or sentence to see options</p>
     <div class="ck-grid">
@@ -1586,10 +1607,10 @@ function buildColorKeyHtml() {
 ─────────────────────────────────────────────────────── */
 function initEditorAccordions() {
   if (document.getElementById('editor-accordions')) return;
-
+  
   const container = document.createElement('div');
   container.id = 'editor-accordions';
-
+  
   const topicBody = `
     <p class="acc-topic-label">Choose a writing type to generate a topic</p>
     <div class="acc-topic-types" id="acc-type-btns">
@@ -1601,14 +1622,14 @@ function initEditorAccordions() {
       <p class="acc-topic-label" style="margin-bottom:3px">Current writing prompt</p>
       <div class="acc-topic-text" id="acc-topic-text">No topic yet — select a type above to generate one.</div>
     </div>`;
-
-  container.appendChild(makeAccordion({ id: 'topic',    title: 'Writing Prompt',       bodyHtml: topicBody,          startOpen: true  }));
+  
+  container.appendChild(makeAccordion({ id: 'topic', title: 'Writing Prompt', bodyHtml: topicBody, startOpen: true }));
   container.appendChild(makeAccordion({ id: 'colorkey', title: 'Annotation Color Key', bodyHtml: buildColorKeyHtml(), startOpen: false }));
-
+  
   if (elTextarea && elTextarea.parentNode) {
     elTextarea.parentNode.insertBefore(container, elTextarea.nextSibling);
   }
-
+  
   container.querySelectorAll('.type-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       container.querySelectorAll('.type-btn').forEach(b => b.classList.remove('type-btn--active'));
@@ -1616,7 +1637,7 @@ function initEditorAccordions() {
       fetchGeneratedTopic(btn.dataset.type);
     });
   });
-
+  
   syncTopicDisplay();
 }
 

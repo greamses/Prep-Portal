@@ -113,6 +113,7 @@ function injectScript(src) {
     });
 }
 
+// ══════════════════════════════════════════════════════════════
 //  QUIZ ENGINE
 // ══════════════════════════════════════════════════════════════
 const Quiz = (() => {
@@ -495,8 +496,7 @@ const Quiz = (() => {
         const sb = document.getElementById('submit-btn');
         sb.disabled = true; sb.textContent = 'Submitted';
         runTheoryMarking();
-        setTimeout(showResults, 4000);
-        
+        setTimeout(showResults, 900);
     }
 
     // ── Theory AI marking ────────────────────────────────────
@@ -551,6 +551,8 @@ Respond ONLY as raw JSON (no markdown):
     function showResults() {
         document.getElementById('quiz-screen').style.display    = 'none';
         document.getElementById('results-screen').style.display = 'flex';
+        // Hide PrepBot while reviewing results
+        PrepBot.hideFAB();
 
         let correct = 0, wrong = 0, skipped = 0;
         const scorable = allQuestions.filter(q => q.type === 'objective' && q._answer !== null);
@@ -685,24 +687,39 @@ Respond ONLY as raw JSON (no markdown):
         const sb = document.getElementById('submit-btn');
         sb.disabled = false;
         sb.innerHTML = `Submit <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 6h8M7 3l3 3-3 3"/></svg>`;
+        PrepBot.showFAB();
         buildDotMap();
         renderQuestion(0);
     }
 
-    return { init, navigate, confirmSubmit, closeConfirm, submit, retake, print: printResults };
+    // Public getter so PrepBot Q-nav can read state
+    function getState() {
+        return { allQuestions, currentIndex, userAnswers, submitted };
+    }
+
+    // Jump directly to a question index (used by PrepBot Q-pills)
+    function goTo(idx) {
+        if (idx < 0 || idx >= allQuestions.length) return;
+        renderQuestion(idx);
+    }
+
+    return { init, navigate, goTo, getState, confirmSubmit, closeConfirm, submit, retake, print: printResults };
 })();
 
+
+// ══════════════════════════════════════════════════════════════
 //  PREPBOT
 // ══════════════════════════════════════════════════════════════
 const PrepBot = (() => {
 
-    let isOpen        = false;
-    let fabDismissed  = false;
-    let chatHistory   = [];    // [{role,content}]
-    let contextQ      = null;  // current question context
-    let recognition   = null;
-    let micActive     = false;
-    let popupTimer    = null;
+    let isOpen       = false;
+    let fabDismissed = false;
+    let onResults    = false;
+    let chatHistory  = [];
+    let contextQ     = null;
+    let recognition  = null;
+    let micActive    = false;
+    let popupTimer   = null;
 
     const SYSTEM_PROMPT = `You are PrepBot, a friendly and expert Nigerian secondary school exam tutor. You help students understand WAEC, JAMB, IGCSE, and Common Entrance exam questions. Be concise, clear, and encouraging. Use simple language. When explaining chemistry, biology, physics or maths, be precise. Do not use bullet points in every response — write naturally.`;
 
@@ -711,18 +728,19 @@ const PrepBot = (() => {
         document.getElementById('chat-input').addEventListener('keydown', e => {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
         });
-        // Auto-resize textarea
         document.getElementById('chat-input').addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 120) + 'px';
         });
         renderIntro();
-        // Show popup nudge after 8s if chat hasn't been opened
         setTimeout(() => {
-            if (!isOpen && !fabDismissed) showPopup('I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.');
+            if (!isOpen && !fabDismissed) {
+                showPopup('Need help understanding this question? I am reading the page with you.');
+            }
         }, 8000);
     }
 
+    // ── Render intro with action pills ───────────────────────
     function renderIntro() {
         const msgs = document.getElementById('chat-messages');
         msgs.innerHTML = `
@@ -730,19 +748,170 @@ const PrepBot = (() => {
                 <div class="chat-intro-title">System Ready</div>
                 <div class="chat-intro-text">I am reading the page with you. Ask about the current question, navigate to a number, or use the Mic to talk.</div>
             </div>`;
+        renderActionPills();
+    }
+
+    /**
+     * Renders the two persistent action pill rows:
+     *   Row 1 — "This Question" pill (injects current Q + options into chat)
+     *   Row 2 — numbered Q-navigation pills
+     * Always shown at the top of the messages area, rebuilt whenever
+     * the window opens or a question is navigated to.
+     */
+    function renderActionPills() {
+        // Remove existing action bars so they don't stack
+        document.querySelectorAll('.prepbot-action-bar').forEach(el => el.remove());
+
+        const state = Quiz.getState();
+        if (!state.allQuestions.length) return;
+
+        const q   = state.allQuestions[state.currentIndex];
+        const idx = state.currentIndex;
+        const letters = ['A','B','C','D','E'];
+
+        const msgs = document.getElementById('chat-messages');
+
+        // ── Bar 1: "This Question" pill ───────────────────────
+        const bar1 = document.createElement('div');
+        bar1.className = 'prepbot-action-bar';
+
+        const thisQBtn = document.createElement('button');
+        thisQBtn.className = 'prepbot-pill prepbot-pill--primary';
+        thisQBtn.innerHTML = `
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="6" cy="6" r="5"/><path d="M6 5v4M6 3h.01"/>
+            </svg>
+            Q${idx + 1} &mdash; Ask about this question`;
+        thisQBtn.addEventListener('click', () => injectCurrentQuestion());
+        bar1.appendChild(thisQBtn);
+        msgs.insertBefore(bar1, msgs.firstChild);
+
+        // ── Bar 2: Q-number navigation pills ─────────────────
+        const bar2 = document.createElement('div');
+        bar2.className = 'prepbot-action-bar prepbot-action-bar--qnav';
+
+        const label = document.createElement('span');
+        label.className = 'prepbot-nav-label';
+        label.textContent = 'Go to:';
+        bar2.appendChild(label);
+
+        const scroll = document.createElement('div');
+        scroll.className = 'prepbot-qpills-scroll';
+
+        state.allQuestions.forEach((question, i) => {
+            const pill = document.createElement('button');
+            pill.className = 'prepbot-qpill';
+            pill.textContent = i + 1;
+            pill.title = question.question.length > 70
+                ? question.question.slice(0, 70) + '…'
+                : question.question;
+
+            // Colour coding
+            const chosen = state.userAnswers[i];
+            if (i === state.currentIndex) {
+                pill.classList.add('qpill--current');
+            } else if (chosen !== undefined && chosen !== '') {
+                if (state.submitted && question.type === 'objective') {
+                    pill.classList.add(chosen === question._answer ? 'qpill--correct' : 'qpill--wrong');
+                } else if (!state.submitted) {
+                    pill.classList.add('qpill--answered');
+                }
+            }
+
+            pill.addEventListener('click', () => {
+                Quiz.goTo(i);
+                // Re-render action pills to reflect new current question
+                renderActionPills();
+                // Scroll messages to top so pills are visible
+                msgs.scrollTop = 0;
+            });
+            scroll.appendChild(pill);
+        });
+        bar2.appendChild(scroll);
+        msgs.insertBefore(bar2, bar1.nextSibling);
+    }
+
+    /**
+     * Inject the current question's full text + all options into the chat
+     * and seed PrepBot to explain it.
+     */
+    function injectCurrentQuestion() {
+        const state   = Quiz.getState();
+        const q       = state.allQuestions[state.currentIndex];
+        const idx     = state.currentIndex;
+        const letters = ['A','B','C','D','E'];
+
+        if (!q) return;
+
+        // Build readable question string
+        let questionBlock = `Q${idx + 1}: ${q.question}`;
+        if (q.type === 'objective' && q.options?.length) {
+            questionBlock += '\n\n' + q.options
+                .map((opt, i) => `${letters[i] || i + 1}) ${opt}`)
+                .join('\n');
+        }
+        if (q._answer) {
+            questionBlock += `\n\nCorrect answer: ${q._answer}`;
+        }
+        const explText = Array.isArray(q.explanation)
+            ? q.explanation.join('\n')
+            : (q.explanation || '');
+
+        // Seed context
+        contextQ = { questionText: q.question, correctAnswer: q._answer, explanationText: explText };
+
+        // Update context banner
+        const banner = document.getElementById('chat-context-banner');
+        document.getElementById('chat-context-text').textContent =
+            q.question.length > 120 ? q.question.slice(0, 120) + '…' : q.question;
+        banner.classList.add('active');
+
+        // Seed Gemini history
+        chatHistory = [
+            {
+                role: 'user',
+                content: `${SYSTEM_PROMPT}\n\nThe student is looking at this exam question:\n\n${questionBlock}\n\n` +
+                    (explText ? `Official explanation: ${explText}\n\n` : '') +
+                    `Please explain this question clearly. Cover the concept being tested, why the correct answer is right, and why the other options are wrong. Be concise.`
+            }
+        ];
+
+        // Show question in chat as a user message card, then stream bot reply
+        const msgs = document.getElementById('chat-messages');
+        // Remove old intro / action bars  
+        msgs.innerHTML = '';
+        renderActionPills();
+
+        // Show the question card in chat
+        const qCard = document.createElement('div');
+        qCard.className = 'chat-msg user';
+        qCard.innerHTML = `<div class="msg-bubble" style="font-size:.8rem;line-height:1.65">${esc(questionBlock)}</div>`;
+        msgs.appendChild(qCard);
+        msgs.scrollTop = msgs.scrollHeight;
+        typesetEl(qCard);
+
+        streamBotResponse();
     }
 
     // ── Open / close / toggle ────────────────────────────────
     function open() {
         isOpen = true;
         hidePopup();
+        // Hide FAB while window is open
+        document.getElementById('chat-fab-wrap').classList.add('fab-hidden');
         document.getElementById('chat-window').classList.add('open');
+        renderActionPills();
         document.getElementById('chat-input').focus();
     }
 
     function close() {
         isOpen = false;
         document.getElementById('chat-window').classList.remove('open');
+        closeQNav();
+        // Restore FAB unless dismissed or on results screen
+        if (!fabDismissed && !onResults) {
+            document.getElementById('chat-fab-wrap').classList.remove('fab-hidden');
+        }
     }
 
     function toggle() { isOpen ? close() : open(); }
@@ -757,8 +926,26 @@ const PrepBot = (() => {
 
     function restoreFAB() {
         fabDismissed = false;
-        document.getElementById('chat-fab-wrap').classList.remove('fab-hidden');
         document.getElementById('chat-fab-restore').classList.remove('fab-restore-visible');
+        if (!onResults) {
+            document.getElementById('chat-fab-wrap').classList.remove('fab-hidden');
+        }
+    }
+
+    // ── Hide / show FAB (called by Quiz on submit / retake) ──
+    function hideFAB() {
+        onResults = true;
+        document.getElementById('chat-fab-wrap').classList.add('fab-hidden');
+        document.getElementById('chat-fab-restore').classList.remove('fab-restore-visible');
+        hidePopup();
+        close();
+    }
+
+    function showFAB() {
+        onResults = false;
+        if (!fabDismissed) {
+            document.getElementById('chat-fab-wrap').classList.remove('fab-hidden');
+        }
     }
 
     // ── Popup nudge ──────────────────────────────────────────
@@ -775,31 +962,27 @@ const PrepBot = (() => {
         document.getElementById('prepbot-popup').classList.remove('visible');
     }
 
-    // ── Seed from question (called by "Ask PrepBot" btn) ─────
+    // ── Seed from external "Ask PrepBot" button ───────────────
     function seedFromQuestion(questionText, correctAnswer, explanationText) {
         contextQ = { questionText, correctAnswer, explanationText };
 
-        // Update context banner
         const banner = document.getElementById('chat-context-banner');
         document.getElementById('chat-context-text').textContent =
-            questionText.length > 120 ? questionText.slice(0,120)+'…' : questionText;
+            questionText.length > 120 ? questionText.slice(0, 120) + '…' : questionText;
         banner.classList.add('active');
 
-        // Seed history
-        chatHistory = [
-            {
-                role: 'user',
-                content: `${SYSTEM_PROMPT}\n\nThe student is reviewing this exam question:\n\n"${questionText}"\n\n` +
-                    (correctAnswer ? `Correct answer: ${correctAnswer}\n` : '') +
-                    (explanationText ? `Explanation: ${explanationText}\n` : '') +
-                    `\nHelp the student understand this question deeply. Start with a brief, friendly intro.`
-            }
-        ];
+        chatHistory = [{
+            role: 'user',
+            content: `${SYSTEM_PROMPT}\n\nThe student is reviewing this exam question:\n\n"${questionText}"\n\n` +
+                (correctAnswer ? `Correct answer: ${correctAnswer}\n` : '') +
+                (explanationText ? `Explanation: ${explanationText}\n` : '') +
+                `\nHelp the student understand this question deeply. Start with a brief, friendly intro.`
+        }];
 
-        // Clear chat and show intro for this question
         const msgs = document.getElementById('chat-messages');
         msgs.innerHTML = '';
         clearSuggestions();
+        renderActionPills();
 
         open();
         streamBotResponse();
@@ -812,6 +995,56 @@ const PrepBot = (() => {
         document.getElementById('chat-context-banner').classList.remove('active');
         renderIntro();
         clearSuggestions();
+    }
+
+    // ── Q-nav panel (header grid icon) ───────────────────────
+    function toggleQNav() {
+        const bar = document.getElementById('qbubbles-bar');
+        if (!bar) return;
+        const isHidden = bar.style.display === 'none' || !bar.style.display;
+        if (isHidden) {
+            buildQBubbles();
+            bar.style.display = 'block';
+            const btn = document.getElementById('qnav-toggle-btn');
+            if (btn) { btn.style.background = 'var(--blue)'; btn.style.color = 'var(--white)'; }
+        } else {
+            closeQNav();
+        }
+    }
+
+    function closeQNav() {
+        const bar = document.getElementById('qbubbles-bar');
+        if (bar) bar.style.display = 'none';
+        const btn = document.getElementById('qnav-toggle-btn');
+        if (btn) { btn.style.background = ''; btn.style.borderColor = ''; btn.style.color = ''; }
+    }
+
+    function buildQBubbles() {
+        const grid  = document.getElementById('qbubbles-grid');
+        if (!grid) return;
+        const state = Quiz.getState();
+        grid.innerHTML = '';
+        state.allQuestions.forEach((q, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'qbubble';
+            btn.textContent = i + 1;
+            btn.title = q.question.length > 60 ? q.question.slice(0, 60) + '…' : q.question;
+            if (i === state.currentIndex) btn.classList.add('qb-current');
+            const chosen = state.userAnswers[i];
+            if (chosen !== undefined && chosen !== '') {
+                if (state.submitted && q.type === 'objective') {
+                    btn.classList.add(chosen === q._answer ? 'qb-correct' : 'qb-wrong');
+                } else if (!state.submitted) {
+                    btn.classList.add('qb-answered');
+                }
+            }
+            btn.addEventListener('click', () => {
+                Quiz.goTo(i);
+                closeQNav();
+                renderActionPills();
+            });
+            grid.appendChild(btn);
+        });
     }
 
     // ── Send message ─────────────────────────────────────────
@@ -827,7 +1060,6 @@ const PrepBot = (() => {
 
         appendMsg('user', text);
 
-        // Build messages array
         if (chatHistory.length === 0) {
             chatHistory.push({ role: 'user', content: SYSTEM_PROMPT + '\n\n' + text });
         } else {
@@ -841,7 +1073,6 @@ const PrepBot = (() => {
             thinkingEl.remove();
             appendMsg('bot', reply);
             chatHistory.push({ role: 'assistant', content: reply });
-            // Offer video search if YT key is present
             if (ytKey() && contextQ) addVideoChip();
             addFollowUpChips(reply);
         } catch(e) {
@@ -878,10 +1109,20 @@ const PrepBot = (() => {
         wrap.className = `chat-msg ${role}`;
         const bubble = document.createElement('div');
         bubble.className = `msg-bubble${thinking ? ' thinking' : ''}`;
-        bubble.textContent = text;
-        wrap.appendChild(bubble);
-        msgs.appendChild(wrap);
-        msgs.scrollTop = msgs.scrollHeight;
+
+        if (role === 'bot' && !thinking) {
+            const clean = text.replace(/\[SUGGESTIONS?:[^\]]+\]/gi, '').trim();
+            bubble.innerHTML = esc(clean);
+            wrap.appendChild(bubble);
+            msgs.appendChild(wrap);
+            msgs.scrollTop = msgs.scrollHeight;
+            typesetEl(bubble);
+        } else {
+            bubble.textContent = text;
+            wrap.appendChild(bubble);
+            msgs.appendChild(wrap);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
         return wrap;
     }
 
@@ -891,7 +1132,6 @@ const PrepBot = (() => {
     }
 
     function addFollowUpChips(botReply) {
-        // Parse [SUGGESTIONS: a | b | c] block the model may append
         const match = botReply.match(/\[SUGGESTIONS?:\s*([^\]]+)\]/i);
         if (!match) return;
         const chips = match[1].split('|').map(s => s.trim()).filter(Boolean);
@@ -911,11 +1151,10 @@ const PrepBot = (() => {
 
     function addVideoChip() {
         const wrap = document.getElementById('suggestion-chips');
-        const existing = wrap.querySelector('.yt-chip');
-        if (existing) return;
+        if (wrap.querySelector('.yt-chip')) return;
         const btn = document.createElement('button');
         btn.className = 'suggestion-chip yt-chip';
-        btn.innerHTML = `▶ Search YouTube for this`;
+        btn.innerHTML = `▶ Search YouTube`;
         btn.addEventListener('click', () => searchAndShowVideos());
         wrap.appendChild(btn);
     }
@@ -924,19 +1163,15 @@ const PrepBot = (() => {
         if (!contextQ) return;
         clearSuggestions();
         const loadMsg = appendMsg('bot', 'Searching YouTube…', true);
-        const query   = `WAEC ${contextQ.questionText.slice(0,80)}`;
+        const query   = `WAEC ${contextQ.questionText.slice(0, 80)}`;
         const videos  = await searchYouTube(query, 3);
         loadMsg.remove();
 
-        if (!videos.length) {
-            appendMsg('bot', 'No relevant YouTube videos found.');
-            return;
-        }
+        if (!videos.length) { appendMsg('bot', 'No relevant YouTube videos found.'); return; }
 
         const wrap = document.createElement('div'); wrap.className = 'chat-msg bot';
         const bubble = document.createElement('div'); bubble.className = 'msg-bubble';
         bubble.innerHTML = `<div style="font-weight:700;font-size:.78rem;margin-bottom:8px">Related Videos</div>`;
-
         const cards = document.createElement('div'); cards.className = 'prepbot-video-cards';
         videos.forEach(v => {
             const a = document.createElement('a');
@@ -964,18 +1199,12 @@ const PrepBot = (() => {
             return;
         }
         if (micActive) { recognition?.stop(); return; }
-
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new SR();
         recognition.lang = 'en-NG'; recognition.interimResults = false;
-
-        recognition.onresult = e => {
-            const t = e.results[0][0].transcript;
-            document.getElementById('chat-input').value = t;
-        };
+        recognition.onresult = e => { document.getElementById('chat-input').value = e.results[0][0].transcript; };
         recognition.onend  = () => { micActive = false; document.getElementById('chat-mic').classList.remove('mic-active'); };
         recognition.onerror= () => { micActive = false; document.getElementById('chat-mic').classList.remove('mic-active'); };
-
         micActive = true;
         document.getElementById('chat-mic').classList.add('mic-active');
         recognition.start();
@@ -984,12 +1213,16 @@ const PrepBot = (() => {
     return {
         init, open, close, toggle,
         dismissFAB, restoreFAB,
-        seedFromQuestion,
+        hideFAB, showFAB,
+        toggleQNav, closeQNav,
+        seedFromQuestion, injectCurrentQuestion,
         clearChat, send, toggleMic,
         showPopup, hidePopup
     };
 })();
 
+
+// ══════════════════════════════════════════════════════════════
 //  BOOT
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
@@ -999,4 +1232,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Receive context from platform-level PrepBot if present
 window.addEventListener('prepportal:keysReady', () => {
+    // keys are now in window.PrepPortalKeys — nothing extra needed
 });

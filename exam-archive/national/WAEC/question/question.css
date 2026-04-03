@@ -974,24 +974,27 @@ body {
 /* ── FAB BUTTON ── */
 #chat-fab {
   z-index: 9999;
-  width: auto;
-  height: auto;
+  width: 56px;
+  height: 56px;
+  /* square icon button matching screenshot */
   background: var(--ink);
   border: var(--border);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 20px 12px 16px;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
   outline: none;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: .72rem;
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  color: var(--white);
   transition: background .25s ease, transform .2s var(--cb), box-shadow .2s ease;
   box-shadow: 4px 4px 0 var(--blue);
+  position: relative;
+  flex-direction: column;
+}
+
+#chat-fab svg {
+  stroke: var(--white);
+  flex-shrink: 0;
 }
 
 #chat-fab:hover {
@@ -1006,12 +1009,15 @@ body {
   box-shadow: 2px 2px 0 var(--ink);
 }
 
-.fab-dot {
+/* Dot sits at top-right of the square */
+#chat-fab .fab-dot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
   width: 7px;
   height: 7px;
   background: #4cff91;
   border-radius: 50%;
-  flex-shrink: 0;
   animation: pulse-dot 2.4s ease-in-out infinite;
 }
 
@@ -1511,6 +1517,142 @@ body {
   color: var(--blue);
 }
 
+/* ── Q-BUBBLES PANEL ────────────────────────────────────── */
+.qbubbles-bar {
+  background: var(--white);
+  border-bottom: var(--border);
+  padding: 10px 14px;
+  flex-shrink: 0;
+  animation: qbSlideDown .2s var(--cb) both;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+@keyframes qbSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.qbubbles-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.qbubbles-title {
+  font-family: var(--font-mono);
+  font-size: .58rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--blue);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qbubbles-close {
+  background: none;
+  border: var(--border);
+  cursor: pointer;
+  color: var(--ink);
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all .15s;
+  font-family: var(--font-mono);
+}
+
+.qbubbles-close:hover {
+  background: var(--ink);
+  color: var(--white);
+}
+
+.qbubbles-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.qbubble {
+  width: 32px;
+  height: 32px;
+  border: var(--border);
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+  box-shadow: 2px 2px 0 var(--ruled);
+  flex-shrink: 0;
+}
+
+.qbubble:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: var(--white);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.qbubble.qb-correct {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--white);
+  box-shadow: none;
+}
+
+.qbubble.qb-wrong {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--white);
+  box-shadow: none;
+}
+
+.qbubble.qb-answered {
+  background: var(--yellow);
+  border-color: var(--ink);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+.qbubble.qb-current {
+  outline: 2.5px solid var(--blue);
+  outline-offset: 1px;
+}
+
+/* ── MathJax overflow in chat ───────────────────────────── */
+.msg-bubble {
+  overflow-x: auto;
+  word-break: break-word;
+  max-width: 88%;
+}
+
+/* MathJax elements inside dark user bubbles */
+.chat-msg.user .msg-bubble mjx-container svg {
+  fill: var(--white);
+}
+
+.chat-msg.user .msg-bubble mjx-container {
+  color: var(--white);
+}
+
 /* ── MOBILE ─────────────────────────────────────────────── */
 @media (max-width: 520px) {
   .options-grid {
@@ -1535,14 +1677,26 @@ body {
     padding: 8px 18px;
   }
   
+  /* Full-screen chat on mobile — no overflow issues */
   #chat-window {
-    width: calc(100vw - 16px);
-    right: 4px;
-    top: 6dvh;
-    height: 90dvh;
-    max-height: 700px;
+    position: fixed;
+    inset: 0;
+    /* cover entire viewport */
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+    bottom: auto;
+    right: auto;
+    transform-origin: bottom center;
+    border: none;
+    box-shadow: none;
   }
   
+  #chat-window.open {
+    transform: translateY(0) scale(1);
+  }
+  
+  /* FAB position on mobile */
   #chat-fab-wrap {
     right: 16px;
     bottom: 20px;
@@ -1551,6 +1705,15 @@ body {
   #prepbot-popup {
     right: 16px;
     max-width: calc(100vw - 80px);
+  }
+  
+  #chat-fab-restore {
+    /* keep it hidden on mobile — full screen anyway */
+  }
+  
+  .qbubble {
+    width: 36px;
+    height: 36px;
   }
 }
 
