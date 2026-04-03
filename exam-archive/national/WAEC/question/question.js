@@ -113,7 +113,6 @@ function injectScript(src) {
     });
 }
 
-// ══════════════════════════════════════════════════════════════
 //  QUIZ ENGINE
 // ══════════════════════════════════════════════════════════════
 const Quiz = (() => {
@@ -497,6 +496,7 @@ const Quiz = (() => {
         sb.disabled = true; sb.textContent = 'Submitted';
         runTheoryMarking();
         setTimeout(showResults, 4000);
+        
     }
 
     // ── Theory AI marking ────────────────────────────────────
@@ -692,8 +692,6 @@ Respond ONLY as raw JSON (no markdown):
     return { init, navigate, confirmSubmit, closeConfirm, submit, retake, print: printResults };
 })();
 
-
-// ══════════════════════════════════════════════════════════════
 //  PREPBOT
 // ══════════════════════════════════════════════════════════════
 const PrepBot = (() => {
@@ -992,8 +990,6 @@ const PrepBot = (() => {
     };
 })();
 
-
-// ══════════════════════════════════════════════════════════════
 //  BOOT
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
@@ -1003,5 +999,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Receive context from platform-level PrepBot if present
 window.addEventListener('prepportal:keysReady', () => {
-    // keys are now in window.PrepPortalKeys — nothing extra needed
 });
