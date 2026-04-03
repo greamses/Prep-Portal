@@ -1238,7 +1238,6 @@ body {
 .msg-bubble em,
 .msg-bubble i {
   font-style: italic;
-  font-family: var(--font-hand);
   color: var(--blue);
 }
 
@@ -1259,7 +1258,7 @@ body {
 
 /* Inline code formatting (if any) */
 .msg-bubble code {
-  font-family: var(--font-mono);
+  
   background: var(--off);
   padding: 2px 5px;
   border-radius: 3px;
@@ -1284,7 +1283,6 @@ body {
 .msg-bubble h2,
 .msg-bubble h3,
 .msg-bubble h4 {
-  font-family: var(--font-display);
   margin: 12px 0 6px;
   font-weight: 700;
 }
@@ -1300,7 +1298,6 @@ body {
   margin: 8px 0;
   padding: 6px 12px;
   background: var(--off);
-  font-style: italic;
   color: var(--muted);
 }
 
