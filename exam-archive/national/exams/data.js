@@ -3,7 +3,7 @@ const EXAM_TYPES = [
   { id: 'WAEC', name: 'WAEC (WASSCE)', live: true },
   { id: 'NECO', name: 'NECO (SSCE)', live: false },
   { id: 'JAMB', name: 'JAMB (UTME)', live: false },
-  { id: 'Common-ntrance', name: 'Common Entrance', live: false }
+  { id: 'Common-entrance', name: 'Common Entrance', live: false }
 ];
 
 // Years configuration
@@ -51,18 +51,23 @@ const compulsoryHint = document.getElementById('compulsoryHint');
 function getFullSubjectList(streamKey, compulsoryEnabled) {
   if (!streamKey || !BASE_SUBJECTS[streamKey]) return [];
   const base = [...BASE_SUBJECTS[streamKey]];
+  
   if (compulsoryEnabled) {
-    let combined = [...COMPULSORY_CORE];
+    // Combine compulsory subjects with base, avoiding duplicates
+    const combined = [...COMPULSORY_CORE];
     base.forEach(sub => {
       if (!combined.includes(sub)) combined.push(sub);
     });
     return combined;
   } else {
-    let optionalMode = [...COMPULSORY_CORE, ...base];
-    return [...new Map(optionalMode.map(s => [s, s])).values()];
-  }
+  const optionalMode = [...COMPULSORY_CORE, ...base];
+  const unique = [];
+  optionalMode.forEach(sub => {
+    if (!unique.includes(sub)) unique.push(sub);
+  });
+  return unique;
 }
-
+}
 function updateReadyState() {
   const examOk = state.examType !== null;
   const yearOk = state.year !== null;

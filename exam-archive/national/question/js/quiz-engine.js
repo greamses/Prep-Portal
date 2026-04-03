@@ -22,13 +22,13 @@ function loadPageConfig() {
 loadPageConfig();
 
 const Quiz = (() => {
-
-    let allQuestions  = [];
-    let currentIndex  = 0;
-    let userAnswers   = {};
-    let submitted     = false;
-    let theoryMarks   = {};
-
+    
+    let allQuestions = [];
+    let currentIndex = 0;
+    let userAnswers = {};
+    let submitted = false;
+    let theoryMarks = {};
+    
     // ── Helper: Escape HTML ──────────────────────────────────────
     function esc(str) {
         if (!str) return '';
@@ -41,37 +41,37 @@ const Quiz = (() => {
             return c;
         });
     }
-
+    
     function typesetEl(el) {
         if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
             MathJax.typesetPromise([el]).catch(e => console.warn('MathJax error:', e));
         }
     }
-
+    
     // ── Answer resolver ──────────────────────────────────────
     function resolveAnswer(q) {
         const opts = q.options || [];
-        for (const f of ['correctIndex','correct_index','answerIndex','answer_index']) {
+        for (const f of ['correctIndex', 'correct_index', 'answerIndex', 'answer_index']) {
             if (q[f] !== undefined && q[f] !== null) {
                 const i = parseInt(q[f], 10);
                 if (!isNaN(i) && opts[i] !== undefined) return opts[i];
             }
         }
         const raw = q.answer ?? q.correct ?? q.correctAnswer ??
-                    q.correctOption ?? q.correct_answer ?? q.key ?? null;
+            q.correctOption ?? q.correct_answer ?? q.key ?? null;
         if (raw === null) return null;
         if (typeof raw === 'number') return opts[raw] ?? null;
         const s = String(raw).trim();
         if (/^[A-Ea-e]$/.test(s)) return opts[s.toUpperCase().charCodeAt(0) - 65] ?? null;
-        if (/^\d$/.test(s))       return opts[parseInt(s, 10)] ?? null;
+        if (/^\d$/.test(s)) return opts[parseInt(s, 10)] ?? null;
         return s || null;
     }
-
+    
     // ── Gemini API Key Check ──────────────────────────────────────
     function geminiKey() {
         return typeof GEMINI_API_KEY !== 'undefined' && GEMINI_API_KEY;
     }
-
+    
     async function markTheory(question, answer, markScheme) {
         const prompt = `You are an AI examiner for ${PAGE_CONFIG.examType?.toUpperCase() || 'WASSCE'} exams.
 Grade this theory/essay answer.
@@ -93,32 +93,45 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
             const data = await response.json();
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{"score":0,"outOf":10,"feedback":"Unable to mark"}';
             return JSON.parse(text);
-        } catch(e) {
+        } catch (e) {
             return { score: 0, outOf: 10, feedback: `Marking error: ${e.message}` };
         }
     }
-
+    
     // ── Bootstrap ────────────────────────────────────────────
     function init() {
         const examTypeName = getExamTypeName(PAGE_CONFIG.examType);
         const subText = `${examTypeName} • ${(PAGE_CONFIG.subjects || []).join(' & ') || 'Practice Paper'}`;
         const metaText = `${PAGE_CONFIG.year || '—'} • ${(PAGE_CONFIG.types || []).join(' & ').toUpperCase()}`;
-
+        
         document.getElementById('display-subject').textContent = subText;
-        document.getElementById('display-meta').textContent    = metaText;
-        document.getElementById('print-header').textContent    =
+        document.getElementById('display-meta').textContent = metaText;
+        document.getElementById('print-header').textContent =
             `Prep Portal · ${examTypeName} ${PAGE_CONFIG.year || ''} · ${(PAGE_CONFIG.subjects || []).join(', ')} · Results`;
-
+        
         const quitLink = document.getElementById('quit-link');
         if (quitLink) {
             quitLink.addEventListener('click', e => {
-                e.preventDefault(); window.history.back();
+                e.preventDefault();
+                window.history.back();
             });
         }
-
+        
+        // Add summary button listener
+        const summaryBtn = document.getElementById('summary-btn');
+        if (summaryBtn) {
+            summaryBtn.addEventListener('click', () => {
+                if (submitted) {
+                    showResults();
+                } else {
+                    confirmSubmit();
+                }
+            });
+        }
+        
         loadAndRender();
     }
-
+    
     function getExamTypeName(examTypeId) {
         const names = {
             'waec': 'WAEC (WASSCE)',
@@ -128,58 +141,89 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
         };
         return names[examTypeId] || (examTypeId ? examTypeId.toUpperCase() : 'EXAM');
     }
-
+    
     async function loadAndRender() {
         const loadingEl = document.getElementById('loading-state');
         if (loadingEl) loadingEl.style.display = 'flex';
         
+        allQuestions = [];
+        const loadedScripts = new Set(); // Track which scripts have been loaded
+        const questionMap = new Map(); // Deduplicate by question content
+        
         for (const sub of PAGE_CONFIG.subjects) {
             const subKey = sub.toLowerCase().replace(/\s+/g, '');
             for (const type of PAGE_CONFIG.types) {
-                // Build path with exam type support
                 const examFolder = PAGE_CONFIG.examType || 'waec';
                 const path = `../${examFolder}/${subKey}/${PAGE_CONFIG.year}/${type}.js`;
+                
+                // Skip if this exact script path was already loaded
+                if (loadedScripts.has(path)) {
+                    console.log(`Skipping already loaded: ${path}`);
+                    continue;
+                }
+                
                 try {
                     await injectScript(path);
+                    loadedScripts.add(path);
+                    
                     const vName = `${subKey}${type.charAt(0).toUpperCase() + type.slice(1)}`;
                     let data;
-                    try { data = window[vName] || eval(vName); } catch(_) {}
+                    try {
+                        data = window[vName] || eval(vName);
+                    } catch (_) {}
+                    
                     if (!data) continue;
-
-                    if (type === 'objective') {
-                        data.forEach(q => {
-                            const obj = { ...q, subject: sub, type, examType: PAGE_CONFIG.examType };
-                            obj._answer = resolveAnswer(obj);
-                            allQuestions.push(obj);
-                        });
-                    } else {
-                        const items = Array.isArray(data) ? data : Object.values(data);
-                        items.forEach(q => {
+                    
+                    const items = type === 'objective' ? data : (Array.isArray(data) ? data : Object.values(data));
+                    items.forEach(q => {
+                        let questionObj;
+                        if (type === 'objective') {
+                            questionObj = { ...q, subject: sub, type, examType: PAGE_CONFIG.examType };
+                            questionObj._answer = resolveAnswer(questionObj);
+                        } else {
                             if (typeof q === 'string') {
-                                allQuestions.push({ subject: sub, type, examType: PAGE_CONFIG.examType, question: q, _answer: null });
+                                questionObj = { subject: sub, type, examType: PAGE_CONFIG.examType, question: q, _answer: null };
                             } else {
-                                allQuestions.push({ ...q, subject: sub, type, examType: PAGE_CONFIG.examType, _answer: null });
+                                questionObj = { ...q, subject: sub, type, examType: PAGE_CONFIG.examType, _answer: null };
                             }
-                        });
-                    }
-                } catch(_) { console.warn('Could not load:', path); }
+                        }
+                        
+                        // Create unique key from question text and type
+                        const questionText = questionObj.question.trim();
+                        const key = `${questionText}|${type}`;
+                        
+                        // Only add if not already present
+                        if (!questionMap.has(key)) {
+                            questionMap.set(key, questionObj);
+                        } else {
+                            console.log(`Duplicate avoided: "${questionText.substring(0, 50)}..."`);
+                        }
+                    });
+                } catch (err) {
+                    console.warn('Could not load:', path, err.message);
+                }
             }
         }
-
+        
+        // Convert Map to array
+        allQuestions = Array.from(questionMap.values());
+        
         if (loadingEl) loadingEl.style.display = 'none';
-
+        
         if (allQuestions.length === 0) {
             const card = document.getElementById('question-card');
             if (card) {
                 card.style.display = 'flex';
                 card.innerHTML = `<div style="padding:40px;text-align:center">
-                    <strong style="font-family:var(--font-display);font-size:15px">No Questions Found</strong>
-                    <p style="font-size:12px;opacity:.6;margin-top:8px">No data for ${PAGE_CONFIG.examType?.toUpperCase() || 'selected exam'}.</p>
-                 </div>`;
+                <strong style="font-family:var(--font-display);font-size:15px">No Questions Found</strong>
+                <p style="font-size:12px;opacity:.6;margin-top:8px">No data for ${PAGE_CONFIG.examType?.toUpperCase() || 'selected exam'}.</p>
+             </div>`;
             }
             return;
         }
-
+        
+        console.log(`Loaded ${allQuestions.length} unique questions from ${loadedScripts.size} script(s)`);
+        
         buildDotMap();
         renderQuestion(0);
         const card = document.getElementById('question-card');
@@ -187,7 +231,7 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
         if (card) card.style.display = 'flex';
         if (nav) nav.style.display = 'grid';
     }
-
+    
     function injectScript(src) {
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
@@ -197,7 +241,7 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
             document.head.appendChild(script);
         });
     }
-
+    
     // ── Dot map ──────────────────────────────────────────────
     function buildDotMap() {
         const c = document.getElementById('q-dots');
@@ -205,24 +249,24 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
         c.innerHTML = '';
         allQuestions.forEach((_, i) => {
             const d = document.createElement('button');
-            d.className = 'q-dot'; 
+            d.className = 'q-dot';
             d.title = `Q${i+1}`;
             d.addEventListener('click', () => renderQuestion(i));
             c.appendChild(d);
         });
         updateDots();
     }
-
+    
     function updateDots() {
         document.querySelectorAll('.q-dot').forEach((d, i) => {
-            d.classList.remove('answered','current','correct','wrong','theory-marked');
-            const q = allQuestions[i]; 
-            const chosen = userAnswers[i]; 
+            d.classList.remove('answered', 'current', 'correct', 'wrong', 'theory-marked');
+            const q = allQuestions[i];
+            const chosen = userAnswers[i];
             const ans = q._answer;
             if (submitted) {
                 if (q.type !== 'objective') {
-                    if (theoryMarks[i])  d.classList.add('theory-marked');
-                    else if (chosen)     d.classList.add('answered');
+                    if (theoryMarks[i]) d.classList.add('theory-marked');
+                    else if (chosen) d.classList.add('answered');
                 } else if (!chosen) {
                     // unanswered — grey
                 } else if (ans === null) {
@@ -233,18 +277,18 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
                     d.classList.add('wrong');
                 }
             } else {
-                if (i === currentIndex)        d.classList.add('current');
+                if (i === currentIndex) d.classList.add('current');
                 else if (chosen !== undefined) d.classList.add('answered');
             }
         });
     }
-
+    
     // ── Render question ──────────────────────────────────────
     function renderQuestion(idx) {
         currentIndex = idx;
-        const q = allQuestions[idx]; 
+        const q = allQuestions[idx];
         const total = allQuestions.length;
-
+        
         const counterLabel = document.getElementById('q-counter-label');
         const progressFill = document.getElementById('progress-fill');
         const numberBadge = document.getElementById('q-number-badge');
@@ -252,22 +296,22 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
         if (counterLabel) counterLabel.textContent = `Q ${idx+1} of ${total}`;
         if (progressFill) progressFill.style.width = `${((idx+1)/total)*100}%`;
         if (numberBadge) numberBadge.textContent = `Q ${idx+1}  •  ${q.subject}  •  ${q.type.toUpperCase()}`;
-
+        
         const qTextEl = document.getElementById('q-text');
         if (qTextEl) qTextEl.innerHTML = esc(q.question);
-
+        
         const imgWrap = document.getElementById('q-image-wrap');
         if (imgWrap) {
             imgWrap.innerHTML = '';
             if (q.image) {
                 const img = document.createElement('img');
-                img.className = 'q-image'; 
+                img.className = 'q-image';
                 img.src = q.image;
-                img.alt = `Q${idx+1} diagram`; 
+                img.alt = `Q${idx+1} diagram`;
                 imgWrap.appendChild(img);
             }
         }
-
+        
         const optWrap = document.getElementById('q-options');
         if (optWrap) {
             optWrap.innerHTML = '';
@@ -277,23 +321,23 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
                 renderTheoryOptions(q, idx, optWrap);
             }
         }
-
+        
         renderFeedback(idx);
         updateNavButtons(idx, total);
         updateDots();
-
+        
         const card = document.getElementById('question-card');
         const strip = document.getElementById('feedback-strip');
         if (card) typesetEl(card);
         if (strip) typesetEl(strip);
     }
-
+    
     function renderObjectiveOptions(q, idx, optWrap) {
-        const grid = document.createElement('div'); 
+        const grid = document.createElement('div');
         grid.className = 'options-grid';
-        const letters = ['A','B','C','D','E'];
+        const letters = ['A', 'B', 'C', 'D', 'E'];
         (q.options || []).forEach((opt, oi) => {
-            const btn = document.createElement('button'); 
+            const btn = document.createElement('button');
             btn.className = 'option-btn';
             if (submitted) {
                 btn.disabled = true;
@@ -307,27 +351,27 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
             grid.appendChild(btn);
         });
         optWrap.appendChild(grid);
-
+        
         if (!submitted && q.hint) {
-            const h = document.createElement('div'); 
+            const h = document.createElement('div');
             h.className = 'hint-row';
             h.innerHTML = `<span class="hint-lbl">Hint</span><span>${esc(q.hint)}</span>`;
             optWrap.appendChild(h);
         }
     }
-
+    
     function renderTheoryOptions(q, idx, optWrap) {
-        const ta = document.createElement('textarea'); 
+        const ta = document.createElement('textarea');
         ta.className = 'theory-box';
         ta.placeholder = 'Write your answer here…';
         ta.value = userAnswers[idx] || '';
         if (submitted) ta.disabled = true;
-        ta.addEventListener('input', () => { 
-            userAnswers[idx] = ta.value; 
-            updateDots(); 
+        ta.addEventListener('input', () => {
+            userAnswers[idx] = ta.value;
+            updateDots();
         });
         optWrap.appendChild(ta);
-
+        
         if (submitted && theoryMarks[idx]) {
             const m = theoryMarks[idx];
             const mEl = document.createElement('div');
@@ -337,13 +381,13 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
                 <div class="theory-mark-text">${esc(m.feedback)}</div>`;
             optWrap.appendChild(mEl);
         } else if (submitted && userAnswers[idx]) {
-            const sp = document.createElement('div'); 
+            const sp = document.createElement('div');
             sp.className = 'ai-marking-row';
             sp.innerHTML = `<div class="ai-spin"></div>AI Marking…`;
             optWrap.appendChild(sp);
         }
     }
-
+    
     function updateNavButtons(idx, total) {
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
@@ -354,28 +398,28 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
         if (nextBtn) nextBtn.style.display = isLast ? 'none' : 'inline-flex';
         if (submitBtn) submitBtn.style.display = isLast ? 'inline-flex' : 'none';
     }
-
+    
     function renderFeedback(idx) {
         const strip = document.getElementById('feedback-strip');
         const label = document.getElementById('feedback-label');
         const expl = document.getElementById('feedback-expl');
         const acts = document.getElementById('feedback-actions');
-        const q = allQuestions[idx]; 
+        const q = allQuestions[idx];
         const ans = q._answer;
-
+        
         if (!strip) return;
         strip.className = 'feedback-strip';
         if (expl) expl.innerHTML = '';
         if (acts) acts.innerHTML = '';
-
+        
         if (!submitted) return;
-
+        
         function buildExpl(raw) {
             if (!raw) return '';
             const lines = Array.isArray(raw) ? raw : [raw];
             return lines.map(l => `<p class="expl-line">${esc(l)}</p>`).join('');
         }
-
+        
         if (q.type !== 'objective') {
             const mark = theoryMarks[idx];
             if (mark) {
@@ -391,14 +435,14 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
             }
             return;
         }
-
+        
         const chosen = userAnswers[idx];
         if (!chosen) {
             strip.classList.add('wrong');
             if (label) label.textContent = 'Not answered.';
-            if (expl) expl.innerHTML = ans
-                ? `<p class="expl-line">Correct answer: <strong>${esc(ans)}</strong></p>` + buildExpl(q.explanation)
-                : '<p class="expl-line">No answer key for this question.</p>';
+            if (expl) expl.innerHTML = ans ?
+                `<p class="expl-line">Correct answer: <strong>${esc(ans)}</strong></p>` + buildExpl(q.explanation) :
+                '<p class="expl-line">No answer key for this question.</p>';
         } else if (ans === null) {
             strip.classList.add('neutral');
             if (label) label.textContent = `You selected: ${chosen}`;
@@ -415,7 +459,7 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
                 buildExpl(q.explanation);
         }
     }
-
+    
     function selectOption(opt, btn, grid, idx) {
         if (submitted) return;
         grid.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
@@ -423,18 +467,18 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
         userAnswers[idx] = opt;
         updateDots();
     }
-
+    
     function navigate(delta) {
         const n = currentIndex + delta;
         if (n < 0 || n >= allQuestions.length) return;
         renderQuestion(n);
     }
-
+    
     function goTo(idx) {
         if (idx < 0 || idx >= allQuestions.length) return;
         renderQuestion(idx);
     }
-
+    
     function confirmSubmit() {
         const answered = Object.keys(userAnswers)
             .filter(k => userAnswers[k] !== undefined && userAnswers[k] !== '').length;
@@ -447,25 +491,25 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
         const overlay = document.getElementById('pp-confirm-overlay');
         if (overlay) overlay.classList.add('open');
     }
-
+    
     function closeConfirm() {
         const overlay = document.getElementById('pp-confirm-overlay');
         if (overlay) overlay.classList.remove('open');
     }
-
+    
     async function submit() {
         closeConfirm();
         submitted = true;
         renderQuestion(currentIndex);
         const sb = document.getElementById('submit-btn');
         if (sb) {
-            sb.disabled = true; 
+            sb.disabled = true;
             sb.textContent = 'Submitted';
         }
         await runTheoryMarking();
-        setTimeout(showResults, 900);
+        showResults();
     }
-
+    
     async function runTheoryMarking() {
         for (let i = 0; i < allQuestions.length; i++) {
             const q = allQuestions[i];
@@ -478,10 +522,10 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
                 updateDots();
                 if (currentIndex === i) renderQuestion(i);
                 updateReviewTheoryItem(i, result);
-            } catch(e) { console.warn(`Theory marking Q${i+1}:`, e.message); }
+            } catch (e) { console.warn(`Theory marking Q${i+1}:`, e.message); }
         }
     }
-
+    
     function updateReviewTheoryItem(idx, mark) {
         const el = document.getElementById(`review-theory-mark-${idx}`);
         if (!el) return;
@@ -490,7 +534,7 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
             <div class="theory-mark-text">${esc(mark.feedback)}</div>`;
         typesetEl(el);
     }
-
+    
     function showResults() {
         const quizScreen = document.getElementById('quiz-screen');
         const resultsScreen = document.getElementById('results-screen');
@@ -498,21 +542,23 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
         if (resultsScreen) resultsScreen.style.display = 'flex';
         
         if (typeof PrepBot !== 'undefined' && PrepBot.hideFAB) PrepBot.hideFAB();
-
-        let correct = 0, wrong = 0, skipped = 0;
+        
+        let correct = 0,
+            wrong = 0,
+            skipped = 0;
         const scorable = allQuestions.filter(q => q.type === 'objective' && q._answer !== null);
-
+        
         allQuestions.forEach((q, i) => {
             if (q.type !== 'objective') return;
-            const chosen = userAnswers[i]; 
+            const chosen = userAnswers[i];
             const ans = q._answer;
-            if (!chosen)        skipped++;
-            else if (ans === null)  { /* no key */ }
+            if (!chosen) skipped++;
+            else if (ans === null) { /* no key */ }
             else if (chosen === ans) correct++;
-            else                   wrong++;
+            else wrong++;
         });
-
-        const pct = scorable.length > 0 ? Math.round((correct/scorable.length)*100) : 0;
+        
+        const pct = scorable.length > 0 ? Math.round((correct / scorable.length) * 100) : 0;
         const scoreEl = document.getElementById('res-score');
         const correctEl = document.getElementById('res-correct');
         const wrongEl = document.getElementById('res-wrong');
@@ -523,53 +569,53 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
         if (correctEl) correctEl.textContent = correct;
         if (wrongEl) wrongEl.textContent = wrong;
         if (skippedEl) skippedEl.textContent = skipped;
-
+        
         let grade = 'No answer key.';
         if (scorable.length > 0) {
-            if (pct >= 80)      grade = 'Distinction — Excellent work!';
+            if (pct >= 80) grade = 'Distinction — Excellent work!';
             else if (pct >= 65) grade = 'Credit — Well done.';
             else if (pct >= 50) grade = 'Pass — Keep working.';
-            else                grade = 'Fail — Keep practising.';
+            else grade = 'Fail — Keep practising.';
         }
         if (gradeEl) gradeEl.textContent = grade;
-
+        
         buildReviewList();
     }
-
+    
     function buildReviewList() {
         const el = document.getElementById('review-list');
         if (!el) return;
         el.innerHTML = '';
-
+        
         allQuestions.forEach((q, i) => {
-            const chosen = userAnswers[i]; 
+            const chosen = userAnswers[i];
             const ans = q._answer;
-            const item = document.createElement('div'); 
+            const item = document.createElement('div');
             item.className = 'review-item';
-
-            const numEl = document.createElement('div'); 
+            
+            const numEl = document.createElement('div');
             numEl.className = 'review-q-num';
             numEl.textContent = i + 1;
-
-            const body = document.createElement('div'); 
+            
+            const body = document.createElement('div');
             body.className = 'review-body';
-
-            const qTxt = document.createElement('div'); 
+            
+            const qTxt = document.createElement('div');
             qTxt.className = 'review-q-text';
             qTxt.innerHTML = esc(q.question);
             body.appendChild(qTxt);
-
+            
             if (q.image) {
                 const img = document.createElement('img');
-                img.className = 'review-img'; 
+                img.className = 'review-img';
                 img.src = q.image;
-                img.alt = `Q${i+1}`; 
+                img.alt = `Q${i+1}`;
                 body.appendChild(img);
             }
-
-            const ansEl = document.createElement('div'); 
+            
+            const ansEl = document.createElement('div');
             ansEl.className = 'review-ans';
-
+            
             if (q.type === 'objective') {
                 if (!chosen) {
                     numEl.classList.add('rq-skip');
@@ -578,18 +624,18 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
                     numEl.classList.add('rq-skip');
                     ansEl.textContent = `You: ${chosen}  |  No key`;
                 } else if (chosen === ans) {
-                    numEl.classList.add('rq-ok'); 
+                    numEl.classList.add('rq-ok');
                     ansEl.classList.add('ok');
                     ansEl.textContent = `Correct: ${chosen}`;
                 } else {
-                    numEl.classList.add('rq-bad'); 
+                    numEl.classList.add('rq-bad');
                     ansEl.classList.add('bad');
                     ansEl.innerHTML = `You: <strong>${esc(chosen)}</strong>  |  Correct: <strong>${esc(ans)}</strong>`;
                 }
                 body.appendChild(ansEl);
-
+                
                 if (q.explanation) {
-                    const explEl = document.createElement('div'); 
+                    const explEl = document.createElement('div');
                     explEl.className = 'review-expl';
                     const lines = Array.isArray(q.explanation) ? q.explanation : [q.explanation];
                     explEl.innerHTML = lines.map(l => `<p class="expl-line">${esc(l)}</p>`).join('');
@@ -604,7 +650,7 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
                     ansEl.textContent = 'Theory — not answered';
                 }
                 body.appendChild(ansEl);
-
+                
                 const markEl = document.createElement('div');
                 markEl.id = `review-theory-mark-${i}`;
                 if (theoryMarks[i]) {
@@ -617,15 +663,15 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
                 }
                 body.appendChild(markEl);
             }
-
+            
             item.appendChild(numEl);
             item.appendChild(body);
             el.appendChild(item);
         });
-
+        
         typesetEl(el);
     }
-
+    
     function printResults() {
         const reviewEl = document.getElementById('review-list');
         if (typeof MathJax !== 'undefined' && MathJax.typesetPromise) {
@@ -637,12 +683,12 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
             window.print();
         }
     }
-
+    
     function retake() {
-        userAnswers  = {};
-        theoryMarks  = {};
+        userAnswers = {};
+        theoryMarks = {};
         currentIndex = 0;
-        submitted    = false;
+        submitted = false;
         
         const resultsScreen = document.getElementById('results-screen');
         const quizScreen = document.getElementById('quiz-screen');
@@ -660,15 +706,21 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
         buildDotMap();
         renderQuestion(0);
     }
-
+    
     function getState() {
         return { allQuestions, currentIndex, userAnswers, submitted };
     }
-
-    return { 
-        init, navigate, goTo, getState, 
-        confirmSubmit, closeConfirm, submit, 
-        retake, print: printResults 
+    
+    return {
+        init,
+        navigate,
+        goTo,
+        getState,
+        confirmSubmit,
+        closeConfirm,
+        submit,
+        retake,
+        print: printResults
     };
 })();
 
