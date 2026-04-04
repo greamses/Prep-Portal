@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prep Portal 2026 | Blog Archive</title>
+  
+  <meta name="description" content="Read exam tips, study guides, and strategies for WAEC, NECO, JAMB, and Cambridge exams.">
+  <meta name="author" content="Prep Portal">
+  
+  <!-- Theme CSS with variables -->
+  <link rel="stylesheet" href="./utils/theme/theme.css">
+  
+  <!-- Main CSS with all component styles -->
+  <link rel="stylesheet" href="../../main.css">
+  
+  <style>
+    /* Blog viewer specific styles */
+    .blog-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem var(--padding-xs, 2rem);
+    }
+    
+    .blog-filters {
+      display: flex;
+      gap: var(--gap-md, 1rem);
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      padding-bottom: 1rem;
+      border-bottom: var(--border, 2px solid #0a0a0a);
+    }
+    
+    .filter-btn {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-xs, 0.7rem);
+      font-weight: var(--weight-semibold, 600);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider, 0.05em);
+      padding: 0.5rem 1rem;
+      background: var(--bg, #ffffff);
+      border: var(--border, 2px solid #0a0a0a);
+      cursor: pointer;
+      transition: all var(--duration-instant, 0.1s) ease;
+    }
+    
+    .filter-btn.active {
+      background: var(--yellow, #ffe500);
+      box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
+    }
+    
+    .filter-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
+    }
+    
+    .blog-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    
+    .blog-card {
+      border: var(--border, 2px solid #0a0a0a);
+      background: var(--bg, #ffffff);
+      box-shadow: var(--shadow-md, 5px 5px 0 #0a0a0a);
+      transition: all var(--duration-instant, 0.1s) ease;
+      cursor: pointer;
+    }
+    
+    .blog-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-lg, 6px 6px 0 #0a0a0a);
+    }
+    
+    .blog-card-inner {
+      padding: 1.5rem;
+    }
+    
+    .blog-title {
+      font-family: var(--font-display, 'Unbounded', sans-serif);
+      font-weight: var(--weight-black, 900);
+      font-size: 1.5rem;
+      line-height: var(--leading-tight, 1.2);
+      margin-bottom: 0.75rem;
+      color: var(--ink, #0a0a0a);
+    }
+    
+    .blog-meta {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-xs, 0.7rem);
+      color: var(--muted, #555);
+      flex-wrap: wrap;
+    }
+    
+    .blog-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    
+    .blog-badge {
+      background: var(--yellow, #ffe500);
+      padding: 0.2rem 0.5rem;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-xs, 0.65rem);
+      font-weight: var(--weight-semibold, 600);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider, 0.05em);
+    }
+    
+    .blog-excerpt {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-body, 0.9rem);
+      line-height: var(--leading-loose, 1.6);
+      color: var(--muted, #555);
+      margin-bottom: 1rem;
+    }
+    
+    .read-more {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-xs, 0.7rem);
+      font-weight: var(--weight-semibold, 600);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider, 0.05em);
+      color: var(--blue, #0055ff);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .read-more::after {
+      content: '→';
+      transition: transform var(--duration-instant, 0.1s) ease;
+    }
+    
+    .blog-card:hover .read-more::after {
+      transform: translateX(4px);
+    }
+    
+    /* Single Blog View */
+    .single-blog-view {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg, #ffffff);
+      z-index: var(--z-modal, 1000);
+      overflow-y: auto;
+    }
+    
+    .single-blog-view.active {
+      display: block;
+    }
+    
+    .single-blog-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 4rem var(--padding-xs, 2rem);
+    }
+    
+    .single-blog-title {
+      font-family: var(--font-display, 'Unbounded', sans-serif);
+      font-weight: var(--weight-black, 900);
+      font-size: 2.5rem;
+      line-height: var(--leading-tight, 1.2);
+      margin-bottom: 1rem;
+      color: var(--ink, #0a0a0a);
+    }
+    
+    .single-blog-meta {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: var(--border, 2px solid #0a0a0a);
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-sm, 0.75rem);
+      color: var(--muted, #555);
+      flex-wrap: wrap;
+    }
+    
+    .single-blog-body {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-body, 1rem);
+      line-height: var(--leading-loose, 1.7);
+      color: var(--ink, #0a0a0a);
+    }
+    
+    .single-blog-body h1 {
+      font-family: var(--font-display, 'Unbounded', sans-serif);
+      font-size: 2rem;
+      margin: 1.5rem 0 1rem;
+    }
+    
+    .single-blog-body h2 {
+      font-family: var(--font-display, 'Unbounded', sans-serif);
+      font-size: 1.5rem;
+      margin: 1.5rem 0 1rem;
+    }
+    
+    .single-blog-body h3 {
+      font-family: var(--font-display, 'Unbounded', sans-serif);
+      font-size: 1.25rem;
+      margin: 1rem 0;
+    }
+    
+    .single-blog-body p {
+      margin-bottom: 1rem;
+    }
+    
+    .single-blog-body ul,
+    .single-blog-body ol {
+      margin: 1rem 0;
+      padding-left: 2rem;
+    }
+    
+    .single-blog-body li {
+      margin: 0.5rem 0;
+    }
+    
+    .close-blog {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-sm, 0.75rem);
+      font-weight: var(--weight-semibold, 600);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider, 0.05em);
+      padding: 0.75rem 1.5rem;
+      background: var(--ink, #0a0a0a);
+      color: var(--bg, #ffffff);
+      border: var(--border, 2px solid #0a0a0a);
+      cursor: pointer;
+      z-index: var(--z-modal, 1001);
+      transition: all var(--duration-instant, 0.1s) ease;
+    }
+    
+    .close-blog:hover {
+      background: var(--yellow, #ffe500);
+      color: var(--ink, #0a0a0a);
+      transform: translate(-1px, -1px);
+    }
+    
+    .loading-spinner {
+      text-align: center;
+      padding: 3rem;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      color: var(--muted, #555);
+    }
+    
+    .no-blogs {
+      text-align: center;
+      padding: 3rem;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      color: var(--muted, #555);
+    }
+    
+    @media (max-width: 640px) {
+      .blog-title {
+        font-size: 1.25rem;
+      }
+      
+      .single-blog-title {
+        font-size: 1.75rem;
+      }
+      
+      .single-blog-content {
+        padding: 5rem var(--padding-xs, 1.5rem) 2rem;
+      }
+    }
+  </style>
+  
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  
+  <!-- Navigation -->
+  <nav class="site-nav">
+    <a href="/" class="nav-logo">
+      <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
+      <div class="logo-brand">
+        <span class="brand-top">Prep</span>
+        <span class="brand-bottom">Portal</span>
+      </div>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#">Dashboard</a></li>
+      <li><a href="#" class="active">Blog Archive</a></li>
+      <li><a href="auto-blog.html" class="nav-cta">Auto Blog</a></li>
+    </ul>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  
+  <!-- Ticker -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span class="ticker-item"> EXAM BLOG ARCHIVE</span>
+      <span class="ticker-item">✦</span>
+      <span class="ticker-item">WAEC & NECO TIPS</span>
+      <span class="ticker-item">✦</span>
+      <span class="ticker-item">JAMB STRATEGIES</span>
+      <span class="ticker-item">✦</span>
+      <span class="ticker-item">CAMBRIDGE GUIDES</span>
+      <span class="ticker-item">✦</span>
+    </div>
+  </div>
+  
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-left">
+      <h1 class="hero-title">Blog<br>Archive.</h1>
+    </div>
+    <div class="hero-right">
+      <p class="hero-tagline">Explore our collection of AI-generated exam tips, study guides, and strategies for WAEC, NECO, JAMB, and Cambridge examinations.</p>
+    </div>
+  </div>
+  
+  <!-- Blog Viewer Main Content -->
+  <div class="blog-container">
+    <div class="blog-filters">
+      <button class="filter-btn active" data-filter="all">All Posts</button>
+      <button class="filter-btn" data-filter="waec">WAEC</button>
+      <button class="filter-btn" data-filter="neco">NECO</button>
+      <button class="filter-btn" data-filter="jamb">JAMB</button>
+      <button class="filter-btn" data-filter="cambridge">Cambridge</button>
+    </div>
+    
+    <div id="blogGrid" class="blog-grid">
+      <div class="loading-spinner">Loading blog posts...</div>
+    </div>
+  </div>
+  
+  <!-- Single Blog Modal -->
+  <div id="singleBlogView" class="single-blog-view">
+    <button class="close-blog" id="closeBlogBtn">← Close</button>
+    <div id="singleBlogContent" class="single-blog-content"></div>
+  </div>
+  
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="/" class="nav-logo">
+          <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
+          <div class="logo-brand">
+            <span class="brand-top">Prep</span>
+            <span class="brand-bottom">Portal</span>
+          </div>
+        </a>
+        <p>AI-powered exam preparation resources for Nigerian students.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Prep Portal. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </footer>
+  
+  <script type="module">
+    import { initializeApp } from 'firebase/app';
+    import { getAuth, onAuthStateChanged } from 'firebase/auth';
+    import { getFirestore, collection, query, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyA2N3uI_XfSIVsto2Ku1g_qSezmD3qFmbk",
+      authDomain: "prep-portal-2026.web.app",
+      projectId: "prep-portal-2026",
+      storageBucket: "prep-portal-2026.firebasestorage.app",
+      messagingSenderId: "837672918701",
+      appId: "1:837672918701:web:e64c0c25dc01b542e23024"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    
+    let allBlogs = [];
+    let currentFilter = 'all';
+    
+    const blogGrid = document.getElementById('blogGrid');
+    const singleBlogView = document.getElementById('singleBlogView');
+    const singleBlogContent = document.getElementById('singleBlogContent');
+    const closeBlogBtn = document.getElementById('closeBlogBtn');
+    
+    function formatDate(timestamp) {
+      if (!timestamp) return 'Just now';
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return date.toLocaleDateString('en-NG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+    
+    function getAudienceBadge(audience) {
+      const badges = {
+        waec: 'WAEC',
+        neco: 'NECO',
+        jamb: 'JAMB',
+        cambridge: 'Cambridge'
+      };
+      return badges[audience?.toLowerCase()] || 'Exam Tip';
+    }
+    
+    function renderBlogCard(blog) {
+      const date = formatDate(blog.publishedAt);
+      const audience = blog.audience || (blog.originalTopic?.includes('WAEC') ? 'waec' :
+        blog.originalTopic?.includes('JAMB') ? 'jamb' :
+        blog.originalTopic?.includes('NECO') ? 'neco' : 'cambridge');
+      const badge = getAudienceBadge(audience);
+      
+      return `
+        <div class="blog-card" data-blog-id="${blog.id}" data-audience="${audience.toLowerCase()}">
+          <div class="blog-card-inner">
+            <div class="blog-meta">
+              <span> ${date}</span>
+              <span> <span class="blog-badge">${badge}</span></span>
+              ${blog.modelUsed ? `<span> ${blog.modelUsed.split(' ').slice(0, 2).join(' ')}</span>` : ''}
+            </div>
+            <h2 class="blog-title">${escapeHtml(blog.title)}</h2>
+            <p class="blog-excerpt">${escapeHtml(blog.excerpt || blog.content?.substring(0, 160) || '')}...</p>
+            <div class="read-more">Read full article</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
+    
+    function filterBlogs() {
+      if (currentFilter === 'all') {
+        return allBlogs;
+      }
+      return allBlogs.filter(blog => {
+        const audience = blog.audience ||
+          (blog.originalTopic?.includes('WAEC') ? 'waec' :
+            blog.originalTopic?.includes('JAMB') ? 'jamb' :
+            blog.originalTopic?.includes('NECO') ? 'neco' : 'cambridge');
+        return audience.toLowerCase() === currentFilter.toLowerCase();
+      });
+    }
+    
+    function renderBlogs() {
+      const filtered = filterBlogs();
+      
+      if (filtered.length === 0) {
+        blogGrid.innerHTML = '<div class="no-blogs"> No blog posts found. Check back soon for new content!</div>';
+        return;
+      }
+      
+      blogGrid.innerHTML = filtered.map(blog => renderBlogCard(blog)).join('');
+      
+      // Attach click events to cards
+      document.querySelectorAll('.blog-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const blogId = card.dataset.blogId;
+          const blog = allBlogs.find(b => b.id === blogId);
+          if (blog) {
+            showSingleBlog(blog);
+          }
+        });
+      });
+    }
+    
+    function showSingleBlog(blog) {
+      const date = formatDate(blog.publishedAt);
+      const audience = blog.audience || (blog.originalTopic?.includes('WAEC') ? 'waec' :
+        blog.originalTopic?.includes('JAMB') ? 'jamb' :
+        blog.originalTopic?.includes('NECO') ? 'neco' : 'cambridge');
+      const badge = getAudienceBadge(audience);
+      
+      singleBlogContent.innerHTML = `
+        <button class="close-blog" id="closeBlogBtnInner">← Close</button>
+        <h1 class="single-blog-title">${escapeHtml(blog.title)}</h1>
+        <div class="single-blog-meta">
+          <span>${date}</span>
+          <span><span class="blog-badge">${badge}</span></span>
+          <span> Generated by ${escapeHtml(blog.modelUsed || 'Gemini AI')}</span>
+          <span>️ ${blog.views || 0} views</span>
+        </div>
+        <div class="single-blog-body">
+          ${blog.content || '<p>Content not available</p>'}
+        </div>
+      `;
+      
+      singleBlogView.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Re-attach close button
+      const closeInner = document.getElementById('closeBlogBtnInner');
+      if (closeInner) {
+        closeInner.addEventListener('click', closeBlogView);
+      }
+    }
+    
+    function closeBlogView() {
+      singleBlogView.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+    
+    async function loadBlogs() {
+      try {
+        const blogsRef = collection(db, 'blogs');
+        const q = query(blogsRef, orderBy('publishedAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        allBlogs = [];
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          allBlogs.push({
+            id: doc.id,
+            title: data.title || 'Untitled',
+            content: data.content || '',
+            excerpt: data.excerpt || '',
+            publishedAt: data.publishedAt,
+            modelUsed: data.modelUsed,
+            audience: data.audience,
+            originalTopic: data.originalTopic,
+            views: data.views || 0
+          });
+        });
+        
+        renderBlogs();
+        
+        if (allBlogs.length === 0) {
+          blogGrid.innerHTML = '<div class="no-blogs"> No blog posts yet. The auto-publisher will create content soon!</div>';
+        }
+      } catch (error) {
+        console.error('Error loading blogs:', error);
+        blogGrid.innerHTML = `<div class="no-blogs">Error loading blogs: ${error.message}</div>`;
+      }
+    }
+    
+    // Filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderBlogs();
+      });
+    });
+    
+    // Close button
+    closeBlogBtn.addEventListener('click', closeBlogView);
+    
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && singleBlogView.classList.contains('active')) {
+        closeBlogView();
+      }
+    });
+    
+    // Mobile nav toggle
+    const navToggle = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('navLinks');
+    if (navToggle && navLinks) {
+      navToggle.addEventListener('click', () => {
+        navToggle.classList.toggle('open');
+        navLinks.classList.toggle('open');
+      });
+    }
+    
+    // Load blogs on page load
+    loadBlogs();
+    
+    // Auto-refresh every 30 seconds if new content might appear
+    setInterval(() => {
+      loadBlogs();
+    }, 30000);
+  </script>
+</body>
+
+</html>

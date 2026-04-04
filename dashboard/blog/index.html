@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prep Portal 2026 | Auto Blog Publisher</title>
+  
+  <meta name="description" content="Prep Portal 2026: Auto blog publisher generating exam tips, study guides, and strategies using Gemini AI.">
+  <meta name="author" content="Prep Portal">
+  <meta name="robots" content="noindex, nofollow">
+  
+  <!-- Theme CSS with variables -->
+  <link rel="stylesheet" href="./utils/theme/theme.css">
+  
+  <!-- Main CSS with all component styles -->
+  <link rel="stylesheet" href="../../main.css">
+  
+  <style>
+    /* Additional styles specific to the blog publisher that integrate with your theme */
+    .publisher-section {
+      padding: 2rem var(--padding-xs, 2rem);
+      background: var(--bg, #ffffff);
+      border-bottom: var(--border, 2px solid #0a0a0a);
+    }
+    
+    .publisher-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--grid-gap-md, 2rem);
+      margin-top: 1rem;
+    }
+    
+    .publisher-card {
+      border: var(--border, 2px solid #0a0a0a);
+      background: var(--bg, #ffffff);
+      box-shadow: var(--shadow-lg, 6px 6px 0 #0a0a0a);
+      padding: 1.5rem;
+      transition: transform var(--duration-instant, 0.1s) var(--ease-default, ease);
+    }
+    
+    .publisher-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-xl, 8px 8px 0 #0a0a0a);
+    }
+    
+    .publisher-stats {
+      display: flex;
+      gap: var(--gap-md, 1rem);
+      margin-bottom: 1.5rem;
+    }
+    
+    .stat-box {
+      flex: 1;
+      background: var(--ink, #0a0a0a);
+      color: var(--bg, #ffffff);
+      padding: 1rem;
+      text-align: center;
+      border: var(--border, 2px solid #0a0a0a);
+    }
+    
+    .stat-box .number {
+      font-family: var(--font-display, 'Unbounded', sans-serif);
+      font-size: 2rem;
+      font-weight: var(--weight-black, 900);
+      color: var(--yellow, #ffe500);
+    }
+    
+    .stat-box div:last-child {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-xs, 0.65rem);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-widest, 0.1em);
+    }
+    
+    .log-container {
+      background: #111418;
+      border: var(--border, 2px solid #0a0a0a);
+      padding: 1rem;
+      height: 300px;
+      overflow-y: auto;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-sm, 0.7rem);
+    }
+    
+    .log-entry {
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #2a2f2a;
+      color: #ccc;
+    }
+    
+    .log-time {
+      color: #888;
+      margin-right: 0.8rem;
+    }
+    
+    .log-success {
+      color: #7ee87e;
+    }
+    
+    .log-error {
+      color: #ff8a7a;
+    }
+    
+    .log-info {
+      color: #b3d9ff;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: var(--gap-md, 1rem);
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-weight: var(--weight-semibold, 600);
+      font-size: var(--text-mono-xs, 0.7rem);
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-widest, 0.1em);
+      padding: 0.6rem 1.2rem;
+      background: var(--bg, #ffffff);
+      border: var(--border, 2px solid #0a0a0a);
+      cursor: pointer;
+      transition: all var(--duration-instant, 0.1s) var(--ease-default, ease);
+    }
+    
+    .btn-primary {
+      background: var(--yellow, #ffe500);
+      box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
+    }
+    
+    .btn-primary:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-md, 5px 5px 0 #0a0a0a);
+    }
+    
+    .btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: var(--ink, #0a0a0a);
+      color: var(--yellow, #ffe500);
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-xs, 0.7rem);
+      font-weight: var(--weight-semibold, 600);
+      margin-bottom: 1rem;
+      border: var(--border, 2px solid #0a0a0a);
+      letter-spacing: var(--tracking-wider, 0.05em);
+    }
+    
+    @media (max-width: 768px) {
+      .publisher-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  
+  <!-- Navigation - matches main.css structure -->
+  <nav class="site-nav">
+    <a href="/" class="nav-logo">
+      <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
+      <div class="logo-brand">
+        <span class="brand-top">Prep</span>
+        <span class="brand-bottom">Portal</span>
+      </div>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#">Dashboard</a></li>
+      <li><a href="#">Archives</a></li>
+      <li><a href="#" class="nav-cta">Auto Blog</a></li>
+    </ul>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  
+  <!-- Ticker - matches main.css -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span class="ticker-item">AI-POWERED BLOG GENERATION</span>
+      <span class="ticker-item">✦</span>
+      <span class="ticker-item">GEMINI 2.5 PRO / FLASH</span>
+      <span class="ticker-item">✦</span>
+      <span class="ticker-item">AUTO-PUBLISH EVERY 10-15 MIN</span>
+      <span class="ticker-item">✦</span>
+      <span class="ticker-item">EXAM TIPS & STUDY GUIDES</span>
+      <span class="ticker-item">✦</span>
+    </div>
+  </div>
+  
+  <!-- Hero - matches main.css structure -->
+  <div class="hero">
+    <div class="hero-left">
+      <h1 class="hero-title">Auto<br>Blog.</h1>
+    </div>
+    <div class="hero-right">
+      <p class="hero-tagline">AI-powered exam content generation. Gemini models create high-quality blog posts about WAEC, NECO, JAMB, and Cambridge exam strategies — automatically published to Firestore.</p>
+    </div>
+  </div>
+  
+  <!-- Section Header - matches main.css -->
+  <div class="section-header">
+    <h2>Blog Publisher</h2>
+    <span>Active · Gemini Powered</span>
+  </div>
+  
+  <!-- Publisher Section - styled to match theme -->
+  <div class="publisher-section">
+    <div class="publisher-grid">
+      <!-- Left Panel: Status & Controls -->
+      <div class="publisher-card">
+        <div class="status-badge" id="authStatus">Connecting...</div>
+        <div class="publisher-stats">
+          <div class="stat-box">
+            <div class="number" id="publishCount">0</div>
+            <div>Published</div>
+          </div>
+          <div class="stat-box">
+            <div class="number" id="nextRunMinutes">--</div>
+            <div>Next (min)</div>
+          </div>
+          <div class="stat-box">
+            <div class="number" id="modelCount">6</div>
+            <div>Gemini Models</div>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="forcePublishBtn">Force Publish Now</button>
+          <button class="btn" id="restartSchedulerBtn">Restart Scheduler</button>
+          <button class="btn" id="testWriteBtn">Test Firestore</button>
+        </div>
+        <div style="margin-top: 1rem; font-family: var(--font-mono); font-size: var(--text-mono-xs); color: var(--muted, #555);" id="nextRunDetail">Next run: calculating...</div>
+      </div>
+      
+      <!-- Right Panel: Live Log -->
+      <div class="publisher-card">
+        <div style="font-family: var(--font-mono, 'JetBrains Mono'); font-weight: var(--weight-semibold, 600); margin-bottom: 0.75rem; letter-spacing: var(--tracking-wider, 0.05em);">LIVE ACTIVITY LOG</div>
+        <div class="log-container" id="logContainer">
+          <div class="log-entry"><span class="log-time">[init]</span> <span class="log-info">Initializing auto publisher...</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer - matches main.css structure -->
+  <footer class="site-footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="/" class="nav-logo">
+         <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
+          <div class="logo-brand">
+            <span class="brand-top">Prep</span>
+            <span class="brand-bottom">Portal</span>
+          </div>
+        </a>
+        <p id="footer-description">A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Prep Portal. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+  </footer>
+  
+  <script type="module">
+    import { initializeApp } from 'firebase/app';
+    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'firebase/auth';
+    import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, getDocs } from 'firebase/firestore';
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyA2N3uI_XfSIVsto2Ku1g_qSezmD3qFmbk",
+      authDomain: "prep-portal-2026.web.app",
+      projectId: "prep-portal-2026",
+      storageBucket: "prep-portal-2026.firebasestorage.app",
+      messagingSenderId: "837672918701",
+      appId: "1:837672918701:web:e64c0c25dc01b542e23024"
+    };
+    
+    const GEMINI_MODELS = [
+      { label: 'Gemini 3.1 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent' },
+      { label: 'Gemini 3.1 Pro', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent' },
+      { label: 'Gemini 3 Flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent' },
+      { label: 'Gemini 2.5 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent' },
+      { label: 'Gemini 2.5 Flash', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent' },
+      { label: 'Gemini 2.5 Pro', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent' },
+    ];
+    
+    const BLOG_TOPICS = [
+      "How to pass WAEC Mathematics without stress",
+      "Common mistakes students make in JAMB Physics",
+      "NECO English Language: Key areas to focus on",
+      "Cambridge IGCSE study schedule for top grades",
+      "Common Entrance exam preparation strategies",
+      "How to overcome exam anxiety and perform better",
+      "Last minute revision techniques that work",
+      "How to score A in JAMB Chemistry",
+      "WAEC past papers: How to use them effectively",
+      "Time management during exams: Proven strategies",
+      "The Pomodoro method for exam preparation"
+    ];
+    
+    const CONTENT_STYLES = ['exam-tips', 'study-guide', 'past-paper-analysis', 'motivation'];
+    const AUDIENCES = ['waec', 'neco', 'jamb', 'cambridge'];
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    
+    // Enable persistent login
+    setPersistence(auth, browserLocalPersistence);
+    
+    let geminiApiKey = null;
+    let currentUser = null;
+    let activeTimeout = null;
+    let publishCount = 0;
+    let retryCount = 0;
+    
+    const authStatusSpan = document.getElementById('authStatus');
+    const publishCountSpan = document.getElementById('publishCount');
+    const nextRunMinutesSpan = document.getElementById('nextRunMinutes');
+    const nextRunDetailSpan = document.getElementById('nextRunDetail');
+    const logContainer = document.getElementById('logContainer');
+    const forceBtn = document.getElementById('forcePublishBtn');
+    const restartBtn = document.getElementById('restartSchedulerBtn');
+    const testBtn = document.getElementById('testWriteBtn');
+    
+    function addLog(message, type = 'info') {
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      let colorClass = 'log-info';
+      if (type === 'success') colorClass = 'log-success';
+      if (type === 'error') colorClass = 'log-error';
+      entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="${colorClass}">${escapeHtml(message)}</span>`;
+      logContainer.appendChild(entry);
+      entry.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      console.log(`[${type}] ${message}`);
+    }
+    
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
+    
+    function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    
+    function getRandomIntervalMs() { return Math.floor(Math.random() * (15 * 60 * 1000 - 10 * 60 * 1000 + 1) + 10 * 60 * 1000); }
+    
+    function updateNextDisplay(delayMs) {
+      if (!delayMs) {
+        nextRunMinutesSpan.innerText = '--';
+        nextRunDetailSpan.innerText = 'Next run: idle';
+        return;
+      }
+      const minutes = Math.round(delayMs / 60000);
+      nextRunMinutesSpan.innerText = minutes;
+      nextRunDetailSpan.innerText = `Next run: in ${minutes} min`;
+    }
+    
+    function clearScheduler() {
+      if (activeTimeout) {
+        clearTimeout(activeTimeout);
+        activeTimeout = null;
+      }
+    }
+    
+    function scheduleNextRun(delayMs) {
+      clearScheduler();
+      if (!geminiApiKey || !currentUser) {
+        addLog('Cannot schedule: waiting for API key...', 'info');
+        return;
+      }
+      addLog(`Scheduled next blog in ${Math.round(delayMs/60000)} minutes`, 'info');
+      updateNextDisplay(delayMs);
+      activeTimeout = setTimeout(async () => {
+        activeTimeout = null;
+        await executePublishCycle();
+      }, delayMs);
+    }
+    
+    async function loadGeminiKey(user) {
+      if (!user) return false;
+      
+      // Try multiple times if offline
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          addLog(`Fetching Gemini key from Firestore (attempt ${attempt})...`, 'info');
+          const userDocRef = doc(db, 'users', user.uid);
+          const userSnap = await getDoc(userDocRef);
+          
+          if (userSnap.exists()) {
+            const data = userSnap.data();
+            // Check multiple possible field names for the API key
+            const key = data.geminiKey || data.geminiApiKey || data.apiKey || data.gemini;
+            
+            if (key && key.length > 10) {
+              geminiApiKey = key;
+              addLog(`Gemini API key loaded successfully! Key starts with: ${key.substring(0, 15)}...`, 'success');
+              retryCount = 0;
+              return true;
+            } else {
+              addLog(`No valid API key found in user document. Fields available: ${Object.keys(data).join(', ')}`, 'error');
+              return false;
+            }
+          } else {
+            addLog(`User document not found for UID: ${user.uid}`, 'error');
+            return false;
+          }
+        } catch (err) {
+          addLog(`Attempt ${attempt} failed: ${err.message}`, 'error');
+          if (attempt < 3) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        }
+      }
+      return false;
+    }
+    
+    async function generateBlogPost() {
+      const topic = getRandomItem(BLOG_TOPICS);
+      const style = getRandomItem(CONTENT_STYLES);
+      const audience = getRandomItem(AUDIENCES);
+      const model = getRandomItem(GEMINI_MODELS);
+      
+      addLog(` Generating: "${topic}" using ${model.label}`, 'info');
+      
+      const prompt = `Write a detailed blog post for "Prep Portal 2026". 
+Topic: ${topic}. 
+Style: ${style}. 
+Audience: ${audience}. 
+Write in HTML format with h1 title, h2 headings, paragraphs, and a bullet list. 
+Make it engaging and educational for Nigerian students preparing for exams.
+Return ONLY HTML, no markdown wrappers.`;
+      
+      try {
+        const response = await fetch(`${model.url}?key=${geminiApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.7, maxOutputTokens: 2500 }
+          })
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.text();
+          throw new Error(`API ${response.status}: ${errorData.substring(0, 100)}`);
+        }
+        const data = await response.json();
+        if (!data.candidates?.[0]?.content) throw new Error('Invalid response from Gemini');
+        
+        let rawHtml = data.candidates[0].content.parts[0].text;
+        rawHtml = rawHtml.trim().replace(/```html\n?/gi, '').replace(/```\n?/g, '');
+        const titleMatch = rawHtml.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+        const title = titleMatch ? titleMatch[1].trim() : topic;
+        const excerpt = rawHtml.replace(/<[^>]*>/g, ' ').substring(0, 160);
+        
+        addLog(`Blog generated: "${title}"`, 'success');
+        return { title, content: rawHtml, excerpt, topic, style, audience, modelUsed: model.label };
+      } catch (err) {
+        addLog(`Generation failed: ${err.message}`, 'error');
+        throw err;
+      }
+    }
+    
+    async function publishBlog(blog) {
+      if (!currentUser) throw new Error('No user logged in');
+      
+      const blogData = {
+        title: blog.title,
+        content: blog.content,
+        excerpt: blog.excerpt,
+        status: 'published',
+        authorId: currentUser.uid,
+        authorEmail: currentUser.email,
+        publishedAt: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        views: 0,
+        source: 'auto-blog-publisher',
+        modelUsed: blog.modelUsed,
+        originalTopic: blog.topic,
+        style: blog.style,
+        audience: blog.audience
+      };
+      
+      const docRef = await addDoc(collection(db, 'blogs'), blogData);
+      return docRef.id;
+    }
+    
+    async function executePublishCycle() {
+      if (!geminiApiKey) {
+        addLog('Cannot publish: Gemini API key not loaded', 'error');
+        // Try to reload the key
+        if (currentUser) {
+          await loadGeminiKey(currentUser);
+        }
+        scheduleNextRun(5 * 60 * 1000);
+        return;
+      }
+      
+      if (!currentUser) {
+        addLog('Cannot publish: No user logged in', 'error');
+        scheduleNextRun(5 * 60 * 1000);
+        return;
+      }
+      
+      addLog(' Starting auto-publish cycle...', 'info');
+      try {
+        const blog = await generateBlogPost();
+        const blogId = await publishBlog(blog);
+        publishCount++;
+        publishCountSpan.innerText = publishCount;
+        addLog(`Published successfully! Blog ID: ${blogId.substring(0, 8)}...`, 'success');
+        scheduleNextRun(getRandomIntervalMs());
+      } catch (err) {
+        addLog(`Publish error: ${err.message}`, 'error');
+        scheduleNextRun(5 * 60 * 1000);
+      }
+    }
+    
+    async function forcePublish() {
+      if (!geminiApiKey) {
+        addLog('Cannot force publish: Gemini key missing. Attempting to reload...', 'error');
+        if (currentUser) {
+          await loadGeminiKey(currentUser);
+        }
+        return;
+      }
+      clearScheduler();
+      addLog(' Manual force publish triggered', 'info');
+      await executePublishCycle();
+    }
+    
+    async function testFirestore() {
+      addLog(' Testing Firestore connection...', 'info');
+      try {
+        // Try to read from blogs collection
+        const blogsRef = collection(db, 'blogs');
+        const snapshot = await getDocs(blogsRef);
+        addLog(`Firestore connected! Found ${snapshot.size} existing blog posts.`, 'success');
+        
+        // Test write permission
+        const testDoc = await addDoc(collection(db, 'test_connection'), {
+          test: true,
+          timestamp: serverTimestamp()
+        });
+        addLog(`Write permission confirmed! Test doc ID: ${testDoc.id}`, 'success');
+      } catch (err) {
+        addLog(`Firestore test failed: ${err.message}`, 'error');
+      }
+    }
+    
+    function restartScheduler() {
+      clearScheduler();
+      if (geminiApiKey && currentUser) {
+        scheduleNextRun(getRandomIntervalMs());
+        addLog(' Scheduler restarted', 'success');
+      } else {
+        addLog('Cannot restart scheduler - missing API key or auth', 'error');
+        if (currentUser && !geminiApiKey) {
+          loadGeminiKey(currentUser);
+        }
+      }
+    }
+    
+    // Mobile nav toggle
+    const navToggle = document.getElementById('nav-toggle');
+    const navLinks = document.getElementById('navLinks');
+    if (navToggle && navLinks) {
+      navToggle.addEventListener('click', () => {
+        navToggle.classList.toggle('open');
+        navLinks.classList.toggle('open');
+      });
+    }
+    
+    // Event listeners
+    forceBtn.addEventListener('click', forcePublish);
+    restartBtn.addEventListener('click', restartScheduler);
+    testBtn.addEventListener('click', testFirestore);
+    
+    // Auth state listener - this handles auto-login since Firebase remembers you
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        authStatusSpan.innerText = ` Admin: ${user.email}`;
+        addLog(`Auth state: ${user.email} is logged in`, 'success');
+        
+        // Load the Gemini key from Firestore
+        const keyLoaded = await loadGeminiKey(user);
+        if (keyLoaded && geminiApiKey && !activeTimeout) {
+          addLog(' Auto-publisher ready! Starting scheduled generation...', 'success');
+          scheduleNextRun(getRandomIntervalMs());
+        } else if (!keyLoaded) {
+          addLog('Please add your Gemini API key to the "geminiKey" field in your Firestore user document', 'error');
+        }
+      } else {
+        addLog('No user logged in. Firebase Auth persistence should auto-login on refresh.', 'info');
+        authStatusSpan.innerText = 'Waiting for auto-login...';
+      }
+    });
+    
+    addLog(' Prep Portal Auto Publisher v2.0 initialized', 'info');
+    addLog(' Firebase will auto-login using saved credentials', 'info');
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Writing Sheet — Prep Portal</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&family=Caveat:wght@600;700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  
+  <style>
+    /* ════════════════════════════════════════════════════
+   TOKENS — exact match with proofreader.css
+════════════════════════════════════════════════════ */
+    :root {
+      --bg: #ffffff;
+      --app-bg: #f0ece3;
+      --ink: #0a0a0a;
+      --yellow: #ffe500;
+      --blue: #0055ff;
+      --red: #ff2200;
+      --green: #00a550;
+      --amber: #e67e00;
+      --muted: #666;
+      --off: #f7f4ee;
+      --paper: #fffef8;
+      --ruled: #e8e3d8;
+      --border: 2.5px solid #0a0a0a;
+      --shadow-sm: 4px 4px 0 #0a0a0a;
+      --shadow-md: 6px 6px 0 #0a0a0a;
+      --shadow-lg: 10px 10px 0 #0a0a0a;
+      --shadow-xl: 14px 14px 0 #0a0a0a;
+      --t0: #ffe500;
+      --t1: #0055ff;
+      --t2: #00a550;
+      --t3: #ff2200;
+      --t4: #7c3aed;
+      --t5: #e67e00;
+      --t6: #0891b2;
+    }
+    
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    html,
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      background: var(--app-bg);
+      background-image:
+        radial-gradient(circle at 5% 90%, rgba(255, 229, 0, .18) 0%, transparent 38%),
+        radial-gradient(circle at 95% 5%, rgba(0, 85, 255, .1) 0%, transparent 38%);
+      min-height: 100vh;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    
+    /* ════════════════════════════════════════════════════
+   ANIMATIONS
+════════════════════════════════════════════════════ */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px)
+      }
+      
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+    
+    @keyframes appRise {
+      from {
+        opacity: 0;
+        transform: translateY(32px)
+      }
+      
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+    
+    @keyframes titlePip {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+      
+      50% {
+        opacity: .45;
+        transform: scale(.75)
+      }
+    }
+    
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(.94) translateY(12px)
+      }
+      
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0)
+      }
+    }
+    
+    @keyframes stepIn {
+      from {
+        opacity: 0;
+        transform: translateX(-14px)
+      }
+      
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+    
+    @keyframes tabIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px)
+      }
+      
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+    
+    /* ════════════════════════════════════════════════════
+   APP SHELL
+════════════════════════════════════════════════════ */
+    .app {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+      background: var(--bg);
+      border-right: var(--border);
+      border-left: var(--border);
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      animation: appRise .55s cubic-bezier(.16, 1, .3, 1) both;
+      box-shadow: var(--shadow-xl);
+    }
+    
+    .app::before {
+      content: '';
+      display: block;
+      height: 6px;
+      background: var(--yellow);
+      border-bottom: 2.5px solid var(--ink);
+    }
+    
+    /* ════════════════════════════════════════════════════
+   HEADER
+════════════════════════════════════════════════════ */
+    .header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: stretch;
+      border-bottom: var(--border);
+      background: var(--ink);
+      min-height: 72px;
+    }
+    
+    .title {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 900;
+      font-size: clamp(13px, 2vw, 17px);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--bg);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 clamp(20px, 4vw, 40px);
+      border-right: var(--border);
+      position: relative;
+    }
+    
+    .title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: clamp(20px, 4vw, 40px);
+      width: 40px;
+      height: 3px;
+      background: var(--yellow);
+    }
+    
+    .title svg {
+      color: var(--yellow);
+      animation: titlePip 2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(16px, 3vw, 32px);
+      gap: 10px;
+    }
+    
+    /* ════════════════════════════════════════════════════
+   CONTENT
+════════════════════════════════════════════════════ */
+    .content {
+      padding: clamp(20px, 5vw, 60px);
+      padding-top: 40px;
+    }
+    
+    .sec-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .22em;
+      color: var(--muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .sec-label::before {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 2.5px;
+      background: var(--yellow);
+      flex-shrink: 0;
+    }
+    
+    .demo-textarea {
+      display: block;
+      width: 100%;
+      min-height: 40vh;
+      padding: 28px 32px 56px;
+      border: var(--border);
+      font-family: 'Caveat', cursive;
+      font-size: clamp(18px, 2.8vw, 22px);
+      font-weight: 600;
+      line-height: 2.2;
+      resize: vertical;
+      outline: none;
+      background: var(--paper);
+      color: var(--ink);
+      box-shadow: var(--shadow-lg);
+      transition: border-color .15s, box-shadow .15s, transform .15s;
+      background-image:
+        linear-gradient(to right, transparent 60px, rgba(255, 34, 0, .15) 60px, rgba(255, 34, 0, .15) 62px, transparent 62px),
+        repeating-linear-gradient(transparent, transparent calc(2.2em - 1px), var(--ruled) calc(2.2em - 1px), var(--ruled) calc(2.2em));
+      background-attachment: local;
+    }
+    
+    .demo-textarea::placeholder {
+      font-family: 'Caveat', cursive;
+      font-style: italic;
+      font-weight: 600;
+      color: #c8c0b0;
+    }
+    
+    .demo-textarea:focus {
+      border-color: var(--blue);
+      box-shadow: var(--shadow-lg), 0 0 0 3px rgba(0, 85, 255, .12);
+      transform: translate(-1px, -1px);
+    }
+    
+    /* ════════════════════════════════════════════════════
+   BUTTON
+════════════════════════════════════════════════════ */
+    .btn {
+      padding: 14px 28px;
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      cursor: pointer;
+      border: 2.5px solid var(--ink);
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      white-space: nowrap;
+      box-shadow: var(--shadow-sm);
+      transition: transform .08s, box-shadow .08s, background .1s;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, .06);
+      transform: translateX(-102%);
+      transition: transform .22s cubic-bezier(.16, 1, .3, 1);
+    }
+    
+    .btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 var(--ink);
+    }
+    
+    .btn:hover::before {
+      transform: translateX(0);
+    }
+    
+    .btn:active {
+      transform: translate(3px, 3px) !important;
+      box-shadow: 1px 1px 0 var(--ink) !important;
+    }
+    
+    .btn span,
+    .btn svg {
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+    }
+    
+    .btn-primary {
+      background: var(--yellow);
+      color: var(--ink);
+    }
+    
+    .btn-primary::before {
+      background: rgba(0, 0, 0, .08);
+    }
+    
+    /* ════════════════════════════════════════════════════
+   MODAL OVERLAY
+════════════════════════════════════════════════════ */
+    .ws-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 10, .88);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    
+    .ws-overlay.active {
+      display: flex;
+      animation: modalIn .3s cubic-bezier(.16, 1, .3, 1);
+    }
+    
+    /* ════════════════════════════════════════════════════
+   MODAL
+════════════════════════════════════════════════════ */
+    .ws-modal {
+      background: var(--bg);
+      border: var(--border);
+      box-shadow: var(--shadow-xl);
+      width: 100%;
+      max-width: 920px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Yellow top bar — matches .modal-content::before */
+    .ws-modal::before {
+      content: '';
+      display: block;
+      height: 5px;
+      background: var(--yellow);
+      border-bottom: var(--border);
+      flex-shrink: 0;
+    }
+    
+    /* ── Modal header ── */
+    .ws-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      padding: 18px 28px;
+      border-bottom: var(--border);
+      background: var(--ink);
+      flex-shrink: 0;
+      gap: 12px;
+    }
+    
+    .ws-title-block {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .ws-title {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 900;
+      font-size: clamp(11px, 1.6vw, 14px);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--bg);
+    }
+    
+    .ws-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 600;
+      background: var(--yellow);
+      color: var(--ink);
+      padding: 3px 10px;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      flex-shrink: 0;
+    }
+    
+    .ws-close {
+      background: transparent;
+      border: 2px solid rgba(255, 255, 255, .3);
+      color: var(--bg);
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background .15s, border-color .15s;
+    }
+    
+    .ws-close:hover {
+      background: var(--red);
+      border-color: var(--red);
+    }
+    
+    /* ── Tab nav — flood-fill chip pattern ── */
+    .ws-nav {
+      display: flex;
+      border-bottom: var(--border);
+      overflow-x: auto;
+      flex-shrink: 0;
+      scrollbar-width: none;
+      background: var(--off);
+    }
+    
+    .ws-nav::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .ws-tab {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 20px;
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 700;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      border: none;
+      border-right: var(--border);
+      background: var(--off);
+      color: var(--ink);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: color .15s;
+      white-space: nowrap;
+    }
+    
+    .ws-tab::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--ink);
+      transform: translateY(102%);
+      transition: transform .22s cubic-bezier(.16, 1, .3, 1);
+      z-index: 0;
+    }
+    
+    .ws-tab>* {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .ws-tab:hover {
+      color: var(--bg);
+    }
+    
+    .ws-tab:hover::after {
+      transform: translateY(0);
+    }
+    
+    .ws-tab.active {
+      background: var(--ink);
+      color: var(--bg);
+    }
+    
+    .ws-tab.active::after {
+      display: none;
+    }
+    
+    /* Accent bar at bottom of active tab */
+    .ws-tab.active::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      z-index: 2;
+    }
+    
+    .ws-tab[data-idx="0"].active::before {
+      background: var(--t0);
+    }
+    
+    .ws-tab[data-idx="1"].active::before {
+      background: var(--t1);
+    }
+    
+    .ws-tab[data-idx="2"].active::before {
+      background: var(--t2);
+    }
+    
+    .ws-tab[data-idx="3"].active::before {
+      background: var(--t3);
+    }
+    
+    .ws-tab[data-idx="4"].active::before {
+      background: var(--t4);
+    }
+    
+    .ws-tab[data-idx="5"].active::before {
+      background: var(--t5);
+    }
+    
+    .ws-tab[data-idx="6"].active::before {
+      background: var(--t6);
+    }
+    
+    /* ── Content body ── */
+    .ws-body {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--ink) transparent;
+    }
+    
+    .ws-panel {
+      display: none;
+      animation: tabIn .2s ease;
+    }
+    
+    .ws-panel.active {
+      display: block;
+    }
+    
+    /* ── Topic header — topic-box pattern ── */
+    .topic-top-bar {
+      background: var(--t0);
+      border-bottom: var(--border);
+      padding: 10px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    
+    .ws-panel[data-idx="1"] .topic-top-bar {
+      background: var(--t1);
+    }
+    
+    .ws-panel[data-idx="2"] .topic-top-bar {
+      background: var(--t2);
+    }
+    
+    .ws-panel[data-idx="3"] .topic-top-bar {
+      background: var(--t3);
+    }
+    
+    .ws-panel[data-idx="4"] .topic-top-bar {
+      background: var(--t4);
+    }
+    
+    .ws-panel[data-idx="5"] .topic-top-bar {
+      background: var(--t5);
+    }
+    
+    .ws-panel[data-idx="6"] .topic-top-bar {
+      background: var(--t6);
+    }
+    
+    .topic-bar-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .2em;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .ws-panel[data-idx="1"] .topic-bar-label,
+    .ws-panel[data-idx="2"] .topic-bar-label,
+    .ws-panel[data-idx="3"] .topic-bar-label,
+    .ws-panel[data-idx="4"] .topic-bar-label,
+    .ws-panel[data-idx="5"] .topic-bar-label,
+    .ws-panel[data-idx="6"] .topic-bar-label {
+      color: rgba(255, 255, 255, .9);
+    }
+    
+    .topic-bar-label::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 2.5px;
+      background: var(--ink);
+      flex-shrink: 0;
+    }
+    
+    .ws-panel[data-idx="1"] .topic-bar-label::before,
+    .ws-panel[data-idx="2"] .topic-bar-label::before,
+    .ws-panel[data-idx="3"] .topic-bar-label::before,
+    .ws-panel[data-idx="4"] .topic-bar-label::before,
+    .ws-panel[data-idx="5"] .topic-bar-label::before,
+    .ws-panel[data-idx="6"] .topic-bar-label::before {
+      background: rgba(255, 255, 255, .7);
+    }
+    
+    .topic-bar-icon {
+      width: 34px;
+      height: 34px;
+      border: 2px solid rgba(0, 0, 0, .2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, .08);
+      flex-shrink: 0;
+      color: var(--ink);
+    }
+    
+    .ws-panel[data-idx="1"] .topic-bar-icon,
+    .ws-panel[data-idx="2"] .topic-bar-icon,
+    .ws-panel[data-idx="3"] .topic-bar-icon,
+    .ws-panel[data-idx="4"] .topic-bar-icon,
+    .ws-panel[data-idx="5"] .topic-bar-icon,
+    .ws-panel[data-idx="6"] .topic-bar-icon {
+      border-color: rgba(255, 255, 255, .35);
+      background: rgba(255, 255, 255, .15);
+      color: #fff;
+    }
+    
+    .topic-body {
+      padding: 24px 28px 26px;
+      background: var(--bg);
+      border-bottom: var(--border);
+    }
+    
+    .topic-name {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 900;
+      font-size: clamp(16px, 3vw, 22px);
+      letter-spacing: -.02em;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    
+    .topic-desc {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      line-height: 1.75;
+      color: var(--muted);
+    }
+    
+    /* ── Steps ── */
+    .steps-wrap {
+      padding: 0;
+      background: var(--off);
+    }
+    
+    .step-row {
+      display: grid;
+      grid-template-columns: 52px 1fr;
+      border-bottom: var(--border);
+      background: var(--bg);
+      animation: stepIn .25s ease both;
+      transition: background .1s;
+    }
+    
+    .step-row:first-child {
+      border-top: none;
+    }
+    
+    .step-row:hover {
+      background: var(--off);
+    }
+    
+    .step-row:nth-child(1) {
+      animation-delay: .04s;
+    }
+    
+    .step-row:nth-child(2) {
+      animation-delay: .08s;
+    }
+    
+    .step-row:nth-child(3) {
+      animation-delay: .12s;
+    }
+    
+    .step-row:nth-child(4) {
+      animation-delay: .16s;
+    }
+    
+    .step-row:nth-child(5) {
+      animation-delay: .20s;
+    }
+    
+    .step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 900;
+      font-size: 13px;
+      border-right: var(--border);
+      flex-shrink: 0;
+      color: var(--ink);
+    }
+    
+    .ws-panel[data-idx="0"] .step-num {
+      background: var(--t0);
+    }
+    
+    .ws-panel[data-idx="1"] .step-num {
+      background: var(--t1);
+      color: #fff;
+    }
+    
+    .ws-panel[data-idx="2"] .step-num {
+      background: var(--t2);
+      color: #fff;
+    }
+    
+    .ws-panel[data-idx="3"] .step-num {
+      background: var(--t3);
+      color: #fff;
+    }
+    
+    .ws-panel[data-idx="4"] .step-num {
+      background: var(--t4);
+      color: #fff;
+    }
+    
+    .ws-panel[data-idx="5"] .step-num {
+      background: var(--t5);
+      color: #fff;
+    }
+    
+    .ws-panel[data-idx="6"] .step-num {
+      background: var(--t6);
+      color: #fff;
+    }
+    
+    .step-content {
+      padding: 18px 22px;
+    }
+    
+    .step-title {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 700;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: 7px;
+    }
+    
+    .step-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.8;
+      color: #333;
+    }
+    
+    .step-text em {
+      font-style: normal;
+      font-family: 'Caveat', cursive;
+      font-size: 1.1em;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    
+    .step-example {
+      margin-top: 13px;
+      border-left: 3px solid var(--ink);
+      padding: 10px 16px;
+      background: var(--paper);
+      font-family: 'Caveat', cursive;
+      font-weight: 700;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+    
+    .step-example-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    
+    /* ── Footer ── */
+    .ws-footer {
+      border-top: var(--border);
+      padding: 11px 28px;
+      background: var(--off);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .ws-footer-note {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: .04em;
+    }
+    
+    .ws-footer-note kbd {
+      font-size: 9px;
+      padding: 2px 6px;
+      border: 1.5px solid currentColor;
+    }
+    
+    /* ════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════ */
+    @media (max-width:640px) {
+      .ws-header {
+        padding: 12px 16px;
+      }
+      
+      .ws-tab {
+        padding: 11px 14px;
+        font-size: 8px;
+        gap: 6px;
+      }
+      
+      .topic-top-bar {
+        padding: 10px 16px;
+      }
+      
+      .topic-body {
+        padding: 18px 16px;
+      }
+      
+      .step-row {
+        grid-template-columns: 40px 1fr;
+      }
+      
+      .step-content {
+        padding: 14px 16px;
+      }
+      
+      .ws-footer {
+        padding: 10px 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  
+  <!-- ══════════════════════════════════
+     APP SHELL
+══════════════════════════════════ -->
+  <div class="app">
+    
+    <header class="header">
+      <div class="title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+        Essay Grader
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" id="ws-open">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+          </svg>
+          <span>Writing Sheet</span>
+        </button>
+      </div>
+    </header>
+    
+    <div class="content">
+      <p class="sec-label">Your Essay</p>
+      <textarea class="demo-textarea" placeholder="Start writing here..."></textarea>
+    </div>
+    
+  </div>
+  
+  
+  <!-- ══════════════════════════════════
+     WRITING SHEET MODAL
+══════════════════════════════════ -->
+  <div class="ws-overlay" id="ws-overlay" role="dialog" aria-modal="true" aria-label="Writing Sheet">
+    <div class="ws-modal">
+      
+      <div class="ws-header">
+        <div class="ws-title-block">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--yellow)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+          </svg>
+          <span class="ws-title">Writing Sheet</span>
+          <span class="ws-badge">7 Skills</span>
+        </div>
+        <button class="ws-close" id="ws-close" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      
+      <nav class="ws-nav" id="ws-nav" role="tablist"></nav>
+      <div class="ws-body" id="ws-body"></div>
+      
+      <div class="ws-footer">
+        <span class="ws-footer-note">Read before you write for best results</span>
+        <span class="ws-footer-note"><kbd>Esc</kbd> to close</span>
+      </div>
+      
+    </div>
+  </div>
+  
+  
+  <script>
+    /* ════════════════════════════════════════════════════
+   INLINE SVG ICONS
+════════════════════════════════════════════════════ */
+    const ICONS = {
+      para: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>`,
+      hook: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></svg>`,
+      dial: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
+      eye: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+      zap: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+      target: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
+      link: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+    };
+    
+    /* ════════════════════════════════════════════════════
+       DATA
+    ════════════════════════════════════════════════════ */
+    const TOPICS = [
+    {
+      icon: 'para',
+      tag: 'Structure',
+      name: 'Writing a Good Paragraph',
+      desc: 'A well-formed paragraph develops one clear idea with supporting evidence and explanation.',
+      steps: [
+        { title: 'Open with a topic sentence', text: 'State your main idea in the very first sentence. Never open with <em>I think</em> or <em>This paragraph is about.</em>', example: 'The pollution of rivers in Nigeria has reached a dangerous level.' },
+        { title: 'Add 2–3 supporting points', text: 'Each sentence must develop the idea in your topic sentence. Ask yourself: <em>does this belong here?</em>', example: 'Industrial waste is dumped directly into waterways, killing aquatic life and contaminating drinking water.' },
+        { title: 'Bring in evidence', text: 'Back up your point with a fact, statistic, or real example. Avoid vague phrases like <em>many people say.</em>', example: 'According to NESREA, over 60% of rivers in the Niger Delta show signs of contamination.' },
+        { title: 'Explain the evidence', text: "Tell the reader why your evidence matters. Don't assume they will connect it themselves — <em>analyse, don't just quote.</em>", example: 'This reveals that environmental regulation is failing communities that depend on these rivers.' },
+        { title: 'Close with a linking sentence', text: 'Round off the paragraph and signal what comes next. Use a connective or transition phrase.', example: 'Clearly, government intervention is urgently needed — but so is a shift in industrial behaviour.' },
+      ]
+    },
+    {
+      icon: 'hook',
+      tag: 'Openings',
+      name: 'Writing a Great Hook',
+      desc: 'The first sentence must grab the reader immediately and create a need to read on.',
+      steps: [
+        { title: 'Choose your hook type', text: 'Decide which method fits your topic: a bold claim, a surprising fact, a vivid scene, a rhetorical question, or an in-medias-res opening.', example: null },
+        { title: 'Bold claim or controversial statement', text: 'Make a statement most people would argue with or find surprising. This creates instant tension.', example: 'The most dangerous place for a child in Nigeria is not the street — it is the classroom.' },
+        { title: 'Surprising statistic', text: 'Lead with a number or fact that shocks. Make sure it is accurate before you use it.', example: 'Every 10 minutes, one Nigerian child drops out of school permanently.' },
+        { title: 'Vivid scene', text: 'Drop the reader into a moment with sensory detail — sight, sound, smell. No context, no introduction.', example: 'The classroom had no roof. Thirty children sat in the rain, still holding their pencils.' },
+        { title: 'Bridge to your thesis', text: 'After the hook, write 1–2 sentences that connect the opening to your main argument. Do not jump straight to your thesis.', example: 'This is not an exception — it is the reality for millions of pupils across underserved communities.' },
+      ]
+    },
+    {
+      icon: 'dial',
+      tag: 'Dialogue',
+      name: 'Writing Action Dialogue',
+      desc: 'Good dialogue reveals character, drives the story forward, and sounds natural — never like a speech.',
+      steps: [
+        { title: 'Give each character a distinct voice', text: 'One character might speak in short bursts; another in long, careful sentences. Speech patterns reveal personality.', example: '"Leave." / "I cannot. Not without knowing the truth."' },
+        { title: 'Use said — and use it sparingly', text: '<em>Said</em> is invisible to readers. Only replace it with a stronger verb when it adds real meaning: whispered, snapped, muttered. Avoid: exclaimed, ejaculated.', example: '"Get down!" he shouted. "Why?" she said. "Just do it."' },
+        { title: 'Break dialogue with action beats', text: 'Instead of a dialogue tag, place an action in the same paragraph to show who is speaking and what they are feeling.', example: 'Chidi slammed the door. "I told you not to come back here." He did not turn around.' },
+        { title: 'Cut the small talk', text: 'Real people say hello; characters in fiction do not have time for it. Start in the middle of the tension.', example: 'Do not write: "Hi." "Hi." "How are you?" — Cut straight to: "You lied to me."' },
+        { title: 'Read it aloud before you submit', text: 'If dialogue sounds stiff when spoken out loud, rewrite it. It should flow like real speech, minus the filler words.', example: null },
+      ]
+    },
+    {
+      icon: 'eye',
+      tag: 'Technique',
+      name: "Show, Don't Tell",
+      desc: 'Instead of labelling emotions, describe the physical or sensory details that reveal them.',
+      steps: [
+        { title: 'Find the "telling" sentences', text: 'Search for emotion labels: <em>she was nervous, he felt angry, they were excited.</em> Every one of these is a target to improve.', example: 'TELL: She was afraid.  —  SHOW: Her hands would not stop trembling.' },
+        { title: 'Use the body', text: 'Emotions live in the body. Describe what the body does — not what the mind feels.', example: 'He was embarrassed.  —  His face burned. He stared at the floor.' },
+        { title: 'Use the environment', text: 'Let the setting mirror or contrast the emotional moment. A sunny sky during grief. A dark room during a celebration.', example: 'She had just received her results. Outside, children were screaming with laughter.' },
+        { title: 'Replace adjectives with precise actions', text: 'What does a person who is <em>desperate</em> actually do? What does <em>angry</em> look like from the outside?', example: 'She refreshed the page seventeen times in three minutes.' },
+        { title: 'Trust the image — do not explain it', text: 'If you have shown trembling hands, do not add: <em>this showed she was nervous.</em> Let the image carry the weight.', example: null },
+      ]
+    },
+    {
+      icon: 'zap',
+      tag: 'Word Choice',
+      name: 'Using Vivid Verbs',
+      desc: 'One strong verb does more work than three weak words. Precision beats decoration.',
+      steps: [
+        { title: 'Audit your verbs first', text: 'Underline every verb in a paragraph. How many are forms of <em>to be</em> — is, was, were? These are your primary targets.', example: null },
+        { title: 'Replace "to be" with an action', text: 'Ask: what is actually happening here? There is almost always a more precise verb hidden underneath.', example: 'WEAK: The boy was running fast.  —  VIVID: The boy sprinted.' },
+        { title: 'Delete adverbs — find the right verb', text: 'If you need an adverb to rescue a verb, the verb is wrong. One precise word should do both jobs.', example: 'walked slowly  —  trudged / crept / shuffled' },
+        { title: 'Choose verbs that show attitude', text: 'The same action done differently reveals character. The verb you choose is a small but powerful decision.', example: 'She put down her pen.  /  She slammed down her pen.  /  She set down her pen carefully.' },
+        { title: 'Avoid overused vivid verbs', text: 'Some verbs were vivid once — <em>cascaded, glistened, shimmered.</em> They are now clichés. Trust less obvious choices.', example: null },
+      ]
+    },
+    {
+      icon: 'target',
+      tag: 'Essays',
+      name: 'Forming a Good Thesis',
+      desc: 'A thesis is one sentence that tells the reader exactly what you will argue — and how.',
+      steps: [
+        { title: 'Take a clear position', text: 'A thesis is not a fact. It must be an arguable claim that a reasonable person could disagree with.', example: "FACT: Nigeria has an education problem.  —  THESIS: Nigeria's education crisis is the direct result of decades of systematic underfunding." },
+        { title: 'Name your main reasons', text: 'A strong thesis hints at the essay\'s structure. Include 2–3 reasons that you will develop in the body.', example: 'Because social media rewards outrage, reduces attention spans, and creates echo chambers, it actively harms democratic discourse.' },
+        { title: 'Be specific, not broad', text: 'Avoid: <em>Education is important for society.</em> — it says nothing. A good thesis can only be written about one specific situation.', example: null },
+        { title: 'Place it at the end of your introduction', text: 'Build context with 2–3 sentences first, then land the thesis as the final sentence of your opening paragraph.', example: null },
+        { title: 'Test it with "so what?"', text: 'Read your thesis aloud and ask: <em>so what?</em> If the answer is obvious, the thesis is not arguable enough. Sharpen it.', example: '"Corruption is bad for Nigeria." — So what? It needs to say why, how much, or compared to what.' },
+      ]
+    },
+    {
+      icon: 'link',
+      tag: 'Cohesion',
+      name: 'Best Connectives',
+      desc: 'Connectives create flow between sentences and paragraphs. Use the right type for each purpose.',
+      steps: [
+        { title: 'Adding information', text: 'Use these to stack points on top of each other without changing direction.', example: 'Furthermore — Moreover — In addition — Not only that — What is more — Equally' },
+        { title: 'Contrasting or counterargument', text: 'Use these to introduce the other side of an argument, then refute it.', example: 'However — Nevertheless — On the other hand — Despite this — Even so — That said' },
+        { title: 'Cause and effect', text: 'Use these to link a reason directly to its consequence.', example: 'Therefore — As a result — Consequently — This means that — Hence — Because of this' },
+        { title: 'Introducing evidence or examples', text: 'Use these to signal that you are bringing in evidence or a concrete illustration.', example: 'For instance — For example — This is evident in — As seen in — To illustrate' },
+        { title: 'Concluding', text: 'Use these to signal you are closing a point or rounding off the whole essay.', example: 'In conclusion — Ultimately — To summarise — All things considered — It is clear that' },
+      ]
+    }, ];
+    
+    /* ════════════════════════════════════════════════════
+       BUILD
+    ════════════════════════════════════════════════════ */
+    const nav = document.getElementById('ws-nav');
+    const body = document.getElementById('ws-body');
+    
+    TOPICS.forEach((topic, idx) => {
+      
+      /* tab */
+      const tab = document.createElement('button');
+      tab.className = `ws-tab${idx === 0 ? ' active' : ''}`;
+      tab.dataset.idx = idx;
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
+      tab.innerHTML = ICONS[topic.icon] + `<span>${topic.name}</span>`;
+      nav.appendChild(tab);
+      
+      /* panel */
+      const panel = document.createElement('div');
+      panel.className = `ws-panel${idx === 0 ? ' active' : ''}`;
+      panel.dataset.idx = idx;
+      
+      const stepsHtml = topic.steps.map((s, si) => `
+    <div class="step-row">
+      <div class="step-num">${String(si + 1).padStart(2,'0')}</div>
+      <div class="step-content">
+        <div class="step-title">${s.title}</div>
+        <div class="step-text">${s.text}</div>
+        ${s.example ? `<div class="step-example"><div class="step-example-eyebrow">Example</div>${s.example}</div>` : ''}
+      </div>
+    </div>`).join('');
+      
+      panel.innerHTML = `
+    <div class="topic-top-bar">
+      <div class="topic-bar-label">${topic.tag}</div>
+      <div class="topic-bar-icon">${ICONS[topic.icon]}</div>
+    </div>
+    <div class="topic-body">
+      <div class="topic-name">${topic.name}</div>
+      <div class="topic-desc">${topic.desc}</div>
+    </div>
+    <div class="steps-wrap">${stepsHtml}</div>`;
+      
+      body.appendChild(panel);
+    });
+    
+    /* ════════════════════════════════════════════════════
+       NAVIGATION
+    ════════════════════════════════════════════════════ */
+    nav.addEventListener('click', e => {
+      const tab = e.target.closest('.ws-tab');
+      if (!tab) return;
+      const idx = Number(tab.dataset.idx);
+      nav.querySelectorAll('.ws-tab').forEach((t, i) => {
+        t.classList.toggle('active', i === idx);
+        t.setAttribute('aria-selected', i === idx ? 'true' : 'false');
+      });
+      body.querySelectorAll('.ws-panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+      body.scrollTop = 0;
+    });
+    
+    /* ════════════════════════════════════════════════════
+       OPEN / CLOSE
+    ════════════════════════════════════════════════════ */
+    const overlay = document.getElementById('ws-overlay');
+    
+    function openSheet() { overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('ws-close').focus(); }
+    
+    function closeSheet() { overlay.classList.remove('active');
+      document.body.style.overflow = '';
+      document.getElementById('ws-open').focus(); }
+    
+    document.getElementById('ws-open').addEventListener('click', openSheet);
+    document.getElementById('ws-close').addEventListener('click', closeSheet);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeSheet(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.classList.contains('active')) closeSheet(); });
+  </script>
+</body>
+
+</html>
