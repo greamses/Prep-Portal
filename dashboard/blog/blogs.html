@@ -5,47 +5,55 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Prep Portal 2026 | Blog Archive</title>
-
+  
   <meta name="description" content="Read exam tips, study guides, and strategies for WAEC, NECO, JAMB, and Cambridge exams.">
   <meta name="author" content="Prep Portal">
-
+  
   <link rel="stylesheet" href="./utils/theme/theme.css">
   <link rel="stylesheet" href="../../main.css">
-
+  
   <style>
     /* --- GLOBAL OVERFLOW FIX --- */
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
     }
-
-    html, body {
+    
+    html,
+    body {
       overflow-x: hidden;
       max-width: 100%;
     }
-
-    img, video, iframe, table, pre, code {
+    
+    img,
+    video,
+    iframe,
+    table,
+    pre,
+    code {
       max-width: 100%;
     }
-
+    
     /* --- LAYOUT --- */
     .blog-container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 2rem clamp(1rem, 4vw, 2rem);
     }
-
+    
     /* --- SEARCH --- */
     .blog-search {
       margin-bottom: 1.5rem;
     }
-
+    
     .search-wrapper {
       position: relative;
       display: inline-block;
       width: 100%;
       max-width: 420px;
     }
-
+    
     .search-icon {
       position: absolute;
       left: 0.75rem;
@@ -56,7 +64,7 @@
       color: var(--muted, #555);
       pointer-events: none;
     }
-
+    
     .search-input {
       width: 100%;
       padding: 0.75rem 1rem 0.75rem 2.5rem;
@@ -67,13 +75,13 @@
       color: var(--ink, #0a0a0a);
       transition: all var(--duration-instant, 0.1s) ease;
     }
-
+    
     .search-input:focus {
       outline: none;
       transform: translate(-2px, -2px);
       box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
     }
-
+    
     /* --- FILTER BAR --- */
     .blog-filter-wrapper {
       margin-bottom: 2rem;
@@ -84,7 +92,7 @@
       gap: 1rem;
       flex-wrap: wrap;
     }
-
+    
     .filter-label {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: var(--text-mono-xs, 0.7rem);
@@ -94,13 +102,13 @@
       color: var(--muted, #555);
       white-space: nowrap;
     }
-
+    
     .custom-dropdown {
       position: relative;
       display: inline-block;
       min-width: 180px;
     }
-
+    
     .dropdown-btn {
       display: flex;
       align-items: center;
@@ -118,23 +126,23 @@
       color: var(--ink, #0a0a0a);
       transition: all var(--duration-instant, 0.1s) ease;
     }
-
+    
     .dropdown-btn:hover {
       transform: translate(-1px, -1px);
       box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
     }
-
+    
     .dropdown-arrow {
       width: 12px;
       height: 12px;
       flex-shrink: 0;
       transition: transform var(--duration-smooth, 0.2s) ease;
     }
-
+    
     .custom-dropdown.open .dropdown-arrow {
       transform: rotate(180deg);
     }
-
+    
     .dropdown-menu {
       position: absolute;
       top: calc(100% + 4px);
@@ -149,11 +157,11 @@
       max-height: 300px;
       overflow-y: auto;
     }
-
+    
     .custom-dropdown.open .dropdown-menu {
       display: flex;
     }
-
+    
     .dropdown-item {
       padding: 0.6rem 1rem;
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
@@ -168,29 +176,29 @@
       align-items: center;
       gap: 0.5rem;
     }
-
+    
     .dropdown-item:hover {
       background: var(--yellow, #ffe500);
       transform: translateX(4px);
     }
-
+    
     .dropdown-item.active {
       background: var(--yellow, #ffe500);
     }
-
+    
     .dropdown-icon {
       width: 16px;
       height: 16px;
       flex-shrink: 0;
     }
-
+    
     /* --- BLOG GRID --- */
     .blog-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
       gap: var(--grid-gap-lg, 2rem);
     }
-
+    
     .blog-card {
       border: var(--border, 2px solid #0a0a0a);
       background: var(--bg, #ffffff);
@@ -201,25 +209,25 @@
       flex-direction: column;
       overflow: hidden;
     }
-
+    
     .blog-card:hover {
       transform: translate(-4px, -4px);
       box-shadow: var(--shadow-xl, 9px 9px 0 #0a0a0a);
     }
-
+    
     @media (max-width: 640px) {
       .blog-card:hover {
         transform: translate(-2px, -2px);
       }
     }
-
+    
     .blog-card-inner {
       padding: 1.5rem;
       flex: 1;
       display: flex;
       flex-direction: column;
     }
-
+    
     .blog-featured-image {
       width: 100%;
       height: 200px;
@@ -228,7 +236,7 @@
       background: var(--off, #f7f4ee);
       display: block;
     }
-
+    
     .blog-title {
       font-family: var(--font-display, 'Unbounded', sans-serif);
       font-weight: var(--weight-black, 900);
@@ -243,7 +251,7 @@
       overflow-wrap: break-word;
       word-break: break-word;
     }
-
+    
     .blog-meta {
       display: flex;
       gap: 0.75rem;
@@ -254,20 +262,20 @@
       flex-wrap: wrap;
       align-items: center;
     }
-
+    
     .blog-meta span {
       display: inline-flex;
       align-items: center;
       gap: 0.3rem;
     }
-
+    
     .meta-icon {
       width: 13px;
       height: 13px;
       flex-shrink: 0;
       opacity: 0.7;
     }
-
+    
     .blog-badge {
       background: var(--yellow, #ffe500);
       padding: 0.2rem 0.6rem;
@@ -280,7 +288,7 @@
       color: var(--ink, #0a0a0a);
       white-space: nowrap;
     }
-
+    
     .blog-excerpt {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: clamp(0.8rem, 3vw, var(--text-body, 0.9rem));
@@ -295,7 +303,7 @@
       overflow-wrap: break-word;
       word-break: break-word;
     }
-
+    
     .read-more {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: clamp(0.65rem, 2.5vw, 0.7rem);
@@ -308,17 +316,17 @@
       gap: 0.5rem;
       margin-top: auto;
     }
-
+    
     .read-more svg {
       width: 14px;
       height: 14px;
       transition: transform var(--duration-smooth, 0.2s) ease;
     }
-
+    
     .blog-card:hover .read-more svg {
       transform: translateX(5px);
     }
-
+    
     /* --- SINGLE BLOG VIEW --- */
     .single-blog-view {
       display: none;
@@ -330,17 +338,22 @@
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
     }
-
+    
     .single-blog-view.active {
       display: block;
       animation: fadeIn 0.18s ease;
     }
-
+    
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+      
+      to {
+        opacity: 1;
+      }
     }
-
+    
     .single-blog-content {
       max-width: 760px;
       margin: 0 auto;
@@ -348,7 +361,7 @@
       overflow-wrap: break-word;
       word-break: break-word;
     }
-
+    
     .single-blog-featured-image {
       width: 100%;
       max-height: 420px;
@@ -357,7 +370,7 @@
       border: var(--border, 2px solid #0a0a0a);
       display: block;
     }
-
+    
     .single-blog-title {
       font-family: var(--font-display, 'Unbounded', sans-serif);
       font-weight: var(--weight-black, 900);
@@ -368,7 +381,7 @@
       overflow-wrap: break-word;
       word-break: break-word;
     }
-
+    
     .single-blog-meta {
       display: flex;
       gap: 1rem;
@@ -381,13 +394,13 @@
       flex-wrap: wrap;
       align-items: center;
     }
-
+    
     .single-blog-meta span {
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
     }
-
+    
     /* --- BLOG ACTION BUTTONS --- */
     .blog-actions {
       display: flex;
@@ -396,7 +409,7 @@
       flex-wrap: wrap;
       align-items: center;
     }
-
+    
     .action-btn {
       display: inline-flex;
       align-items: center;
@@ -413,40 +426,40 @@
       color: var(--ink, #0a0a0a);
       transition: all 0.1s ease;
     }
-
+    
     .action-btn svg {
       width: 14px;
       height: 14px;
       flex-shrink: 0;
     }
-
+    
     .action-btn:hover {
       transform: translate(-1px, -1px);
       box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
     }
-
+    
     .action-btn.liked {
       background: var(--yellow, #ffe500);
     }
-
+    
     .action-btn.delete-btn {
       color: #c0392b;
       border-color: #c0392b;
     }
-
+    
     .action-btn.delete-btn:hover {
       background: #c0392b;
       color: #fff;
       box-shadow: 3px 3px 0 #7b1a12;
     }
-
+    
     .action-btn.share-btn:hover {
       background: var(--blue, #0055ff);
       color: #fff;
       border-color: var(--blue, #0055ff);
       box-shadow: 3px 3px 0 #0a0a0a;
     }
-
+    
     /* Delete confirmation inline */
     .delete-confirm {
       display: flex;
@@ -454,23 +467,23 @@
       gap: 0.5rem;
       flex-wrap: wrap;
     }
-
+    
     .delete-confirm span {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: var(--text-mono-xs, 0.7rem);
       font-weight: 600;
     }
-
+    
     .btn-yes {
       background: #c0392b;
       color: #fff;
       border-color: #c0392b;
     }
-
+    
     .btn-no {
       background: var(--bg);
     }
-
+    
     /* --- BLOG BODY --- */
     .single-blog-body {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
@@ -481,7 +494,7 @@
       word-break: break-word;
       min-width: 0;
     }
-
+    
     .single-blog-body img {
       max-width: 100%;
       height: auto;
@@ -489,38 +502,42 @@
       margin: 1rem 0;
       display: block;
     }
-
+    
     .single-blog-body h1 {
       font-family: var(--font-display, 'Unbounded', sans-serif);
       font-size: clamp(1.3rem, 5vw, 2rem);
       margin: 1.5rem 0 1rem;
       overflow-wrap: break-word;
     }
-
+    
     .single-blog-body h2 {
       font-family: var(--font-display, 'Unbounded', sans-serif);
       font-size: clamp(1.1rem, 4vw, 1.5rem);
       margin: 1.5rem 0 1rem;
       overflow-wrap: break-word;
     }
-
+    
     .single-blog-body h3 {
       font-family: var(--font-display, 'Unbounded', sans-serif);
       font-size: clamp(1rem, 3.5vw, 1.25rem);
       margin: 1rem 0;
       overflow-wrap: break-word;
     }
-
-    .single-blog-body p { margin-bottom: 1rem; }
-
+    
+    .single-blog-body p {
+      margin-bottom: 1rem;
+    }
+    
     .single-blog-body ul,
     .single-blog-body ol {
       margin: 1rem 0;
       padding-left: clamp(1rem, 4vw, 1.5rem);
     }
-
-    .single-blog-body li { margin: 0.5rem 0; }
-
+    
+    .single-blog-body li {
+      margin: 0.5rem 0;
+    }
+    
     .single-blog-body blockquote {
       border-left: 4px solid var(--yellow, #ffe500);
       margin: 1.5rem 0;
@@ -528,7 +545,7 @@
       font-style: italic;
       background: var(--off, #f7f4ee);
     }
-
+    
     .single-blog-body table {
       width: 100%;
       border-collapse: collapse;
@@ -537,7 +554,7 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
     }
-
+    
     .single-blog-body th,
     .single-blog-body td {
       border: 1px solid var(--ink, #0a0a0a);
@@ -545,7 +562,7 @@
       text-align: left;
       white-space: nowrap;
     }
-
+    
     .single-blog-body pre {
       background: #111;
       color: #eee;
@@ -555,7 +572,7 @@
       border: var(--border, 2px solid #0a0a0a);
       margin: 1rem 0;
     }
-
+    
     /* --- CLOSE BUTTON --- */
     .close-blog {
       position: fixed;
@@ -577,16 +594,20 @@
       align-items: center;
       gap: 0.4rem;
     }
-
-    .close-blog svg { width: 14px; height: 14px; flex-shrink: 0; }
-
+    
+    .close-blog svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+    
     .close-blog:hover {
       background: var(--yellow, #ffe500);
       color: var(--ink, #0a0a0a);
       transform: translate(-2px, -2px);
       box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
     }
-
+    
     @media (max-width: 640px) {
       .close-blog {
         top: 0.5rem;
@@ -594,14 +615,14 @@
         padding: 0.5rem 0.9rem;
       }
     }
-
+    
     /* --- COMMENTS SECTION --- */
     .comments-section {
       margin-top: 3rem;
       padding-top: 2rem;
       border-top: var(--border, 2px solid #0a0a0a);
     }
-
+    
     .comments-title {
       font-family: var(--font-display, 'Unbounded', sans-serif);
       font-size: clamp(1rem, 3vw, 1.25rem);
@@ -612,16 +633,20 @@
       gap: 0.5rem;
       color: var(--ink, #0a0a0a);
     }
-
-    .comments-title svg { width: 20px; height: 20px; flex-shrink: 0; }
-
+    
+    .comments-title svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    
     .comment-item {
       border: var(--border, 2px solid #0a0a0a);
       padding: 1rem 1.25rem;
       margin-bottom: 1rem;
       background: var(--off, #f7f4ee);
     }
-
+    
     .comment-author-row {
       display: flex;
       align-items: center;
@@ -629,7 +654,7 @@
       margin-bottom: 0.5rem;
       flex-wrap: wrap;
     }
-
+    
     .comment-author {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: 0.75rem;
@@ -638,13 +663,13 @@
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
-
+    
     .comment-time {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: 0.65rem;
       color: var(--muted, #555);
     }
-
+    
     .comment-text {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: 0.875rem;
@@ -653,7 +678,7 @@
       overflow-wrap: break-word;
       word-break: break-word;
     }
-
+    
     .no-comments {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: 0.8rem;
@@ -662,7 +687,7 @@
       padding: 1.5rem;
       border: 1px dashed var(--muted, #555);
     }
-
+    
     /* Add Comment Form */
     .add-comment-form {
       margin-top: 1.5rem;
@@ -670,7 +695,7 @@
       padding: 1.25rem;
       background: var(--bg, #ffffff);
     }
-
+    
     .add-comment-form h4 {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: 0.7rem;
@@ -680,7 +705,7 @@
       margin-bottom: 0.75rem;
       color: var(--muted, #555);
     }
-
+    
     .comment-textarea {
       width: 100%;
       min-height: 100px;
@@ -694,13 +719,13 @@
       margin-bottom: 0.75rem;
       display: block;
     }
-
+    
     .comment-textarea:focus {
       outline: none;
       background: var(--bg, #ffffff);
       box-shadow: inset 0 0 0 1px var(--ink, #0a0a0a);
     }
-
+    
     .comment-submit-btn {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: var(--text-mono-xs, 0.7rem);
@@ -715,19 +740,19 @@
       box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
       transition: all 0.1s ease;
     }
-
+    
     .comment-submit-btn:hover {
       transform: translate(-2px, -2px);
       box-shadow: var(--shadow-md, 5px 5px 0 #0a0a0a);
     }
-
+    
     .comment-submit-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
     }
-
+    
     .login-to-comment {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: 0.8rem;
@@ -737,7 +762,7 @@
       border: 1px dashed var(--muted, #555);
       margin-top: 1rem;
     }
-
+    
     /* --- STATES --- */
     .loading-spinner {
       text-align: center;
@@ -750,7 +775,7 @@
       justify-content: center;
       gap: 0.75rem;
     }
-
+    
     .spinner-ring {
       width: 20px;
       height: 20px;
@@ -760,9 +785,13 @@
       animation: spin 0.6s linear infinite;
       flex-shrink: 0;
     }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
     .no-blogs {
       text-align: center;
       padding: 3rem;
@@ -770,7 +799,7 @@
       color: var(--muted, #555);
       grid-column: 1 / -1;
     }
-
+    
     /* --- SCROLL TO TOP --- */
     .scroll-top {
       position: fixed;
@@ -788,23 +817,35 @@
       transition: all 0.15s ease;
       z-index: 500;
     }
-
+    
     .scroll-top.show {
       display: flex;
     }
-
+    
     .scroll-top:hover {
       transform: translate(-2px, -2px);
       box-shadow: var(--shadow-lg, 6px 6px 0 #0a0a0a);
     }
-
-    .scroll-top svg { width: 20px; height: 20px; }
-
-    @media (max-width: 640px) {
-      .scroll-top { bottom: 1rem; right: 1rem; width: 38px; height: 38px; }
-      .scroll-top svg { width: 16px; height: 16px; }
+    
+    .scroll-top svg {
+      width: 20px;
+      height: 20px;
     }
-
+    
+    @media (max-width: 640px) {
+      .scroll-top {
+        bottom: 1rem;
+        right: 1rem;
+        width: 38px;
+        height: 38px;
+      }
+      
+      .scroll-top svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+    
     /* --- TOAST NOTIFICATION --- */
     .toast {
       position: fixed;
@@ -823,45 +864,45 @@
       max-width: calc(100vw - 2rem);
       text-align: center;
     }
-
+    
     .toast.show {
       transform: translateX(-50%) translateY(0);
     }
-
+    
     /* --- DARK THEME --- */
     [data-theme="dark"] .blog-card,
     [data-theme="dark"] .single-blog-view,
     [data-theme="dark"] .add-comment-form {
       background: var(--bg, #0a0a0a);
     }
-
+    
     [data-theme="dark"] .search-input,
     [data-theme="dark"] .comment-textarea {
       background: var(--bg, #0a0a0a);
       color: var(--ink, #f0f0f0);
     }
-
+    
     [data-theme="dark"] .close-blog {
       background: var(--yellow, #ffea2e);
       color: var(--ink, #0a0a0a);
     }
-
+    
     [data-theme="dark"] .close-blog:hover {
       background: var(--ink, #0a0a0a);
       color: var(--yellow, #ffea2e);
     }
-
+    
     [data-theme="dark"] .dropdown-menu,
     [data-theme="dark"] .dropdown-btn {
       background: var(--bg, #0a0a0a);
       color: var(--ink, #f0f0f0);
     }
-
+    
     [data-theme="dark"] .comment-item {
       background: #1a1a1a;
     }
   </style>
-
+  
   <script type="importmap">
     {
       "imports": {
@@ -874,7 +915,7 @@
 </head>
 
 <body>
-
+  
   <!-- Navigation -->
   <nav class="site-nav">
     <a href="/" class="nav-logo">
@@ -893,7 +934,7 @@
       <span></span><span></span><span></span>
     </button>
   </nav>
-
+  
   <!-- Ticker -->
   <div class="ticker" aria-hidden="true">
     <div class="ticker-track">
@@ -907,7 +948,7 @@
       <span class="ticker-item">&#x2736;</span>
     </div>
   </div>
-
+  
   <!-- Hero -->
   <div class="hero">
     <div class="hero-left">
@@ -917,7 +958,7 @@
       <p class="hero-tagline">Explore our collection of AI-generated exam tips, study guides, and strategies for WAEC, NECO, JAMB, and Cambridge examinations.</p>
     </div>
   </div>
-
+  
   <!-- Main Content -->
   <div class="blog-container">
     <div class="blog-search">
@@ -929,7 +970,7 @@
         <input type="text" class="search-input" id="searchInput" placeholder="Search blog posts...">
       </div>
     </div>
-
+    
     <div class="blog-filter-wrapper">
       <span class="filter-label">Filter by:</span>
       <div class="custom-dropdown" id="filterDropdown">
@@ -976,7 +1017,7 @@
         </div>
       </div>
     </div>
-
+    
     <div id="blogGrid" class="blog-grid">
       <div class="loading-spinner">
         <div class="spinner-ring"></div>
@@ -984,7 +1025,7 @@
       </div>
     </div>
   </div>
-
+  
   <!-- Single Blog Overlay -->
   <div id="singleBlogView" class="single-blog-view" role="dialog" aria-modal="true" aria-label="Blog post">
     <button class="close-blog" id="closeBlogBtn" aria-label="Close blog post">
@@ -996,17 +1037,17 @@
     </button>
     <div id="singleBlogContent" class="single-blog-content"></div>
   </div>
-
+  
   <!-- Scroll to top -->
   <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="18 15 12 9 6 15"></polyline>
     </svg>
   </button>
-
+  
   <!-- Toast -->
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
+  
   <!-- Footer -->
   <footer class="site-footer">
     <div class="footer-top">
@@ -1030,16 +1071,26 @@
       </div>
     </div>
   </footer>
-
+  
   <script type="module">
     import { initializeApp } from 'firebase/app';
     import { getAuth, onAuthStateChanged } from 'firebase/auth';
     import {
-      getFirestore, collection, query, orderBy, getDocs, doc,
-      updateDoc, increment, deleteDoc, addDoc, serverTimestamp,
-      arrayUnion, arrayRemove
+      getFirestore,
+      collection,
+      query,
+      orderBy,
+      getDocs,
+      doc,
+      updateDoc,
+      increment,
+      deleteDoc,
+      addDoc,
+      serverTimestamp,
+      arrayUnion,
+      arrayRemove
     } from 'firebase/firestore';
-
+    
     const firebaseConfig = {
       apiKey: "AIzaSyA2N3uI_XfSIVsto2Ku1g_qSezmD3qFmbk",
       authDomain: "prep-portal-2026.web.app",
@@ -1048,17 +1099,17 @@
       messagingSenderId: "837672918701",
       appId: "1:837672918701:web:e64c0c25dc01b542e23024"
     };
-
+    
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-
+    
     let allBlogs = [];
     let currentFilter = 'all';
     let currentSearch = '';
     let currentUser = null;
     let activeBlogId = null;
-
+    
     // DOM refs
     const blogGrid = document.getElementById('blogGrid');
     const singleBlogView = document.getElementById('singleBlogView');
@@ -1070,20 +1121,20 @@
     const dropdownBtn = document.getElementById('dropdownBtn');
     const selectedFilterText = document.getElementById('selectedFilterText');
     const toastEl = document.getElementById('toast');
-
+    
     // Auth listener
     onAuthStateChanged(auth, (user) => {
       currentUser = user;
     });
-
+    
     // ─── UTILS ───────────────────────────────────────────────
-
+    
     function showToast(msg) {
       toastEl.textContent = msg;
       toastEl.classList.add('show');
       setTimeout(() => toastEl.classList.remove('show'), 2800);
     }
-
+    
     function formatDate(timestamp) {
       if (!timestamp) return 'Just now';
       const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -1094,19 +1145,19 @@
       if (diffDays < 7) return `${diffDays} days ago`;
       return date.toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' });
     }
-
+    
     function calcReadTime(content) {
       if (!content) return 1;
       const text = content.replace(/<[^>]*>/g, ' ');
       const words = text.trim().split(/\s+/).length;
       return Math.max(1, Math.ceil(words / 200));
     }
-
+    
     function getAudienceBadge(audience) {
       const badges = { waec: 'WAEC', neco: 'NECO', jamb: 'JAMB', cambridge: 'Cambridge' };
       return badges[audience?.toLowerCase()] || 'Exam Tip';
     }
-
+    
     function getAudienceFromTopic(topic) {
       if (!topic) return 'cambridge';
       const t = topic.toLowerCase();
@@ -1115,36 +1166,36 @@
       if (t.includes('neco')) return 'neco';
       return 'cambridge';
     }
-
+    
     function escapeHtml(str) {
       if (!str) return '';
-      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } [m]));
     }
-
+    
     function stripHtml(html) {
       if (!html) return '';
       const tmp = document.createElement('div');
       tmp.innerHTML = html;
       return tmp.textContent || tmp.innerText || '';
     }
-
+    
     // SVG icon helper
     const SVG = {
       calendar: `<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`,
-      tag:      `<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none"></circle></svg>`,
-      eye:      `<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
-      clock:    `<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
-      cpu:      `<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>`,
-      heart:    `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
-      heartFill:`<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
-      share:    `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`,
-      trash:    `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>`,
-      chat:     `<svg style="width:20px;height:20px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`,
-      arrow:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`,
+      tag: `<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><circle cx="7" cy="7" r="1.5" fill="currentColor" stroke="none"></circle></svg>`,
+      eye: `<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+      clock: `<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+      cpu: `<svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="14" x2="23" y2="14"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="14" x2="4" y2="14"></line></svg>`,
+      heart: `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
+      heartFill: `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
+      share: `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>`,
+      trash: `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>`,
+      chat: `<svg style="width:20px;height:20px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`,
+      arrow: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`,
     };
-
+    
     // ─── BLOG CARD RENDERING ────────────────────────────────
-
+    
     function renderBlogCard(blog) {
       const date = formatDate(blog.publishedAt);
       const audience = blog.audience || getAudienceFromTopic(blog.originalTopic);
@@ -1152,7 +1203,7 @@
       const readTime = calcReadTime(blog.content);
       const cleanExcerpt = blog.excerpt || stripHtml(blog.content || '').substring(0, 120);
       const featuredImage = blog.featuredImage || '';
-
+      
       return `
         <div class="blog-card" data-blog-id="${blog.id}">
           ${featuredImage ? `<img class="blog-featured-image" src="${escapeHtml(featuredImage)}" alt="${escapeHtml(blog.title)}" loading="lazy">` : ''}
@@ -1172,7 +1223,7 @@
         </div>
       `;
     }
-
+    
     function filterBlogs() {
       let filtered = [...allBlogs];
       if (currentFilter !== 'all') {
@@ -1190,7 +1241,7 @@
       }
       return filtered;
     }
-
+    
     function renderBlogs() {
       const filtered = filterBlogs();
       if (filtered.length === 0) {
@@ -1205,15 +1256,15 @@
         });
       });
     }
-
+    
     // ─── SINGLE BLOG VIEW ───────────────────────────────────
-
+    
     async function incrementViewCount(blogId) {
       try {
         await updateDoc(doc(db, 'blogs', blogId), { views: increment(1) });
       } catch (e) { /* silent */ }
     }
-
+    
     function showSingleBlog(blog) {
       activeBlogId = blog.id;
       const date = formatDate(blog.publishedAt);
@@ -1224,9 +1275,9 @@
       const likes = blog.likes || [];
       const hasLiked = currentUser && likes.includes(currentUser.uid);
       const isAuthor = currentUser && (currentUser.uid === blog.authorId);
-
+      
       incrementViewCount(blog.id);
-
+      
       singleBlogContent.innerHTML = `
         <h1 class="single-blog-title">${escapeHtml(blog.title)}</h1>
 
@@ -1279,48 +1330,48 @@
           }
         </div>
       `;
-
+      
       singleBlogView.classList.add('active');
       singleBlogView.scrollTop = 0;
       document.body.style.overflow = 'hidden';
-
+      
       // Wire close inside content (duplicate for accessibility)
       const closeInner = document.getElementById('closeBlogBtnInner');
       if (closeInner) closeInner.addEventListener('click', closeBlogView);
-
+      
       // Like button
       const likeBtn = document.getElementById('likeBtn');
       if (likeBtn) {
         likeBtn.addEventListener('click', () => toggleLike(blog));
       }
-
+      
       // Share button
       document.getElementById('shareBtn')?.addEventListener('click', () => shareBlog(blog));
-
+      
       // Delete button
       const deleteBtn = document.getElementById('deleteBtn');
       if (deleteBtn) {
         deleteBtn.addEventListener('click', () => showDeleteConfirm(blog.id));
       }
-
+      
       // Comment submit
       const submitBtn = document.getElementById('submitCommentBtn');
       if (submitBtn) {
         submitBtn.addEventListener('click', () => submitComment(blog.id));
       }
-
+      
       // Load comments
       loadComments(blog.id);
     }
-
+    
     function closeBlogView() {
       singleBlogView.classList.remove('active');
       document.body.style.overflow = '';
       activeBlogId = null;
     }
-
+    
     // ─── LIKE ───────────────────────────────────────────────
-
+    
     async function toggleLike(blog) {
       if (!currentUser) {
         showToast('Sign in to like posts');
@@ -1331,7 +1382,7 @@
       const hasLiked = likes.includes(currentUser.uid);
       const likeBtn = document.getElementById('likeBtn');
       const likeCount = document.getElementById('likeCount');
-
+      
       try {
         if (hasLiked) {
           await updateDoc(blogRef, { likes: arrayRemove(currentUser.uid) });
@@ -1351,9 +1402,9 @@
         showToast('Error updating like');
       }
     }
-
+    
     // ─── SHARE ──────────────────────────────────────────────
-
+    
     function shareBlog(blog) {
       const url = window.location.href;
       if (navigator.share) {
@@ -1364,9 +1415,9 @@
         showToast('Copy the URL from your address bar');
       }
     }
-
+    
     // ─── DELETE ─────────────────────────────────────────────
-
+    
     function showDeleteConfirm(blogId) {
       const deleteArea = document.getElementById('deleteArea');
       if (!deleteArea) return;
@@ -1383,7 +1434,7 @@
         document.getElementById('deleteBtn').addEventListener('click', () => showDeleteConfirm(blogId));
       });
     }
-
+    
     async function confirmDelete(blogId) {
       try {
         await deleteDoc(doc(db, 'blogs', blogId));
@@ -1395,32 +1446,32 @@
         showToast('Error deleting post: ' + e.message);
       }
     }
-
+    
     // ─── COMMENTS ───────────────────────────────────────────
-
+    
     async function loadComments(blogId) {
       const list = document.getElementById('commentsList');
       const countEl = document.getElementById('commentCount');
       if (!list) return;
-
+      
       try {
         const commentsRef = collection(db, 'blogs', blogId, 'comments');
         const q = query(commentsRef, orderBy('createdAt', 'asc'));
         const snapshot = await getDocs(q);
-
+        
         if (countEl) countEl.textContent = snapshot.size;
-
+        
         if (snapshot.empty) {
           list.innerHTML = '<div class="no-comments">No comments yet. Be the first!</div>';
           return;
         }
-
+        
         list.innerHTML = '';
         snapshot.forEach(docSnap => {
           const c = docSnap.data();
-          const dateStr = c.createdAt?.toDate
-            ? c.createdAt.toDate().toLocaleDateString('en-NG', { day:'numeric', month:'short', year:'numeric' })
-            : 'Just now';
+          const dateStr = c.createdAt?.toDate ?
+            c.createdAt.toDate().toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }) :
+            'Just now';
           const authorLabel = c.authorName || (c.authorEmail ? c.authorEmail.split('@')[0] : 'Anonymous');
           const item = document.createElement('div');
           item.className = 'comment-item';
@@ -1437,7 +1488,7 @@
         list.innerHTML = '<div class="no-comments">Could not load comments.</div>';
       }
     }
-
+    
     async function submitComment(blogId) {
       if (!currentUser) { showToast('Please sign in to comment'); return; }
       const input = document.getElementById('commentInput');
@@ -1446,10 +1497,10 @@
       const text = input.value.trim();
       if (!text) { showToast('Comment cannot be empty'); return; }
       if (text.length < 3) { showToast('Comment too short'); return; }
-
+      
       btn.disabled = true;
       btn.textContent = 'Posting...';
-
+      
       try {
         const commentsRef = collection(db, 'blogs', blogId, 'comments');
         await addDoc(commentsRef, {
@@ -1469,15 +1520,15 @@
         btn.textContent = 'Post Comment';
       }
     }
-
+    
     // ─── LOAD BLOGS ─────────────────────────────────────────
-
+    
     async function loadBlogs() {
       try {
         const blogsRef = collection(db, 'blogs');
         const q = query(blogsRef, orderBy('publishedAt', 'desc'));
         const snapshot = await getDocs(q);
-
+        
         allBlogs = [];
         snapshot.forEach(docSnap => {
           const d = docSnap.data();
@@ -1496,9 +1547,9 @@
             authorId: d.authorId || ''
           });
         });
-
+        
         renderBlogs();
-
+        
         if (allBlogs.length === 0) {
           blogGrid.innerHTML = '<div class="no-blogs">No blog posts yet. The auto-publisher will create content soon!</div>';
         }
@@ -1507,22 +1558,22 @@
         blogGrid.innerHTML = `<div class="no-blogs">Error loading blogs: ${escapeHtml(error.message)}</div>`;
       }
     }
-
+    
     // ─── FILTER DROPDOWN ────────────────────────────────────
-
+    
     dropdownBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const isOpen = filterDropdown.classList.toggle('open');
       dropdownBtn.setAttribute('aria-expanded', isOpen);
     });
-
+    
     document.addEventListener('click', (e) => {
       if (!filterDropdown.contains(e.target)) {
         filterDropdown.classList.remove('open');
         dropdownBtn.setAttribute('aria-expanded', 'false');
       }
     });
-
+    
     document.querySelectorAll('.dropdown-item').forEach(item => {
       item.addEventListener('click', () => {
         currentFilter = item.dataset.filter;
@@ -1534,9 +1585,9 @@
         renderBlogs();
       });
     });
-
+    
     // ─── SEARCH ─────────────────────────────────────────────
-
+    
     let searchTimeout;
     searchInput.addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
@@ -1545,29 +1596,29 @@
         renderBlogs();
       }, 300);
     });
-
+    
     // ─── CLOSE & KEYBOARD ───────────────────────────────────
-
+    
     closeBlogBtn.addEventListener('click', closeBlogView);
-
+    
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && singleBlogView.classList.contains('active')) {
         closeBlogView();
       }
     });
-
+    
     // ─── SCROLL TOP ─────────────────────────────────────────
-
+    
     window.addEventListener('scroll', () => {
       scrollTopBtn.classList.toggle('show', window.scrollY > 300);
     });
-
+    
     scrollTopBtn.addEventListener('click', () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-
+    
     // ─── NAV TOGGLE ─────────────────────────────────────────
-
+    
     const navToggle = document.getElementById('nav-toggle');
     const navLinks = document.getElementById('navLinks');
     if (navToggle && navLinks) {
@@ -1576,9 +1627,9 @@
         navLinks.classList.toggle('open');
       });
     }
-
+    
     // ─── INIT ───────────────────────────────────────────────
-
+    
     loadBlogs();
     setInterval(loadBlogs, 60000);
   </script>
