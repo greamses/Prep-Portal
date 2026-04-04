@@ -101,7 +101,7 @@ const siteData = {
                 {
                     name: "Cambridge Exam",
                     link: "./Cambridge/index.html",
-                    live: true,
+                    live: false,
                     status: "Live"
                 },
                 {
@@ -126,7 +126,7 @@ const siteData = {
             items: [
                 {
                     name: "Scholastic Prep",
-                    link: "./exam-archive/competitions/scholastic/index.html",
+                    link: "../exam-archive/competitions/index.html",
                     live: true,
                     status: "Live"
                 },
