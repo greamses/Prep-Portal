@@ -5,158 +5,402 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prep Portal 2026 | Auto Blog Publisher</title>
-  
+
   <meta name="description" content="Prep Portal 2026: Auto blog publisher generating exam tips, study guides, and strategies using Gemini AI.">
   <meta name="author" content="Prep Portal">
   <meta name="robots" content="noindex, nofollow">
-  
+
   <link rel="stylesheet" href="./utils/theme/theme.css">
   <link rel="stylesheet" href="../../main.css">
-  
+
   <style>
+    /* --- OVERFLOW & BOX-SIZING --- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
+
+    /* --- PUBLISHER SECTION --- */
     .publisher-section {
-      padding: 2rem var(--padding-xs, 2rem);
+      padding: 2rem clamp(1rem, 4vw, 2rem);
       background: var(--bg, #ffffff);
       border-bottom: var(--border, 2px solid #0a0a0a);
     }
-    
+
     .publisher-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: var(--grid-gap-md, 2rem);
       margin-top: 1rem;
     }
-    
-    .publisher-card {
-      border: var(--border, 2px solid #0a0a0a);
-      background: var(--bg, #ffffff);
-      box-shadow: var(--shadow-lg, 6px 6px 0 #0a0a0a);
-      padding: 1.5rem;
-      transition: transform var(--duration-instant, 0.1s) var(--ease-default, ease);
-    }
-    
-    .publisher-card:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: var(--shadow-xl, 8px 8px 0 #0a0a0a);
-    }
-    
-    .publisher-stats {
-      display: flex;
-      gap: var(--gap-md, 1rem);
-      margin-bottom: 1.5rem;
-    }
-    
-    .stat-box {
-      flex: 1;
-      background: var(--ink, #0a0a0a);
-      color: var(--bg, #ffffff);
-      padding: 1rem;
-      text-align: center;
-      border: var(--border, 2px solid #0a0a0a);
-    }
-    
-    .stat-box .number {
-      font-family: var(--font-display, 'Unbounded', sans-serif);
-      font-size: 2rem;
-      font-weight: var(--weight-black, 900);
-      color: var(--yellow, #ffe500);
-    }
-    
-    .stat-box div:last-child {
-      font-family: var(--font-mono, 'JetBrains Mono', monospace);
-      font-size: var(--text-mono-xs, 0.65rem);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest, 0.1em);
-    }
-    
-    .log-container {
-      background: #111418;
-      border: var(--border, 2px solid #0a0a0a);
-      padding: 1rem;
-      height: 300px;
-      overflow-y: auto;
-      font-family: var(--font-mono, 'JetBrains Mono', monospace);
-      font-size: var(--text-mono-sm, 0.7rem);
-    }
-    
-    .log-entry {
-      padding: 0.3rem 0;
-      border-bottom: 1px solid #2a2f2a;
-      color: #ccc;
-    }
-    
-    .log-time {
-      color: #888;
-      margin-right: 0.8rem;
-    }
-    
-    .log-success {
-      color: #7ee87e;
-    }
-    
-    .log-error {
-      color: #ff8a7a;
-    }
-    
-    .log-info {
-      color: #b3d9ff;
-    }
-    
-    .btn-group {
-      display: flex;
-      gap: var(--gap-md, 1rem);
-      margin-top: 1.5rem;
-      flex-wrap: wrap;
-    }
-    
-    .btn {
-      font-family: var(--font-mono, 'JetBrains Mono', monospace);
-      font-weight: var(--weight-semibold, 600);
-      font-size: var(--text-mono-xs, 0.7rem);
-      text-transform: uppercase;
-      letter-spacing: var(--tracking-widest, 0.1em);
-      padding: 0.6rem 1.2rem;
-      background: var(--bg, #ffffff);
-      border: var(--border, 2px solid #0a0a0a);
-      cursor: pointer;
-      transition: all var(--duration-instant, 0.1s) var(--ease-default, ease);
-    }
-    
-    .btn-primary {
-      background: var(--yellow, #ffe500);
-      box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
-    }
-    
-    .btn-primary:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: var(--shadow-md, 5px 5px 0 #0a0a0a);
-    }
-    
-    .btn:hover {
-      transform: translate(-1px, -1px);
-      box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
-    }
-    
-    .status-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      background: var(--ink, #0a0a0a);
-      color: var(--yellow, #ffe500);
-      font-family: var(--font-mono, 'JetBrains Mono', monospace);
-      font-size: var(--text-mono-xs, 0.7rem);
-      font-weight: var(--weight-semibold, 600);
-      margin-bottom: 1rem;
-      border: var(--border, 2px solid #0a0a0a);
-      letter-spacing: var(--tracking-wider, 0.05em);
-    }
-    
+
     @media (max-width: 768px) {
       .publisher-grid {
         grid-template-columns: 1fr;
       }
     }
+
+    .publisher-card {
+      border: var(--border, 2px solid #0a0a0a);
+      background: var(--bg, #ffffff);
+      box-shadow: var(--shadow-lg, 6px 6px 0 #0a0a0a);
+      padding: 1.5rem;
+      transition: transform 0.1s ease;
+    }
+
+    .publisher-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-xl, 8px 8px 0 #0a0a0a);
+    }
+
+    .card-label {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-xs, 0.7rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted, #555);
+      margin-bottom: 0.75rem;
+    }
+
+    /* --- STATS ROW --- */
+    .publisher-stats {
+      display: flex;
+      gap: clamp(0.5rem, 2vw, 1rem);
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .stat-box {
+      flex: 1;
+      min-width: 70px;
+      background: var(--ink, #0a0a0a);
+      color: var(--bg, #ffffff);
+      padding: 0.875rem 0.75rem;
+      text-align: center;
+      border: var(--border, 2px solid #0a0a0a);
+    }
+
+    .stat-box .number {
+      font-family: var(--font-display, 'Unbounded', sans-serif);
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: var(--weight-black, 900);
+      color: var(--yellow, #ffe500);
+      line-height: 1;
+    }
+
+    .stat-box .stat-label {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-xs, 0.65rem);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 0.25rem;
+    }
+
+    /* --- ACTIVITY LOG --- */
+    .log-container {
+      background: #111418;
+      border: var(--border, 2px solid #0a0a0a);
+      padding: 0.875rem;
+      height: 280px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: clamp(0.65rem, 2vw, 0.7rem);
+    }
+
+    .log-entry {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #2a2f2a;
+      color: #ccc;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .log-time { color: #888; margin-right: 0.5rem; }
+    .log-success { color: #7ee87e; }
+    .log-error { color: #ff8a7a; }
+    .log-info { color: #b3d9ff; }
+
+    /* --- BUTTONS --- */
+    .btn-group {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-weight: var(--weight-semibold, 600);
+      font-size: var(--text-mono-xs, 0.7rem);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.55rem 1.1rem;
+      background: var(--bg, #ffffff);
+      border: var(--border, 2px solid #0a0a0a);
+      cursor: pointer;
+      color: var(--ink, #0a0a0a);
+      transition: all 0.1s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    .btn-primary {
+      background: var(--yellow, #ffe500);
+      box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
+    }
+
+    .btn-primary:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-md, 5px 5px 0 #0a0a0a);
+    }
+
+    .btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: var(--shadow-sm, 3px 3px 0 #0a0a0a);
+    }
+
+    .btn-danger {
+      color: #c0392b;
+      border-color: #c0392b;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+      color: #fff;
+      box-shadow: 3px 3px 0 #7b1a12;
+    }
+
+    .btn-sm {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.65rem;
+    }
+
+    /* --- STATUS BADGE --- */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.75rem;
+      background: var(--ink, #0a0a0a);
+      color: var(--yellow, #ffe500);
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-xs, 0.7rem);
+      font-weight: 600;
+      margin-bottom: 1rem;
+      border: var(--border, 2px solid #0a0a0a);
+      letter-spacing: 0.05em;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--yellow, #ffe500);
+      flex-shrink: 0;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .next-run-info {
+      margin-top: 0.875rem;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-xs, 0.7rem);
+      color: var(--muted, #555);
+    }
+
+    /* --- MANAGE POSTS SECTION --- */
+    .manage-section {
+      margin-top: 2rem;
+      border: var(--border, 2px solid #0a0a0a);
+      background: var(--bg, #ffffff);
+      box-shadow: var(--shadow-lg, 6px 6px 0 #0a0a0a);
+    }
+
+    .manage-header {
+      padding: 1rem 1.5rem;
+      border-bottom: var(--border, 2px solid #0a0a0a);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      background: var(--off, #f7f4ee);
+    }
+
+    .manage-header-title {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: var(--text-mono-xs, 0.7rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .manage-header-title svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .manage-body {
+      padding: 0;
+    }
+
+    .manage-posts-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 380px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .manage-post-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.875rem 1.5rem;
+      border-bottom: 1px solid var(--off, #f7f4ee);
+      transition: background 0.1s;
+    }
+
+    .manage-post-item:last-child { border-bottom: none; }
+    .manage-post-item:hover { background: var(--off, #f7f4ee); }
+
+    .manage-post-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .manage-post-title {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--ink, #0a0a0a);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 0.2rem;
+    }
+
+    .manage-post-meta {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: 0.65rem;
+      color: var(--muted, #555);
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .manage-post-badge {
+      background: var(--yellow, #ffe500);
+      padding: 0.1rem 0.4rem;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--ink, #0a0a0a);
+    }
+
+    .manage-post-actions {
+      display: flex;
+      gap: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    .manage-empty {
+      padding: 2rem;
+      text-align: center;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: 0.8rem;
+      color: var(--muted, #555);
+    }
+
+    .manage-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 2rem;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: 0.8rem;
+      color: var(--muted, #555);
+    }
+
+    .spinner-ring {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--yellow, #ffe500);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* --- DELETE CONFIRM MODAL --- */
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 10, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .confirm-overlay.active {
+      display: flex;
+    }
+
+    .confirm-box {
+      background: var(--bg, #fff);
+      border: var(--border, 2px solid #0a0a0a);
+      box-shadow: var(--shadow-xl, 8px 8px 0 #0a0a0a);
+      padding: 2rem;
+      max-width: 360px;
+      width: 100%;
+    }
+
+    .confirm-box h3 {
+      font-family: var(--font-display, 'Unbounded', sans-serif);
+      font-size: 1.1rem;
+      font-weight: 900;
+      margin-bottom: 0.75rem;
+    }
+
+    .confirm-box p {
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: 0.8rem;
+      color: var(--muted, #555);
+      margin-bottom: 1.5rem;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .confirm-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
   </style>
-  
+
   <script type="importmap">
     {
       "imports": {
@@ -169,7 +413,7 @@
 </head>
 
 <body>
-  
+
   <nav class="site-nav">
     <a href="/" class="nav-logo">
       <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
@@ -180,76 +424,162 @@
     </a>
     <ul class="nav-links" id="navLinks">
       <li><a href="#">Dashboard</a></li>
-      <li><a href="./veiwer.html">Archives</a></li>
-      <li><a href="#" class="nav-cta">Auto Blog</a></li>
+      <li><a href="blog-archive.html">Archives</a></li>
+      <li><a href="#" class="nav-cta active">Auto Blog</a></li>
     </ul>
     <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
       <span></span><span></span><span></span>
     </button>
   </nav>
-  
+
   <div class="ticker" aria-hidden="true">
     <div class="ticker-track">
       <span class="ticker-item">AI-POWERED BLOG GENERATION</span>
-      <span class="ticker-item">✦</span>
+      <span class="ticker-item">&#x2736;</span>
       <span class="ticker-item">GEMINI 2.5 PRO / FLASH</span>
-      <span class="ticker-item">✦</span>
+      <span class="ticker-item">&#x2736;</span>
       <span class="ticker-item">AUTO-PUBLISH EVERY 10-15 MIN</span>
-      <span class="ticker-item">✦</span>
-      <span class="ticker-item">EXAM TIPS & STUDY GUIDES</span>
-      <span class="ticker-item">✦</span>
+      <span class="ticker-item">&#x2736;</span>
+      <span class="ticker-item">EXAM TIPS &amp; STUDY GUIDES</span>
+      <span class="ticker-item">&#x2736;</span>
     </div>
   </div>
-  
+
   <div class="hero">
     <div class="hero-left">
       <h1 class="hero-title">Auto<br>Blog.</h1>
     </div>
     <div class="hero-right">
-      <p class="hero-tagline">AI-powered exam content generation. Gemini models create high-quality blog posts about WAEC, NECO, JAMB, and Cambridge exam strategies — automatically published to Firestore.</p>
+      <p class="hero-tagline">AI-powered exam content generation with automatic images. Gemini models create high-quality blog posts about WAEC, NECO, JAMB, and Cambridge exam strategies, automatically published to Firestore.</p>
     </div>
   </div>
-  
+
   <div class="section-header">
     <h2>Blog Publisher</h2>
-    <span>Active · Gemini Powered</span>
+    <span>Active &middot; Gemini Powered &middot; With Images</span>
   </div>
-  
+
   <div class="publisher-section">
+
     <div class="publisher-grid">
+
+      <!-- Control Panel -->
       <div class="publisher-card">
-        <div class="status-badge" id="authStatus">Connecting...</div>
+        <div class="status-badge" id="authStatus">
+          <span class="status-dot"></span>
+          Connecting...
+        </div>
         <div class="publisher-stats">
           <div class="stat-box">
             <div class="number" id="publishCount">0</div>
-            <div>Published</div>
+            <div class="stat-label">Published</div>
           </div>
           <div class="stat-box">
             <div class="number" id="nextRunMinutes">--</div>
-            <div>Next (min)</div>
+            <div class="stat-label">Next (min)</div>
           </div>
           <div class="stat-box">
             <div class="number" id="modelCount">6</div>
-            <div>Gemini Models</div>
+            <div class="stat-label">Models</div>
           </div>
         </div>
         <div class="btn-group">
-          <button class="btn btn-primary" id="forcePublishBtn">Force Publish Now</button>
-          <button class="btn" id="restartSchedulerBtn">Restart Scheduler</button>
-          <button class="btn" id="testWriteBtn">Test Firestore</button>
+          <button class="btn btn-primary" id="forcePublishBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Force Publish
+          </button>
+          <button class="btn" id="restartSchedulerBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 .49-4.95"></path>
+            </svg>
+            Restart
+          </button>
+          <button class="btn" id="testWriteBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            Test Firestore
+          </button>
         </div>
-        <div style="margin-top: 1rem; font-family: var(--font-mono); font-size: var(--text-mono-xs); color: var(--muted, #555);" id="nextRunDetail">Next run: calculating...</div>
+        <div class="next-run-info" id="nextRunDetail">Next run: calculating...</div>
       </div>
-      
+
+      <!-- Activity Log -->
       <div class="publisher-card">
-        <div style="font-family: var(--font-mono, 'JetBrains Mono'); font-weight: var(--weight-semibold, 600); margin-bottom: 0.75rem; letter-spacing: var(--tracking-wider, 0.05em);">LIVE ACTIVITY LOG</div>
-        <div class="log-container" id="logContainer">
-          <div class="log-entry"><span class="log-time">[init]</span> <span class="log-info">Initializing auto publisher...</span></div>
+        <div class="card-label">
+          <svg style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:4px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          Live Activity Log
         </div>
+        <div class="log-container" id="logContainer">
+          <div class="log-entry">
+            <span class="log-time">[init]</span>
+            <span class="log-info">Initializing auto publisher with images...</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Manage Posts Section -->
+    <div class="manage-section">
+      <div class="manage-header">
+        <div class="manage-header-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          Manage Published Posts
+        </div>
+        <button class="btn btn-sm" id="refreshPostsBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 .49-4.95"></path>
+          </svg>
+          Refresh
+        </button>
+      </div>
+      <div class="manage-body">
+        <ul class="manage-posts-list" id="managePostsList">
+          <li class="manage-loading">
+            <div class="spinner-ring"></div>
+            Loading posts...
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div><!-- end publisher-section -->
+
+  <!-- Delete Confirm Modal -->
+  <div class="confirm-overlay" id="confirmOverlay" role="dialog" aria-modal="true" aria-label="Confirm delete">
+    <div class="confirm-box">
+      <h3>Delete Post?</h3>
+      <p id="confirmPostTitle">This action cannot be undone.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-danger" id="confirmDeleteBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6l-1 14H6L5 6"></path>
+            <path d="M10 11v6M14 11v6"></path>
+            <path d="M9 6V4h6v2"></path>
+          </svg>
+          Yes, Delete
+        </button>
+        <button class="btn" id="cancelDeleteBtn">Cancel</button>
       </div>
     </div>
   </div>
-  
+
   <footer class="site-footer">
     <div class="footer-top">
       <div class="footer-brand">
@@ -260,7 +590,7 @@
             <span class="brand-bottom">Portal</span>
           </div>
         </a>
-        <p id="footer-description">A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.</p>
+        <p>AI-powered exam preparation resources for Nigerian students.</p>
       </div>
     </div>
     <div class="footer-bottom">
@@ -272,12 +602,15 @@
       </div>
     </div>
   </footer>
-  
+
   <script type="module">
     import { initializeApp } from 'firebase/app';
     import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'firebase/auth';
-    import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, getDocs } from 'firebase/firestore';
-    
+    import {
+      getFirestore, collection, addDoc, serverTimestamp,
+      doc, getDoc, getDocs, deleteDoc, query, orderBy, limit
+    } from 'firebase/firestore';
+
     const firebaseConfig = {
       apiKey: "AIzaSyA2N3uI_XfSIVsto2Ku1g_qSezmD3qFmbk",
       authDomain: "prep-portal-2026.web.app",
@@ -286,16 +619,16 @@
       messagingSenderId: "837672918701",
       appId: "1:837672918701:web:e64c0c25dc01b542e23024"
     };
-    
+
     const GEMINI_MODELS = [
       { label: 'Gemini 3.1 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent' },
-      { label: 'Gemini 3.1 Pro', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent' },
-      { label: 'Gemini 3 Flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent' },
+      { label: 'Gemini 3.1 Pro',        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent' },
+      { label: 'Gemini 3 Flash',         url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent' },
       { label: 'Gemini 2.5 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent' },
-      { label: 'Gemini 2.5 Flash', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent' },
-      { label: 'Gemini 2.5 Pro', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent' },
+      { label: 'Gemini 2.5 Flash',      url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent' },
+      { label: 'Gemini 2.5 Pro',        url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent' },
     ];
-    
+
     const BLOG_TOPICS = [
       "How to pass WAEC Mathematics without stress",
       "Common mistakes students make in JAMB Physics",
@@ -309,57 +642,89 @@
       "Time management during exams: Proven strategies",
       "The Pomodoro method for exam preparation"
     ];
-    
+
     const CONTENT_STYLES = ['exam-tips', 'study-guide', 'past-paper-analysis', 'motivation'];
     const AUDIENCES = ['waec', 'neco', 'jamb', 'cambridge'];
-    
+
+    const IMAGE_TOPICS = {
+      'mathematics': ['math', 'algebra', 'calculus', 'numbers'],
+      'physics':     ['physics', 'science', 'experiment', 'laboratory'],
+      'english':     ['books', 'reading', 'writing', 'library'],
+      'cambridge':   ['students', 'classroom', 'study', 'education'],
+      'exam':        ['exam', 'test', 'writing', 'study'],
+      'anxiety':     ['meditation', 'calm', 'peace', 'relax'],
+      'revision':    ['study', 'books', 'notes', 'learning'],
+      'chemistry':   ['chemistry', 'lab', 'science', 'experiment'],
+      'time management': ['clock', 'schedule', 'planning', 'organize'],
+      'pomodoro':    ['timer', 'clock', 'focus', 'productivity']
+    };
+
+    const FALLBACK_IMAGES = [
+      'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800',
+      'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800',
+      'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800',
+      'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800',
+      'https://images.unsplash.com/photo-1513258496099-48168024aec0?w=800'
+    ];
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    
     setPersistence(auth, browserLocalPersistence);
-    
+
     let geminiApiKey = null;
     let currentUser = null;
     let activeTimeout = null;
     let publishCount = 0;
-    
-    const authStatusSpan = document.getElementById('authStatus');
-    const publishCountSpan = document.getElementById('publishCount');
+    let pendingDeleteId = null;
+
+    // DOM refs
+    const authStatusSpan     = document.getElementById('authStatus');
+    const publishCountSpan   = document.getElementById('publishCount');
     const nextRunMinutesSpan = document.getElementById('nextRunMinutes');
-    const nextRunDetailSpan = document.getElementById('nextRunDetail');
-    const logContainer = document.getElementById('logContainer');
-    const forceBtn = document.getElementById('forcePublishBtn');
-    const restartBtn = document.getElementById('restartSchedulerBtn');
-    const testBtn = document.getElementById('testWriteBtn');
-    
+    const nextRunDetailSpan  = document.getElementById('nextRunDetail');
+    const logContainer       = document.getElementById('logContainer');
+    const forceBtn           = document.getElementById('forcePublishBtn');
+    const restartBtn         = document.getElementById('restartSchedulerBtn');
+    const testBtn            = document.getElementById('testWriteBtn');
+    const refreshPostsBtn    = document.getElementById('refreshPostsBtn');
+    const confirmOverlay     = document.getElementById('confirmOverlay');
+    const confirmDeleteBtn   = document.getElementById('confirmDeleteBtn');
+    const cancelDeleteBtn    = document.getElementById('cancelDeleteBtn');
+    const confirmPostTitle   = document.getElementById('confirmPostTitle');
+
+    // ─── UTILS ────────────────────────────────────────────
+
     function addLog(message, type = 'info') {
       const time = new Date().toLocaleTimeString();
       const entry = document.createElement('div');
       entry.className = 'log-entry';
-      let colorClass = 'log-info';
-      if (type === 'success') colorClass = 'log-success';
-      if (type === 'error') colorClass = 'log-error';
+      const colorClass = type === 'success' ? 'log-success' : type === 'error' ? 'log-error' : 'log-info';
       entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="${colorClass}">${escapeHtml(message)}</span>`;
       logContainer.appendChild(entry);
       entry.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       console.log(`[${type}] ${message}`);
     }
-    
+
     function escapeHtml(str) {
       if (!str) return '';
-      return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-      });
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     }
-    
+
+    function formatDate(timestamp) {
+      if (!timestamp) return '--';
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return date.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function getAudienceBadge(audience) {
+      const badges = { waec: 'WAEC', neco: 'NECO', jamb: 'JAMB', cambridge: 'Cambridge' };
+      return badges[audience?.toLowerCase()] || 'General';
+    }
+
     function getRandomItem(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
-    
-    function getRandomIntervalMs() { return Math.floor(Math.random() * (15 * 60 * 1000 - 10 * 60 * 1000 + 1) + 10 * 60 * 1000); }
-    
+    function getRandomIntervalMs() { return Math.floor(Math.random() * (5 * 60 * 1000) + 10 * 60 * 1000); }
+
     function updateNextDisplay(delayMs) {
       if (!delayMs) {
         nextRunMinutesSpan.innerText = '--';
@@ -370,44 +735,54 @@
       nextRunMinutesSpan.innerText = minutes;
       nextRunDetailSpan.innerText = `Next run: in ${minutes} min`;
     }
-    
+
     function clearScheduler() {
-      if (activeTimeout) {
-        clearTimeout(activeTimeout);
-        activeTimeout = null;
-      }
+      if (activeTimeout) { clearTimeout(activeTimeout); activeTimeout = null; }
     }
-    
+
     function scheduleNextRun(delayMs) {
       clearScheduler();
       if (!geminiApiKey || !currentUser) {
         addLog('Cannot schedule: waiting for API key...', 'info');
         return;
       }
-      addLog(`Scheduled next blog in ${Math.round(delayMs/60000)} minutes`, 'info');
+      addLog(`Scheduled next blog in ${Math.round(delayMs / 60000)} minutes`, 'info');
       updateNextDisplay(delayMs);
       activeTimeout = setTimeout(async () => {
         activeTimeout = null;
         await executePublishCycle();
       }, delayMs);
     }
-    
+
+    function getImageForTopic(topic) {
+      const topicLower = topic.toLowerCase();
+      let searchTerm = 'education';
+      for (const [key, terms] of Object.entries(IMAGE_TOPICS)) {
+        if (topicLower.includes(key)) { searchTerm = getRandomItem(terms); break; }
+      }
+      const imageSources = [
+        `https://picsum.photos/id/${Math.floor(Math.random() * 200)}/1200/600`,
+        `https://images.unsplash.com/featured?${searchTerm}&w=1200&h=600`,
+        getRandomItem(FALLBACK_IMAGES)
+      ];
+      return getRandomItem(imageSources);
+    }
+
+    // ─── API KEY LOADING ──────────────────────────────────
+
     async function loadGeminiKey(user) {
       if (!user) return false;
-      
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           addLog(`Fetching Gemini key from Firestore (attempt ${attempt})...`, 'info');
           const userDocRef = doc(db, 'users', user.uid);
           const userSnap = await getDoc(userDocRef);
-          
           if (userSnap.exists()) {
             const data = userSnap.data();
             const key = data.geminiKey || data.geminiApiKey || data.apiKey || data.gemini;
-            
             if (key && key.length > 10) {
               geminiApiKey = key;
-              addLog(`Gemini API key loaded successfully!`, 'success');
+              addLog('Gemini API key loaded successfully', 'success');
               return true;
             } else {
               addLog(`No valid API key found. Fields: ${Object.keys(data).join(', ')}`, 'error');
@@ -419,28 +794,37 @@
           }
         } catch (err) {
           addLog(`Attempt ${attempt} failed: ${err.message}`, 'error');
-          if (attempt < 3) await new Promise(resolve => setTimeout(resolve, 2000));
+          if (attempt < 3) await new Promise(r => setTimeout(r, 2000));
         }
       }
       return false;
     }
-    
+
+    // ─── BLOG GENERATION ─────────────────────────────────
+
     async function generateBlogPost() {
       const topic = getRandomItem(BLOG_TOPICS);
       const style = getRandomItem(CONTENT_STYLES);
       const audience = getRandomItem(AUDIENCES);
       const model = getRandomItem(GEMINI_MODELS);
-      
-      addLog(` Generating: "${topic}" using ${model.label}`, 'info');
-      
+      const imageUrl = getImageForTopic(topic);
+
+      addLog(`[GEN] Generating: "${topic}" using ${model.label}`, 'info');
+      addLog(`[IMG] Image URL selected: ${imageUrl.substring(0, 60)}...`, 'info');
+
       const prompt = `Write a detailed blog post for "Prep Portal 2026". 
 Topic: ${topic}. 
 Style: ${style}. 
 Audience: ${audience}. 
-Write in HTML format with h1 title, h2 headings, paragraphs, and a bullet list. 
+Write in HTML format with:
+- An h1 title
+- A featured image section with: <img src="${imageUrl}" alt="${topic}" style="width:100%; border-radius:8px; margin:1rem 0;">
+- h2 headings
+- Paragraphs
+- A bullet list
 Make it engaging and educational for Nigerian students preparing for exams.
 Return ONLY HTML, no markdown wrappers.`;
-      
+
       try {
         const response = await fetch(`${model.url}?key=${geminiApiKey}`, {
           method: 'POST',
@@ -450,35 +834,45 @@ Return ONLY HTML, no markdown wrappers.`;
             generationConfig: { temperature: 0.7, maxOutputTokens: 2500 }
           })
         });
-        
+
         if (!response.ok) {
           const errorData = await response.text();
           throw new Error(`API ${response.status}: ${errorData.substring(0, 100)}`);
         }
         const data = await response.json();
         if (!data.candidates?.[0]?.content) throw new Error('Invalid response from Gemini');
-        
+
         let rawHtml = data.candidates[0].content.parts[0].text;
         rawHtml = rawHtml.trim().replace(/```html\n?/gi, '').replace(/```\n?/g, '');
+
+        if (!rawHtml.includes('<img')) {
+          const imgTag = `<img src="${imageUrl}" alt="${topic}" style="width:100%; border-radius:8px; margin:1rem 0;">`;
+          const h1Match = rawHtml.match(/<h1[^>]*>.*?<\/h1>/i);
+          if (h1Match) rawHtml = rawHtml.replace(h1Match[0], h1Match[0] + imgTag);
+          else rawHtml = imgTag + rawHtml;
+        }
+
         const titleMatch = rawHtml.match(/<h1[^>]*>([^<]+)<\/h1>/i);
         const title = titleMatch ? titleMatch[1].trim() : topic;
         const excerpt = rawHtml.replace(/<[^>]*>/g, ' ').substring(0, 160);
-        
-        addLog(`Blog generated: "${title}"`, 'success');
-        return { title, content: rawHtml, excerpt, topic, style, audience, modelUsed: model.label };
+
+        addLog(`[OK] Blog generated: "${title}"`, 'success');
+        return { title, content: rawHtml, excerpt, topic, style, audience, modelUsed: model.label, imageUrl };
       } catch (err) {
-        addLog(`Generation failed: ${err.message}`, 'error');
+        addLog(`[ERR] Generation failed: ${err.message}`, 'error');
         throw err;
       }
     }
-    
+
+    // ─── BLOG PUBLISHING ──────────────────────────────────
+
     async function publishBlog(blog) {
       if (!currentUser) throw new Error('No user logged in');
-      
       const blogData = {
         title: blog.title,
         content: blog.content,
         excerpt: blog.excerpt,
+        featuredImage: blog.imageUrl,
         status: 'published',
         authorId: currentUser.uid,
         authorEmail: currentUser.email,
@@ -486,85 +880,178 @@ Return ONLY HTML, no markdown wrappers.`;
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         views: 0,
+        likes: [],
         source: 'auto-blog-publisher',
         modelUsed: blog.modelUsed,
         originalTopic: blog.topic,
         style: blog.style,
         audience: blog.audience
       };
-      
       const docRef = await addDoc(collection(db, 'blogs'), blogData);
       return docRef.id;
     }
-    
+
     async function executePublishCycle() {
       if (!geminiApiKey) {
-        addLog('Cannot publish: Gemini API key not loaded', 'error');
+        addLog('[WARN] Cannot publish: Gemini API key not loaded', 'error');
         if (currentUser) await loadGeminiKey(currentUser);
         scheduleNextRun(5 * 60 * 1000);
         return;
       }
-      
       if (!currentUser) {
-        addLog('Cannot publish: No user logged in', 'error');
+        addLog('[WARN] Cannot publish: No user logged in', 'error');
         scheduleNextRun(5 * 60 * 1000);
         return;
       }
-      
-      addLog(' Starting auto-publish cycle...', 'info');
+      addLog('[RUN] Starting auto-publish cycle...', 'info');
       try {
         const blog = await generateBlogPost();
         const blogId = await publishBlog(blog);
         publishCount++;
         publishCountSpan.innerText = publishCount;
         localStorage.setItem('publishCount', publishCount);
-        addLog(`Published successfully! Blog ID: ${blogId.substring(0, 8)}...`, 'success');
+        addLog(`[DONE] Published successfully. ID: ${blogId.substring(0, 8)}...`, 'success');
         scheduleNextRun(getRandomIntervalMs());
+        loadRecentPosts();
       } catch (err) {
-        addLog(`Publish error: ${err.message}`, 'error');
+        addLog(`[ERR] Publish error: ${err.message}`, 'error');
         scheduleNextRun(5 * 60 * 1000);
       }
     }
-    
+
     async function forcePublish() {
       if (!geminiApiKey) {
-        addLog('Cannot force publish: Gemini key missing. Attempting to reload...', 'error');
+        addLog('[WARN] Cannot force publish: Gemini key missing. Attempting reload...', 'error');
         if (currentUser) await loadGeminiKey(currentUser);
         return;
       }
       clearScheduler();
-      addLog(' Manual force publish triggered', 'info');
+      addLog('[MAN] Manual force publish triggered', 'info');
       await executePublishCycle();
     }
-    
+
     async function testFirestore() {
-      addLog(' Testing Firestore connection...', 'info');
+      addLog('[TEST] Testing Firestore connection...', 'info');
       try {
-        const blogsRef = collection(db, 'blogs');
-        const snapshot = await getDocs(blogsRef);
-        addLog(`Firestore connected! Found ${snapshot.size} existing blog posts.`, 'success');
+        const snapshot = await getDocs(collection(db, 'blogs'));
+        addLog(`[OK] Firestore connected. Found ${snapshot.size} blog posts.`, 'success');
       } catch (err) {
-        addLog(`Firestore test failed: ${err.message}`, 'error');
+        addLog(`[ERR] Firestore test failed: ${err.message}`, 'error');
       }
     }
-    
+
     function restartScheduler() {
       clearScheduler();
       if (geminiApiKey && currentUser) {
         scheduleNextRun(getRandomIntervalMs());
-        addLog(' Scheduler restarted', 'success');
+        addLog('[OK] Scheduler restarted', 'success');
       } else {
-        addLog('Cannot restart scheduler - missing API key or auth', 'error');
+        addLog('[WARN] Cannot restart scheduler - missing API key or auth', 'error');
       }
     }
-    
-    // KEEP-ALIVE: Prevents the page from sleeping
-    setInterval(() => {
-      if (currentUser && geminiApiKey) {
-        console.log(' Publisher alive - next run in ' + (activeTimeout ? Math.round(activeTimeout._idleTimeout / 60000) : '?') + ' min');
+
+    // ─── MANAGE POSTS ─────────────────────────────────────
+
+    async function loadRecentPosts() {
+      const list = document.getElementById('managePostsList');
+      list.innerHTML = `<li class="manage-loading"><div class="spinner-ring"></div> Loading posts...</li>`;
+
+      try {
+        const q = query(collection(db, 'blogs'), orderBy('publishedAt', 'desc'), limit(20));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          list.innerHTML = '<li class="manage-empty">No published posts yet.</li>';
+          return;
+        }
+
+        list.innerHTML = '';
+        snapshot.forEach(docSnap => {
+          const d = docSnap.data();
+          const dateStr = formatDate(d.publishedAt);
+          const audience = d.audience || 'general';
+          const badge = getAudienceBadge(audience);
+
+          const li = document.createElement('li');
+          li.className = 'manage-post-item';
+          li.dataset.id = docSnap.id;
+          li.innerHTML = `
+            <div class="manage-post-info">
+              <div class="manage-post-title" title="${escapeHtml(d.title || 'Untitled')}">${escapeHtml(d.title || 'Untitled')}</div>
+              <div class="manage-post-meta">
+                <span>${dateStr}</span>
+                <span class="manage-post-badge">${badge}</span>
+                ${d.views ? `<span>${d.views} views</span>` : ''}
+              </div>
+            </div>
+            <div class="manage-post-actions">
+              <button class="btn btn-sm btn-danger delete-post-btn" data-id="${docSnap.id}" data-title="${escapeHtml(d.title || 'Untitled')}" title="Delete post">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6l-1 14H6L5 6"></path>
+                  <path d="M10 11v6M14 11v6"></path>
+                  <path d="M9 6V4h6v2"></path>
+                </svg>
+                Delete
+              </button>
+            </div>
+          `;
+          list.appendChild(li);
+        });
+
+        // Wire delete buttons
+        list.querySelectorAll('.delete-post-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            pendingDeleteId = btn.dataset.id;
+            confirmPostTitle.textContent = `"${btn.dataset.title}" — this action cannot be undone.`;
+            confirmOverlay.classList.add('active');
+          });
+        });
+
+      } catch (err) {
+        list.innerHTML = `<li class="manage-empty">Error loading posts: ${escapeHtml(err.message)}</li>`;
+        addLog(`[ERR] Failed to load posts: ${err.message}`, 'error');
       }
-    }, 30000);
-    
+    }
+
+    // Delete confirm modal
+    confirmDeleteBtn.addEventListener('click', async () => {
+      if (!pendingDeleteId) return;
+      confirmDeleteBtn.disabled = true;
+      confirmDeleteBtn.textContent = 'Deleting...';
+      try {
+        await deleteDoc(doc(db, 'blogs', pendingDeleteId));
+        addLog(`[DEL] Deleted blog post ${pendingDeleteId.substring(0, 8)}...`, 'success');
+        confirmOverlay.classList.remove('active');
+        pendingDeleteId = null;
+        await loadRecentPosts();
+      } catch (err) {
+        addLog(`[ERR] Delete failed: ${err.message}`, 'error');
+      } finally {
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg> Yes, Delete`;
+      }
+    });
+
+    cancelDeleteBtn.addEventListener('click', () => {
+      confirmOverlay.classList.remove('active');
+      pendingDeleteId = null;
+    });
+
+    confirmOverlay.addEventListener('click', (e) => {
+      if (e.target === confirmOverlay) {
+        confirmOverlay.classList.remove('active');
+        pendingDeleteId = null;
+      }
+    });
+
+    // ─── EVENT LISTENERS ──────────────────────────────────
+
+    forceBtn.addEventListener('click', forcePublish);
+    restartBtn.addEventListener('click', restartScheduler);
+    testBtn.addEventListener('click', testFirestore);
+    refreshPostsBtn.addEventListener('click', loadRecentPosts);
+
     const navToggle = document.getElementById('nav-toggle');
     const navLinks = document.getElementById('navLinks');
     if (navToggle && navLinks) {
@@ -573,37 +1060,45 @@ Return ONLY HTML, no markdown wrappers.`;
         navLinks.classList.toggle('open');
       });
     }
-    
-    forceBtn.addEventListener('click', forcePublish);
-    restartBtn.addEventListener('click', restartScheduler);
-    testBtn.addEventListener('click', testFirestore);
-    
+
+    // ─── INIT ─────────────────────────────────────────────
+
     const savedCount = localStorage.getItem('publishCount');
     if (savedCount) {
       publishCount = parseInt(savedCount);
       publishCountSpan.innerText = publishCount;
     }
-    
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
-        authStatusSpan.innerText = `${user.email}`;
-        addLog(`Auto-login successful: ${user.email}`, 'success');
-        
+        const emailLabel = user.email.length > 28 ? user.email.substring(0, 26) + '...' : user.email;
+        authStatusSpan.innerHTML = `<span class="status-dot"></span> ${escapeHtml(emailLabel)}`;
+        addLog(`[AUTH] Signed in: ${user.email}`, 'success');
+
         const keyLoaded = await loadGeminiKey(user);
         if (keyLoaded && geminiApiKey && !activeTimeout) {
-          addLog(' Auto-publisher ready! Starting scheduled generation...', 'success');
+          addLog('[READY] Auto-publisher ready. Starting scheduled generation...', 'success');
           scheduleNextRun(getRandomIntervalMs());
         }
+
+        loadRecentPosts();
       } else {
-        authStatusSpan.innerText = 'Waiting for auto-login...';
-        addLog('Waiting for Firebase to auto-login (persistence active)...', 'info');
+        authStatusSpan.innerHTML = `<span class="status-dot" style="background:#ff8a7a; animation:none"></span> Waiting for sign-in...`;
+        addLog('[AUTH] Waiting for Firebase to auto-login...', 'info');
       }
     });
-    
-    addLog('Prep Portal Auto Publisher v5.0 - GitHub Pages Ready', 'info');
-    addLog(' Firebase persistence will auto-login on every page load', 'success');
-    addLog(' Keep-alive active - publisher will run continuously', 'success');
+
+    // Keep-alive
+    setInterval(() => {
+      if (currentUser && geminiApiKey) {
+        console.log('[ALIVE] Publisher running');
+      }
+    }, 30000);
+
+    addLog('[BOOT] Prep Portal Auto Publisher v7.0', 'info');
+    addLog('[INFO] Each post will include a relevant featured image', 'success');
+    addLog('[INFO] Firebase persistence will auto-login on page load', 'success');
   </script>
 </body>
 
