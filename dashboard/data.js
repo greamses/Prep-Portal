@@ -68,25 +68,25 @@ const siteData = {
             items: [
                 {
                     name: "WAEC",
-                    link: "./exam-archive/national/WAEC/index.html",
+                    link: "./exam-archive/national/exam/index.html",
                     live: true,
                     status: "Live"
                 },
                 {
                     name: "NECO",
-                    link: "./exam-archive/national/NECO/index.html",
-                    live: true,
+                    link: "./exam-archive/national/exam/index.html",
+                    live: false,
                     status: "Live"
                 },
                 {
                     name: "JAMB",
-                    link: "./exam-archive/national/JAMB/index.html",
-                    live: true,
+                    link: "./exam-archive/national/exam/index.html",
+                    live: false,
                     status: "Live"
                 },
                 {
                     name: "Common Entrance",
-                    link: "#",
+                    link: "./exam-archive/national/exam/index.html",
                     live: false,
                     status: "Coming Soon"
                 }

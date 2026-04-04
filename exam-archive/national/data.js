@@ -65,7 +65,7 @@ const siteData = {
             items: [
                 {
                     name: "WAEC",
-                    link: "../WAEC/index.html",
+                    link: "./exams/index.html",
                     live: true,
                     status: "Practice",
                     description: "West African Senior School Certificate Examination",
@@ -74,7 +74,7 @@ const siteData = {
                 },
                 {
                     name: "NECO",
-                    link: "../NECO/index.html",
+                    link: "./exams/index.html",
                     live: false,
                     status: "Practice",
                     description: "National Examination Council senior secondary certification",
@@ -83,7 +83,7 @@ const siteData = {
                 },
                 {
                     name: "JAMB",
-                    link: "../JAMB/index.html",
+                    link: "./exams/index.html",
                     live: true,
                     status: "Practice",
                     description: "Joint Admissions and Matriculation Board UTME preparation",
@@ -92,8 +92,8 @@ const siteData = {
                 },
                 {
                     name: "Common Entrance",
-                    link: "../common-entrance/index.html",
-                    live: true,
+                    link: "./exams/index.html",
+                    live: false,
                     status: "Practice",
                     description: "National common entrance examination for secondary admission",
                     questions: 100,
@@ -102,7 +102,7 @@ const siteData = {
                 {
                     name: "Level Exams",
                     link: "../level-exams/index.html",
-                    live: true,
+                    live: false,
                     status: "Practice",
                     description: "Grade-level promotional examinations and assessments",
                     questions: 80,
@@ -119,7 +119,7 @@ const siteData = {
                 {
                     name: "Scheme of Work",
                     link: "../scheme-of-work/index.html",
-                    live: true,
+                    live: false,
                     status: "Available",
                     description: "Complete curriculum breakdown and termly teaching schedules for all subjects",
                     fileType: "PDF",
@@ -128,7 +128,7 @@ const siteData = {
                 {
                     name: "Exam Brochure",
                     link: "../brochure/index.html",
-                    live: true,
+                    live: false,
                     status: "Available",
                     description: "Official examination guidelines, syllabus, and registration information",
                     fileType: "PDF",
@@ -137,7 +137,7 @@ const siteData = {
                 {
                     name: "Study Materials",
                     link: "../study-materials/index.html",
-                    live: true,
+                    live: false,
                     status: "Available",
                     description: "Comprehensive notes, revision guides, and topic summaries",
                     fileType: "Mixed",
@@ -146,7 +146,7 @@ const siteData = {
                 {
                     name: "Past Questions",
                     link: "../past-questions/index.html",
-                    live: true,
+                    live: false,
                     status: "Available",
                     description: "Collection of previous examination papers with answer keys",
                     fileType: "PDF/ZIP",
@@ -160,7 +160,7 @@ const siteData = {
     subjects: [
         {
             name: "English & Writing",
-            link: "../Writing/index.html",
+            link: "../../writing/index.html",
             color: "english",
             description: "Comprehensive English language and composition practice",
             badge: "Essay, Comprehension, Grammar",
@@ -168,7 +168,7 @@ const siteData = {
         },
         {
             name: "Mathematics",
-            link: "../Math/index.html",
+            link: "../../math/index.html",
             color: "math",
             description: "Arithmetic, algebra, geometry, and problem-solving",
             badge: "Numbers, Algebra, Geometry",
@@ -176,7 +176,7 @@ const siteData = {
         },
         {
             name: "Science",
-            link: "../Science/index.html",
+            link: "../../science/index.html",
             color: "science",
             description: "Basic science, biology, chemistry, and physics fundamentals",
             badge: "Biology, Chemistry, Physics",
@@ -184,7 +184,7 @@ const siteData = {
         },
         {
             name: "Social Studies",
-            link: "../Social-Studies/index.html",
+            link: "../social-studies/index.html",
             color: "social",
             description: "Civics, history, geography, and cultural studies",
             badge: "History, Geography, Civics",
@@ -196,7 +196,7 @@ const siteData = {
     drills: [
         {
             name: "Essay Writing",
-            link: "../Theory-Page/index.html",
+            link: "../../theory-page/index.html",
             color: "essay",
             description: "Practice structured essay writing with guided templates",
             badge: "Coming Soon",
