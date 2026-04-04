@@ -4,12 +4,12 @@
 
 const siteData = {
     // Site Identity
-    siteName: "Exam Archive",
+    siteName: "National Exams",
     siteLogo: "Prep<span>Portal</span>",
     
     // Hero Section
     hero: {
-        title: "Exam<br>Archive.",
+        title: "National<br>Exams.",
         tagline: "Complete collection of past examination papers, practice tests, and assessment materials across all academic levels.",
         stats: [
             { value: "5", label: "Exam Papers" },

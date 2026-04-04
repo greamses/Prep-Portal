@@ -53,6 +53,13 @@ function injectHeroStats() {
 
 // Inject section headers
 function injectSectionHeaders() {
+    // For competitions page - use competitions elements if they exist
+    const competitionsTitle = document.getElementById('competitions-title');
+    const competitionsSubtitle = document.getElementById('competitions-subtitle');
+    if (competitionsTitle) competitionsTitle.textContent = siteData.sections.exams.title;
+    if (competitionsSubtitle) competitionsSubtitle.textContent = siteData.sections.exams.subtitle;
+    
+    // For compatibility with original exam page
     const examsTitle = document.getElementById('exams-title');
     const examsSubtitle = document.getElementById('exams-subtitle');
     if (examsTitle) examsTitle.textContent = siteData.sections.exams.title;
@@ -77,7 +84,7 @@ function injectSectionHeaders() {
     if (drillTag) drillTag.textContent = siteData.sections.theory.tag;
 }
 
-// Inject exam categories
+// Inject exam categories (works for competitions too)
 function injectExamCategories() {
     const container = document.getElementById('category-grid');
     if (!container) return;
@@ -95,7 +102,7 @@ function injectExamCategories() {
                         </a>
                     `).join('')}
                 </div>
-<span class="badge">${category.badge}</span>
+                <span class="badge">${category.badge}</span>
             </div>
         </div>
     `).join('');
@@ -261,9 +268,14 @@ function init() {
     initRevealObserver();
     initNavigation();
     
+    // Call competitions-specific function if it exists
+    if (typeof injectUpcomingCompetitions === 'function') {
+        injectUpcomingCompetitions();
+    }
+    
     window.onload = () => document.body.classList.add('active');
 }
 
 document.addEventListener('DOMContentLoaded', init);
 
-console.log('great')
+console.log('great');
