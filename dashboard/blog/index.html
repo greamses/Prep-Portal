@@ -10,14 +10,10 @@
   <meta name="author" content="Prep Portal">
   <meta name="robots" content="noindex, nofollow">
   
-  <!-- Theme CSS with variables -->
   <link rel="stylesheet" href="./utils/theme/theme.css">
-  
-  <!-- Main CSS with all component styles -->
   <link rel="stylesheet" href="../../main.css">
   
   <style>
-    /* Additional styles specific to the blog publisher that integrate with your theme */
     .publisher-section {
       padding: 2rem var(--padding-xs, 2rem);
       background: var(--bg, #ffffff);
@@ -174,7 +170,6 @@
 
 <body>
   
-  <!-- Navigation - matches main.css structure -->
   <nav class="site-nav">
     <a href="/" class="nav-logo">
       <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
@@ -185,7 +180,7 @@
     </a>
     <ul class="nav-links" id="navLinks">
       <li><a href="#">Dashboard</a></li>
-      <li><a href="#">Archives</a></li>
+      <li><a href="./veiwer.html">Archives</a></li>
       <li><a href="#" class="nav-cta">Auto Blog</a></li>
     </ul>
     <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
@@ -193,7 +188,6 @@
     </button>
   </nav>
   
-  <!-- Ticker - matches main.css -->
   <div class="ticker" aria-hidden="true">
     <div class="ticker-track">
       <span class="ticker-item">AI-POWERED BLOG GENERATION</span>
@@ -207,7 +201,6 @@
     </div>
   </div>
   
-  <!-- Hero - matches main.css structure -->
   <div class="hero">
     <div class="hero-left">
       <h1 class="hero-title">Auto<br>Blog.</h1>
@@ -217,16 +210,13 @@
     </div>
   </div>
   
-  <!-- Section Header - matches main.css -->
   <div class="section-header">
     <h2>Blog Publisher</h2>
     <span>Active · Gemini Powered</span>
   </div>
   
-  <!-- Publisher Section - styled to match theme -->
   <div class="publisher-section">
     <div class="publisher-grid">
-      <!-- Left Panel: Status & Controls -->
       <div class="publisher-card">
         <div class="status-badge" id="authStatus">Connecting...</div>
         <div class="publisher-stats">
@@ -251,7 +241,6 @@
         <div style="margin-top: 1rem; font-family: var(--font-mono); font-size: var(--text-mono-xs); color: var(--muted, #555);" id="nextRunDetail">Next run: calculating...</div>
       </div>
       
-      <!-- Right Panel: Live Log -->
       <div class="publisher-card">
         <div style="font-family: var(--font-mono, 'JetBrains Mono'); font-weight: var(--weight-semibold, 600); margin-bottom: 0.75rem; letter-spacing: var(--tracking-wider, 0.05em);">LIVE ACTIVITY LOG</div>
         <div class="log-container" id="logContainer">
@@ -261,7 +250,6 @@
     </div>
   </div>
   
-  <!-- Footer - matches main.css structure -->
   <footer class="site-footer">
     <div class="footer-top">
       <div class="footer-brand">
@@ -329,14 +317,12 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     
-    // Enable persistent login
     setPersistence(auth, browserLocalPersistence);
     
     let geminiApiKey = null;
     let currentUser = null;
     let activeTimeout = null;
     let publishCount = 0;
-    let retryCount = 0;
     
     const authStatusSpan = document.getElementById('authStatus');
     const publishCountSpan = document.getElementById('publishCount');
@@ -409,7 +395,6 @@
     async function loadGeminiKey(user) {
       if (!user) return false;
       
-      // Try multiple times if offline
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           addLog(`Fetching Gemini key from Firestore (attempt ${attempt})...`, 'info');
@@ -418,16 +403,14 @@
           
           if (userSnap.exists()) {
             const data = userSnap.data();
-            // Check multiple possible field names for the API key
             const key = data.geminiKey || data.geminiApiKey || data.apiKey || data.gemini;
             
             if (key && key.length > 10) {
               geminiApiKey = key;
-              addLog(`Gemini API key loaded successfully! Key starts with: ${key.substring(0, 15)}...`, 'success');
-              retryCount = 0;
+              addLog(`Gemini API key loaded successfully!`, 'success');
               return true;
             } else {
-              addLog(`No valid API key found in user document. Fields available: ${Object.keys(data).join(', ')}`, 'error');
+              addLog(`No valid API key found. Fields: ${Object.keys(data).join(', ')}`, 'error');
               return false;
             }
           } else {
@@ -436,9 +419,7 @@
           }
         } catch (err) {
           addLog(`Attempt ${attempt} failed: ${err.message}`, 'error');
-          if (attempt < 3) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-          }
+          if (attempt < 3) await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
       return false;
@@ -519,10 +500,7 @@ Return ONLY HTML, no markdown wrappers.`;
     async function executePublishCycle() {
       if (!geminiApiKey) {
         addLog('Cannot publish: Gemini API key not loaded', 'error');
-        // Try to reload the key
-        if (currentUser) {
-          await loadGeminiKey(currentUser);
-        }
+        if (currentUser) await loadGeminiKey(currentUser);
         scheduleNextRun(5 * 60 * 1000);
         return;
       }
@@ -539,6 +517,7 @@ Return ONLY HTML, no markdown wrappers.`;
         const blogId = await publishBlog(blog);
         publishCount++;
         publishCountSpan.innerText = publishCount;
+        localStorage.setItem('publishCount', publishCount);
         addLog(`Published successfully! Blog ID: ${blogId.substring(0, 8)}...`, 'success');
         scheduleNextRun(getRandomIntervalMs());
       } catch (err) {
@@ -550,9 +529,7 @@ Return ONLY HTML, no markdown wrappers.`;
     async function forcePublish() {
       if (!geminiApiKey) {
         addLog('Cannot force publish: Gemini key missing. Attempting to reload...', 'error');
-        if (currentUser) {
-          await loadGeminiKey(currentUser);
-        }
+        if (currentUser) await loadGeminiKey(currentUser);
         return;
       }
       clearScheduler();
@@ -563,17 +540,9 @@ Return ONLY HTML, no markdown wrappers.`;
     async function testFirestore() {
       addLog(' Testing Firestore connection...', 'info');
       try {
-        // Try to read from blogs collection
         const blogsRef = collection(db, 'blogs');
         const snapshot = await getDocs(blogsRef);
         addLog(`Firestore connected! Found ${snapshot.size} existing blog posts.`, 'success');
-        
-        // Test write permission
-        const testDoc = await addDoc(collection(db, 'test_connection'), {
-          test: true,
-          timestamp: serverTimestamp()
-        });
-        addLog(`Write permission confirmed! Test doc ID: ${testDoc.id}`, 'success');
       } catch (err) {
         addLog(`Firestore test failed: ${err.message}`, 'error');
       }
@@ -586,13 +555,16 @@ Return ONLY HTML, no markdown wrappers.`;
         addLog(' Scheduler restarted', 'success');
       } else {
         addLog('Cannot restart scheduler - missing API key or auth', 'error');
-        if (currentUser && !geminiApiKey) {
-          loadGeminiKey(currentUser);
-        }
       }
     }
     
-    // Mobile nav toggle
+    // KEEP-ALIVE: Prevents the page from sleeping
+    setInterval(() => {
+      if (currentUser && geminiApiKey) {
+        console.log(' Publisher alive - next run in ' + (activeTimeout ? Math.round(activeTimeout._idleTimeout / 60000) : '?') + ' min');
+      }
+    }, 30000);
+    
     const navToggle = document.getElementById('nav-toggle');
     const navLinks = document.getElementById('navLinks');
     if (navToggle && navLinks) {
@@ -602,34 +574,36 @@ Return ONLY HTML, no markdown wrappers.`;
       });
     }
     
-    // Event listeners
     forceBtn.addEventListener('click', forcePublish);
     restartBtn.addEventListener('click', restartScheduler);
     testBtn.addEventListener('click', testFirestore);
     
-    // Auth state listener - this handles auto-login since Firebase remembers you
+    const savedCount = localStorage.getItem('publishCount');
+    if (savedCount) {
+      publishCount = parseInt(savedCount);
+      publishCountSpan.innerText = publishCount;
+    }
+    
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
-        authStatusSpan.innerText = ` Admin: ${user.email}`;
-        addLog(`Auth state: ${user.email} is logged in`, 'success');
+        authStatusSpan.innerText = `${user.email}`;
+        addLog(`Auto-login successful: ${user.email}`, 'success');
         
-        // Load the Gemini key from Firestore
         const keyLoaded = await loadGeminiKey(user);
         if (keyLoaded && geminiApiKey && !activeTimeout) {
           addLog(' Auto-publisher ready! Starting scheduled generation...', 'success');
           scheduleNextRun(getRandomIntervalMs());
-        } else if (!keyLoaded) {
-          addLog('Please add your Gemini API key to the "geminiKey" field in your Firestore user document', 'error');
         }
       } else {
-        addLog('No user logged in. Firebase Auth persistence should auto-login on refresh.', 'info');
         authStatusSpan.innerText = 'Waiting for auto-login...';
+        addLog('Waiting for Firebase to auto-login (persistence active)...', 'info');
       }
     });
     
-    addLog(' Prep Portal Auto Publisher v2.0 initialized', 'info');
-    addLog(' Firebase will auto-login using saved credentials', 'info');
+    addLog('Prep Portal Auto Publisher v5.0 - GitHub Pages Ready', 'info');
+    addLog(' Firebase persistence will auto-login on every page load', 'success');
+    addLog(' Keep-alive active - publisher will run continuously', 'success');
   </script>
 </body>
 
