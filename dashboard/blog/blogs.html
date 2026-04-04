@@ -1326,8 +1326,10 @@
       loadComments(blog.id);
     }
     
-    const closeBlogView = () => { singleBlogView.classList.remove('active');
-      document.body.style.overflow = ''; };
+    const closeBlogView = () => {
+      singleBlogView.classList.remove('active');
+      document.body.style.overflow = '';
+    };
     
     // ─── LIKE ─────────────────────────────────────────────────
     async function toggleLike(blog) {
@@ -1345,8 +1347,10 @@
         }
         const now = blog.likes.includes(currentUser.uid);
         const btn = document.getElementById('likeBtn');
-        if (btn) { btn.className = `action-btn like-btn${now?' liked':''}`;
-          btn.innerHTML = `${now?I.heartFill:I.heart}<span id="likeCount">${blog.likes.length}</span>`; }
+        if (btn) {
+          btn.className = `action-btn like-btn${now?' liked':''}`;
+          btn.innerHTML = `${now?I.heartFill:I.heart}<span id="likeCount">${blog.likes.length}</span>`;
+        }
         const idx = allBlogs.findIndex(b => b.id === blog.id);
         if (idx !== -1) allBlogs[idx].likes = blog.likes;
       } catch (_) { showToast('Could not update like'); }
@@ -1402,8 +1406,10 @@
         await loadComments(blogId);
         showToast('Comment posted!');
       } catch (e) { showToast('Error: ' + e.message); }
-      finally { btn.disabled = false;
-        btn.textContent = 'Post Comment'; }
+      finally {
+        btn.disabled = false;
+        btn.textContent = 'Post Comment';
+      }
     }
     
     // ─── LOAD ─────────────────────────────────────────────────
@@ -1422,10 +1428,17 @@
     }
     
     // ─── FILTER ───────────────────────────────────────────────
-    dropdownBtn.addEventListener('click', e => { e.stopPropagation(); const o = filterDropdown.classList.toggle('open');
-      dropdownBtn.setAttribute('aria-expanded', o); });
-    document.addEventListener('click', e => { if (!filterDropdown.contains(e.target)) { filterDropdown.classList.remove('open');
-        dropdownBtn.setAttribute('aria-expanded', 'false'); } });
+    dropdownBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const o = filterDropdown.classList.toggle('open');
+      dropdownBtn.setAttribute('aria-expanded', o);
+    });
+    document.addEventListener('click', e => {
+      if (!filterDropdown.contains(e.target)) {
+        filterDropdown.classList.remove('open');
+        dropdownBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
     document.querySelectorAll('.dropdown-item').forEach(item => {
       item.addEventListener('click', () => {
         currentFilter = item.dataset.filter;
@@ -1439,9 +1452,13 @@
     });
     
     let st;
-    searchInput.addEventListener('input', e => { clearTimeout(st);
-      st = setTimeout(() => { currentSearch = e.target.value;
-        renderBlogs(); }, 280); });
+    searchInput.addEventListener('input', e => {
+      clearTimeout(st);
+      st = setTimeout(() => {
+        currentSearch = e.target.value;
+        renderBlogs();
+      }, 280);
+    });
     
     closeBlogBtn.addEventListener('click', closeBlogView);
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && singleBlogView.classList.contains('active')) closeBlogView(); });
@@ -1450,8 +1467,10 @@
     
     const navToggle = document.getElementById('nav-toggle');
     const navLinks = document.getElementById('navLinks');
-    if (navToggle && navLinks) navToggle.addEventListener('click', () => { navToggle.classList.toggle('open');
-      navLinks.classList.toggle('open'); });
+    if (navToggle && navLinks) navToggle.addEventListener('click', () => {
+      navToggle.classList.toggle('open');
+      navLinks.classList.toggle('open');
+    });
     
     loadBlogs();
     setInterval(loadBlogs, 60000);
@@ -1459,3 +1478,4 @@
 </body>
 
 </html>
+
