@@ -17,7 +17,7 @@ const BASE_SUBJECTS = {
   commercial: ['Commerce', 'Financial Accounting', 'Economics', 'Marketing', 'Insurance', 'Business Management', 'Office Practice']
 };
 
-const COMPULSORY_CORE = ['Chemistry'];
+const COMPULSORY_CORE = ['English'];
 
 // Application state
 let state = {
