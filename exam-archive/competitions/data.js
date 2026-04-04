@@ -9,7 +9,7 @@ const siteData = {
     
     // Hero Section
     hero: {
-        title: "Comp.<br>Trainer.",
+        title: "Comp.<br>Trainer",
         tagline: "Complete collection of past competition papers, practice tests, and assessment materials across all academic competitions.",
         stats: [
             { value: "8+", label: "Competitions" },
