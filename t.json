@@ -1,0 +1,37 @@
+{
+  "project": "Prep Portal Auto Blog Publisher",
+  "task": "System Upgrade, Content Expansion & Bug Fixes",
+  "instructions": "Update the existing code to implement the following logic, UI features, and styling corrections. High priority: Ensure administrative actions are restricted to the dashboard.",
+  "requirements": [
+  {
+    "feature": "Smart Model Routing (Groq Focus)",
+    "logic": "Prioritize Groq for simple topics (e.g., Common Entrance) for speed. Use Gemini for exhaustive, long-form content.",
+    "error_handling": "Implement an automatic fallback loop. If the primary model (Groq) fails or returns 'insufficient credits', automatically cycle to the next model (Gemini Pro -> Gemini Flash) until a post is generated."
+  },
+  {
+    "feature": "Content Strategy Expansion",
+    "instruction": "Update the generation prompt to include a wider range of topics. Specifically, ensure the model discusses 'Teacher Performance' and 'Student Performance' metrics, pedagogical strategies, and academic outcomes alongside exam prep.",
+    "goal": "Broaden the blog's scope to provide value to both educators and students."
+  },
+  {
+    "feature": "Admin vs. Public UI",
+    "admin_ui": "Add 'Edit' and 'Delete' icons next to each generated post on the ADMIN dashboard only. Edit allows fixing image URLs and text; Delete allows purging errors.",
+    "public_ui": "STRICT REQUIREMENT: Remove any 'Delete' or 'Edit' functionality from the public blog page. These must be invisible and inaccessible to readers."
+  },
+  {
+    "feature": "Tagging Logic Correction",
+    "issue": "System incorrectly tags WAEC content as JAMB.",
+    "fix": "Refine the prompt and tagging function to ensure the exam body badge (WAEC vs JAMB) dynamically matches the subject matter."
+  },
+  {
+    "feature": "CSS Overflow Fix",
+    "issue": "Inconsistent formatting causing horizontal layout breakage.",
+    "styling_rules": [
+      "Apply 'overflow-wrap: break-word' to content containers.",
+      "Ensure code blocks or long strings use 'max-width: 100%' and 'overflow-x: auto'.",
+      "Remove fixed-width constraints causing container overflow."
+    ]
+  }],
+  "output_format": "Provide updated JavaScript and CSS code blocks ready for integration."
+  
+}
