@@ -281,7 +281,7 @@
     }
     
     @keyframes pulse {
-
+      
       0%,
       100% {
         opacity: 1
@@ -1139,12 +1139,12 @@
     ];
     
     const GEMINI_MODELS = [
-      { label: 'Gemini 2.5 Flash', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent' },
-      { label: 'Gemini 2.5 Pro', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-05-06:generateContent' },
-      { label: 'Gemini 2.0 Flash', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent' },
-      { label: 'Gemini 1.5 Flash', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent' },
-      { label: 'Gemini 1.5 Pro', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent' },
-      { label: 'Gemini 1.0 Pro', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent' },
+      { label: 'Gemini 3.1 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent' },
+      { label: 'Gemini 3.1 Pro', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent' },
+      { label: 'Gemini 3 Flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent' },
+      { label: 'Gemini 2.5 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent' },
+      { label: 'Gemini 2.5 Flash', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent' },
+      { label: 'Gemini 2.5 Pro', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent' },
     ];
     
     const BLOG_TOPICS = [
@@ -1251,23 +1251,32 @@
     const randIntervalMs = () => Math.floor(Math.random() * 5 * 60 * 1000 + 10 * 60 * 1000);
     
     function updateNextDisplay(ms) {
-      if (!ms) { nextRunMinutesSpan.innerText = '--';
-        nextRunDetailSpan.innerText = 'Next run: idle'; return; }
+      if (!ms) {
+        nextRunMinutesSpan.innerText = '--';
+        nextRunDetailSpan.innerText = 'Next run: idle';
+        return;
+      }
       const m = Math.round(ms / 60000);
       nextRunMinutesSpan.innerText = m;
       nextRunDetailSpan.innerText = `Next run: in ${m} min`;
     }
     
-    function clearScheduler() { if (activeTimeout) { clearTimeout(activeTimeout);
-        activeTimeout = null; } }
+    function clearScheduler() {
+      if (activeTimeout) {
+        clearTimeout(activeTimeout);
+        activeTimeout = null;
+      }
+    }
     
     function scheduleNextRun(ms) {
       clearScheduler();
       if (!geminiApiKey && !groqApiKey) { addLog('[SCHED] No API key — cannot schedule', 'warn'); return; }
       addLog(`[SCHED] Next blog in ${Math.round(ms/60000)} min`, 'info');
       updateNextDisplay(ms);
-      activeTimeout = setTimeout(async () => { activeTimeout = null;
-        await executePublishCycle(); }, ms);
+      activeTimeout = setTimeout(async () => {
+        activeTimeout = null;
+        await executePublishCycle();
+      }, ms);
     }
     
     function showRoutingBadge(provider, isFallback) {
@@ -1489,8 +1498,11 @@ Audience tag for this post: ${audience}`;
         scheduleNextRun(5 * 60 * 1000);
         return;
       }
-      if (!currentUser) { addLog('[CYCLE] No user', 'error');
-        scheduleNextRun(5 * 60 * 1000); return; }
+      if (!currentUser) {
+        addLog('[CYCLE] No user', 'error');
+        scheduleNextRun(5 * 60 * 1000);
+        return;
+      }
       
       const topic = rand(BLOG_TOPICS);
       addLog(`[RUN] "${topic.text}" [${topic.complexity}/${topic.audience}]`, 'info');
@@ -1518,15 +1530,19 @@ Audience tag for this post: ${audience}`;
     
     const testFirestore = async () => {
       addLog('[TEST] Testing Firestore...', 'info');
-      try { const s = await getDocs(collection(db, 'blogs'));
-        addLog(`[OK] ${s.size} posts found`, 'success'); }
+      try {
+        const s = await getDocs(collection(db, 'blogs'));
+        addLog(`[OK] ${s.size} posts found`, 'success');
+      }
       catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
     };
     
     const restartScheduler = () => {
       clearScheduler();
-      if (geminiApiKey || groqApiKey) { scheduleNextRun(randIntervalMs());
-        addLog('[OK] Scheduler restarted', 'success'); }
+      if (geminiApiKey || groqApiKey) {
+        scheduleNextRun(randIntervalMs());
+        addLog('[OK] Scheduler restarted', 'success');
+      }
       else addLog('[WARN] No keys', 'error');
     };
     
@@ -1726,8 +1742,10 @@ Audience tag for this post: ${audience}`;
             input.classList.add('has-img');
             preview2.src = url;
             preview2.classList.add('visible');
-            preview2.onerror = () => { preview2.src = '';
-              preview2.classList.remove('visible'); };
+            preview2.onerror = () => {
+              preview2.src = '';
+              preview2.classList.remove('visible');
+            };
           } else {
             input.classList.remove('has-img');
             preview2.src = '';
@@ -1747,8 +1765,10 @@ Audience tag for this post: ${audience}`;
       if (url) {
         featuredImgThumb.src = url;
         featuredImgThumb.classList.add('visible');
-        featuredImgThumb.onerror = () => { featuredImgThumb.src = '';
-          featuredImgThumb.classList.remove('visible'); };
+        featuredImgThumb.onerror = () => {
+          featuredImgThumb.src = '';
+          featuredImgThumb.classList.remove('visible');
+        };
       } else {
         featuredImgThumb.src = '';
         featuredImgThumb.classList.remove('visible');
@@ -1804,12 +1824,18 @@ Audience tag for this post: ${audience}`;
       }
     });
     
-    cancelImgBtn.addEventListener('click', () => { imgModal.classList.remove('active');
+    cancelImgBtn.addEventListener('click', () => {
+      imgModal.classList.remove('active');
       pendingImgId = null;
-      pendingImgContent = ''; });
-    imgModal.addEventListener('click', e => { if (e.target === imgModal) { imgModal.classList.remove('active');
+      pendingImgContent = '';
+    });
+    imgModal.addEventListener('click', e => {
+      if (e.target === imgModal) {
+        imgModal.classList.remove('active');
         pendingImgId = null;
-        pendingImgContent = ''; } });
+        pendingImgContent = '';
+      }
+    });
     
     // ─── META SAVE ────────────────────────────────────────────
     saveMetaBtn.addEventListener('click', async () => {
@@ -1832,10 +1858,16 @@ Audience tag for this post: ${audience}`;
         saveMetaBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save Details`;
       }
     });
-    cancelMetaBtn.addEventListener('click', () => { metaModal.classList.remove('active');
-      pendingMetaId = null; });
-    metaModal.addEventListener('click', e => { if (e.target === metaModal) { metaModal.classList.remove('active');
-        pendingMetaId = null; } });
+    cancelMetaBtn.addEventListener('click', () => {
+      metaModal.classList.remove('active');
+      pendingMetaId = null;
+    });
+    metaModal.addEventListener('click', e => {
+      if (e.target === metaModal) {
+        metaModal.classList.remove('active');
+        pendingMetaId = null;
+      }
+    });
     
     // ─── DELETE ───────────────────────────────────────────────
     confirmDeleteBtn.addEventListener('click', async () => {
@@ -1854,10 +1886,16 @@ Audience tag for this post: ${audience}`;
         confirmDeleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg> Yes, Delete`;
       }
     });
-    cancelDeleteBtn.addEventListener('click', () => { confirmModal.classList.remove('active');
-      pendingDeleteId = null; });
-    confirmModal.addEventListener('click', e => { if (e.target === confirmModal) { confirmModal.classList.remove('active');
-        pendingDeleteId = null; } });
+    cancelDeleteBtn.addEventListener('click', () => {
+      confirmModal.classList.remove('active');
+      pendingDeleteId = null;
+    });
+    confirmModal.addEventListener('click', e => {
+      if (e.target === confirmModal) {
+        confirmModal.classList.remove('active');
+        pendingDeleteId = null;
+      }
+    });
     
     // ─── NAV & WIRING ─────────────────────────────────────────
     forceBtn.addEventListener('click', forcePublish);
@@ -1877,13 +1915,17 @@ Audience tag for this post: ${audience}`;
     
     const navToggle = document.getElementById('nav-toggle');
     const navLinks = document.getElementById('navLinks');
-    if (navToggle && navLinks) navToggle.addEventListener('click', () => { navToggle.classList.toggle('open');
-      navLinks.classList.toggle('open'); });
+    if (navToggle && navLinks) navToggle.addEventListener('click', () => {
+      navToggle.classList.toggle('open');
+      navLinks.classList.toggle('open');
+    });
     
     // ─── INIT ─────────────────────────────────────────────────
     const saved = localStorage.getItem('publishCount');
-    if (saved) { publishCount = parseInt(saved);
-      publishCountSpan.innerText = publishCount; }
+    if (saved) {
+      publishCount = parseInt(saved);
+      publishCountSpan.innerText = publishCount;
+    }
     
     onAuthStateChanged(auth, async user => {
       if (user) {
@@ -1893,8 +1935,10 @@ Audience tag for this post: ${audience}`;
         authStatusSpan.innerHTML = `<span class="status-dot"></span>${escHtml(short)}`;
         addLog(`[AUTH] ${user.email}`, 'success');
         const ok = await loadApiKeys(user);
-        if (ok && !activeTimeout) { addLog('[READY] Starting scheduler...', 'success');
-          scheduleNextRun(randIntervalMs()); }
+        if (ok && !activeTimeout) {
+          addLog('[READY] Starting scheduler...', 'success');
+          scheduleNextRun(randIntervalMs());
+        }
         loadRecentPosts();
       } else {
         statusDot.classList.add('red');
