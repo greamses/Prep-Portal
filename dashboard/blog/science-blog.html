@@ -1525,12 +1525,17 @@
     onAuthStateChanged(auth, u => { currentUser = u; });
     
     // ─── UTILS ────────────────────────────────────────────────
-    const showToast = msg => { toastEl.textContent = msg;
+    const showToast = msg => {
+      toastEl.textContent = msg;
       toastEl.classList.add('show');
-      setTimeout(() => toastEl.classList.remove('show'), 2800); };
+      setTimeout(() => toastEl.classList.remove('show'), 2800);
+    };
     const escHtml = s => { if (!s) return ''; return s.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } [m])); };
-    const stripHtml = h => { const d = document.createElement('div');
-      d.innerHTML = h; return d.textContent || d.innerText || ''; };
+    const stripHtml = h => {
+      const d = document.createElement('div');
+      d.innerHTML = h;
+      return d.textContent || d.innerText || '';
+    };
     const formatDate = ts => { if (!ts) return 'Just now'; const d = ts.toDate ? ts.toDate() : new Date(ts); const diff = Math.floor((Date.now() - d) / 86400000); if (diff === 0) return 'Today'; if (diff === 1) return 'Yesterday'; if (diff < 7) return `${diff} days ago`; return d.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }); };
     const calcReadTime = c => { if (!c) return 1; return Math.max(1, Math.ceil(c.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).length / 200)); };
     
@@ -1608,8 +1613,10 @@
       let f = [...allPosts];
       if (currentSubject !== 'all') f = f.filter(p => p.subject === currentSubject);
       if (currentClass !== 'all') f = f.filter(p => p.classLevel === currentClass);
-      if (currentSearch) { const s = currentSearch.toLowerCase();
-        f = f.filter(p => p.title.toLowerCase().includes(s) || stripHtml(p.content || '').toLowerCase().includes(s)); }
+      if (currentSearch) {
+        const s = currentSearch.toLowerCase();
+        f = f.filter(p => p.title.toLowerCase().includes(s) || stripHtml(p.content || '').toLowerCase().includes(s));
+      }
       return f;
     }
     
@@ -1765,10 +1772,12 @@
     
     window.addEventListener('popstate', e => {
       if (e.state?.postId) { const post = allPosts.find(p => p.id === e.state.postId); if (post) showSinglePost(post); }
-      else if (singlePostView.classList.contains('active')) { singlePostView.classList.remove('active');
+      else if (singlePostView.classList.contains('active')) {
+        singlePostView.classList.remove('active');
         document.body.style.overflow = '';
         activePost = null;
-        document.title = 'Prep Portal 2026 | Science Archive'; }
+        document.title = 'Prep Portal 2026 | Science Archive';
+      }
     });
     
     // ─── LIKE ─────────────────────────────────────────────────
@@ -1778,34 +1787,49 @@
       const likes = post.likes || [];
       const had = likes.includes(currentUser.uid);
       try {
-        if (had) { await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
-          post.likes = likes.filter(u => u !== currentUser.uid); }
-        else { await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
-          post.likes = [...likes, currentUser.uid]; }
+        if (had) {
+          await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
+          post.likes = likes.filter(u => u !== currentUser.uid);
+        }
+        else {
+          await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
+          post.likes = [...likes, currentUser.uid];
+        }
         const now = post.likes.includes(currentUser.uid);
         const btn = document.getElementById('likeBtn');
-        if (btn) { btn.className = `action-btn like-btn${now?' liked':''}`;
-          btn.innerHTML = `${now?I.heartFill:I.heart} <span id="likeCount">${post.likes.length}</span>`; }
+        if (btn) {
+          btn.className = `action-btn like-btn${now?' liked':''}`;
+          btn.innerHTML = `${now?I.heartFill:I.heart} <span id="likeCount">${post.likes.length}</span>`;
+        }
         const idx = allPosts.findIndex(p => p.id === post.id);
         if (idx !== -1) allPosts[idx].likes = post.likes;
       } catch (_) { showToast('Could not update like'); }
     }
     
     // ─── SHARE ────────────────────────────────────────────────
-    function sharePost(post) { const url = `${location.origin}${location.pathname}#${post.id}`; if (navigator.share) navigator.share({ title: post.title, url }).catch(() => {});
-      else copyToClipboard(url); }
+    function sharePost(post) {
+      const url = `${location.origin}${location.pathname}#${post.id}`;
+      if (navigator.share) navigator.share({ title: post.title, url }).catch(() => {});
+      else copyToClipboard(url);
+    }
     
-    function copyPostLink() { const url = `${location.origin}${location.pathname}#${activePost?.id||''}`;
-      copyToClipboard(url); }
+    function copyPostLink() {
+      const url = `${location.origin}${location.pathname}#${activePost?.id||''}`;
+      copyToClipboard(url);
+    }
     
-    function copyToClipboard(text) { if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('Link copied!'));
-      else { const t = document.createElement('textarea');
+    function copyToClipboard(text) {
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('Link copied!'));
+      else {
+        const t = document.createElement('textarea');
         t.value = text;
         document.body.appendChild(t);
         t.select();
         document.execCommand('copy');
         document.body.removeChild(t);
-        showToast('Link copied!'); } }
+        showToast('Link copied!');
+      }
+    }
     
     // ─── COMMENTS WITH LIKES + REPLIES ────────────────────────
     async function loadComments(postId) {
@@ -1825,8 +1849,10 @@
           const cLikes = c.likes || [];
           const cLiked = currentUser && cLikes.includes(currentUser.uid);
           let replyCount = 0;
-          try { const rs = await getDocs(collection(db, 'science-posts', postId, 'comments', d.id, 'replies'));
-            replyCount = rs.size; } catch (_) {}
+          try {
+            const rs = await getDocs(collection(db, 'science-posts', postId, 'comments', d.id, 'replies'));
+            replyCount = rs.size;
+          } catch (_) {}
           const el = document.createElement('div');
           el.className = 'comment-item';
           el.dataset.commentId = d.id;
@@ -1859,12 +1885,16 @@
       if (!snap.exists()) return;
       const likes = snap.data().likes || [];
       const had = likes.includes(currentUser.uid);
-      if (had) { await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
+      if (had) {
+        await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
         btn.classList.remove('liked');
-        btn.innerHTML = `${I.heart}<span class="clikes">${Math.max(0,likes.length-1)||''}</span>`; }
-      else { await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
+        btn.innerHTML = `${I.heart}<span class="clikes">${Math.max(0,likes.length-1)||''}</span>`;
+      }
+      else {
+        await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
         btn.classList.add('liked');
-        btn.innerHTML = `${I.heartFill}<span class="clikes">${likes.length+1}</span>`; }
+        btn.innerHTML = `${I.heartFill}<span class="clikes">${likes.length+1}</span>`;
+      }
     }
     
     const loadedReplies = new Set();
@@ -1873,8 +1903,10 @@
       if (!s) return;
       if (s.style.display !== 'none') { s.style.display = 'none'; return; }
       s.style.display = 'block';
-      if (!loadedReplies.has(commentId)) { await loadReplies(postId, commentId);
-        loadedReplies.add(commentId); }
+      if (!loadedReplies.has(commentId)) {
+        await loadReplies(postId, commentId);
+        loadedReplies.add(commentId);
+      }
     }
     
     async function loadReplies(postId, commentId) {
@@ -1884,11 +1916,18 @@
       try {
         const snap = await getDocs(query(collection(db, 'science-posts', postId, 'comments', commentId, 'replies'), orderBy('createdAt', 'asc')));
         if (snap.empty) return;
-        snap.forEach(d => { const r = d.data(); const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Just now'; const name = r.authorName || (r.authorEmail ? r.authorEmail.split('@')[0] : 'Anonymous'); const rLikes = r.likes || []; const rLiked = currentUser && rLikes.includes(currentUser.uid); const el = document.createElement('div');
+        snap.forEach(d => {
+          const r = d.data();
+          const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Just now';
+          const name = r.authorName || (r.authorEmail ? r.authorEmail.split('@')[0] : 'Anonymous');
+          const rLikes = r.likes || [];
+          const rLiked = currentUser && rLikes.includes(currentUser.uid);
+          const el = document.createElement('div');
           el.className = 'reply-item';
           el.dataset.replyId = d.id;
           el.innerHTML = `<div class="reply-author-row"><span class="reply-author">${escHtml(name)}</span><span class="reply-time">${date}</span></div><p class="reply-text">${escHtml(r.text)}</p><button class="reply-like-btn${rLiked?' liked':''}" data-reply-id="${d.id}" data-comment-id="${commentId}" data-post-id="${postId}">${rLiked?I.heartFill:I.heart}<span class="rlikes">${rLikes.length||''}</span></button>`;
-          listEl.appendChild(el); });
+          listEl.appendChild(el);
+        });
         listEl.querySelectorAll('.reply-like-btn').forEach(btn => btn.addEventListener('click', () => toggleReplyLike(btn.dataset.postId, btn.dataset.commentId, btn.dataset.replyId, btn)));
       } catch (_) {}
     }
@@ -1900,12 +1939,16 @@
       if (!snap.exists()) return;
       const likes = snap.data().likes || [];
       const had = likes.includes(currentUser.uid);
-      if (had) { await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
+      if (had) {
+        await updateDoc(ref, { likes: arrayRemove(currentUser.uid) });
         btn.classList.remove('liked');
-        btn.innerHTML = `${I.heart}<span class="rlikes">${Math.max(0,likes.length-1)||''}</span>`; }
-      else { await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
+        btn.innerHTML = `${I.heart}<span class="rlikes">${Math.max(0,likes.length-1)||''}</span>`;
+      }
+      else {
+        await updateDoc(ref, { likes: arrayUnion(currentUser.uid) });
         btn.classList.add('liked');
-        btn.innerHTML = `${I.heartFill}<span class="rlikes">${likes.length+1}</span>`; }
+        btn.innerHTML = `${I.heartFill}<span class="rlikes">${likes.length+1}</span>`;
+      }
     }
     
     async function submitReply(postId, commentId) {
@@ -1923,8 +1966,10 @@
         await loadReplies(postId, commentId);
         showToast('Reply posted!');
       } catch (e) { showToast('Error: ' + e.message); }
-      finally { btn.disabled = false;
-        btn.textContent = 'Post Reply'; }
+      finally {
+        btn.disabled = false;
+        btn.textContent = 'Post Reply';
+      }
     }
     
     async function submitComment(postId) {
@@ -1941,8 +1986,10 @@
         await loadComments(postId);
         showToast('Comment posted!');
       } catch (e) { showToast('Error: ' + e.message); }
-      finally { btn.disabled = false;
-        btn.textContent = 'Post Comment'; }
+      finally {
+        btn.disabled = false;
+        btn.textContent = 'Post Comment';
+      }
     }
     
     // ─── LOAD POSTS ───────────────────────────────────────────
@@ -1950,8 +1997,10 @@
       try {
         const snap = await getDocs(query(collection(db, 'science-posts'), orderBy('publishedAt', 'desc')));
         allPosts = [];
-        snap.forEach(d => { const data = d.data();
-          allPosts.push({ id: d.id, title: data.title || 'Untitled', content: data.content || '', excerpt: data.excerpt || '', featuredImage: data.featuredImage || '', videoLink: data.videoLink || '', practiceLink: data.practiceLink || '', subject: data.subject || 'math', classLevel: data.classLevel || 'ss-1', publishedAt: data.publishedAt, modelUsed: data.modelUsed || '', views: data.views || 0, likes: data.likes || [] }); });
+        snap.forEach(d => {
+          const data = d.data();
+          allPosts.push({ id: d.id, title: data.title || 'Untitled', content: data.content || '', excerpt: data.excerpt || '', featuredImage: data.featuredImage || '', videoLink: data.videoLink || '', practiceLink: data.practiceLink || '', subject: data.subject || 'math', classLevel: data.classLevel || 'ss-1', publishedAt: data.publishedAt, modelUsed: data.modelUsed || '', views: data.views || 0, likes: data.likes || [] });
+        });
         if (!allPosts.length) { scienceGrid.innerHTML = '<div class="no-posts">No science posts yet. Check back soon!</div>'; return; }
         renderPosts();
         if (window.location.hash) openPostFromHash();
@@ -1963,10 +2012,17 @@
       const dropdown = document.getElementById(dropdownId);
       const btn = document.getElementById(btnId);
       const textEl = document.getElementById(textId);
-      btn.addEventListener('click', e => { e.stopPropagation(); const o = dropdown.classList.toggle('open');
-        btn.setAttribute('aria-expanded', o); });
-      document.addEventListener('click', e => { if (!dropdown.contains(e.target)) { dropdown.classList.remove('open');
-          btn.setAttribute('aria-expanded', 'false'); } });
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const o = dropdown.classList.toggle('open');
+        btn.setAttribute('aria-expanded', o);
+      });
+      document.addEventListener('click', e => {
+        if (!dropdown.contains(e.target)) {
+          dropdown.classList.remove('open');
+          btn.setAttribute('aria-expanded', 'false');
+        }
+      });
       dropdown.querySelectorAll('.dropdown-item').forEach(item => {
         item.addEventListener('click', () => {
           dropdown.querySelectorAll('.dropdown-item').forEach(i => i.classList.remove('active'));
@@ -1979,15 +2035,23 @@
       });
     }
     
-    wireDropdown('subjectDropdown', 'subjectDropdownBtn', 'subjectFilterText', f => { currentSubject = f;
-      renderPosts(); });
-    wireDropdown('classDropdown', 'classDropdownBtn', 'classFilterText', f => { currentClass = f;
-      renderPosts(); });
+    wireDropdown('subjectDropdown', 'subjectDropdownBtn', 'subjectFilterText', f => {
+      currentSubject = f;
+      renderPosts();
+    });
+    wireDropdown('classDropdown', 'classDropdownBtn', 'classFilterText', f => {
+      currentClass = f;
+      renderPosts();
+    });
     
     let st;
-    searchInput.addEventListener('input', e => { clearTimeout(st);
-      st = setTimeout(() => { currentSearch = e.target.value;
-        renderPosts(); }, 280); });
+    searchInput.addEventListener('input', e => {
+      clearTimeout(st);
+      st = setTimeout(() => {
+        currentSearch = e.target.value;
+        renderPosts();
+      }, 280);
+    });
     
     closePostBtn.addEventListener('click', closePostView);
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && singlePostView.classList.contains('active')) closePostView(); });
@@ -1996,8 +2060,10 @@
     
     const navToggle = document.getElementById('nav-toggle'),
       navLinks = document.getElementById('navLinks');
-    if (navToggle && navLinks) navToggle.addEventListener('click', () => { navToggle.classList.toggle('open');
-      navLinks.classList.toggle('open'); });
+    if (navToggle && navLinks) navToggle.addEventListener('click', () => {
+      navToggle.classList.toggle('open');
+      navLinks.classList.toggle('open');
+    });
     
     loadPosts();
     setInterval(loadPosts, 60000);
