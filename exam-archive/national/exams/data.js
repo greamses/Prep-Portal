@@ -2,7 +2,7 @@
 const EXAM_TYPES = [
   { id: 'WAEC', name: 'WAEC (WASSCE)', live: true },
   { id: 'NECO', name: 'NECO (SSCE)', live: false },
-  { id: 'JAMB', name: 'JAMB (UTME)', live: false },
+  { id: 'JAMB', name: 'JAMB (UTME)', live: true },
   { id: 'Common-entrance', name: 'Common Entrance', live: false }
 ];
 

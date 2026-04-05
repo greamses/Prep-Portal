@@ -1,6 +1,4 @@
-import setupQuiz from '/question.js'
-
-const quizData = [
+const chemistryObjective = [
   {
     "question": "The molecule with the highest number of lone pair of electrons is",
     "image": null,
@@ -805,7 +803,5 @@ const quizData = [
       "It is a spontaneous redox reaction that requires both moisture and oxygen to proceed."
     ]
   }
-
+  
 ];
-
-setupQuiz(quizData, 3600)
