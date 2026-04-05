@@ -365,18 +365,18 @@
       list-style: none;
       margin: 0;
       padding: 0;
-      max-height: 420px;
+      max-height: 480px;
       overflow-y: auto;
       overflow-x: hidden;
     }
     
+    /* ── Each post row is a column: title → meta → actions ── */
     .manage-post-item {
       display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: .875rem 1.5rem;
-      border-bottom: 1px solid var(--off, #f7f4ee);
+      flex-direction: column;
+      gap: .4rem;
+      padding: .875rem 1.25rem;
+      border-bottom: 1px solid var(--off, #f0ece4);
       transition: background .1s;
     }
     
@@ -388,8 +388,25 @@
       background: var(--off, #f7f4ee);
     }
     
+    /* On wider screens put info and actions side by side */
+    @media (min-width: 640px) {
+      .manage-post-item {
+        flex-direction: row;
+        align-items: center;
+        gap: 1rem;
+      }
+      
+      .manage-post-info {
+        flex: 1;
+        min-width: 0;
+      }
+      
+      .manage-post-actions {
+        flex-shrink: 0;
+      }
+    }
+    
     .manage-post-info {
-      flex: 1;
       min-width: 0;
     }
     
@@ -398,24 +415,34 @@
       font-size: .8rem;
       font-weight: 600;
       color: var(--ink, #0a0a0a);
+      /* Truncate with ellipsis */
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      margin-bottom: .2rem;
+      margin-bottom: .3rem;
     }
     
+    /* Meta row: all items stay on ONE horizontal line, wrap only if truly needed */
     .manage-post-meta {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
-      font-size: .63rem;
+      font-size: .62rem;
       color: var(--muted, #555);
       display: flex;
-      gap: .75rem;
+      gap: .4rem .75rem;
       flex-wrap: wrap;
       align-items: center;
     }
     
+    /* Force each meta chip to stay on one line */
+    .manage-post-meta span,
+    .manage-post-meta .manage-post-badge,
+    .manage-post-meta .pill-pending {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    
     .manage-post-badge {
-      padding: .1rem .4rem;
+      padding: .15rem .45rem;
       font-size: .58rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -461,7 +488,7 @@
       display: inline-flex;
       align-items: center;
       gap: .3rem;
-      padding: .1rem .5rem;
+      padding: .15rem .5rem;
       font-size: .58rem;
       font-weight: 700;
       text-transform: uppercase;
@@ -476,12 +503,13 @@
       flex-shrink: 0;
     }
     
+    /* Action buttons: always horizontal, never wrap */
     .manage-post-actions {
       display: flex;
       gap: .4rem;
-      flex-shrink: 0;
       align-items: center;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      /* keep all 3 buttons on one row */
     }
     
     .manage-empty {
@@ -1139,36 +1167,13 @@
     ];
     
     const GEMINI_MODELS = [
-    {
-      label: 'Gemini 3.1 Flash-Lite',
-      provider: 'gemini',
-      url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent'
-    },
-    {
-      label: 'Gemini 3.1 Pro',
-      provider: 'gemini',
-      url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent'
-    },
-    {
-      label: 'Gemini 3 Flash',
-      provider: 'gemini',
-      url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent'
-    },
-    {
-      label: 'Gemini 2.5 Flash-Lite',
-      provider: 'gemini',
-      url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent'
-    },
-    {
-      label: 'Gemini 2.5 Flash',
-      provider: 'gemini',
-      url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent'
-    },
-    {
-      label: 'Gemini 2.5 Pro',
-      provider: 'gemini',
-      url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent'
-    }, ];
+      { label: 'Gemini 2.5 Flash', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent' },
+      { label: 'Gemini 2.5 Pro', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-preview-05-06:generateContent' },
+      { label: 'Gemini 2.0 Flash', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent' },
+      { label: 'Gemini 1.5 Flash', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent' },
+      { label: 'Gemini 1.5 Pro', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent' },
+      { label: 'Gemini 1.0 Pro', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent' },
+    ];
     
     const BLOG_TOPICS = [
       { text: 'How to pass WAEC Mathematics without stress', audience: 'waec', complexity: 'deep' },
@@ -1350,40 +1355,68 @@
      * through the Image Editor after publishing.
      */
     function buildPrompt(topicText, audience, style) {
+      /*
+       * Tone guidance per audience age group:
+       *  - common (ages 9–12):  very simple words, short sentences, playful energy, no jargon
+       *  - waec/neco/jamb (14–19): friendly peer tone, relatable scenarios, light humour okay
+       *  - cambridge (14–18):   clear and encouraging, moderately formal
+       *  - educator (adults):   professional but warm, evidence-based, collegial
+       *  - general:             upbeat, supportive, accessible
+       */
+      const toneGuide = {
+        common: 'Write like a friendly older sibling talking to a 10-year-old. Use very simple words, short sentences, and a fun, encouraging tone. Avoid all jargon.',
+        waec: 'Write like a knowledgeable friend who has passed WAEC and wants to help. Keep it warm, relatable, and direct. Use everyday language Nigerian secondary school students relate to.',
+        neco: 'Write like a knowledgeable friend who has passed NECO and wants to help. Keep it warm, relatable, and direct. Use everyday language Nigerian secondary school students relate to.',
+        jamb: 'Write like someone who scored 320 in JAMB and wants to share exactly how. Be direct, practical, and encouraging. Use language Nigerian senior secondary students will connect with.',
+        cambridge: 'Write in a clear, encouraging, and slightly formal tone appropriate for international curriculum students (ages 14–18). Be thorough but accessible.',
+        educator: 'Write in a warm, collegial, professional tone for experienced teachers and school leaders. Be evidence-based, specific, and respectful of their expertise.',
+        general: 'Write in an upbeat, supportive tone for Nigerian students across different exam types. Be encouraging and practical.'
+      } [audience] || 'Write in a warm, practical tone for Nigerian exam students.';
+      
       const audienceDesc = {
-        waec: 'Nigerian secondary school students preparing for WAEC SSCE',
-        neco: 'Nigerian secondary school students preparing for NECO SSCE',
-        jamb: 'Nigerian students preparing for JAMB UTME university entrance',
-        cambridge: 'students preparing for Cambridge IGCSE or A-Level exams',
-        common: 'Nigerian primary school pupils preparing for Common Entrance',
-        educator: 'Nigerian secondary school teachers, school administrators, and education professionals',
-        general: 'Nigerian exam candidates'
+        waec: 'Nigerian SS2 and SS3 students preparing for WAEC SSCE exams',
+        neco: 'Nigerian SS2 and SS3 students preparing for NECO SSCE exams',
+        jamb: 'Nigerian students preparing for JAMB UTME university entrance exams',
+        cambridge: 'students preparing for Cambridge IGCSE or A-Level examinations',
+        common: 'Nigerian primary school pupils (ages 9–12) preparing for Common Entrance exams',
+        educator: 'Nigerian secondary school teachers, HODs, and school administrators',
+        general: 'Nigerian students preparing for their major school-leaving exams'
       } [audience] || 'Nigerian exam candidates';
       
-      return `Write a detailed, well-structured blog post for "Prep Portal 2026".
+      const hookInstruction = audience === 'common' ?
+        'Start with a fun question or surprising fact that a 10-year-old would find exciting — something like "Did you know that..." or "What if I told you...".' :
+        audience === 'educator' ?
+        'Open with a compelling observation or a challenge many teachers face in classrooms — something specific that makes an educator nod and think "yes, that\'s exactly my situation".' :
+        'Open with a powerful hook: a relatable scenario, a bold statement, or a direct question that grabs a Nigerian student\'s attention immediately. Think about the exact moment of stress or confusion a student feels, and speak directly into it.';
+      
+      return `You are writing a blog post for "Prep Portal 2026", a Nigerian exam preparation platform.
 
-Topic: ${topicText}
-Audience: ${audienceDesc}
-Content style: ${style}
-Target reading time: ${audience === 'educator' ? '6–10 minutes' : '4–7 minutes'}
+TOPIC: ${topicText}
+AUDIENCE: ${audienceDesc}
+CONTENT STYLE: ${style}
+READING TIME: ${audience === 'educator' ? '6–8 minutes' : audience === 'common' ? '3–4 minutes' : '4–6 minutes'}
 
-${audience === 'educator' ? `Educator focus — include:
-- Specific, measurable teacher performance indicators
-- Student performance metrics and how to interpret them
-- Evidence-based pedagogical strategies
-- Actionable classroom techniques
-- Academic outcome improvement frameworks` : ''}
+TONE INSTRUCTION:
+${toneGuide}
 
-Write in clean HTML. Requirements:
-- <h1> title (make it engaging, not a verbatim repeat of the topic)
-- 3–5 <h2> sections with clear subheadings
-- Well-developed <p> paragraphs under each section
-- At least one <ul> or <ol> list
-- A conclusion <p> paragraph
-- DO NOT include any <img> tags — images will be added separately by the editor
-- Return ONLY the HTML body content, no <html>/<head>/<body> wrappers, no markdown fences
+STRUCTURE REQUIREMENTS:
+1. Write a catchy <h1> TITLE — make it specific, benefit-driven, and NOT a verbatim copy of the topic. Example: instead of "WAEC Mathematics Tips", write "Stop Failing WAEC Maths: Here's the Simple Fix Nobody Tells You".
+2. ${hookInstruction}
+3. Write 3–5 <h2> sections. Each section heading should feel conversational, not textbook-like. Example: "Why Most Students Get This Wrong" instead of "Common Mistakes".
+4. Each section needs well-developed <p> paragraphs with specific, actionable information. Be concrete — use examples, real subject names, real scenarios Nigerian students face.
+5. Include at least one <ul> or <ol> list with practical tips, steps, or examples.
+${audience === 'educator' ? `6. Include at least one section covering measurable indicators — whether teacher performance metrics, student outcome data, or assessment results. Be specific.` : `6. Include at least one relatable example or mini-scenario that shows the advice working in practice.`}
+7. End with a short, punchy conclusion paragraph that motivates the reader and gives them one clear next action to take TODAY.
 
-Audience tag for this post: ${audience}`;
+CRITICAL RULES:
+- DO NOT include any <img> tags — images are added separately
+- DO NOT add <html>, <head>, or <body> tags
+- DO NOT wrap in markdown code fences
+- Return ONLY the HTML content starting from the <h1> tag
+- Write with personality — avoid dry, textbook-style writing
+- Every paragraph must add real value. No filler sentences.
+
+AUDIENCE TAG (do not remove): <!-- audience:${audience} -->`;
     }
     
     async function callGroq(model, prompt) {
