@@ -9,6 +9,8 @@
 function loadPageConfig() {
     const params = new URLSearchParams(window.location.search);
     
+    console.log(params.get('examType')?.toLowerCase())
+    
     window.PAGE_CONFIG = {
         examType: params.get('examType')?.toLowerCase() || 'waec',
         year: params.get('year') || '2024',

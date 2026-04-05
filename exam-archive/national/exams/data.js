@@ -312,8 +312,6 @@ beginBtn.onclick = () => {
     types: state.types.join(',')
   });
   
-  // Redirect to question.html with all parameters including exam type
-  // The question page will use PAGE_CONFIG.examType to load correct exam data
   window.location.href = `../question/question.html?${params.toString()}`;
 };
 
