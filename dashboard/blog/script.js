@@ -318,9 +318,15 @@ AUDIENCE TAG (do not remove): <!-- audience:${audience} -->`;
 }
 
 async function callGroq(model, prompt) {
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  // 🚨 FIX: Added corsproxy.io to bypass the browser's CORS block
+  const targetUrl = encodeURIComponent('https://api.groq.com/openai/v1/chat/completions');
+  
+  const res = await fetch('https://corsproxy.io/?' + targetUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqApiKey}` },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${groqApiKey}`
+    },
     body: JSON.stringify({
       model: model.model,
       messages: [
@@ -331,10 +337,17 @@ async function callGroq(model, prompt) {
       max_tokens: 2800
     })
   });
-  if (!res.ok) { const t = await res.text(); throw new Error(`Groq ${res.status}: ${t.substring(0,100)}`); }
+  
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Groq ${res.status}: ${t.substring(0,100)}`);
+  }
+  
   const data = await res.json();
   const c = data.choices?.[0]?.message?.content;
+  
   if (!c) throw new Error('Groq returned empty content');
+  
   return c;
 }
 
