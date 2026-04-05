@@ -751,32 +751,40 @@ STRICT RULES:
 The two suggestions must be short (2-5 words), relevant to what you just explained, and phrased as things the student would naturally ask next. Do not number them. Do not add anything after this line.`;
     
     try {
-      const res = await fetch(GROQ_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
-        body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
-          messages: [{ role: "system", content: systemPrompt }, ...history, { role: "user", content: text }],
-          temperature: 0.3,
-          max_tokens: 2000
-        })
-      });
-      const data = await res.json();
-      hideTyping();
-      let reply = data.choices?.[0]?.message?.content || "Connection error. Please try again.";
-      
-      const { cleanReply, chips } = parseSuggestions(reply);
-      
-      lastBotReply = cleanReply;
-      history.push({ role: 'user', content: text }, { role: 'assistant', content: cleanReply });
-      if (history.length > 10) history = history.slice(-10);
-      await appendMessage('bot', cleanReply);
-      
-      renderSuggestionChips(chips);
-    } catch (err) {
-      hideTyping();
-      await appendMessage('bot', "Connection error. Please check your internet connection.");
-    }
+  // 🚨 FIX: Added corsproxy.io to bypass the browser's CORS block
+  const targetUrl = encodeURIComponent(GROQ_URL);
+  
+  const res = await fetch('https://corsproxy.io/?' + targetUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${GROQ_KEY}`
+    },
+    body: JSON.stringify({
+      model: "llama-3.1-8b-instant",
+      messages: [{ role: "system", content: systemPrompt }, ...history, { role: "user", content: text }],
+      temperature: 0.3,
+      max_tokens: 2000
+    })
+  });
+  
+  const data = await res.json();
+  hideTyping();
+  let reply = data.choices?.[0]?.message?.content || "Connection error. Please try again.";
+  
+  const { cleanReply, chips } = parseSuggestions(reply);
+  
+  lastBotReply = cleanReply;
+  history.push({ role: 'user', content: text }, { role: 'assistant', content: cleanReply });
+  if (history.length > 10) history = history.slice(-10);
+  await appendMessage('bot', cleanReply);
+  
+  renderSuggestionChips(chips);
+} catch (err) {
+  hideTyping();
+  await appendMessage('bot', "Connection error. Please check your internet connection.");
+  console.error("PrepBot API Error:", err);
+} 
     isBusy = false;
     sendBtn.classList.remove('loading');
   }
