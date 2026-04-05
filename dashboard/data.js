@@ -27,6 +27,7 @@ const siteData = {
         { text: "Theory Drill", href: "#theory" },
         { text: "About", href: "#about" },
         { text: "Blogs", href: "./blog/blogs.html" },
+        { text: "Science Hub", href: "./blog/science-blog/blogs.html" },
         { text: "Authentication", href: "../utils/auth/auth.html" }
     ],
     ctaButton: { text: "Start Revising", href: "#exams" },
