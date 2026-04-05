@@ -17,7 +17,7 @@ const BASE_SUBJECTS = {
   commercial: ['Commerce', 'Financial Accounting', 'Economics', 'Marketing', 'Insurance', 'Business Management', 'Office Practice']
 };
 
-const COMPULSORY_CORE = ['English'];
+const COMPULSORY_CORE = ['Chemistry'];
 
 // Application state
 let state = {
@@ -60,14 +60,15 @@ function getFullSubjectList(streamKey, compulsoryEnabled) {
     });
     return combined;
   } else {
-  const optionalMode = [...COMPULSORY_CORE, ...base];
-  const unique = [];
-  optionalMode.forEach(sub => {
-    if (!unique.includes(sub)) unique.push(sub);
-  });
-  return unique;
+    const optionalMode = [...COMPULSORY_CORE, ...base];
+    const unique = [];
+    optionalMode.forEach(sub => {
+      if (!unique.includes(sub)) unique.push(sub);
+    });
+    return unique;
+  }
 }
-}
+
 function updateReadyState() {
   const examOk = state.examType !== null;
   const yearOk = state.year !== null;
@@ -230,6 +231,31 @@ function buildYearGrid() {
 
 function initTypeToggles() {
   const typeChips = document.querySelectorAll('#type-chips .custom-chip');
+  
+  // Function to update visibility based on exam type
+  function updateTypeVisibility() {
+    const isJamb = state.examType === 'JAMB'; // Match your exam type ID
+    typeChips.forEach(chip => {
+      const type = chip.getAttribute('data-type');
+      if (type === 'theory' || type === 'essay') {
+        if (isJamb) {
+          chip.style.display = 'none';
+          // If JAMB and theory was selected, deselect it
+          const idx = state.types.indexOf(type);
+          if (idx !== -1) {
+            state.types.splice(idx, 1);
+            chip.classList.remove('checked');
+          }
+        } else {
+          chip.style.display = 'flex';
+        }
+      }
+    });
+    doneType.classList.toggle('show', state.types.length > 0);
+    updateReadyState();
+  }
+  
+  // Initial setup
   typeChips.forEach(chip => {
     chip.onclick = (e) => {
       e.stopPropagation();
@@ -246,6 +272,19 @@ function initTypeToggles() {
       updateReadyState();
     };
   });
+  
+  // Also call this when exam type changes
+  // Add this to your exam chip click handler
+  const originalExamHandler = null;
+  document.querySelectorAll('.exam-chip').forEach(chip => {
+    const originalClick = chip.onclick;
+    chip.onclick = (e) => {
+      if (originalClick) originalClick.call(chip, e);
+      updateTypeVisibility();
+    };
+  });
+  
+  updateTypeVisibility();
 }
 
 function setupDropdown() {
