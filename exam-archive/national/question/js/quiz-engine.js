@@ -6,22 +6,22 @@
 'use strict';
 
 // Parse URL parameters from main page
-function loadPageConfig() {
-    const params = new URLSearchParams(window.location.search);
+// function loadPageConfig() {
+//     const params = new URLSearchParams(window.location.search);
     
-    console.log(params.get('examType')?.toLowerCase())
+//     console.log(params.get('examType')?.toLowerCase())
     
-    window.PAGE_CONFIG = {
-        examType: params.get('examType')?.toLowerCase() || 'waec',
-        year: params.get('year') || '2024',
-        stream: params.get('stream') || '',
-        subjects: params.get('subjects')?.split(',') || [],
-        types: params.get('types')?.split(',') || []
-    };
-}
+//     window.PAGE_CONFIG = {
+//         examType: params.get('examType')?.toLowerCase() || 'waec',
+//         year: params.get('year') || '2024',
+//         stream: params.get('stream') || '',
+//         subjects: params.get('subjects')?.split(',') || [],
+//         types: params.get('types')?.split(',') || []
+//     };
+// }
 
 // Call before init
-loadPageConfig();
+// loadPageConfig();
 
 const Quiz = (() => {
     
@@ -149,99 +149,56 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
         if (loadingEl) loadingEl.style.display = 'flex';
         
         allQuestions = [];
-        const loadedScripts = new Set();
-        const questionMap = new Map();
-        
-        const examType = PAGE_CONFIG.examType || 'waec';
-        const examFolder = examType;
+        const loadedScripts = new Set(); // Track which scripts have been loaded
+        const questionMap = new Map(); // Deduplicate by question content
         
         for (const sub of PAGE_CONFIG.subjects) {
             const subKey = sub.toLowerCase().replace(/\s+/g, '');
             for (const type of PAGE_CONFIG.types) {
-                // JAMB only has objectives
-                if (examType === 'jamb' && type !== 'objective') {
-                    console.log(`JAMB only supports objective questions, skipping ${type}`);
-                    continue;
-                }
-                
+                const examFolder = PAGE_CONFIG.examType || 'waec';
                 const path = `../${examFolder}/${subKey}/${PAGE_CONFIG.year}/${type}.js`;
                 
+                // Skip if this exact script path was already loaded
                 if (loadedScripts.has(path)) {
                     console.log(`Skipping already loaded: ${path}`);
                     continue;
                 }
                 
                 try {
-                    // Store current window keys to detect new ones
-                    const beforeKeys = new Set(Object.keys(window));
-                    
                     await injectScript(path);
                     loadedScripts.add(path);
                     
-                    // Find what was added to window
-                    const afterKeys = Object.keys(window);
-                    let data = null;
+                    const vName = `${subKey}${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                    let data;
+                    try {
+                        data = window[vName] || eval(vName);
+                    } catch (_) {}
                     
-                    // Look for newly added arrays/objects
-                    for (const key of afterKeys) {
-                        if (!beforeKeys.has(key)) {
-                            const val = window[key];
-                            if (Array.isArray(val) && val.length > 0) {
-                                data = val;
-                                console.log(`Found array: ${key} with ${val.length} items`);
-                                break;
-                            } else if (val && typeof val === 'object' && !beforeKeys.has(key)) {
-                                // Could be an object with questions
-                                data = val;
-                                console.log(`Found object: ${key}`);
-                                break;
-                            }
-                        }
-                    }
-                    
-                    // Fallback: try common patterns
-                    if (!data) {
-                        const possibleNames = [
-                            `${subKey}${type.charAt(0).toUpperCase() + type.slice(1)}${PAGE_CONFIG.year}`,
-                            `${subKey}${type}`,
-                            `${subKey}${PAGE_CONFIG.year}`,
-                            `${type}Questions`,
-                            `questions`
-                        ];
-                        
-                        for (const name of possibleNames) {
-                            if (window[name] && Array.isArray(window[name])) {
-                                data = window[name];
-                                console.log(`Found via pattern: ${name}`);
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if (!data) {
-                        console.warn(`No data found in ${path}`);
-                        continue;
-                    }
+                    if (!data) continue;
                     
                     const items = type === 'objective' ? data : (Array.isArray(data) ? data : Object.values(data));
                     items.forEach(q => {
                         let questionObj;
                         if (type === 'objective') {
-                            questionObj = { ...q, subject: sub, type, examType: examType };
+                            questionObj = { ...q, subject: sub, type, examType: PAGE_CONFIG.examType };
                             questionObj._answer = resolveAnswer(questionObj);
                         } else {
                             if (typeof q === 'string') {
-                                questionObj = { subject: sub, type, examType: examType, question: q, _answer: null };
+                                questionObj = { subject: sub, type, examType: PAGE_CONFIG.examType, question: q, _answer: null };
                             } else {
-                                questionObj = { ...q, subject: sub, type, examType: examType, _answer: null };
+                                questionObj = { ...q, subject: sub, type, examType: PAGE_CONFIG.examType, _answer: null };
                             }
                         }
                         
+                        // Create unique key from question text and type
                         const questionText = questionObj.question.trim();
                         const key = `${questionText}|${type}`;
                         
+                        // Only add if not already present
                         if (!questionMap.has(key)) {
                             questionMap.set(key, questionObj);
+                        } else {
+                            console.log(`Duplicate avoided: "${questionText.substring(0, 50)}..."`);
                         }
                     });
                 } catch (err) {
@@ -250,6 +207,7 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
             }
         }
         
+        // Convert Map to array
         allQuestions = Array.from(questionMap.values());
         
         if (loadingEl) loadingEl.style.display = 'none';
@@ -260,14 +218,13 @@ Return JSON: {"score": number (0-10), "outOf": 10, "feedback": "constructive fee
                 card.style.display = 'flex';
                 card.innerHTML = `<div style="padding:40px;text-align:center">
                 <strong style="font-family:var(--font-display);font-size:15px">No Questions Found</strong>
-                <p style="font-size:12px;opacity:.6;margin-top:8px">No data for ${examType.toUpperCase()} exam.</p>
-                <p style="font-size:12px;opacity:.5;margin-top:4px">Tried loading: ${PAGE_CONFIG.subjects.map(s => `../${examFolder}/${s.toLowerCase()}/${PAGE_CONFIG.year}/objective.js`).join(', ')}</p>
+                <p style="font-size:12px;opacity:.6;margin-top:8px">No data for ${PAGE_CONFIG.examType?.toUpperCase() || 'selected exam'}.</p>
              </div>`;
             }
             return;
         }
         
-        console.log(`Loaded ${allQuestions.length} unique questions for ${examType}`);
+        console.log(`Loaded ${allQuestions.length} unique questions from ${loadedScripts.size} script(s)`);
         
         buildDotMap();
         renderQuestion(0);

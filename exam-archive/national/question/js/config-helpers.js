@@ -10,10 +10,20 @@ const GEMINI_MODELS = ['gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-1.5-
 
 const urlParams = new URLSearchParams(window.location.search);
 const PAGE_CONFIG = {
-    year:     urlParams.get('year'),
-    subjects: urlParams.get('subjects')?.split(',') || [],
-    types:    urlParams.get('types')?.split(',')    || []
+    examType:  urlParams.get('examType')?.toLowerCase() || 'waec',  // ← ADD THIS
+    year:      urlParams.get('year'),
+    subjects:  urlParams.get('subjects')?.split(',') || [],
+    types:     urlParams.get('types')?.split(',')    || [],
+    stream:    urlParams.get('stream') || ''  // Also add stream while you're at it
 };
+
+// Debug log to confirm
+console.log('=== PAGE_CONFIG LOADED ===');
+console.log('Exam Type:', PAGE_CONFIG.examType);
+console.log('Year:', PAGE_CONFIG.year);
+console.log('Subjects:', PAGE_CONFIG.subjects);
+console.log('Types:', PAGE_CONFIG.types);
+console.log('Stream:', PAGE_CONFIG.stream);
 
 // ── HELPERS ────────────────────────────────────────────────────
 function esc(str) {
