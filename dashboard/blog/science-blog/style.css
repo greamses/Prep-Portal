@@ -873,7 +873,6 @@
     
     /* Worked example styling (AI generated) */
     .single-post-body .worked-example {
-      border-left: 4px solid var(--yellow, #ffe500);
       background: var(--off, #f7f4ee);
       padding: 1rem 1.25rem;
       margin: 1.5rem 0;
@@ -889,7 +888,6 @@
     .single-post-body .exam-tip {
       font-size: .82rem;
       background: #fffde7;
-      border-left: 3px solid #f0b429;
       padding: .5rem .75rem;
       margin-top: .75rem;
       font-style: italic;
@@ -951,7 +949,6 @@
     }
     
     .single-post-body blockquote {
-      border-left: 4px solid var(--yellow, #ffe500);
       margin: 1.5rem 0;
       padding: .75rem 1.25rem;
       font-style: italic;
