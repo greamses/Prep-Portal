@@ -35,7 +35,7 @@ const chemistryObjective = [
   },
   {
     "question": "Based on the functional groups (I: \\( ROH \\), II: \\( RCOR' \\), III: \\( ROR' \\), IV: \\( RCOOH \\), V: \\( RCOOR' \\)), the two compounds that will combine in the presence of an acid catalyst to produce compound V are",
-    "image": './q3.svg',
+    "image": '../../jamb/chemistry/2024/q3.svg',
     "options": [
       "I and IV",
       "III and IV",
@@ -533,7 +533,7 @@ const chemistryObjective = [
   },
   {
     "question": "Based on the solubility curve graph provided, it can be inferred that",
-    "image": "./q34.svg",
+    "image": "../../jamb/chemistry/2024/q34.svg",
     "options": [
       "the solubility of X and Y is the same at all temperature",
       "the solubility of X, Y and Z is temperature dependent",
