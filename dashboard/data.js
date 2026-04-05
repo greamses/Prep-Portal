@@ -153,7 +153,7 @@ const siteData = {
         {
             name: "English & Writing",
             description: "Essay · Letter Writing · Comprehension · Summary · Speech · Report",
-            link: "./Writing/index.html",
+            link: "./writing/index.html",
             color: "blue",
             badge: "/Writing/",
             cta: "Explore"
@@ -161,7 +161,7 @@ const siteData = {
         {
             name: "Mathematics",
             description: "Arithmetic · Algebra · Geometry · Calculus · Statistics",
-            link: "./Math/index.html",
+            link: "./prep-math/index.html",
             color: "yellow",
             badge: "/Math/",
             cta: "Explore"
