@@ -94,6 +94,78 @@ onAuthStateChanged(auth, async u => {
   }
 });
 
+// ─── MARKDOWN → HTML ──────────────────────────────────────
+// Applied when rendering stored posts so that older markdown-formatted
+// content displays correctly, even if it was saved before the publisher
+// started converting at source.
+function markdownToHtml(text) {
+  if (!text) return text;
+
+  // If 6+ block-level HTML tags already present, treat as proper HTML
+  const tagCount = (text.match(/<(h[1-6]|p|ul|ol|li|blockquote|table|pre|div)\b/gi) || []).length;
+  if (tagCount >= 6) return text;
+
+  let html = text;
+
+  // Strip leftover code fences
+  html = html.replace(/```[\w]*\n?/g, '').replace(/```/g, '');
+
+  // Headings
+  html = html.replace(/^######\s+(.+)$/gm, '<h6>$1</h6>');
+  html = html.replace(/^#####\s+(.+)$/gm,  '<h5>$1</h5>');
+  html = html.replace(/^####\s+(.+)$/gm,   '<h4>$1</h4>');
+  html = html.replace(/^###\s+(.+)$/gm,    '<h3>$1</h3>');
+  html = html.replace(/^##\s+(.+)$/gm,     '<h2>$1</h2>');
+  html = html.replace(/^#\s+(.+)$/gm,      '<h1>$1</h1>');
+
+  // Horizontal rules
+  html = html.replace(/^[-*_]{3,}\s*$/gm, '<hr>');
+
+  // Bold + italic combined
+  html = html.replace(/\*\*\*(.+?)\*\*\*/gs, '<strong><em>$1</em></strong>');
+  html = html.replace(/___(.+?)___/gs,        '<strong><em>$1</em></strong>');
+
+  // Bold
+  html = html.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+  html = html.replace(/__(.+?)__/gs,      '<strong>$1</strong>');
+
+  // Italic
+  html = html.replace(/\*(.+?)\*/gs, '<em>$1</em>');
+  html = html.replace(/_(.+?)_/gs,   '<em>$1</em>');
+
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Blockquotes
+  html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // Unordered list items → group into <ul>
+  html = html.replace(/^[-*+]\s+(.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>[^]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
+
+  // Ordered list items → group into <ol>
+  html = html.replace(/^\d+\.\s+(.+)$/gm, '<oli>$1</oli>');
+  html = html.replace(/(<oli>[^]*?<\/oli>\n?)+/g, m =>
+    '<ol>' + m.replace(/<oli>/g, '<li>').replace(/<\/oli>/g, '</li>') + '</ol>'
+  );
+  html = html.replace(/<oli>/g, '<li>').replace(/<\/oli>/g, '</li>');
+
+  // Paragraphs — wrap bare text blocks
+  const BLOCK = /^<(h[1-6]|p|ul|ol|blockquote|hr|table|pre|div|figure)/i;
+  html = html
+    .split(/\n{2,}/)
+    .map(block => {
+      block = block.trim();
+      if (!block) return '';
+      if (BLOCK.test(block)) return block;
+      return `<p>${block.replace(/\n/g, '<br>')}</p>`;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  return html;
+}
+
 // ─── UTILS ────────────────────────────────────────────────
 const showToast = msg => {
   toastEl.textContent = msg;
@@ -349,6 +421,9 @@ function showSinglePost(post) {
   const liked = currentUser && likes.includes(currentUser.uid);
   const videoThumb = getYouTubeThumbnail(post.videoLink);
   const practiceDomain = post.practiceLink ? getDomain(post.practiceLink) : null;
+
+  // Convert any markdown-formatted content to HTML before rendering
+  const postBody = markdownToHtml(post.content || '<p>Content not available.</p>');
   
   incViews(post.id);
   history.pushState({ postId: post.id }, post.title, `${window.location.pathname}#${post.id}`);
@@ -441,7 +516,7 @@ function showSinglePost(post) {
       </div>
     </div>` : ''}
 
-    <div class="single-post-body">${post.content||'<p>Content not available.</p>'}</div>
+    <div class="single-post-body">${postBody}</div>
 
     <section class="comments-section" aria-label="Comments">
       <h3 class="comments-title">${I.chat} Comments (<span id="commentCount">0</span>)</h3>
@@ -821,11 +896,9 @@ if (navToggle && navLinks) navToggle.addEventListener('click', () => {
   navLinks.classList.toggle('open');
 });
 
-
-
 loadPosts();
 
-// Add this function to update posts silently
+// ─── SILENT BACKGROUND REFRESH ────────────────────────────
 async function silentUpdatePosts() {
   const snap = await getDocs(query(collection(db, COLLECTION_NAME), orderBy('publishedAt', 'desc')));
   const newPosts = [];
@@ -841,25 +914,21 @@ async function silentUpdatePosts() {
     });
   });
   
-  // Check if post IDs changed (new post added or removed)
   const oldIds = allPosts.map(p => p.id).join(',');
   const newIds = newPosts.map(p => p.id).join(',');
   
   if (oldIds !== newIds) {
-    // IDs changed - need full re-render but restore scroll
     const scrollY = window.scrollY;
     allPosts = newPosts;
     renderPosts();
     window.scrollTo(0, scrollY);
   } else {
-    // IDs same - just update existing cards silently
     allPosts = newPosts;
     const visiblePosts = filterPosts();
     document.querySelectorAll('.science-card').forEach(card => {
       const postId = card.dataset.postId;
       const post = allPosts.find(p => p.id === postId);
       if (post && visiblePosts.some(vp => vp.id === postId)) {
-        // Update this specific card's content without reflow
         const newCardHtml = renderCard(post);
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = newCardHtml;
@@ -872,11 +941,10 @@ async function silentUpdatePosts() {
           });
         }
       } else if (post && !visiblePosts.some(vp => vp.id === postId)) {
-        card.remove(); // Remove filtered-out posts
+        card.remove();
       }
     });
   }
 }
 
-// Then replace setInterval with:
 setInterval(silentUpdatePosts, 60000);

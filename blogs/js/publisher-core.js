@@ -39,6 +39,78 @@ export async function loadApiKeys(user, config) {
   return false;
 }
 
+// ─── MARKDOWN → HTML ───────────────────────────────────────
+// Converts markdown patterns to HTML.
+// If 6+ block-level HTML tags are already present, skips conversion
+// (assumes the model returned proper HTML).
+export function markdownToHtml(text) {
+  if (!text) return text;
+
+  const tagCount = (text.match(/<(h[1-6]|p|ul|ol|li|blockquote|table|pre|div)\b/gi) || []).length;
+  if (tagCount >= 6) return text;
+
+  let html = text;
+
+  // Strip leftover code fences
+  html = html.replace(/```[\w]*\n?/g, '').replace(/```/g, '');
+
+  // Headings
+  html = html.replace(/^######\s+(.+)$/gm, '<h6>$1</h6>');
+  html = html.replace(/^#####\s+(.+)$/gm,  '<h5>$1</h5>');
+  html = html.replace(/^####\s+(.+)$/gm,   '<h4>$1</h4>');
+  html = html.replace(/^###\s+(.+)$/gm,    '<h3>$1</h3>');
+  html = html.replace(/^##\s+(.+)$/gm,     '<h2>$1</h2>');
+  html = html.replace(/^#\s+(.+)$/gm,      '<h1>$1</h1>');
+
+  // Horizontal rules
+  html = html.replace(/^[-*_]{3,}\s*$/gm, '<hr>');
+
+  // Bold + italic combined
+  html = html.replace(/\*\*\*(.+?)\*\*\*/gs, '<strong><em>$1</em></strong>');
+  html = html.replace(/___(.+?)___/gs,        '<strong><em>$1</em></strong>');
+
+  // Bold
+  html = html.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+  html = html.replace(/__(.+?)__/gs,      '<strong>$1</strong>');
+
+  // Italic
+  html = html.replace(/\*(.+?)\*/gs, '<em>$1</em>');
+  html = html.replace(/_(.+?)_/gs,   '<em>$1</em>');
+
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // Blockquotes
+  html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // Unordered list items — group consecutive <li>s into <ul>
+  html = html.replace(/^[-*+]\s+(.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>[^]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
+
+  // Ordered list items — use temp tag to avoid re-matching
+  html = html.replace(/^\d+\.\s+(.+)$/gm, '<oli>$1</oli>');
+  html = html.replace(/(<oli>[^]*?<\/oli>\n?)+/g, m =>
+    '<ol>' + m.replace(/<oli>/g, '<li>').replace(/<\/oli>/g, '</li>') + '</ol>'
+  );
+  // Clean up any stragglers
+  html = html.replace(/<oli>/g, '<li>').replace(/<\/oli>/g, '</li>');
+
+  // Paragraphs — split on blank lines, wrap bare text blocks
+  const BLOCK = /^<(h[1-6]|p|ul|ol|blockquote|hr|table|pre|div|figure)/i;
+  html = html
+    .split(/\n{2,}/)
+    .map(block => {
+      block = block.trim();
+      if (!block) return '';
+      if (BLOCK.test(block)) return block;
+      return `<p>${block.replace(/\n/g, '<br>')}</p>`;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  return html;
+}
+
 // ─── GENERIC API CALLS ─────────────────────────────────────
 async function callGroq(model, prompt) {
   const targetUrl = encodeURIComponent('https://api.groq.com/openai/v1/chat/completions');
@@ -120,7 +192,14 @@ export async function generateWithFallback(topic, onModelChange) {
     if (onModelChange) onModelChange(model.label, model.provider, model.isFallback);
     try {
       let raw = model.provider === 'groq' ? await callGroq(model, prompt) : await callGemini(model, prompt);
-      raw = raw.trim().replace(/```html\n?/gi, '').replace(/```\n?/g, '').replace(/<img[^>]*>/gi, '');
+
+      // Strip code fences and stray img tags, then convert any markdown to HTML
+      raw = raw.trim()
+        .replace(/```html\n?/gi, '')
+        .replace(/```\n?/g, '')
+        .replace(/<img[^>]*>/gi, '');
+      raw = markdownToHtml(raw);
+
       const titleMatch = raw.match(/<h1[^>]*>([^<]+)<\/h1>/i);
       const title = titleMatch ? titleMatch[1].trim() : topic.text;
       const excerpt = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 160);
