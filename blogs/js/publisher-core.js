@@ -209,6 +209,14 @@ export async function updatePostMeta(postId, updates) {
   await updateDoc(doc(db, subjectConfig.collectionName, postId), { ...updates, updatedAt: serverTimestamp() });
 }
 
+export async function updatePostContent(postId, content) {
+  if (!subjectConfig) throw new Error('Subject config not loaded');
+  await updateDoc(doc(db, subjectConfig.collectionName, postId), {
+    content,
+    updatedAt: serverTimestamp()
+  });
+}
+
 export async function updatePostImages(postId, content, featuredImage, imagesAdded) {
   if (!subjectConfig) throw new Error('Subject config not loaded');
   await updateDoc(doc(db, subjectConfig.collectionName, postId), { 

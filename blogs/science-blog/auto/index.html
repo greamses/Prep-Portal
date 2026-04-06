@@ -12,8 +12,8 @@
   <meta name="robots" content="noindex, nofollow">
   
   <link rel="stylesheet" href="../../../main.css">
-  
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./content-editor.css">
   
   <script type="importmap">
     {
@@ -158,12 +158,14 @@
       <h3>Delete Post?</h3>
       <p id="confirmPostTitle">This action cannot be undone.</p>
       <div class="modal-actions">
-        <button class="btn btn-danger" id="confirmDeleteBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button class="btn btn-danger" id="confirmDeleteBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="3 6 5 6 21 6"></polyline>
             <path d="M19 6l-1 14H6L5 6"></path>
             <path d="M10 11v6M14 11v6"></path>
             <path d="M9 6V4h6v2"></path>
-          </svg>Yes, Delete</button>
+          </svg>Yes, Delete
+        </button>
         <button class="btn" id="cancelDeleteBtn">Cancel</button>
       </div>
     </div>
@@ -217,11 +219,13 @@
         <textarea id="metaExcerpt" placeholder="Short description..." maxlength="160"></textarea>
       </div>
       <div class="modal-actions">
-        <button class="btn btn-primary" id="saveMetaBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button class="btn btn-primary" id="saveMetaBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
             <polyline points="17 21 17 13 7 13 7 21"></polyline>
             <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>Save Details</button>
+          </svg>Save Details
+        </button>
         <button class="btn" id="cancelMetaBtn">Cancel</button>
       </div>
     </div>
@@ -279,11 +283,13 @@
       </div>
       
       <div class="modal-actions">
-        <button class="btn btn-primary" id="saveLinksBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button class="btn btn-primary" id="saveLinksBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
             <polyline points="17 21 17 13 7 13 7 21"></polyline>
             <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>Save Links</button>
+          </svg>Save Links
+        </button>
         <button class="btn" id="cancelLinksBtn">Cancel</button>
       </div>
     </div>
@@ -292,17 +298,21 @@
   <!-- IMAGE EDITOR MODAL -->
   <div class="modal-overlay" id="imgModal" role="dialog" aria-modal="true" aria-label="Add images to post">
     <div class="modal-box">
-      <h3><svg style="width:20px;height:20px;vertical-align:-3px;margin-right:.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <h3>
+        <svg style="width:20px;height:20px;vertical-align:-3px;margin-right:.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="3" y="3" width="18" height="18" rx="2"></rect>
           <circle cx="8.5" cy="8.5" r="1.5"></circle>
           <polyline points="21 15 16 10 5 21"></polyline>
-        </svg>Image Editor</h3>
+        </svg>Image Editor
+      </h3>
       <p class="modal-subtitle" id="imgModalSubtitle">Add one image per paragraph — or leave any blank.</p>
-      <div class="images-pending-banner" id="imgPendingBanner" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div class="images-pending-banner" id="imgPendingBanner" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="10"></circle>
           <line x1="12" y1="8" x2="12" y2="12"></line>
           <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>No images yet — paste URLs below.</div>
+        </svg>No images yet — paste URLs below.
+      </div>
       <div class="form-field">
         <label>Featured Image <span style="font-weight:400;text-transform:none;letter-spacing:0">(card thumbnail)</span></label>
         <div class="featured-img-row">
@@ -310,22 +320,62 @@
           <img class="featured-img-thumb" id="featuredImgThumb" alt="">
         </div>
       </div>
-      <div class="section-divider"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div class="section-divider">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="8" y1="6" x2="21" y2="6"></line>
           <line x1="8" y1="12" x2="21" y2="12"></line>
           <line x1="8" y1="18" x2="21" y2="18"></line>
           <line x1="3" y1="6" x2="3.01" y2="6"></line>
           <line x1="3" y1="12" x2="3.01" y2="12"></line>
           <line x1="3" y1="18" x2="3.01" y2="18"></line>
-        </svg>Paragraph Images — one per block, optional</div>
+        </svg>Paragraph Images — one per block, optional
+      </div>
       <div class="para-blocks-list" id="paraBlocksList"></div>
       <div class="modal-actions">
-        <button class="btn btn-primary" id="saveImgBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <button class="btn btn-primary" id="saveImgBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
             <polyline points="17 21 17 13 7 13 7 21"></polyline>
             <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>Save Images</button>
+          </svg>Save Images
+        </button>
         <button class="btn" id="cancelImgBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT EDITOR MODAL -->
+  <div class="modal-overlay" id="contentModal" role="dialog" aria-modal="true" aria-label="Edit post content">
+    <div class="modal-box">
+      <h3>
+        <svg style="width:20px;height:20px;vertical-align:-3px;margin-right:.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>Edit Content
+      </h3>
+      <p class="modal-subtitle" id="contentModalSubtitle">Edit the raw HTML body of this post. Preview updates live.</p>
+      <div class="content-editor-split">
+        <div class="content-editor-col">
+          <label class="field-label">HTML Source</label>
+          <textarea id="contentEditorTextarea" class="content-textarea" spellcheck="false" placeholder="Post HTML content..."></textarea>
+        </div>
+        <div class="content-editor-col">
+          <label class="field-label">Live Preview</label>
+          <div id="contentPreviewPane" class="content-preview-pane"></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="saveContentBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>Save Content
+        </button>
+        <button class="btn" id="cancelContentBtn">Cancel</button>
       </div>
     </div>
   </div>
@@ -348,4 +398,4 @@
   <script type="module" src="./main.js"></script>
 </body>
 
-</html
+</html>
