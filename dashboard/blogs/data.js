@@ -138,7 +138,7 @@ const siteData = {
         {
             name: "Science Blogs",
             description: "Physics formulas explained, Biology processes simplified, and Chemistry reactions decoded.",
-            link: "./science-blog/blogs.html",
+            link: "./science-blog/blog.html",
             color: "green",
             badge: "/Hub/Science/",
             cta: "Read Articles"
@@ -146,23 +146,23 @@ const siteData = {
         {
             name: "Literacy Blogs",
             description: "Essay structures, comprehension strategies, vocabulary building, and grammar rules.",
-            link: "./literacy-blog/blogs.html",
+            link: "./literacy-blog/blog.html",
             color: "blue",
             badge: "/Hub/Literacy/",
             cta: "Read Articles"
         },
-        {
-            name: "Math Blogs",
-            description: "Step-by-step problem solving, algebra hacks, geometry proofs, and calculus basics.",
-            link: "./math-blog/blogs.html",
-            color: "yellow",
-            badge: "/Hub/Math/",
-            cta: "Read Articles"
-        },
+        // {
+        //     name: "Math Blogs",
+        //     description: "Step-by-step problem solving, algebra hacks, geometry proofs, and calculus basics.",
+        //     link: "./math-blog/blogs.html",
+        //     color: "yellow",
+        //     badge: "/Hub/Math/",
+        //     cta: "Read Articles"
+        // },
         {
             name: "General Blogs",
             description: "Study motivation, timetable planning, and tips for balancing school and life.",
-            link: "./general/blogs.html",
+            link: "./general-blog/blog.html",
             color: "amber",
             badge: "/Hub/General/",
             cta: "Read Articles"
@@ -222,7 +222,7 @@ const siteData = {
             {
                 title: "Hubs",
                 links: [
-                    { text: "Science Blogs", href: "./science-blog/blogs\.html" },
+                    { text: "Science Blogs", href: "./science-blog/blogs.html" },
                     // { text: "Math Blogs", href: "./math-blog/blogs.html" },
                     { text: "Literacy Blogs", href: "./literacy-blog/blog.html" },
                     { text: "General Blogs", href: "./general-blog/blog.html" }
