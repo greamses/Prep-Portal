@@ -67,19 +67,19 @@ const siteData = {
             items: [
                 {
                     name: "Science Blogs",
-                    link: "./science-blog/blogs.html",
+                    link: "./science-blog/blog.html",
                     live: true,
                     status: "Updated"
                 },
                 {
                     name: "Math Blogs",
-                    link: "./math-blog/blogs.html",
+                    link: "#",
                     live: false,
                     status: "Coming Soon"
                 },
                 {
                     name: "Literacy Blogs",
-                    link: "./literacy-blog/blogs.html",
+                    link: "./literacy-blog/blog.html",
                     live: false,
                     status: "Coming Soon"
                 }
@@ -93,14 +93,14 @@ const siteData = {
             items: [
                 {
                     name: "General Blogs",
-                    link: "./general/blogs.html",
+                    link: "./genera-blog/blog.html",
                     live: true,
                     status: "Live"
                 },
                 {
                     name: "Exam Techniques",
                     link: "./general/blogs.html",
-                    live: true,
+                    live: false,
                     status: "Live"
                 },
                 {
