@@ -252,6 +252,7 @@ videoUrlInput.addEventListener('input', () => {
 });
 
 // Practice Preview Listener
+// Practice Preview Listener
 practiceUrlInput.addEventListener('input', () => {
   let input = practiceUrlInput.value.trim();
   
@@ -264,7 +265,12 @@ practiceUrlInput.addEventListener('input', () => {
   if (input) {
     const domain = getDomain(input);
     practiceDomain.textContent = domain;
-    practiceFavicon.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    // Show snapshot preview, fallback to favicon
+    practiceFavicon.src = `https://image.thum.io/get/width/100/crop/100/${input}`;
+    practiceFavicon.onerror = () => {
+      practiceFavicon.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+      practiceFavicon.onerror = null;
+    };
     practicePreviewCard.classList.add('visible');
   } else {
     practicePreviewCard.classList.remove('visible');

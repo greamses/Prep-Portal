@@ -127,6 +127,7 @@ const I = {
 };
 
 // ─── CARD RENDER ──────────────────────────────────────────
+// ─── CARD RENDER ──────────────────────────────────────────
 function renderCard(post) {
   const subj = post.subject || 'math';
   const cls = post.classLevel || 'ss-1';
@@ -140,9 +141,13 @@ function renderCard(post) {
   const hasVideo = !!post.videoLink;
   const hasPractice = !!post.practiceLink;
   
+  // Use featuredImage if available, fallback to video thumbnail, else null
+  const videoThumb = getYouTubeThumbnail(post.videoLink);
+  const cardImage = post.featuredImage ? post.featuredImage : (videoThumb ? videoThumb : null);
+  
   return `
         <div class="science-card" data-post-id="${post.id}">
-          ${post.featuredImage ? `<img class="card-featured-img" src="${escHtml(post.featuredImage)}" alt="${escHtml(post.title)}" loading="lazy">` : ''}
+          ${cardImage ? `<img class="card-featured-img" src="${escHtml(cardImage)}" alt="${escHtml(post.title)}" loading="lazy">` : ''}
           <div class="card-inner">
             <div class="card-badges">
               <span class="sci-badge ${sciCls}">${subjLbl}</span>
@@ -266,18 +271,19 @@ function showSinglePost(post) {
   data-embed-type="practice"
   data-embed-title="Practice: ${escHtml(practiceDomain)}">
   
-  <div class="practice-thumb-area sci-${subj}-bg">
-    <!-- Using a high-res 128px favicon as the "thumbnail" -->
+<div class="practice-thumb-area sci-${subj}-bg">
+    <!-- Using an API to capture website snapshot. Falls back to favicon if snapshot fails -->
     <img class="practice-large-icon" 
-         src="https://www.google.com/s2/favicons?domain=${escHtml(practiceDomain)}&sz=128" 
+         style="width:100%;height:100%;object-fit:cover;opacity:0.85;"
+         src="https://image.thum.io/get/width/600/crop/600/${escHtml(post.practiceLink)}" 
          alt="${escHtml(practiceDomain)}"
-         onerror="this.src='../../logo/logo-light.svg'">
+         onerror="this.src='https://www.google.com/s2/favicons?domain=${escHtml(practiceDomain)}&sz=128'; this.onerror=null;">
     
     <div class="practice-platform-tag">${escHtml(practiceDomain)}</div>
     
     <!-- Interaction Icon Overlay -->
     <div class="video-play-overlay">
-      <svg style="width:40px;height:40px;color:rgba(107, 33, 168, 0.8)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <svg style="width:40px;height:40px;color:rgba(255, 255, 255, 0.9)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
          <rect x="2" y="3" width="20" height="14" rx="2"></rect>
          <line x1="8" y1="21" x2="16" y2="21"></line>
          <line x1="12" y1="17" x2="12" y2="21"></line>
@@ -350,16 +356,40 @@ function closePostView() {
   activePost = null;
 }
 
-function openEmbedModal(url, type, title, rawUrl) {
+async function openEmbedModal(url, type, title, rawUrl) {
+  const targetUrl = rawUrl || url;
+  
+  embedOverlay.classList.add('active');
+  embedSpinner.style.display = 'flex';
+  
+  // Verify if practice link allows iframes (X-Frame-Options/CSP check)
+  if (type === 'practice') {
+    try {
+      const checkRes = await fetch('https://corsproxy.io/?' + encodeURIComponent(targetUrl), { method: 'HEAD' });
+      const xfo = checkRes.headers.get('x-frame-options');
+      const csp = checkRes.headers.get('content-security-policy');
+      
+      let isBlocked = false;
+      if (xfo && (xfo.toUpperCase() === 'DENY' || xfo.toUpperCase() === 'SAMEORIGIN')) isBlocked = true;
+      if (csp && csp.toLowerCase().includes('frame-ancestors')) isBlocked = true;
+      
+      if (isBlocked) {
+        showToast('Redirecting securely to activity...');
+        closeEmbedModal();
+        window.open(targetUrl, '_blank');
+        return;
+      }
+    } catch (e) {
+      console.warn('Proxy check failed, attempting to load iframe normally.');
+    }
+  }
+  
   embedTitle.textContent = title;
-  embedOpenLink.href = rawUrl || url;
+  embedOpenLink.href = targetUrl;
   embedFrame.src = url;
   
   // Apply specific sizing for video (16:9) vs practice (Fixed height)
   embedFrameWrap.className = 'embed-frame-wrap ' + (type === 'video' ? 'video-mode' : 'practice-mode');
-  
-  embedSpinner.style.display = 'flex';
-  embedOverlay.classList.add('active');
   
   // Hide spinner once iframe content loads
   embedFrame.onload = () => {
