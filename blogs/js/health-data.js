@@ -12,10 +12,36 @@ export const SUBJECT_MODELS = {
     { label: 'Gemma 2 9B', provider: 'groq', model: 'gemma2-9b-it' },
   ],
   gemini: [
-    { label: 'Gemini 2.5 Flash-Lite', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent' },
-    { label: 'Gemini 2.5 Flash', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent' },
-    { label: 'Gemini 2.5 Pro', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent' },
-  ]
+  {
+    label: 'Gemini 3.1 Flash-Lite',
+    provider: 'gemini',
+    url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent'
+  },
+  {
+    label: 'Gemini 3.1 Pro',
+    provider: 'gemini',
+    url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent'
+  },
+  {
+    label: 'Gemini 3 Flash',
+    provider: 'gemini',
+    url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent'
+  },
+  {
+    label: 'Gemini 2.5 Flash-Lite',
+    provider: 'gemini',
+    url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent'
+  },
+  {
+    label: 'Gemini 2.5 Flash',
+    provider: 'gemini',
+    url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent'
+  },
+  {
+    label: 'Gemini 2.5 Pro',
+    provider: 'gemini',
+    url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent'
+  }, ]
 };
 
 // ─── SUBJECT CONFIGURATION ───────────────────────────────────
