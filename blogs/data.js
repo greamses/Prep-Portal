@@ -159,21 +159,21 @@ const siteData = {
         //     badge: "/Hub/Math/",
         //     cta: "Read Articles"
         // },
-        {
-            name: "General Blogs",
-            description: "Study motivation, timetable planning, and tips for balancing school and life.",
-            link: "./general-blog/blog.html",
-            color: "amber",
-            badge: "/Hub/General/",
-            cta: "Read Articles"
-        }
+        // {
+        //     name: "General Blogs",
+        //     description: "Study motivation, timetable planning, and tips for balancing school and life.",
+        //     link: "./general-blog/blog.html",
+        //     color: "amber",
+        //     badge: "/Hub/General/",
+        //     cta: "Read Articles"
+        // }
     ],
     
     drills: [
         {
             name: "Exam Updates Hub",
             description: "WAEC Timetables · JAMB Cut-off Marks · NECO Registration · Cambridge Deadlines",
-            link: "./updates/index.html",
+            link: "#",
             color: "red",
             badge: "/News/Updates/",
             cta: "View Latest News"
