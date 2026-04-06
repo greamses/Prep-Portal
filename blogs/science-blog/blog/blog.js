@@ -821,5 +821,62 @@ if (navToggle && navLinks) navToggle.addEventListener('click', () => {
   navLinks.classList.toggle('open');
 });
 
+
+
 loadPosts();
-setInterval(loadPosts, 60000);
+
+// Add this function to update posts silently
+async function silentUpdatePosts() {
+  const snap = await getDocs(query(collection(db, COLLECTION_NAME), orderBy('publishedAt', 'desc')));
+  const newPosts = [];
+  snap.forEach(d => {
+    const data = d.data();
+    newPosts.push({
+      id: d.id, title: data.title || 'Untitled', content: data.content || '',
+      excerpt: data.excerpt || '', featuredImage: data.featuredImage || '',
+      videoLink: data.videoLink || '', practiceLink: data.practiceLink || '',
+      subject: data.subject || Object.keys(SUBJECT_LABELS)[0] || 'default',
+      classLevel: data.classLevel || 'ss-1', publishedAt: data.publishedAt,
+      modelUsed: data.modelUsed || '', views: data.views || 0, likes: data.likes || []
+    });
+  });
+  
+  // Check if post IDs changed (new post added or removed)
+  const oldIds = allPosts.map(p => p.id).join(',');
+  const newIds = newPosts.map(p => p.id).join(',');
+  
+  if (oldIds !== newIds) {
+    // IDs changed - need full re-render but restore scroll
+    const scrollY = window.scrollY;
+    allPosts = newPosts;
+    renderPosts();
+    window.scrollTo(0, scrollY);
+  } else {
+    // IDs same - just update existing cards silently
+    allPosts = newPosts;
+    const visiblePosts = filterPosts();
+    document.querySelectorAll('.science-card').forEach(card => {
+      const postId = card.dataset.postId;
+      const post = allPosts.find(p => p.id === postId);
+      if (post && visiblePosts.some(vp => vp.id === postId)) {
+        // Update this specific card's content without reflow
+        const newCardHtml = renderCard(post);
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newCardHtml;
+        const newCard = tempDiv.firstElementChild;
+        if (newCard) {
+          card.replaceWith(newCard);
+          newCard.addEventListener('click', () => {
+            const p = allPosts.find(p => p.id === newCard.dataset.postId);
+            if (p) showSinglePost(p);
+          });
+        }
+      } else if (post && !visiblePosts.some(vp => vp.id === postId)) {
+        card.remove(); // Remove filtered-out posts
+      }
+    });
+  }
+}
+
+// Then replace setInterval with:
+setInterval(silentUpdatePosts, 60000);
