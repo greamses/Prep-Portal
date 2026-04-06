@@ -79,8 +79,8 @@ const siteData = {
                 },
                 {
                     name: "Literacy Blogs",
-                    link: "./literacy-blog/blog.html",
-                    live: true,
+                    link: "./literacy-blog/blog/blog.html",
+                    live: false,
                     status: "Updated"
                 }
             ]
