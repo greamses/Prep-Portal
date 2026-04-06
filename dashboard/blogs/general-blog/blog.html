@@ -5,6 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Prep Portal 2026 | Blog Archive</title>
+  
+  <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
+  <meta name="theme-color" content="#000000">
   <meta name="description" content="Read exam tips, study guides, and strategies for WAEC, NECO, JAMB, and Cambridge exams.">
   <meta name="author" content="Prep Portal">
   
@@ -1178,7 +1181,7 @@
     </a>
     <ul class="nav-links" id="navLinks">
       <li><a href="#">Dashboard</a></li>
-      <li><a href="#" class="active nav-cta" >Blog Archive</a></li>
+      <li><a href="#" class="active nav-cta">Blog Archive</a></li>
     </ul>
     <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
       <span></span><span></span><span></span>
@@ -1351,9 +1354,11 @@
     onAuthStateChanged(auth, u => { currentUser = u; });
     
     // ─── UTILS ────────────────────────────────────────────────
-    const showToast = msg => { toastEl.textContent = msg;
+    const showToast = msg => {
+      toastEl.textContent = msg;
       toastEl.classList.add('show');
-      setTimeout(() => toastEl.classList.remove('show'), 2800); };
+      setTimeout(() => toastEl.classList.remove('show'), 2800);
+    };
     
     const formatDate = ts => {
       if (!ts) return 'Just now';
@@ -1369,8 +1374,11 @@
     
     const escHtml = s => { if (!s) return ''; return s.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } [m])); };
     
-    const stripHtml = h => { const d = document.createElement('div');
-      d.innerHTML = h; return d.textContent || d.innerText || ''; };
+    const stripHtml = h => {
+      const d = document.createElement('div');
+      d.innerHTML = h;
+      return d.textContent || d.innerText || '';
+    };
     
     // ─── AUDIENCE DETECTION ───────────────────────────────────
     const AUDIENCE_KW = {
@@ -1443,8 +1451,10 @@
     function filterBlogs() {
       let f = [...allBlogs];
       if (currentFilter !== 'all') f = f.filter(b => inferAudience(b) === currentFilter);
-      if (currentSearch) { const s = currentSearch.toLowerCase();
-        f = f.filter(b => b.title.toLowerCase().includes(s) || stripHtml(b.content || '').toLowerCase().includes(s)); }
+      if (currentSearch) {
+        const s = currentSearch.toLowerCase();
+        f = f.filter(b => b.title.toLowerCase().includes(s) || stripHtml(b.content || '').toLowerCase().includes(s));
+      }
       return f;
     }
     
@@ -1572,8 +1582,10 @@
         }
         const now = blog.likes.includes(currentUser.uid);
         const btn = document.getElementById('likeBtn');
-        if (btn) { btn.className = `action-btn like-btn${now?' liked':''}`;
-          btn.innerHTML = `${now?I.heartFill:I.heart} <span id="likeCount">${blog.likes.length}</span>`; }
+        if (btn) {
+          btn.className = `action-btn like-btn${now?' liked':''}`;
+          btn.innerHTML = `${now?I.heartFill:I.heart} <span id="likeCount">${blog.likes.length}</span>`;
+        }
         const idx = allBlogs.findIndex(b => b.id === blog.id);
         if (idx !== -1) allBlogs[idx].likes = blog.likes;
       } catch (_) { showToast('Could not update like'); }
@@ -1593,13 +1605,15 @@
     
     function copyToClipboard(text) {
       if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => showToast('Link copied!'));
-      else { const t = document.createElement('textarea');
+      else {
+        const t = document.createElement('textarea');
         t.value = text;
         document.body.appendChild(t);
         t.select();
         document.execCommand('copy');
         document.body.removeChild(t);
-        showToast('Link copied!'); }
+        showToast('Link copied!');
+      }
     }
     
     // ─── COMMENTS WITH LIKES + REPLIES ────────────────────────
@@ -1810,8 +1824,10 @@
         await loadReplies(blogId, commentId);
         showToast('Reply posted!');
       } catch (e) { showToast('Error: ' + e.message); }
-      finally { btn.disabled = false;
-        btn.textContent = 'Post Reply'; }
+      finally {
+        btn.disabled = false;
+        btn.textContent = 'Post Reply';
+      }
     }
     
     // ─── SUBMIT TOP-LEVEL COMMENT ─────────────────────────────
@@ -1836,8 +1852,10 @@
         await loadComments(blogId);
         showToast('Comment posted!');
       } catch (e) { showToast('Error: ' + e.message); }
-      finally { btn.disabled = false;
-        btn.textContent = 'Post Comment'; }
+      finally {
+        btn.disabled = false;
+        btn.textContent = 'Post Comment';
+      }
     }
     
     // ─── LOAD BLOGS ──────────────────────────────────────────
@@ -1857,10 +1875,17 @@
     }
     
     // ─── FILTER DROPDOWN ─────────────────────────────────────
-    dropdownBtn.addEventListener('click', e => { e.stopPropagation(); const o = filterDropdown.classList.toggle('open');
-      dropdownBtn.setAttribute('aria-expanded', o); });
-    document.addEventListener('click', e => { if (!filterDropdown.contains(e.target)) { filterDropdown.classList.remove('open');
-        dropdownBtn.setAttribute('aria-expanded', 'false'); } });
+    dropdownBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const o = filterDropdown.classList.toggle('open');
+      dropdownBtn.setAttribute('aria-expanded', o);
+    });
+    document.addEventListener('click', e => {
+      if (!filterDropdown.contains(e.target)) {
+        filterDropdown.classList.remove('open');
+        dropdownBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
     document.querySelectorAll('.dropdown-item').forEach(item => {
       item.addEventListener('click', () => {
         currentFilter = item.dataset.filter;
@@ -1874,9 +1899,13 @@
     });
     
     let st;
-    searchInput.addEventListener('input', e => { clearTimeout(st);
-      st = setTimeout(() => { currentSearch = e.target.value;
-        renderBlogs(); }, 280); });
+    searchInput.addEventListener('input', e => {
+      clearTimeout(st);
+      st = setTimeout(() => {
+        currentSearch = e.target.value;
+        renderBlogs();
+      }, 280);
+    });
     
     closeBlogBtn.addEventListener('click', closeBlogView);
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && singleBlogView.classList.contains('active')) closeBlogView(); });
@@ -1885,8 +1914,10 @@
     
     const navToggle = document.getElementById('nav-toggle');
     const navLinks = document.getElementById('navLinks');
-    if (navToggle && navLinks) navToggle.addEventListener('click', () => { navToggle.classList.toggle('open');
-      navLinks.classList.toggle('open'); });
+    if (navToggle && navLinks) navToggle.addEventListener('click', () => {
+      navToggle.classList.toggle('open');
+      navLinks.classList.toggle('open');
+    });
     
     loadBlogs();
     setInterval(loadBlogs, 60000);
