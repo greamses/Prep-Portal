@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prep Portal 2026 | English Publisher</title>
+  <meta name="description" content="Admin dashboard: auto English content publisher for Primary 1 to SS3.">
+  <meta name="robots" content="noindex, nofollow">
+  
+  <style>
+    /* ─── BASE STYLES ─────────────────────────────────────── */
+    :root {
+      --bg: #fff;
+      --ink: #0a0a0a;
+      --yellow: #ffe500;
+      --blue: #0055ff;
+      --muted: #555;
+      --off: #f7f4ee;
+      --border: 2px solid #0a0a0a;
+      --shadow-sm: 3px 3px 0 #0a0a0a;
+      --shadow-md: 5px 5px 0 #0a0a0a;
+      --shadow-lg: 6px 6px 0 #0a0a0a;
+      --shadow-xl: 8px 8px 0 #0a0a0a;
+      --font-mono: 'JetBrains Mono', Consolas, monospace;
+      --font-display: 'Unbounded', system-ui, sans-serif;
+    }
+    
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+    
+    html,
+    body {
+      overflow-x: hidden;
+      max-width: 100%;
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: var(--off);
+      color: var(--ink);
+    }
+    
+    img,
+    pre,
+    code,
+    table {
+      max-width: 100%;
+    }
+    
+    /* ─── LAYOUT ──────────────────────────────────────────── */
+    .hero {
+      padding: 3rem 2rem;
+      background: var(--bg);
+      border-bottom: var(--border);
+    }
+    
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      margin: 0 0 1rem;
+      line-height: 1.1;
+    }
+    
+    .hero-tagline {
+      font-family: var(--font-mono);
+      font-size: .85rem;
+      color: var(--muted);
+      max-width: 600px;
+      line-height: 1.5;
+    }
+    
+    .section-header {
+      padding: 1rem 2rem;
+      background: var(--ink);
+      color: var(--bg);
+      font-family: var(--font-mono);
+      font-size: .8rem;
+      display: flex;
+      justify-content: space-between;
+      text-transform: uppercase;
+    }
+    
+    /* ─── PUBLISHER ─────────────────────────────────────── */
+    .publisher-section {
+      padding: 2rem clamp(1rem, 4vw, 2rem);
+      background: var(--bg);
+      border-bottom: var(--border);
+    }
+    
+    .publisher-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 1rem;
+    }
+    
+    @media (max-width:768px) {
+      .publisher-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .publisher-card {
+      border: var(--border);
+      background: var(--bg);
+      box-shadow: var(--shadow-lg);
+      padding: 1.5rem;
+      transition: transform .1s ease;
+    }
+    
+    .publisher-card:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-xl);
+    }
+    
+    .card-label {
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: .75rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    
+    .publisher-stats {
+      display: flex;
+      gap: clamp(.5rem, 2vw, 1rem);
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .stat-box {
+      flex: 1;
+      min-width: 68px;
+      background: var(--ink);
+      color: var(--bg);
+      padding: .875rem .75rem;
+      text-align: center;
+      border: var(--border);
+    }
+    
+    .stat-box .number {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 900;
+      color: var(--yellow);
+      line-height: 1;
+    }
+    
+    .stat-box .stat-label {
+      font-family: var(--font-mono);
+      font-size: .62rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-top: .25rem;
+    }
+    
+    /* ─── LOG ─────────────────────────────────────────────── */
+    .log-container {
+      background: #111418;
+      border: var(--border);
+      padding: .875rem;
+      height: 280px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: clamp(.62rem, 2vw, .7rem);
+    }
+    
+    .log-entry {
+      padding: .25rem 0;
+      border-bottom: 1px solid #2a2f2a;
+      color: #ccc;
+      word-break: break-word;
+    }
+    
+    .log-time {
+      color: #888;
+      margin-right: .5rem;
+    }
+    
+    .log-success {
+      color: #7ee87e;
+    }
+    
+    .log-error {
+      color: #ff8a7a;
+    }
+    
+    .log-info {
+      color: #b3d9ff;
+    }
+    
+    .log-warn {
+      color: #ffd580;
+    }
+    
+    /* ─── BUTTONS ─────────────────────────────────────────── */
+    .btn-group {
+      display: flex;
+      gap: .75rem;
+      margin-top: 1.25rem;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: .7rem;
+      text-transform: uppercase;
+      padding: .55rem 1.1rem;
+      background: var(--bg);
+      border: var(--border);
+      cursor: pointer;
+      color: var(--ink);
+      transition: all .1s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    
+    .btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    
+    .btn-primary {
+      background: var(--yellow);
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .btn-primary:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    .btn-danger {
+      color: #c0392b;
+      border-color: #c0392b;
+    }
+    
+    .btn-danger:hover {
+      background: #c0392b;
+      color: #fff;
+      box-shadow: 3px 3px 0 #7b1a12;
+    }
+    
+    .btn-sm {
+      padding: .38rem .75rem;
+      font-size: .63rem;
+    }
+    
+    /* ─── STATUS ──────────────────────────────────────────── */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .25rem .75rem;
+      background: var(--ink);
+      color: var(--yellow);
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      border: var(--border);
+    }
+    
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--yellow);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    .status-dot.red {
+      background: #ff8a7a;
+      animation: none;
+    }
+    
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+      
+      50% {
+        opacity: .3
+      }
+    }
+    
+    .routing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-family: var(--font-mono);
+      font-size: .62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: .2rem .6rem;
+      border: 1px solid var(--ink);
+      margin-top: .75rem;
+    }
+    
+    /* ─── LISTS ───────────────────────────────────────────── */
+    .manage-section {
+      margin-top: 2rem;
+      border: var(--border);
+      background: var(--bg);
+      box-shadow: var(--shadow-lg);
+    }
+    
+    .manage-header {
+      padding: .875rem 1.25rem;
+      border-bottom: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--off);
+    }
+    
+    .manage-posts-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 480px;
+      overflow-y: auto;
+    }
+    
+    .manage-post-item {
+      display: flex;
+      padding: .875rem 1.25rem;
+      border-bottom: 1px solid #f0ece4;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .manage-post-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .manage-post-title {
+      font-family: var(--font-mono);
+      font-size: .8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: .3rem;
+    }
+    
+    .manage-post-meta {
+      font-family: var(--font-mono);
+      font-size: .62rem;
+      color: var(--muted);
+      display: flex;
+      gap: .75rem;
+    }
+    
+    .cat-badge {
+      padding: .15rem .5rem;
+      font-size: .58rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      background: #e8b3ff;
+      color: #0a0a0a;
+      border: 1px solid #0a0a0a;
+    }
+  </style>
+  
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js"
+      }
+    }
+  </script>
+</head>
+
+<body>
+  
+  <div class="hero">
+    <h1 class="hero-title">English<br>Publisher.</h1>
+    <p class="hero-tagline">AI-generated English Language content. Covers Comprehension, Grammar, Vocabulary, Writing, and Spelling for Primary 1 to SS3 (WAEC/JAMB).</p>
+  </div>
+  
+  <div class="section-header">
+    <span>English Language</span>
+    <span>Auto-Publisher</span>
+  </div>
+  
+  <div class="publisher-section">
+    <div class="publisher-grid">
+      
+      <div class="publisher-card">
+        <div class="status-badge" id="authStatus">
+          <span class="status-dot red" id="statusDot"></span>Connecting...
+        </div>
+        <div class="publisher-stats">
+          <div class="stat-box">
+            <div class="number" id="publishCount">0</div>
+            <div class="stat-label">Published</div>
+          </div>
+          <div class="stat-box">
+            <div class="number" id="nextRunMinutes">--</div>
+            <div class="stat-label">Next (min)</div>
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" id="forcePublishBtn">Force Publish</button>
+          <button class="btn" id="restartSchedulerBtn">Restart</button>
+          <button class="btn" id="testWriteBtn">Test DB</button>
+        </div>
+        <div id="routingIndicator"></div>
+      </div>
+      
+      <div class="publisher-card">
+        <div class="card-label">Live Activity Log</div>
+        <div class="log-container" id="logContainer">
+          <div class="log-entry"><span class="log-time">[init]</span><span class="log-info"> English Publisher Booting...</span></div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <div class="manage-section">
+      <div class="manage-header">
+        <div style="font-family: var(--font-mono); font-size: .7rem; font-weight: 700; text-transform: uppercase;">Manage English Posts</div>
+        <button class="btn btn-sm" id="refreshPostsBtn">Refresh</button>
+      </div>
+      <ul class="manage-posts-list" id="managePostsList">
+        <li style="padding: 2rem; text-align: center; font-family: monospace;">Loading posts...</li>
+      </ul>
+    </div>
+  </div>
+  
+  <script type="module">
+    import { initializeApp } from 'firebase/app';
+    import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'firebase/auth';
+    import { getFirestore, collection, addDoc, serverTimestamp, doc, getDoc, getDocs, deleteDoc, updateDoc, query, orderBy, limit } from 'firebase/firestore';
+    
+    // REPLACE THIS WITH YOUR PREP PORTAL FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyA2N3uI_XfSIVsto2Ku1g_qSezmD3qFmbk",
+      authDomain: "prep-portal-2026.web.app",
+      projectId: "prep-portal-2026",
+      storageBucket: "prep-portal-2026.firebasestorage.app",
+      messagingSenderId: "837672918701",
+      appId: "1:837672918701:web:e64c0c25dc01b542e23024"
+    };
+    
+    const GROQ_MODELS = [
+      { label: 'Llama 3.3 70B', provider: 'groq', model: 'llama-3.3-70b-versatile' },
+      { label: 'Llama 3.1 8B', provider: 'groq', model: 'llama-3.1-8b-instant' }
+    ];
+    
+    const GEMINI_MODELS = [
+      { label: 'Gemini 2.5 Flash', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent' },
+      { label: 'Gemini 2.5 Flash-Lite', provider: 'gemini', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent' }
+    ];
+    
+    // ─── ENGLISH TOPICS P1–SS3 ────────────────────────────────
+    const ENGLISH_TOPICS = [
+      // Primary 1-3
+      { text: 'The alphabet and vowel sounds', category: 'spelling', classLevel: 'primary-1' },
+      { text: 'Naming words (Nouns): People, animals, places', category: 'grammar', classLevel: 'primary-2' },
+      { text: 'Action words (Verbs): What are we doing?', category: 'grammar', classLevel: 'primary-2' },
+      { text: 'Short story about a clever dog', category: 'comprehension', classLevel: 'primary-3' },
+      { text: 'Writing simple sentences about yourself', category: 'writing', classLevel: 'primary-3' },
+      
+      // Primary 4-6
+      { text: 'Adjectives: Describing words to make writing fun', category: 'grammar', classLevel: 'primary-4' },
+      { text: 'Synonyms and Antonyms: Words with same/opposite meanings', category: 'vocabulary', classLevel: 'primary-5' },
+      { text: 'A story about a market day in Nigeria', category: 'comprehension', classLevel: 'primary-5' },
+      { text: 'How to write an informal letter to a friend', category: 'writing', classLevel: 'primary-6' },
+      { text: 'Common spelling errors: ie vs ei rules', category: 'spelling', classLevel: 'primary-6' },
+      
+      // JSS
+      { text: 'Understanding Parts of Speech in a sentence', category: 'grammar', classLevel: 'jss-1' },
+      { text: 'Prefixes and Suffixes: Building new words', category: 'vocabulary', classLevel: 'jss-1' },
+      { text: 'Reading Passage: The importance of agriculture', category: 'comprehension', classLevel: 'jss-2' },
+      { text: 'Narrative Essay: "The Day I Will Never Forget"', category: 'writing', classLevel: 'jss-2' },
+      { text: 'Punctuation: Commas, colons, and semi-colons', category: 'grammar', classLevel: 'jss-3' },
+      { text: 'Formal Letter Writing: Format and tone', category: 'writing', classLevel: 'jss-3' },
+      
+      // SS1 - SS3 (WAEC/JAMB Prep)
+      { text: 'Concord: Subject-Verb agreement rules (WAEC Prep)', category: 'grammar', classLevel: 'ss-1' },
+      { text: 'Figures of Speech: Simile, Metaphor, Personification', category: 'vocabulary', classLevel: 'ss-1' },
+      { text: 'WAEC Comprehension Passage: The impact of social media', category: 'comprehension', classLevel: 'ss-2' },
+      { text: 'Summary Writing: Identifying topic sentences and core points', category: 'writing', classLevel: 'ss-2' },
+      { text: 'Lexis and Structure: Common idioms and their meanings', category: 'vocabulary', classLevel: 'ss-3' },
+      { text: 'Argumentative Essay: "Technology does more harm than good"', category: 'writing', classLevel: 'ss-3' },
+      { text: 'Phrases and Clauses: Noun, Adjectival, and Adverbial', category: 'grammar', classLevel: 'ss-3' },
+      { text: 'JAMB use of English: Words commonly misspelt', category: 'spelling', classLevel: 'ss-3' }
+    ];
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    setPersistence(auth, browserLocalPersistence);
+    
+    let geminiApiKey = null,
+      groqApiKey = null,
+      currentUser = null,
+      activeTimeout = null;
+    const logContainer = document.getElementById('logContainer');
+    
+    function addLog(msg, type = 'info') {
+      const el = document.createElement('div');
+      el.className = 'log-entry';
+      el.innerHTML = `<span class="log-time">[${new Date().toLocaleTimeString()}]</span> <span class="log-${type}">${msg}</span>`;
+      logContainer.appendChild(el);
+      el.scrollIntoView();
+    }
+    
+    const randMs = () => Math.floor(Math.random() * 5 * 60 * 1000 + 10 * 60 * 1000);
+    const rand = arr => arr[Math.floor(Math.random() * arr.length)];
+    
+    async function loadApiKeys(user) {
+      if (!user) return false;
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        const d = snap.data();
+        geminiApiKey = d.geminiKey || d.geminiApiKey || null;
+        groqApiKey = d.groqKey || d.groqApiKey || null;
+        if (geminiApiKey || groqApiKey) { addLog('Keys loaded.', 'success'); return true; }
+      }
+      return false;
+    }
+    
+    // ─── PROMPT GENERATOR ─────────────────────────────────────
+    function buildEnglishPrompt(topic) {
+      const { text, category, classLevel } = topic;
+      const level = classLevel.startsWith('primary') ? 'Primary School (ages 6-11)' : classLevel.startsWith('jss') ? 'Junior Secondary (ages 11-14)' : 'Senior Secondary WAEC/JAMB (ages 15+)';
+      
+      let categoryInstructions = "";
+      
+      if (category === 'comprehension') {
+        categoryInstructions = `
+        Create an original, engaging reading passage (approx 300-400 words) relevant to a Nigerian student.
+        After the passage, add an <h2> section titled "Comprehension Questions".
+        Provide 5 well-thought-out questions (mix of factual and inferential).
+        Add an <h2> section titled "Answers" providing the correct answers.`;
+      }
+      else if (category === 'writing') {
+        categoryInstructions = `
+        Explain the format and structure of this specific type of writing.
+        Provide a clear outline or formula.
+        Provide a complete, high-quality sample essay or letter based on the topic.
+        Use <blockquote> tags to wrap the sample essay/letter so it stands out visually.`;
+      }
+      else if (category === 'grammar') {
+        categoryInstructions = `
+        Explain the grammatical rule clearly and simply.
+        Provide at least 5 clear examples using Nigerian context where possible.
+        Add a section called "Common Mistakes" showing the wrong way vs the right way (e.g. <b>Wrong:</b> ... <b>Right:</b> ...).`;
+      }
+      else if (category === 'vocabulary' || category === 'spelling') {
+        categoryInstructions = `
+        Provide a curated list of words relevant to the topic.
+        For each word, provide the definition, and a sentence example.
+        If it's spelling, explain the spelling rule and why students often get it wrong.`;
+      }
+      
+      return `You are an expert English Language teacher in Nigeria writing a lesson for Prep Portal 2026.
+
+SUBJECT: English Language
+CATEGORY: ${category.toUpperCase()}
+LEVEL: ${level}
+TOPIC: ${text}
+
+INSTRUCTIONS:
+1. Start directly with an <h1> tag containing a catchy title. (e.g., instead of "Formal Letter", use "How to Write a Perfect Formal Letter for WAEC").
+2. Teach the concept directly. Write in a warm, encouraging, and clear tone appropriate for the age group.
+${categoryInstructions}
+3. Use HTML tags properly: <p>, <ul>, <ol>, <h2>, <h3>, <b> for emphasis, and <blockquote> for examples.
+4. Output ONLY the HTML body. No markdown formatting, no \`\`\`html tags, no <html> or <body> tags. NO images.`;
+    }
+    
+    // ─── AI API CALLS (CORS FIXED) ────────────────────────────
+    async function callGroq(model, prompt) {
+      const targetUrl = encodeURIComponent('https://api.groq.com/openai/v1/chat/completions');
+      const res = await fetch('https://corsproxy.io/?' + targetUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqApiKey}` },
+        body: JSON.stringify({
+          model: model.model,
+          messages: [
+            { role: 'system', content: 'You are an expert English teacher. Output clean HTML only.' },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 2500
+        })
+      });
+      if (!res.ok) throw new Error(`Groq Error ${res.status}`);
+      const data = await res.json();
+      return data.choices[0].message.content;
+    }
+    
+    async function callGemini(model, prompt) {
+      const res = await fetch(`${model.url}?key=${geminiApiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      });
+      if (!res.ok) throw new Error(`Gemini Error ${res.status}`);
+      const data = await res.json();
+      return data.candidates[0].content.parts[0].text;
+    }
+    
+    async function generateContent(topic) {
+      const prompt = buildEnglishPrompt(topic);
+      const chain = [...(groqApiKey ? GROQ_MODELS : []), ...(geminiApiKey ? GEMINI_MODELS : [])];
+      
+      for (const model of chain) {
+        addLog(`Trying ${model.label}...`, 'info');
+        try {
+          let raw = model.provider === 'groq' ? await callGroq(model, prompt) : await callGemini(model, prompt);
+          raw = raw.replace(/```html/gi, '').replace(/```/g, '').trim();
+          const titleMatch = raw.match(/<h1[^>]*>(.*?)<\/h1>/i);
+          const title = titleMatch ? titleMatch[1].trim() : topic.text;
+          const excerpt = raw.replace(/<[^>]*>/g, ' ').substring(0, 150) + '...';
+          return { title, content: raw, excerpt, ...topic, modelUsed: model.label };
+        } catch (e) { addLog(`Failed ${model.label}: ${e.message}`, 'error'); }
+      }
+      throw new Error('All models exhausted');
+    }
+    
+    // ─── PUBLISH CYCLE ────────────────────────────────────────
+    async function executePublishCycle() {
+      if (!currentUser || (!geminiApiKey && !groqApiKey)) return;
+      const topic = rand(ENGLISH_TOPICS);
+      addLog(`Generating: ${topic.text}`, 'info');
+      try {
+        const post = await generateContent(topic);
+        await addDoc(collection(db, 'english-posts'), {
+          ...post,
+          authorId: currentUser.uid,
+          publishedAt: serverTimestamp()
+        });
+        document.getElementById('publishCount').innerText = parseInt(document.getElementById('publishCount').innerText) + 1;
+        addLog(`Success! Published: ${post.title}`, 'success');
+        loadRecentPosts();
+      } catch (e) { addLog(e.message, 'error'); }
+      
+      clearTimeout(activeTimeout);
+      activeTimeout = setTimeout(executePublishCycle, randMs());
+      document.getElementById('nextRunMinutes').innerText = Math.round(randMs() / 60000);
+    }
+    
+    async function loadRecentPosts() {
+      const list = document.getElementById('managePostsList');
+      const q = query(collection(db, 'english-posts'), orderBy('publishedAt', 'desc'), limit(15));
+      const snap = await getDocs(q);
+      list.innerHTML = '';
+      snap.forEach(d => {
+        const data = d.data();
+        list.innerHTML += `
+          <li class="manage-post-item">
+            <div class="manage-post-info">
+              <div class="manage-post-title">${data.title}</div>
+              <div class="manage-post-meta">
+                <span class="cat-badge">${data.category}</span>
+                <span>${data.classLevel.toUpperCase()}</span>
+              </div>
+            </div>
+          </li>`;
+      });
+    }
+    
+    document.getElementById('forcePublishBtn').onclick = executePublishCycle;
+    document.getElementById('refreshPostsBtn').onclick = loadRecentPosts;
+    
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('statusDot').classList.remove('red');
+        document.getElementById('authStatus').innerHTML = `<span class="status-dot"></span>${user.email}`;
+        await loadApiKeys(user);
+        executePublishCycle();
+        loadRecentPosts();
+      }
+    });
+  </script>
+</body>
+
+</html>
