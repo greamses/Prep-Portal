@@ -362,6 +362,12 @@ async function openEmbedModal(url, type, title, rawUrl) {
   embedOverlay.classList.add('active');
   embedSpinner.style.display = 'flex';
   
+  // Ensure the iframe is allowed to go fullscreen natively and responsive
+  embedFrame.setAttribute('allow', 'fullscreen; autoplay; encrypted-media; picture-in-picture');
+  embedFrame.setAttribute('allowfullscreen', 'true');
+  embedFrame.setAttribute('webkitallowfullscreen', 'true');
+  embedFrame.setAttribute('mozallowfullscreen', 'true');
+  
   // Verify if practice link allows iframes (X-Frame-Options/CSP check)
   if (type === 'practice') {
     try {
@@ -403,7 +409,43 @@ function closeEmbedModal() {
 }
 
 // Attach listeners to the modal close buttons
+// Attach listeners to the modal close buttons
 embedCloseBtn.addEventListener('click', closeEmbedModal);
+embedOverlay.addEventListener('click', (e) => {
+  if (e.target === embedOverlay) closeEmbedModal();
+});
+
+// --- NEW FULLSCREEN BUTTON INJECTION ---
+if (!document.getElementById('embedFullscreenBtn') && embedOpenLink) {
+  const fsBtn = document.createElement('button');
+  fsBtn.id = 'embedFullscreenBtn';
+  fsBtn.title = "View Fullscreen";
+  // Responsive SVG Icon
+  fsBtn.innerHTML = `<svg style="width:18px;height:18px;margin-right:12px;cursor:pointer;vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>`;
+  fsBtn.style.background = 'none';
+  fsBtn.style.border = 'none';
+  fsBtn.style.color = 'inherit';
+  fsBtn.style.display = 'inline-flex';
+  fsBtn.style.alignItems = 'center';
+  
+  // Insert the button just before the "Open in new tab" link
+  embedOpenLink.parentNode.insertBefore(fsBtn, embedOpenLink);
+  
+  // Make the iframe completely fill the device screen responsively
+  fsBtn.addEventListener('click', () => {
+    const target = embedFrame;
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      if (target.requestFullscreen) target.requestFullscreen();
+      else if (target.webkitRequestFullscreen) target.webkitRequestFullscreen(); // Safari
+      else if (target.msRequestFullscreen) target.msRequestFullscreen(); // IE11
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      else if (document.msExitFullscreen) document.msExitFullscreen();
+    }
+  });
+}
+
 embedOverlay.addEventListener('click', (e) => {
   if (e.target === embedOverlay) closeEmbedModal();
 });
