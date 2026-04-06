@@ -222,10 +222,10 @@ const siteData = {
             {
                 title: "Hubs",
                 links: [
-                    { text: "Science Blogs", href: "./science-blog/blogs.html" },
-                    { text: "Math Blogs", href: "./math-blog/blogs.html" },
-                    { text: "Literacy Blogs", href: "./literacy-blog/blogs.html" },
-                    { text: "General Blogs", href: "./general/blogs.html" }
+                    { text: "Science Blogs", href: "./science-blog/blogs\.html" },
+                    // { text: "Math Blogs", href: "./math-blog/blogs.html" },
+                    { text: "Literacy Blogs", href: "./literacy-blog/blog.html" },
+                    { text: "General Blogs", href: "./general-blog/blog.html" }
                 ]
             },
             {
