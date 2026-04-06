@@ -80,8 +80,8 @@ const siteData = {
                 {
                     name: "Literacy Blogs",
                     link: "./literacy-blog/blog.html",
-                    live: false,
-                    status: "Coming Soon"
+                    live: true,
+                    status: "Updated"
                 }
             ]
         },
@@ -101,7 +101,7 @@ const siteData = {
                     name: "Exam Techniques",
                     link: "./general/blogs.html",
                     live: false,
-                    status: "Live"
+                    status: "Coming Soon"
                 },
                 {
                     name: "University Admissions",
@@ -169,7 +169,6 @@ const siteData = {
         }
     ],
     
-    // Drill Cards (Mapped to the original 'drills' renderer, used here for Updates)
     drills: [
         {
             name: "Exam Updates Hub",
