@@ -22,7 +22,7 @@ const siteData = {
     
     // Navigation
     navigation: [
-        { text: "Dashboard", href: "../index.html" },
+        { text: "Dashboard", href: "../dashboard.html" },
         { text: "Archives", href: "#exams" },
         { text: "Academic Hubs", href: "#subjects" },
         { text: "Updates", href: "#theory" },
