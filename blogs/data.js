@@ -94,7 +94,7 @@ const siteData = {
                 {
                     name: "General Blogs",
                     link: "./genera-blog/blog.html",
-                    live: true,
+                    live: false,
                     status: "Live"
                 },
                 {
@@ -120,7 +120,7 @@ const siteData = {
                 {
                     name: "Exam Updates",
                     link: "./updates/index.html",
-                    live: true,
+                    live: false,
                     status: "Trending"
                 },
                 {
@@ -138,7 +138,7 @@ const siteData = {
         {
             name: "Science Blogs",
             description: "Physics formulas explained, Biology processes simplified, and Chemistry reactions decoded.",
-            link: "./science-blog/blog.html",
+            link: "./science-blog/blog/blog.html",
             color: "green",
             badge: "/Hub/Science/",
             cta: "Read Articles"
