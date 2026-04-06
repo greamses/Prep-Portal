@@ -143,14 +143,14 @@ const siteData = {
             badge: "/Hub/Science/",
             cta: "Read Articles"
         },
-        {
-            name: "Literacy Blogs",
-            description: "Essay structures, comprehension strategies, vocabulary building, and grammar rules.",
-            link: "./literacy-blog/blog.html",
-            color: "blue",
-            badge: "/Hub/Literacy/",
-            cta: "Read Articles"
-        },
+        // {
+        //     name: "Literacy Blogs",
+        //     description: "Essay structures, comprehension strategies, vocabulary building, and grammar rules.",
+        //     link: "./literacy-blog/blog.html",
+        //     color: "blue",
+        //     badge: "/Hub/Literacy/",
+        //     cta: "Read Articles"
+        // },
         // {
         //     name: "Math Blogs",
         //     description: "Step-by-step problem solving, algebra hacks, geometry proofs, and calculus basics.",
