@@ -362,13 +362,62 @@ async function openEmbedModal(url, type, title, rawUrl) {
   embedOverlay.classList.add('active');
   embedSpinner.style.display = 'flex';
   
-  // Ensure the iframe is allowed to go fullscreen natively and responsive
+  // 1. Ensure iframe permissions are set for responsive/fullscreen behavior
   embedFrame.setAttribute('allow', 'fullscreen; autoplay; encrypted-media; picture-in-picture');
   embedFrame.setAttribute('allowfullscreen', 'true');
   embedFrame.setAttribute('webkitallowfullscreen', 'true');
   embedFrame.setAttribute('mozallowfullscreen', 'true');
   
-  // Verify if practice link allows iframes (X-Frame-Options/CSP check)
+  // 2. Inject a highly visible Fullscreen Button dynamically
+  if (!document.getElementById('embedFullscreenBtn') && embedOpenLink) {
+    const fsBtn = document.createElement('button');
+    fsBtn.id = 'embedFullscreenBtn';
+    fsBtn.title = "View Fullscreen";
+    fsBtn.innerHTML = `
+      <svg style="width:16px;height:16px;margin-right:6px;vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+      </svg>
+      <span style="vertical-align:middle;font-weight:600;font-size:13px;">Fullscreen</span>
+    `;
+    
+    // Explicit inline styles to ensure it is visible regardless of external CSS
+    fsBtn.style.background = 'transparent';
+    fsBtn.style.border = '1px solid currentColor';
+    fsBtn.style.color = 'inherit';
+    fsBtn.style.padding = '5px 10px';
+    fsBtn.style.borderRadius = '6px';
+    fsBtn.style.cursor = 'pointer';
+    fsBtn.style.display = 'inline-flex';
+    fsBtn.style.alignItems = 'center';
+    fsBtn.style.marginRight = '12px';
+    fsBtn.style.opacity = '0.9';
+    
+    // Add hover effect
+    fsBtn.onmouseover = () => fsBtn.style.opacity = '1';
+    fsBtn.onmouseout = () => fsBtn.style.opacity = '0.9';
+    
+    // Insert it right before the "Open Link" button
+    embedOpenLink.parentNode.insertBefore(fsBtn, embedOpenLink);
+    
+    // Fullscreen Logic - Expand the wrapper instead of the iframe to bypass security blocks
+    fsBtn.addEventListener('click', () => {
+      const target = embedFrameWrap;
+      target.style.backgroundColor = '#000'; // Prevent white bars
+      target.style.height = '100%'; // Ensure full height
+      
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (target.requestFullscreen) target.requestFullscreen();
+        else if (target.webkitRequestFullscreen) target.webkitRequestFullscreen(); // Safari
+        else if (target.msRequestFullscreen) target.msRequestFullscreen(); // IE11
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        else if (document.msExitFullscreen) document.msExitFullscreen();
+      }
+    });
+  }
+  
+  // 3. Verify if practice link allows iframes (X-Frame-Options/CSP check)
   if (type === 'practice') {
     try {
       const checkRes = await fetch('https://corsproxy.io/?' + encodeURIComponent(targetUrl), { method: 'HEAD' });
@@ -394,10 +443,10 @@ async function openEmbedModal(url, type, title, rawUrl) {
   embedOpenLink.href = targetUrl;
   embedFrame.src = url;
   
-  // Apply specific sizing for video (16:9) vs practice (Fixed height)
+  // Apply specific sizing
   embedFrameWrap.className = 'embed-frame-wrap ' + (type === 'video' ? 'video-mode' : 'practice-mode');
   
-  // Hide spinner once iframe content loads
+  // Hide spinner once iframe loads
   embedFrame.onload = () => {
     embedSpinner.style.display = 'none';
   };
