@@ -1,7 +1,3 @@
-// health-data.js - Replace this entire file for different subjects
-// For Physics, create physics-data.js with the same structure
-// For Chemistry, create chemistry-data.js with the same structure
-// etc.
 
 // ─── SUBJECT-SPECIFIC MODELS ─────────────────────────────────
 export const SUBJECT_MODELS = {

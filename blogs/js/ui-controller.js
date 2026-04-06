@@ -1,10 +1,20 @@
 // ui-controller.js - 100% reusable across all subjects
 import { auth } from './config.js';
 import { onAuthStateChanged } from 'firebase/auth';
-import { 
-  initPublisher, setCurrentUser, loadApiKeys, executePublishCycle, 
-  loadRecentPosts, updatePostMeta, updatePostImages, updatePostLinks, 
-  deletePost, getPost, hasApiKeys, getSubjectName
+import {
+  initPublisher,
+  setCurrentUser,
+  loadApiKeys,
+  executePublishCycle,
+  loadRecentPosts,
+  updatePostMeta,
+  updatePostImages,
+  updatePostLinks,
+  updatePostContent,
+  deletePost,
+  getPost,
+  hasApiKeys,
+  getSubjectName
 } from './publisher-core.js';
 
 // This module expects subjectConfig and subjectData to be passed in
@@ -51,6 +61,11 @@ const videoPlayBadge = document.getElementById('videoPlayBadge');
 const practicePreviewCard = document.getElementById('practicePreviewCard');
 const practiceFavicon = document.getElementById('practiceFavicon');
 const practiceDomain = document.getElementById('practiceDomain');
+const contentModal = document.getElementById('contentModal');
+const saveContentBtn = document.getElementById('saveContentBtn');
+const cancelContentBtn = document.getElementById('cancelContentBtn');
+const contentEditorTextarea = document.getElementById('contentEditorTextarea');
+const contentPreviewPane = document.getElementById('contentPreviewPane');
 
 // ─── STATE ─────────────────────────────────────────────────
 let activeTimeout = null;
@@ -60,6 +75,7 @@ let pendingMetaId = null;
 let pendingImgId = null;
 let pendingImgContent = '';
 let pendingLinksId = null;
+let pendingContentId = null;
 
 // ─── INITIALIZATION ────────────────────────────────────────
 export function initUI(config, dataModule) {
@@ -258,6 +274,10 @@ async function renderRecentPosts() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             <span class="btn-label">Edit</span>
           </button>
+          <button class="btn btn-sm content-btn" data-id="${post.id}" data-title="${escapeHtml(post.title || 'Untitled')}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            <span class="btn-label">Content</span>
+          </button>
           <button class="btn btn-sm btn-danger del-btn" data-id="${post.id}" data-title="${escapeHtml(post.title || 'Untitled')}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>
             <span class="btn-label">Delete</span>
@@ -289,6 +309,9 @@ function attachButtonListeners(container) {
       document.getElementById('metaExcerpt').value = btn.dataset.excerpt || '';
       metaModal.classList.add('active');
     });
+  });
+  container.querySelectorAll('.content-btn').forEach(btn => {
+    btn.addEventListener('click', () => openContentEditor(btn.dataset.id, btn.dataset.title));
   });
   container.querySelectorAll('.del-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -331,6 +354,24 @@ async function openImageEditor(postId, postTitle, currentFeatured) {
     renderParaBlocks(pendingImgContent);
   } catch (e) {
     paraBlocksList.innerHTML = `<div class="manage-empty">Error: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function openContentEditor(postId, postTitle) {
+  pendingContentId = postId;
+  const subtitle = document.getElementById('contentModalSubtitle');
+  if (subtitle) subtitle.textContent = `"${postTitle}"`;
+  if (contentEditorTextarea) contentEditorTextarea.value = '';
+  if (contentPreviewPane) contentPreviewPane.innerHTML = '';
+  contentModal.classList.add('active');
+  try {
+    const post = await getPost(postId);
+    if (!post) { addLog('[CONTENT] Post not found', 'error'); return; }
+    contentEditorTextarea.value = post.content || '';
+    contentPreviewPane.innerHTML = post.content || '';
+    if (window.MathJax) MathJax.typesetPromise([contentPreviewPane]);
+  } catch (e) {
+    addLog(`[ERR] ${e.message}`, 'error');
   }
 }
 
@@ -400,7 +441,32 @@ function updateFeaturedThumb(url) {
   }
 }
 
+// ─── CONTENT EDITOR LIVE PREVIEW ───────────────────────────
+contentEditorTextarea?.addEventListener('input', () => {
+  contentPreviewPane.innerHTML = contentEditorTextarea.value;
+  if (window.MathJax) MathJax.typesetPromise([contentPreviewPane]);
+});
+
 // ─── SAVE HANDLERS ─────────────────────────────────────────
+saveContentBtn?.addEventListener('click', async () => {
+  if (!pendingContentId) return;
+  const content = contentEditorTextarea.value.trim();
+  if (!content) { addLog('[CONTENT] Content cannot be empty', 'warn'); return; }
+  saveContentBtn.disabled = true;
+  saveContentBtn.textContent = 'Saving...';
+  try {
+    await updatePostContent(pendingContentId, content);
+    addLog(`[CONTENT] Saved for ${pendingContentId.substring(0,10)}...`, 'success');
+    contentModal.classList.remove('active');
+    pendingContentId = null;
+    await renderRecentPosts();
+  } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
+  finally {
+    saveContentBtn.disabled = false;
+    saveContentBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Save Content`;
+  }
+});
+
 saveLinksBtn?.addEventListener('click', async () => {
   if (!pendingLinksId) return;
   const video = videoUrlInput.value.trim();
@@ -490,24 +556,31 @@ confirmDeleteBtn?.addEventListener('click', async () => {
 });
 
 // ─── CLOSE MODALS ──────────────────────────────────────────
-cancelLinksBtn?.addEventListener('click', () => { linksModal.classList.remove('active'); pendingLinksId = null; });
-cancelImgBtn?.addEventListener('click', () => { imgModal.classList.remove('active'); pendingImgId = null; pendingImgContent = ''; });
-cancelMetaBtn?.addEventListener('click', () => { metaModal.classList.remove('active'); pendingMetaId = null; });
-cancelDeleteBtn?.addEventListener('click', () => { confirmModal.classList.remove('active'); pendingDeleteId = null; });
+cancelContentBtn?.addEventListener('click', () => { contentModal.classList.remove('active');
+  pendingContentId = null; });
+cancelLinksBtn?.addEventListener('click', () => { linksModal.classList.remove('active');
+  pendingLinksId = null; });
+cancelImgBtn?.addEventListener('click', () => { imgModal.classList.remove('active');
+  pendingImgId = null;
+  pendingImgContent = ''; });
+cancelMetaBtn?.addEventListener('click', () => { metaModal.classList.remove('active');
+  pendingMetaId = null; });
+cancelDeleteBtn?.addEventListener('click', () => { confirmModal.classList.remove('active');
+  pendingDeleteId = null; });
 
-[confirmModal, metaModal, linksModal, imgModal].forEach(modal => {
+[confirmModal, metaModal, linksModal, imgModal, contentModal].forEach(modal => {
   modal?.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
 });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') [confirmModal, metaModal, linksModal, imgModal].forEach(m => { m?.classList.remove('active'); });
+  if (e.key === 'Escape')[confirmModal, metaModal, linksModal, imgModal, contentModal].forEach(m => { m?.classList.remove('active'); });
 });
 
 // ─── FORCE PUBLISH & RESTART ───────────────────────────────
 forceBtn?.addEventListener('click', async () => {
-  if (!hasApiKeys()) { 
-    if (currentUser) await loadApiKeys(currentUser, subjectConfig); 
-    else { addLog('[MAN] No user signed in', 'error'); return; } 
+  if (!hasApiKeys()) {
+    if (currentUser) await loadApiKeys(currentUser, subjectConfig);
+    else { addLog('[MAN] No user signed in', 'error'); return; }
   }
   clearScheduler();
   addLog(`[MAN] Manual ${subjectConfig?.name} post publish`, 'info');

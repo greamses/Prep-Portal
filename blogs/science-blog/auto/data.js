@@ -1,5 +1,3 @@
-// life-science-data.js - Life Sciences/Biology topics for Nigerian curriculum
-// Replace this file for different subjects while keeping same structure
 
 // ─── SUBJECT-SPECIFIC MODELS ─────────────────────────────────
 export const SUBJECT_MODELS = {
