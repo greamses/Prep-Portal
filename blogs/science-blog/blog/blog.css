@@ -361,7 +361,8 @@ table {
   font-size: .58rem;
   font-weight: 700;
   text-transform: uppercase;
-  border: 1px solid var(--ink, #0a0a0a);
+  border: 1.5px solid var(--ink, #0a0a0a);
+  box-shadow: 2px 2px 0 var(--ink, #0a0a0a);
   color: var(--muted, #555);
   background: var(--bg, #fff);
 }
