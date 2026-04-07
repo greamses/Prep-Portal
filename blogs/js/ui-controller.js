@@ -556,17 +556,27 @@ confirmDeleteBtn?.addEventListener('click', async () => {
 });
 
 // ─── CLOSE MODALS ──────────────────────────────────────────
-cancelContentBtn?.addEventListener('click', () => { contentModal.classList.remove('active');
-  pendingContentId = null; });
-cancelLinksBtn?.addEventListener('click', () => { linksModal.classList.remove('active');
-  pendingLinksId = null; });
-cancelImgBtn?.addEventListener('click', () => { imgModal.classList.remove('active');
+cancelContentBtn?.addEventListener('click', () => {
+  contentModal.classList.remove('active');
+  pendingContentId = null;
+});
+cancelLinksBtn?.addEventListener('click', () => {
+  linksModal.classList.remove('active');
+  pendingLinksId = null;
+});
+cancelImgBtn?.addEventListener('click', () => {
+  imgModal.classList.remove('active');
   pendingImgId = null;
-  pendingImgContent = ''; });
-cancelMetaBtn?.addEventListener('click', () => { metaModal.classList.remove('active');
-  pendingMetaId = null; });
-cancelDeleteBtn?.addEventListener('click', () => { confirmModal.classList.remove('active');
-  pendingDeleteId = null; });
+  pendingImgContent = '';
+});
+cancelMetaBtn?.addEventListener('click', () => {
+  metaModal.classList.remove('active');
+  pendingMetaId = null;
+});
+cancelDeleteBtn?.addEventListener('click', () => {
+  confirmModal.classList.remove('active');
+  pendingDeleteId = null;
+});
 
 [confirmModal, metaModal, linksModal, imgModal, contentModal].forEach(modal => {
   modal?.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });

@@ -45,48 +45,48 @@ export async function loadApiKeys(user, config) {
 // (assumes the model returned proper HTML).
 export function markdownToHtml(text) {
   if (!text) return text;
-
+  
   const tagCount = (text.match(/<(h[1-6]|p|ul|ol|li|blockquote|table|pre|div)\b/gi) || []).length;
   if (tagCount >= 6) return text;
-
+  
   let html = text;
-
+  
   // Strip leftover code fences
   html = html.replace(/```[\w]*\n?/g, '').replace(/```/g, '');
-
+  
   // Headings
   html = html.replace(/^######\s+(.+)$/gm, '<h6>$1</h6>');
-  html = html.replace(/^#####\s+(.+)$/gm,  '<h5>$1</h5>');
-  html = html.replace(/^####\s+(.+)$/gm,   '<h4>$1</h4>');
-  html = html.replace(/^###\s+(.+)$/gm,    '<h3>$1</h3>');
-  html = html.replace(/^##\s+(.+)$/gm,     '<h2>$1</h2>');
-  html = html.replace(/^#\s+(.+)$/gm,      '<h1>$1</h1>');
-
+  html = html.replace(/^#####\s+(.+)$/gm, '<h5>$1</h5>');
+  html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
+  
   // Horizontal rules
   html = html.replace(/^[-*_]{3,}\s*$/gm, '<hr>');
-
+  
   // Bold + italic combined
   html = html.replace(/\*\*\*(.+?)\*\*\*/gs, '<strong><em>$1</em></strong>');
-  html = html.replace(/___(.+?)___/gs,        '<strong><em>$1</em></strong>');
-
+  html = html.replace(/___(.+?)___/gs, '<strong><em>$1</em></strong>');
+  
   // Bold
   html = html.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
-  html = html.replace(/__(.+?)__/gs,      '<strong>$1</strong>');
-
+  html = html.replace(/__(.+?)__/gs, '<strong>$1</strong>');
+  
   // Italic
   html = html.replace(/\*(.+?)\*/gs, '<em>$1</em>');
-  html = html.replace(/_(.+?)_/gs,   '<em>$1</em>');
-
+  html = html.replace(/_(.+?)_/gs, '<em>$1</em>');
+  
   // Inline code
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-
+  
   // Blockquotes
   html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
-
+  
   // Unordered list items — group consecutive <li>s into <ul>
   html = html.replace(/^[-*+]\s+(.+)$/gm, '<li>$1</li>');
   html = html.replace(/(<li>[^]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
-
+  
   // Ordered list items — use temp tag to avoid re-matching
   html = html.replace(/^\d+\.\s+(.+)$/gm, '<oli>$1</oli>');
   html = html.replace(/(<oli>[^]*?<\/oli>\n?)+/g, m =>
@@ -94,7 +94,7 @@ export function markdownToHtml(text) {
   );
   // Clean up any stragglers
   html = html.replace(/<oli>/g, '<li>').replace(/<\/oli>/g, '</li>');
-
+  
   // Paragraphs — split on blank lines, wrap bare text blocks
   const BLOCK = /^<(h[1-6]|p|ul|ol|blockquote|hr|table|pre|div|figure)/i;
   html = html
@@ -107,7 +107,7 @@ export function markdownToHtml(text) {
     })
     .filter(Boolean)
     .join('\n');
-
+  
   return html;
 }
 
@@ -117,9 +117,9 @@ async function callGemini(model, prompt) {
   const r = await fetch(`${model.url}?key=${geminiApiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      contents: [{ parts: [{ text: prompt }] }], 
-      generationConfig: { temperature: 0.72, maxOutputTokens: 3200 } 
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.72, maxOutputTokens: 3200 }
     })
   });
   if (!r.ok) { const t = await r.text(); throw new Error(`Gemini ${r.status}: ${t.substring(0,100)}`); }
@@ -187,14 +187,14 @@ export async function generateWithFallback(topic, onModelChange) {
     if (onModelChange) onModelChange(model.label, model.provider, model.isFallback);
     try {
       let raw = model.provider === 'groq' ? await callGroq(model, prompt) : await callGemini(model, prompt);
-
+      
       // Strip code fences and stray img tags, then convert any markdown to HTML
       raw = raw.trim()
         .replace(/```html\n?/gi, '')
         .replace(/```\n?/g, '')
         .replace(/<img[^>]*>/gi, '');
       raw = markdownToHtml(raw);
-
+      
       const titleMatch = raw.match(/<h1[^>]*>([^<]+)<\/h1>/i);
       const title = titleMatch ? titleMatch[1].trim() : topic.text;
       const excerpt = raw.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().substring(0, 160);
@@ -237,15 +237,14 @@ async function callGroq(model, prompt) {
       body: JSON.stringify({
         model: model.model,
         messages: [
-          {
-            role: 'system',
-            content: `You are an expert educator for Nigerian students. Output only clean HTML. No markdown, no <img> tags. Use clear, practical examples relevant to Nigerian students.`
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
+        {
+          role: 'system',
+          content: `You are an expert educator for Nigerian students. Output only clean HTML. No markdown, no <img> tags. Use clear, practical examples relevant to Nigerian students.`
+        },
+        {
+          role: 'user',
+          content: prompt
+        }],
         temperature: 0.72,
         max_tokens: 3500,
         top_p: 0.95
@@ -322,11 +321,11 @@ export async function updatePostContent(postId, content) {
 
 export async function updatePostImages(postId, content, featuredImage, imagesAdded) {
   if (!subjectConfig) throw new Error('Subject config not loaded');
-  await updateDoc(doc(db, subjectConfig.collectionName, postId), { 
-    content, 
-    featuredImage, 
-    imagesAdded, 
-    updatedAt: serverTimestamp() 
+  await updateDoc(doc(db, subjectConfig.collectionName, postId), {
+    content,
+    featuredImage,
+    imagesAdded,
+    updatedAt: serverTimestamp()
   });
 }
 
@@ -334,11 +333,11 @@ export async function updatePostImages(postId, content, featuredImage, imagesAdd
 
 export async function updatePostLinks(postId, videoLink, practiceLink, linksAdded) {
   if (!subjectConfig) throw new Error('Subject config not loaded');
-  await updateDoc(doc(db, subjectConfig.collectionName, postId), { 
-    videoLink, 
-    practiceLink, 
-    linksAdded, 
-    updatedAt: serverTimestamp() 
+  await updateDoc(doc(db, subjectConfig.collectionName, postId), {
+    videoLink,
+    practiceLink,
+    linksAdded,
+    updatedAt: serverTimestamp()
   });
 }
 
