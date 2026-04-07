@@ -21,34 +21,6 @@ function getBasePath() {
 
 const BASE_PATH = getBasePath();
 
-function ensureLessonNoteStyles() {
-  if (document.querySelector('link[href*="lesson-note.css"]')) return true;
-  
-  const paths = [
-    `${BASE_PATH}/lesson-note.css`,
-    `./lesson-note.css`,
-    `../lesson-note.css`,
-    `/lesson-note.css`,
-    `${BASE_PATH}/css/lesson-note.css`
-  ];
-  
-  for (const path of paths) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = path;
-    link.onerror = () => console.warn(`Failed to load: ${path}`);
-    link.onload = () => {
-      console.log(`Loaded: ${path}`);
-      document.head.appendChild(link);
-      return true;
-    };
-    document.head.appendChild(link);
-    // Check if it loaded successfully
-    if (link.sheet) return true;
-  }
-  return false;
-}
-
 function ensureThemeStyles() {
   if (document.querySelector('link[href*="theme.css"]')) return;
   
@@ -72,8 +44,6 @@ function ensureThemeScript() {
 }
 
 function ensureLessonAssets() {
-  console.log(' Loading lesson assets from base path:', BASE_PATH);
-  ensureLessonNoteStyles();
   ensureThemeStyles();
   ensureThemeScript();
 }

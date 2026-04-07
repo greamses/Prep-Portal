@@ -1,5 +1,4 @@
-/* nav-component.css */
-/* Navigation styles — integrates with your theme variables */
+/* nav-component.css — FIXED MOBILE MENU */
 
 #nav-container {
   display: flex;
@@ -49,7 +48,7 @@
   letter-spacing: var(--tracking-wider, 0.07em);
 }
 
-/* Navigation links */
+/* Navigation links - DESKTOP */
 .nav-links {
   display: flex;
   align-items: center;
@@ -67,6 +66,7 @@
   color: var(--muted, #555555);
   letter-spacing: var(--tracking-wide, 0.04em);
   transition: color var(--duration-fast, 0.12s) var(--ease-default, ease);
+  white-space: nowrap;
 }
 
 .nav-links li a:hover {
@@ -206,25 +206,31 @@
   display: none;
 }
 
-/* Mobile toggle button */
+/* Mobile toggle button - HAMBURGER */
 .nav-toggle {
   display: none;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 5px;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 8px;
+  padding: 10px;
   flex-shrink: 0;
+  z-index: calc(var(--z-nav, 200) + 1);
 }
 
 .nav-toggle span {
+  display: block;
   width: 22px;
   height: 2px;
   background: var(--ink, #0a0a0a);
-  transition: all var(--duration-smooth, 0.2s) var(--ease-default, ease);
+  transition: transform var(--duration-smooth, 0.2s) var(--ease-default, ease),
+              opacity var(--duration-smooth, 0.2s) var(--ease-default, ease);
 }
 
+/* Hamburger animation when open */
 .nav-toggle[aria-expanded="true"] span:nth-child(1) {
   transform: rotate(45deg) translate(5px, 5px);
 }
@@ -237,16 +243,20 @@
   transform: rotate(-45deg) translate(5px, -5px);
 }
 
-/* Mobile responsive */
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
 @media (max-width: 768px) {
   #nav-container {
     padding: 0 18px;
   }
   
+  /* Show hamburger button on mobile */
   .nav-toggle {
     display: flex;
   }
   
+  /* Hide desktop nav-links by default on mobile */
   .nav-links {
     position: fixed;
     top: var(--nav-height, 62px);
@@ -260,28 +270,61 @@
     gap: 32px;
     transition: left var(--duration-normal, 0.25s) var(--ease-in-out, cubic-bezier(0.16, 1, 0.3, 1));
     z-index: var(--z-mobile-nav, 199);
+    margin: 0;
+    padding: 40px 20px;
   }
   
+  /* Show when toggled */
   .nav-links.show {
     left: 0;
   }
   
+  /* Style mobile links */
+  .nav-links li a {
+    font-size: var(--text-mono-lg, 11.5px);
+    padding: 12px 0;
+    display: block;
+  }
+  
+  /* Hide desktop auth inside nav-links on mobile (we'll show mobile version) */
   .nav-auth {
     display: none;
   }
   
-  .nav-auth-mobile .nav-auth {
-    display: flex;
-    flex-direction: column;
-    margin-top: 24px;
+  /* Mobile auth buttons */
+  .nav-auth-mobile {
+    display: block !important;
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color, #0a0a0a);
   }
   
+  .nav-auth-mobile .nav-auth {
+    display: flex !important;
+    flex-direction: column;
+    gap: 16px;
+    margin-left: 0;
+  }
+  
+  .nav-auth-mobile .login-btn,
+  .nav-auth-mobile .signup-btn,
+  .nav-auth-mobile .logout-btn {
+    width: 80%;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: var(--text-mono-base, 10px);
+  }
+  
+  /* Theme toggle on mobile */
   .theme-toggle {
     margin-left: auto;
-    margin-right: 12px;
+    margin-right: 8px;
   }
 }
 
+/* Small mobile */
 @media (max-width: 480px) {
   .brand-top {
     font-size: var(--text-brand-top-mobile, 15px);
@@ -296,6 +339,11 @@
   }
   
   .nav-links li a {
-    font-size: var(--text-mono-base, 10px);
+    font-size: var(--text-mono-md, 11px);
   }
+}
+
+/* Prevent body scroll when mobile menu is open */
+body.nav-open {
+  overflow: hidden;
 }

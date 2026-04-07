@@ -1,11 +1,10 @@
-// nav-component.js
-// Reusable navigation component with dynamic data — integrates with your theme system
+// nav-component.js — INJECTS INTO EXISTING .site-nav
 
 import { navData } from './nav-data.js';
 
 class NavComponent {
   constructor(options = {}) {
-    this.containerId = options.containerId || 'nav-container';
+    this.containerSelector = options.containerSelector || '.site-nav';
     this.data = options.data || navData;
     this.onNavItemClick = options.onNavItemClick || null;
     this.onThemeToggle = options.onThemeToggle || null;
@@ -13,12 +12,13 @@ class NavComponent {
   }
   
   render() {
-    const container = document.getElementById(this.containerId);
+    const container = document.querySelector(this.containerSelector);
     if (!container) {
-      console.error(`Navigation container #${this.containerId} not found`);
+      console.error(`Navigation container ${this.containerSelector} not found`);
       return;
     }
     
+    // Clear existing content but keep the element
     container.innerHTML = this.generateHTML();
     this.attachEventListeners();
     this.highlightActiveLink();
@@ -88,16 +88,17 @@ class NavComponent {
     }
     
     const mobileToggle = `
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
     `;
     
+    // Build full navigation HTML matching your existing structure
     return `
       ${logoHTML}
       <ul class="nav-links" id="navLinks">
         ${linksHTML}
-        ${showAuth ? `<li class="nav-auth-mobile" id="navAuthMobile">${authHTML}</li>` : ''}
+        ${showAuth ? `<li class="nav-auth-mobile">${authHTML}</li>` : ''}
       </ul>
       ${showThemeToggle ? themeHTML : ''}
       ${mobileToggle}
@@ -105,29 +106,63 @@ class NavComponent {
   }
   
   attachEventListeners() {
-    // Mobile menu toggle
+    // Mobile menu toggle — using 'open' class to match your CSS
     const toggleBtn = document.getElementById('navToggle');
     const navLinks = document.getElementById('navLinks');
     
     if (toggleBtn && navLinks) {
-      toggleBtn.addEventListener('click', () => {
-        const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
-        toggleBtn.setAttribute('aria-expanded', !expanded);
-        navLinks.classList.toggle('show');
+      // Remove any existing listeners to avoid duplicates
+      const newToggleBtn = toggleBtn.cloneNode(true);
+      toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
+      const finalToggleBtn = document.getElementById('navToggle');
+      
+      finalToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isExpanded = finalToggleBtn.getAttribute('aria-expanded') === 'true';
+        finalToggleBtn.setAttribute('aria-expanded', !isExpanded);
+        
+        // Toggle 'open' class (matches your CSS: .nav-links.open)
+        navLinks.classList.toggle('open');
+        
+        // Toggle class on hamburger button for animation
+        finalToggleBtn.classList.toggle('open');
+        
+        // Prevent body scroll
         document.body.classList.toggle('nav-open');
       });
     }
     
-    // Close mobile menu on link click
-    if (navLinks) {
-      navLinks.querySelectorAll('a').forEach(link => {
+    // Close mobile menu when clicking a link
+    const navLinksEl = document.getElementById('navLinks');
+    if (navLinksEl) {
+      navLinksEl.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', () => {
-          navLinks.classList.remove('show');
-          if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+          const toggle = document.getElementById('navToggle');
+          navLinksEl.classList.remove('open');
+          if (toggle) {
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.classList.remove('open');
+          }
           document.body.classList.remove('nav-open');
         });
       });
     }
+    
+    // Close menu on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const toggle = document.getElementById('navToggle');
+        const navLinksEl = document.getElementById('navLinks');
+        if (navLinksEl && navLinksEl.classList.contains('open')) {
+          navLinksEl.classList.remove('open');
+          if (toggle) {
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.classList.remove('open');
+          }
+          document.body.classList.remove('nav-open');
+        }
+      }
+    });
     
     // Theme toggle
     const themeToggle = document.getElementById('themeToggleBtn');
