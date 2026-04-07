@@ -1,20 +1,13 @@
-import { initNav } from './NavComponent.js';
+import { initNav } from './nav-component.js';
+import { navData } from './nav-data.js';
 
-// Initialize navigation with custom options
-const nav = initNav({
+initNav({
   containerId: 'nav-container',
-  onNavItemClick: (linkName, href) => {
-    console.log(`Navigating to: ${linkName} (${href})`);
-    // You can add custom logic here, like analytics
-    if (href && href !== '#') {
-      window.location.href = href;
-    }
-  },
+  data: navData,
   onThemeToggle: () => {
     console.log('Theme toggled');
-    // You can update other parts of the page
+  },
+  onAuthAction: (action) => {
+    console.log('Auth action:', action);
   }
 });
-
-// Example: update user avatar after login
-// nav.setUserAvatar('https://example.com/avatar.jpg');

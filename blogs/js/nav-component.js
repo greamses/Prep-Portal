@@ -1,5 +1,5 @@
-// NavComponent.js
-// Reusable navigation component with dynamic data
+// nav-component.js
+// Reusable navigation component with dynamic data — integrates with your theme system
 
 import { navData } from './nav-data.js';
 
@@ -9,9 +9,9 @@ class NavComponent {
     this.data = options.data || navData;
     this.onNavItemClick = options.onNavItemClick || null;
     this.onThemeToggle = options.onThemeToggle || null;
+    this.onAuthAction = options.onAuthAction || null;
   }
   
-  // Render the navigation HTML
   render() {
     const container = document.getElementById(this.containerId);
     if (!container) {
@@ -22,6 +22,7 @@ class NavComponent {
     container.innerHTML = this.generateHTML();
     this.attachEventListeners();
     this.highlightActiveLink();
+    this.syncThemeIcon();
     
     return container;
   }
@@ -29,29 +30,22 @@ class NavComponent {
   generateHTML() {
     const { logo, links, showAuth, showThemeToggle, userAvatar } = this.data;
     
-    // Build logo HTML
     const logoHTML = `
       <a href="/" class="nav-logo">
         <img src="${logo.iconPath}" alt="${logo.brandName} logo" />
-        ${logo.brandTop ? `
-          <div class="logo-brand">
-            <span class="brand-top">${logo.brandTop}</span>
-            <span class="brand-bottom">${logo.brandBottom || logo.brandName}</span>
-          </div>
-        ` : `
-          <div class="logo-brand">${logo.brandName}</div>
-        `}
+        <div class="logo-brand">
+          <span class="brand-top">${logo.brandTop}</span>
+          <span class="brand-bottom">${logo.brandBottom}</span>
+        </div>
       </a>
     `;
     
-    // Build links HTML
     const linksHTML = links.map(link => {
       const activeClass = link.active ? 'active' : '';
       const ctaClass = link.isCta ? 'nav-cta' : '';
       return `<li><a href="${link.href}" class="${activeClass} ${ctaClass}" data-nav-link="${link.name}">${link.name}</a></li>`;
     }).join('');
     
-    // Build auth section (if enabled)
     let authHTML = '';
     if (showAuth) {
       if (userAvatar) {
@@ -71,12 +65,11 @@ class NavComponent {
       }
     }
     
-    // Build theme toggle (if enabled)
     let themeHTML = '';
     if (showThemeToggle) {
       themeHTML = `
         <button class="theme-toggle" id="themeToggleBtn" aria-label="Toggle theme">
-          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"></circle>
             <line x1="12" y1="1" x2="12" y2="3"></line>
             <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -87,21 +80,19 @@ class NavComponent {
             <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
           </svg>
-          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
         </button>
       `;
     }
     
-    // Mobile toggle button
     const mobileToggle = `
-      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
         <span></span><span></span><span></span>
       </button>
     `;
     
-    // Combine everything
     return `
       ${logoHTML}
       <ul class="nav-links" id="navLinks">
@@ -115,7 +106,7 @@ class NavComponent {
   
   attachEventListeners() {
     // Mobile menu toggle
-    const toggleBtn = document.getElementById('nav-toggle');
+    const toggleBtn = document.getElementById('navToggle');
     const navLinks = document.getElementById('navLinks');
     
     if (toggleBtn && navLinks) {
@@ -127,15 +118,27 @@ class NavComponent {
       });
     }
     
-    // Theme toggle
-    const themeToggle = document.getElementById('themeToggleBtn');
-    if (themeToggle && this.onThemeToggle) {
-      themeToggle.addEventListener('click', () => this.onThemeToggle());
-    } else if (themeToggle) {
-      themeToggle.addEventListener('click', () => this.toggleTheme());
+    // Close mobile menu on link click
+    if (navLinks) {
+      navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          navLinks.classList.remove('show');
+          if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+          document.body.classList.remove('nav-open');
+        });
+      });
     }
     
-    // Login/Signup buttons
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggleBtn');
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        this.toggleTheme();
+        if (this.onThemeToggle) this.onThemeToggle();
+      });
+    }
+    
+    // Auth buttons
     const loginBtn = document.getElementById('loginBtn');
     const signupBtn = document.getElementById('signupBtn');
     const logoutBtn = document.getElementById('logoutBtn');
@@ -144,7 +147,7 @@ class NavComponent {
     if (signupBtn) signupBtn.addEventListener('click', () => this.handleAuth('signup'));
     if (logoutBtn) logoutBtn.addEventListener('click', () => this.handleAuth('logout'));
     
-    // Navigation link clicks
+    // Navigation links
     const navLinkElements = document.querySelectorAll('[data-nav-link]');
     navLinkElements.forEach(link => {
       link.addEventListener('click', (e) => {
@@ -174,23 +177,38 @@ class NavComponent {
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
+    this.syncThemeIcon();
     
-    // Dispatch event for other components
     window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newTheme } }));
   }
   
-  handleAuth(action) {
-    // Dispatch auth event — parent page can listen
-    window.dispatchEvent(new CustomEvent('authAction', { detail: { action } }));
+  syncThemeIcon() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const sunIcon = document.querySelector('.sun-icon');
+    const moonIcon = document.querySelector('.moon-icon');
+    
+    if (!sunIcon || !moonIcon) return;
+    
+    if (currentTheme === 'dark') {
+      sunIcon.style.display = 'none';
+      moonIcon.style.display = 'block';
+    } else {
+      sunIcon.style.display = 'block';
+      moonIcon.style.display = 'none';
+    }
   }
   
-  // Update user avatar dynamically
+  handleAuth(action) {
+    window.dispatchEvent(new CustomEvent('authAction', { detail: { action } }));
+    if (this.onAuthAction) this.onAuthAction(action);
+  }
+  
   setUserAvatar(avatarUrl) {
     this.data.userAvatar = avatarUrl;
     this.render();
   }
   
-  // Update active link
   setActiveLink(linkName) {
     this.data.links = this.data.links.map(link => ({
       ...link,
@@ -200,7 +218,6 @@ class NavComponent {
   }
 }
 
-// Auto-initialize if container exists
 export function initNav(options = {}) {
   const nav = new NavComponent(options);
   nav.render();
