@@ -210,19 +210,22 @@
 }
 
 /* ── VOCAB CHIPS ── */
+/* Make sure inline chips don't break awkwardly */
 .ln-chip {
-  display: inline;
+  display: inline-block;
   background: var(--yellow, #ffe500);
   color: var(--ink, #0a0a0a);
   font-family: var(--font-mono, 'JetBrains Mono', monospace);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 2px 8px;
   border: 1.5px solid var(--ink, #0a0a0a);
   box-shadow: 2px 2px 0 var(--ink, #0a0a0a);
   white-space: nowrap;
+  line-height: 1.4;
 }
 
+/* Color variants */
 .ln-chip.green {
   background: #c8f7e2;
 }
@@ -241,6 +244,23 @@
 
 .ln-chip.purple {
   background: #ede0ff;
+}
+
+@media (max-width: 768px) {
+  .ln-chip {
+    font-size: 12px;
+    padding: 2px 6px;
+    white-space: normal;
+    word-break: keep-all;
+    display: inline-block;
+  }
+}
+
+@media (max-width: 480px) {
+  .ln-chip {
+    font-size: 11px;
+    padding: 1px 5px;
+  }
 }
 
 /* ── PULL QUOTE ── */
