@@ -1,0 +1,560 @@
+<style>
+  .lesson-note * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .lesson-note {
+    font-family: var(--font-serif, 'DM Serif Display', serif);
+    color: var(--ink, #0a0a0a);
+    background: var(--paper, #fffef8);
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* ── HEADLINE ── */
+  .ln-headline { padding: 28px 28px 0; border-bottom: 4px solid var(--ink, #0a0a0a); }
+  .ln-kicker {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--blue, #0055ff); display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
+  }
+  .ln-kicker::before { content: ''; display: inline-block; width: 18px; height: 3px; background: var(--blue, #0055ff); }
+  .ln-h1 {
+    font-family: var(--font-display, 'Unbounded', sans-serif);
+    font-size: clamp(24px, 5vw, 44px); font-weight: 900; line-height: 1.05;
+    letter-spacing: -0.02em; max-width: 620px; margin-bottom: 16px;
+  }
+  .ln-h1 em { font-style: normal; background: var(--yellow, #ffe500); padding: 0 4px; }
+  .ln-lede {
+    font-family: var(--font-serif, 'DM Serif Display', serif);
+    font-size: clamp(15px, 2.2vw, 18px); line-height: 1.55;
+    max-width: 580px; padding-bottom: 20px;
+    border-left: 4px solid var(--yellow, #ffe500); padding-left: 14px; margin-bottom: 20px;
+  }
+
+  /* ── BYLINE ── */
+  .ln-byline {
+    display: flex; align-items: center; gap: 12px; padding: 12px 28px;
+    background: var(--off, #f7f4ee); border-bottom: 2.5px solid var(--ink, #0a0a0a);
+    font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 10px;
+    color: var(--muted, #555); flex-wrap: wrap;
+  }
+  .ln-byline strong { color: var(--ink, #0a0a0a); font-weight: 700; }
+  .ln-byline-dot { color: #ccc; }
+  .ln-level-badge {
+    background: var(--blue, #0055ff); color: #fff; font-size: 9px; font-weight: 700;
+    letter-spacing: 0.1em; padding: 2px 7px;
+    border: 1.5px solid var(--ink, #0a0a0a); box-shadow: 2px 2px 0 var(--ink, #0a0a0a);
+    text-transform: uppercase;
+  }
+
+  /* ── FACTS STRIP ── */
+  .ln-facts-strip {
+    background: var(--ink, #0a0a0a); color: #fff;
+    padding: 20px 28px; border-bottom: 2.5px solid var(--ink, #0a0a0a);
+  }
+  .ln-facts-label {
+    font-family: var(--font-display, 'Unbounded', sans-serif);
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--yellow, #ffe500); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ln-facts-label::after { content: ''; flex: 1; height: 1.5px; background: #333; }
+  .ln-facts-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;
+  }
+  .ln-fact-item {
+    border-left: 3px solid var(--yellow, #ffe500); padding-left: 12px;
+  }
+  .ln-fact-num {
+    font-family: var(--font-display, 'Unbounded', sans-serif);
+    font-size: clamp(22px, 4vw, 32px); font-weight: 900; line-height: 1;
+    color: var(--yellow, #ffe500); margin-bottom: 4px;
+  }
+  .ln-fact-text {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 10px; line-height: 1.55; color: #ccc;
+  }
+
+  /* ── SECTION HEADS ── */
+  .ln-h2 {
+    font-family: var(--font-display, 'Unbounded', sans-serif);
+    font-size: clamp(11px, 1.8vw, 13.5px); font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; margin: 22px 0 10px; padding-bottom: 5px;
+    border-bottom: 3px solid var(--yellow, #ffe500); display: inline-block;
+  }
+  .ln-h2:first-child { margin-top: 0; }
+
+  /* ── TWO-COLUMN BODY ── */
+  .ln-article-body {
+    display: grid; grid-template-columns: 1fr 1fr;
+    border-bottom: 2.5px solid var(--ink, #0a0a0a);
+  }
+  @media (max-width: 620px) {
+    .ln-article-body { grid-template-columns: 1fr; }
+    .ln-col:first-child { border-right: none; border-bottom: 2.5px solid var(--ink, #0a0a0a); }
+  }
+  .ln-col { padding: 24px 28px; }
+  .ln-col:first-child { border-right: 2.5px solid var(--ink, #0a0a0a); }
+
+  /* ── BODY TEXT ── */
+  .ln-p {
+    font-family: var(--font-serif, 'DM Serif Display', serif);
+    font-size: clamp(14px, 1.9vw, 16px); line-height: 1.8; margin-bottom: 14px;
+  }
+
+  /* ── VOCAB CHIPS ── */
+  .ln-chip {
+    display: inline; background: var(--yellow, #ffe500); color: var(--ink, #0a0a0a);
+    font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 12px;
+    font-weight: 700; padding: 1px 6px;
+    border: 1.5px solid var(--ink, #0a0a0a); box-shadow: 2px 2px 0 var(--ink, #0a0a0a);
+    white-space: nowrap;
+  }
+  .ln-chip.green { background: #c8f7e2; }
+  .ln-chip.blue  { background: #d0e4ff; }
+  .ln-chip.red   { background: #ffe0dd; }
+  .ln-chip.amber { background: #fff0c8; }
+  .ln-chip.purple { background: #ede0ff; }
+
+  /* ── PULL QUOTE ── */
+  .ln-pull-quote {
+    background: var(--blue, #0055ff); color: #fff;
+    border: 2.5px solid var(--ink, #0a0a0a); box-shadow: 5px 5px 0 var(--ink, #0a0a0a);
+    padding: 18px 20px; margin: 18px 0; position: relative;
+  }
+  .ln-pull-quote p {
+    font-family: var(--font-display, 'Unbounded', sans-serif);
+    font-size: clamp(12px, 2vw, 14px); font-weight: 700; line-height: 1.4; letter-spacing: -0.01em;
+  }
+  .ln-quote-mark {
+    font-family: var(--font-display, 'Unbounded', sans-serif); font-size: 48px; line-height: 1;
+    color: var(--yellow, #ffe500); position: absolute; top: 6px; right: 14px; opacity: 0.6;
+  }
+
+  /* ── RESPONSIVE IMAGE ── */
+  .ln-img-wrap {
+    width: 100%; border: 2.5px solid var(--ink, #0a0a0a);
+    box-shadow: 4px 4px 0 var(--ink, #0a0a0a); margin: 16px 0; overflow: hidden;
+    background: var(--off, #f7f4ee);
+  }
+  .ln-img-wrap img {
+    width: 100%; height: auto; display: block;
+    object-fit: cover; max-height: 260px;
+  }
+  .ln-img-caption {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 9.5px;
+    color: var(--muted, #555); padding: 6px 10px;
+    border-top: 1.5px solid var(--ink, #0a0a0a); letter-spacing: 0.04em;
+  }
+
+  /* ── IMAGE PLACEHOLDER ── */
+  .ln-img-placeholder {
+    width: 100%; aspect-ratio: 16/7; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 8px;
+    background: var(--off, #f7f4ee); color: var(--muted, #555);
+  }
+  .ln-img-placeholder svg { opacity: 0.35; }
+  .ln-img-placeholder span {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  /* ── TABLE SECTION ── */
+  .ln-table-section {
+    padding: 24px 28px; border-bottom: 2.5px solid var(--ink, #0a0a0a);
+    background: var(--paper, #fffef8); overflow-x: auto;
+  }
+  .ln-table-title {
+    font-family: var(--font-display, 'Unbounded', sans-serif);
+    font-size: clamp(12px, 2vw, 14px); font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ln-table-title::after { content: ''; flex: 1; height: 2.5px; background: var(--ink, #0a0a0a); }
+
+  .ln-table {
+    width: 100%; border-collapse: collapse;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 11px;
+    border: 2.5px solid var(--ink, #0a0a0a);
+  }
+  .ln-table thead tr {
+    background: var(--ink, #0a0a0a); color: #fff;
+  }
+  .ln-table thead th {
+    padding: 10px 14px; text-align: left; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; font-size: 10px;
+    border-right: 1.5px solid #333;
+  }
+  .ln-table thead th:last-child { border-right: none; }
+  .ln-table tbody tr { border-bottom: 1.5px solid var(--ink, #0a0a0a); }
+  .ln-table tbody tr:nth-child(even) { background: var(--off, #f7f4ee); }
+  .ln-table tbody tr:nth-child(odd)  { background: var(--paper, #fffef8); }
+  .ln-table tbody td {
+    padding: 10px 14px; line-height: 1.55;
+    border-right: 1.5px solid var(--ink, #0a0a0a); vertical-align: top;
+  }
+  .ln-table tbody td:last-child { border-right: none; }
+  .ln-table tbody td:first-child {
+    font-weight: 700; font-family: var(--font-display, 'Unbounded', sans-serif);
+    font-size: 10px; letter-spacing: 0.04em;
+  }
+
+  .ln-yes { color: var(--green, #00a550); font-weight: 700; }
+  .ln-no  { color: var(--red, #ff2200);   font-weight: 700; }
+
+  /* ── FEATURES GRID ── */
+  .ln-features {
+    padding: 24px 28px; border-bottom: 2.5px solid var(--ink, #0a0a0a);
+    background: var(--off, #f7f4ee);
+  }
+  .ln-features-title {
+    font-family: var(--font-display, 'Unbounded', sans-serif);
+    font-size: clamp(12px, 2vw, 14px); font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ln-features-title::after { content: ''; flex: 1; height: 2.5px; background: var(--ink, #0a0a0a); }
+  .ln-features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+  .ln-feature-card {
+    background: var(--paper, #fffef8); border: 2.5px solid var(--ink, #0a0a0a);
+    box-shadow: 3px 3px 0 var(--ink, #0a0a0a); padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+  .ln-feature-card:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink, #0a0a0a); }
+  .ln-feature-icon {
+    width: 38px; height: 38px; border: 2px solid var(--ink, #0a0a0a);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .ln-feature-num { font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: var(--muted, #555); text-transform: uppercase; }
+  .ln-feature-label { font-family: var(--font-display, 'Unbounded', sans-serif); font-size: clamp(10.5px,1.6vw,12.5px); font-weight: 700; line-height: 1.25; }
+  .ln-feature-desc  { font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 10px; line-height: 1.5; color: var(--muted, #555); }
+  .ln-feature-card:nth-child(1) { border-top: 4px solid var(--blue, #0055ff); }
+  .ln-feature-card:nth-child(2) { border-top: 4px solid var(--red, #ff2200); }
+  .ln-feature-card:nth-child(3) { border-top: 4px solid var(--green, #00a550); }
+  .ln-feature-card:nth-child(1) .ln-feature-icon { background: #d0e4ff; }
+  .ln-feature-card:nth-child(2) .ln-feature-icon { background: #ffe0dd; }
+  .ln-feature-card:nth-child(3) .ln-feature-icon { background: #c8f7e2; }
+
+  /* ── ACTIVITY BOX ── */
+  .ln-activity {
+    padding: 20px 28px; background: var(--bg, #ffffff);
+    border-top: 2.5px solid var(--ink, #0a0a0a);
+    display: flex; gap: 18px; align-items: flex-start;
+  }
+  .ln-activity-icon {
+    width: 52px; height: 52px; background: var(--ink, #0a0a0a);
+    border: 2.5px solid var(--ink, #0a0a0a); box-shadow: 3px 3px 0 var(--ink, #0a0a0a);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .ln-activity-label {
+    font-family: var(--font-display, 'Unbounded', sans-serif); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 6px;
+  }
+  .ln-activity-text {
+    font-family: var(--font-serif, 'DM Serif Display', serif);
+    font-size: clamp(14px, 2vw, 16px); line-height: 1.6;
+  }
+  .ln-activity-text strong {
+    font-family: var(--font-mono, 'JetBrains Mono', monospace); font-weight: 700;
+    background: var(--ink, #0a0a0a); color: var(--yellow, #ffe500); padding: 0 4px;
+  }
+
+  /* Process list styling */
+  .ln-process-list {
+    margin-bottom: 14px;
+    margin-left: 20px;
+    font-family: var(--font-serif, 'DM Serif Display', serif);
+    font-size: clamp(14px, 1.9vw, 16px);
+    line-height: 1.8;
+  }
+  .ln-process-list li {
+    margin-bottom: 16px;
+  }
+  .ln-process-title {
+    font-weight: 700;
+    font-family: var(--font-display, 'Unbounded', sans-serif);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+  .ln-core-idea {
+    display: inline-block;
+    background: var(--off, #f7f4ee);
+    padding: 2px 8px;
+    margin-top: 4px;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    font-size: 11px;
+    border-left: 3px solid var(--yellow, #ffe500);
+  }
+</style>
+
+<div class="lesson-note">
+
+  <!-- HEADLINE -->
+  <div class="ln-headline">
+    <div class="ln-kicker">Human Physiology · SS3</div>
+    <h1 class="ln-h1">When Your Body Needs a Wash: The Kidneys &amp; <em>Maintaining Internal Balance</em></h1>
+    <p class="ln-lede">
+      Every moment, your body is carrying out chemical reactions—breaking down nutrients, producing energy, and generating waste. To function efficiently, it must continuously remove waste while keeping essential substances at the right level.
+    </p>
+  </div>
+
+  <!-- BYLINE -->
+  <div class="ln-byline">
+    <strong>Prep Portal Biology Desk</strong>
+    <span class="ln-byline-dot">·</span>
+    <span>Excretion &amp; Osmoregulation</span>
+    <span class="ln-byline-dot">·</span>
+    <span class="ln-level-badge">SS3</span>
+    <span class="ln-byline-dot">·</span>
+    <span style="color:var(--muted,#555);">WAEC / NECO / IGCSE</span>
+  </div>
+
+  <!-- FACTS STRIP -->
+  <div class="ln-facts-strip">
+    <div class="ln-facts-label">Fast Facts</div>
+    <div class="ln-facts-grid">
+      <div class="ln-fact-item">
+        <div class="ln-fact-num">180L</div>
+        <div class="ln-fact-text">Litres of filtrate processed daily by the kidneys — but only ~1.5L leaves as urine.</div>
+      </div>
+      <div class="ln-fact-item">
+        <div class="ln-fact-num">1M+</div>
+        <div class="ln-fact-text">Each kidney contains over one million nephrons, the functional filtration units.</div>
+      </div>
+      <div class="ln-fact-item">
+        <div class="ln-fact-num">1200 mL</div>
+        <div class="ln-fact-text">Average daily urine output — varies with fluid intake and ADH levels.</div>
+      </div>
+      <div class="ln-fact-item">
+        <div class="ln-fact-num">25%</div>
+        <div class="ln-fact-text">Of total cardiac output flows through the kidneys each minute.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWO-COLUMN BODY -->
+  <div class="ln-article-body">
+
+    <!-- LEFT COLUMN -->
+    <div class="ln-col">
+
+      <span class="ln-h2">Homeostasis &amp; The Kidneys</span>
+
+      <div class="ln-img-wrap">
+        <div class="ln-img-placeholder">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><ellipse cx="20" cy="20" rx="12" ry="16" stroke="#0a0a0a" stroke-width="2.5"/><path d="M20 4 L20 36 M12 12 L28 12 M12 28 L28 28" stroke="#0a0a0a" stroke-width="2"/></svg>
+          <span>Kidney structure</span>
+        </div>
+        <div class="ln-img-caption">Fig. 1 — Cross-section of the kidney showing cortex, medulla, and pelvis</div>
+      </div>
+
+      <p class="ln-p">
+        The kidneys are not merely waste-removal organs; they function as <span class="ln-chip blue">regulatory systems</span>. They maintain <span class="ln-chip purple">homeostasis</span> by filtering blood to remove <span class="ln-chip red">nitrogenous wastes</span> such as urea, while also controlling the levels of <span class="ln-chip green">water and electrolytes</span>.
+      </p>
+      <p class="ln-p">
+        <strong>Conceptual focus:</strong> The key to understanding kidney function is recognizing that it involves <span class="ln-chip amber">selective control</span>. The kidneys continuously adjust what is excreted and what is retained, depending on the body's internal conditions.
+      </p>
+
+      <span class="ln-h2">The Nephron</span>
+
+      <div class="ln-img-wrap">
+        <div class="ln-img-placeholder">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><path d="M10 8 L30 8 L30 32 L10 32 Z" stroke="#0a0a0a" stroke-width="2.5" fill="none"/><circle cx="20" cy="14" r="4" stroke="#0a0a0a" stroke-width="2"/><path d="M20 18 L20 28 M14 22 L26 22" stroke="#0a0a0a" stroke-width="2"/></svg>
+          <span>Nephron diagram</span>
+        </div>
+        <div class="ln-img-caption">Fig. 2 — Structure of a nephron: glomerulus, Bowman's capsule, and renal tubule</div>
+      </div>
+
+      <p class="ln-p">
+        The functional unit of the kidney is the <span class="ln-chip blue">nephron</span>. Each nephron is specialized for precise processing of blood through a sequence of controlled steps.
+      </p>
+      <p class="ln-p">
+        Its main components include:
+      </p>
+      <ul style="margin-bottom: 14px; margin-left: 20px; font-family: var(--font-serif, 'DM Serif Display', serif); font-size: clamp(14px, 1.9vw, 16px); line-height: 1.8;">
+        <li><span class="ln-chip green">Glomerulus</span> – a network of capillaries where high-pressure filtration occurs</li>
+        <li><span class="ln-chip green">Bowman's capsule</span> – cup-like structure that receives the filtrate</li>
+        <li><span class="ln-chip green">Renal tubule</span> – modifies the filtrate through reabsorption and secretion</li>
+      </ul>
+      <p class="ln-p">
+        <strong>Thinking model:</strong> View the nephron as a <span class="ln-chip amber">sequential processing system</span>: initial filtration is broad and non-selective (for small molecules), followed by highly selective recovery and adjustment.
+      </p>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="ln-col">
+
+      <span class="ln-h2">Urine Formation</span>
+
+      <p class="ln-p">
+        Urine formation occurs through three coordinated processes:
+      </p>
+
+      <ol class="ln-process-list">
+        <li>
+          <span class="ln-process-title">Ultrafiltration:</span><br>
+          Blood enters the glomerulus under <span class="ln-chip amber">high hydrostatic pressure</span>, forcing water and small solutes (glucose, amino acids, salts, urea) into Bowman's capsule. Large molecules such as proteins and blood cells remain in circulation.<br>
+          <span class="ln-core-idea">Core idea: Non-selective filtration of small molecules.</span>
+        </li>
+        <li>
+          <span class="ln-process-title">Selective Reabsorption:</span><br>
+          As the filtrate passes through the tubule, essential substances are reabsorbed back into the blood. This includes glucose, amino acids, and other important nutrients. The amount of water and ions is also reabsorbed.<br>
+          <span class="ln-core-idea">Core idea: Selective recovery based on physiological needs.</span>
+        </li>
+        <li>
+          <span class="ln-process-title">Tubular Secretion:</span><br>
+          Additional substances (e.g., hydrogen ions, potassium ions, certain drugs) are actively transported from the blood into the tubule.<br>
+          <span class="ln-core-idea">Core idea: Final regulation of composition.</span>
+        </li>
+      </ol>
+
+      <div class="ln-pull-quote">
+        <span class="ln-quote-mark">"</span>
+        <p>Filter → Reabsorb → Regulate — the three-step formula for understanding how urine is made.</p>
+      </div>
+
+      <span class="ln-h2">Osmoregulation</span>
+
+      <div class="ln-img-wrap">
+        <div class="ln-img-placeholder">
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><rect x="8" y="14" width="24" height="12" stroke="#0a0a0a" stroke-width="2.5"/><path d="M14 20 L26 20" stroke="#0a0a0a" stroke-width="2"/><circle cx="20" cy="20" r="2" fill="#0a0a0a"/></svg>
+          <span>ADH mechanism</span>
+        </div>
+        <div class="ln-img-caption">Fig. 3 — ADH increases water permeability of the collecting duct</div>
+      </div>
+
+      <p class="ln-p">
+        Beyond waste removal, the kidneys maintain <span class="ln-chip green">osmotic balance</span>—the proper concentration of water and dissolved substances in body fluids. This process is known as <span class="ln-chip purple">osmoregulation</span>.
+      </p>
+      <p class="ln-p">
+        The permeability of the distal tubule and collecting duct to water is regulated by <span class="ln-chip red">Antidiuretic Hormone (ADH)</span>:
+      </p>
+      <ul style="margin-bottom: 14px; margin-left: 20px; font-family: var(--font-serif, 'DM Serif Display', serif); font-size: clamp(14px, 1.9vw, 16px); line-height: 1.8;">
+        <li>High ADH levels → increased water reabsorption → <span class="ln-chip amber">concentrated urine</span></li>
+        <li>Low ADH levels → reduced water reabsorption → <span class="ln-chip blue">dilute urine</span></li>
+      </ul>
+      <p class="ln-p">
+        <strong>Thinking model:</strong> The kidneys function as a <span class="ln-chip purple">feedback-controlled system</span>, adjusting output in response to internal signals rather than operating at a fixed rate.
+      </p>
+
+    </div>
+
+  </div><!-- /article-body -->
+
+  <!-- HOW TO STRUCTURE EXPLANATIONS CARDS -->
+  <div class="ln-features">
+    <div class="ln-features-title">How to Structure High-Quality Explanations</div>
+    <div class="ln-features-grid">
+
+      <div class="ln-feature-card">
+        <div class="ln-feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#0a0a0a" stroke-width="2.5"/><path d="M10 4 L10 10 L13 13" stroke="#0a0a0a" stroke-width="2"/></svg>
+        </div>
+        <div class="ln-feature-num">Step 1</div>
+        <div class="ln-feature-label">Purpose</div>
+        <div class="ln-feature-desc">Maintenance of homeostasis — why the kidneys are essential.</div>
+      </div>
+
+      <div class="ln-feature-card">
+        <div class="ln-feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M2 10 L18 10 M10 2 L10 18" stroke="#0a0a0a" stroke-width="2.5"/><circle cx="10" cy="10" r="3" stroke="#0a0a0a" stroke-width="2"/></svg>
+        </div>
+        <div class="ln-feature-num">Step 2</div>
+        <div class="ln-feature-label">Mechanism</div>
+        <div class="ln-feature-desc">Ultrafiltration, reabsorption, and secretion — how it works.</div>
+      </div>
+
+      <div class="ln-feature-card">
+        <div class="ln-feature-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,2 18,15 2,15" stroke="#0a0a0a" stroke-width="2.5"/><line x1="10" y1="9" x2="10" y2="13" stroke="#0a0a0a" stroke-width="2"/><circle cx="10" cy="7" r="1.5" fill="#0a0a0a"/></svg>
+        </div>
+        <div class="ln-feature-num">Step 3</div>
+        <div class="ln-feature-label">Regulation</div>
+        <div class="ln-feature-desc">Hormonal control (e.g., ADH) of water and solute balance.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE: PROCESSES -->
+  <div class="ln-table-section">
+    <div class="ln-table-title">Three Stages of Urine Formation</div>
+    <table class="ln-table">
+      <thead>
+        <tr>
+          <th>Stage</th>
+          <th>Location</th>
+          <th>What happens?</th>
+          <th>Direction</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Ultrafiltration</td>
+          <td>Glomerulus + Bowman's capsule</td>
+          <td>Water & small solutes forced out of blood</td>
+          <td>Blood → Capsule</td>
+        </tr>
+        <tr>
+          <td>Selective Reabsorption</td>
+          <td>Renal tubule (mainly proximal)</td>
+          <td>Glucose, amino acids, ions, water returned to blood</td>
+          <td>Tubule → Blood</td>
+        </tr>
+        <tr>
+          <td>Tubular Secretion</td>
+          <td>Distal tubule & collecting duct</td>
+          <td>H⁺, K⁺, drugs moved from blood into filtrate</td>
+          <td>Blood → Tubule</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- REGULATION TABLE -->
+  <div class="ln-table-section" style="background:var(--off,#f7f4ee);">
+    <div class="ln-table-title">Hormonal Regulation of Water Balance</div>
+    <table class="ln-table">
+      <thead>
+        <tr>
+          <th>Condition</th>
+          <th>ADH Level</th>
+          <th>Collecting Duct Permeability</th>
+          <th>Urine Output</th>
+          <th>Urine Concentration</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dehydration / High plasma osmolarity</td>
+          <td><span class="ln-yes">High</span></td>
+          <td>Increased (more aquaporins)</td>
+          <td>Decreased</td>
+          <td>Concentrated</td>
+        </tr>
+        <tr>
+          <td>Overhydration / Low plasma osmolarity</td>
+          <td><span class="ln-no">Low</span></td>
+          <td>Decreased</td>
+          <td>Increased</td>
+          <td>Dilute</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ACTIVITY BOX -->
+  <div class="ln-activity">
+    <div class="ln-activity-icon">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M5 13h16M13 5v16" stroke="#ffe500" stroke-width="2.5" stroke-linecap="square"/></svg>
+    </div>
+    <div>
+      <div class="ln-activity-label">Exam Tip — WAEC / NECO</div>
+      <p class="ln-activity-text">
+        To deepen understanding and score high marks, <strong>draw and label a nephron</strong>, and map each stage of urine formation onto its structure. This reinforces both the <strong>process</strong> and the <strong>structure-function relationship</strong>. Strong responses emphasize <strong>dynamic control and integration</strong> (e.g., ADH feedback loops), rather than isolated facts.
+      </p>
+    </div>
+  </div>
+
+</div>

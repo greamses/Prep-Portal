@@ -112,43 +112,6 @@ export function markdownToHtml(text) {
 }
 
 // ─── GENERIC API CALLS ─────────────────────────────────────
-async function callGroq(model, prompt) {
-  const targetUrl = encodeURIComponent('https://api.groq.com/openai/v1/chat/completions');
-  
-  const response = await fetch('https://corsproxy.io/?' + targetUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${groqApiKey}`
-    },
-    body: JSON.stringify({
-      model: model.model,
-      messages: [
-        {
-          role: 'system',
-          content: `You are an expert educator for Nigerian students. Output only clean HTML. No markdown, no <img> tags. Use clear, practical examples relevant to Nigerian students.`
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.72,
-      max_tokens: 3500,
-      top_p: 0.95
-    })
-  });
-  
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Groq ${response.status}: ${errorText.substring(0, 150)}`);
-  }
-  
-  const data = await response.json();
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error('Groq returned empty response');
-  return content;
-}
 
 async function callGemini(model, prompt) {
   const r = await fetch(`${model.url}?key=${geminiApiKey}`, {
@@ -165,6 +128,38 @@ async function callGemini(model, prompt) {
   if (!c) throw new Error('Gemini empty');
   return c;
 }
+
+export async function healthCheck() {
+  const checks = {
+    firestore: false,
+    apiKeys: false,
+    config: false
+  };
+  
+  try {
+    // Test Firestore connection
+    const testQuery = query(collection(db, subjectConfig.collectionName), limit(1));
+    await getDocs(testQuery);
+    checks.firestore = true;
+  } catch (e) {
+    console.error('Firestore check failed:', e);
+  }
+  
+  checks.apiKeys = !!(geminiApiKey || groqApiKey);
+  checks.config = !!subjectConfig;
+  
+  return checks;
+}
+
+// Add to UI controller
+setInterval(async () => {
+  if (currentUser) {
+    const health = await healthCheck();
+    if (!health.firestore) {
+      addLog('[HEALTH] Firestore connection issue detected', 'warn');
+    }
+  }
+}, 5 * 60 * 1000); // Check every 5 minutes
 
 export async function generateWithFallback(topic, onModelChange) {
   if (!subjectData || !subjectData.buildSubjectPrompt) {
@@ -211,33 +206,62 @@ export async function generateWithFallback(topic, onModelChange) {
   throw new Error('All models exhausted');
 }
 
-export async function publishPost(post) {
-  if (!currentUser) throw new Error('Not signed in');
-  if (!subjectConfig) throw new Error('Subject config not loaded');
-  
-  const ref = await addDoc(collection(db, subjectConfig.collectionName), {
-    title: post.title,
-    content: post.content,
-    excerpt: post.excerpt,
-    featuredImage: '',
-    videoLink: '',
-    practiceLink: '',
-    subject: post.subject,
-    classLevel: post.classLevel,
-    status: 'published',
-    authorId: currentUser.uid,
-    authorEmail: currentUser.email,
-    publishedAt: serverTimestamp(),
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-    views: 0,
-    likes: [],
-    imagesAdded: false,
-    linksAdded: false,
-    modelUsed: post.modelUsed,
-    source: subjectConfig.source
+// Add to publisher-core.js - wrapper with retry
+async function callWithRetry(fn, maxRetries = 3, delay = 2000) {
+  let lastError;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastError = e;
+      console.warn(`Attempt ${i + 1} failed:`, e.message);
+      if (i < maxRetries - 1) {
+        await new Promise(r => setTimeout(r, delay * (i + 1)));
+      }
+    }
+  }
+  throw lastError;
+}
+
+// Update callGroq to use retry
+async function callGroq(model, prompt) {
+  return callWithRetry(async () => {
+    const targetUrl = encodeURIComponent('https://api.groq.com/openai/v1/chat/completions');
+    
+    const response = await fetch('https://corsproxy.io/?' + targetUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${groqApiKey}`
+      },
+      body: JSON.stringify({
+        model: model.model,
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert educator for Nigerian students. Output only clean HTML. No markdown, no <img> tags. Use clear, practical examples relevant to Nigerian students.`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.72,
+        max_tokens: 3500,
+        top_p: 0.95
+      })
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Groq ${response.status}: ${errorText.substring(0, 150)}`);
+    }
+    
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error('Groq returned empty response');
+    return content;
   });
-  return ref.id;
 }
 
 export async function executePublishCycle(onLog, onSchedule, onTopicSelected, onModelChange) {
@@ -306,6 +330,8 @@ export async function updatePostImages(postId, content, featuredImage, imagesAdd
   });
 }
 
+
+
 export async function updatePostLinks(postId, videoLink, practiceLink, linksAdded) {
   if (!subjectConfig) throw new Error('Subject config not loaded');
   await updateDoc(doc(db, subjectConfig.collectionName, postId), { 
@@ -333,4 +359,59 @@ export function hasApiKeys() {
 
 export function getSubjectName() {
   return subjectConfig?.name || 'Unknown Subject';
+}
+
+// Add to publisher-core.js
+export function validateAndCleanContent(html) {
+  if (!html) return '';
+  
+  // Remove empty paragraphs
+  let cleaned = html.replace(/<p>\s*<\/p>/g, '');
+  
+  // Ensure lesson-note wrapper exists
+  if (!cleaned.includes('class="lesson-note"')) {
+    cleaned = `<div class="lesson-note">${cleaned}</div>`;
+  }
+  
+  // Fix common markdown artifacts
+  cleaned = cleaned.replace(/```html/g, '');
+  cleaned = cleaned.replace(/```/g, '');
+  
+  // Remove empty headings
+  cleaned = cleaned.replace(/<h[1-6]>\s*<\/h[1-6]>/g, '');
+  
+  return cleaned;
+}
+
+// Update publishPost to use validation
+export async function publishPost(post) {
+  if (!currentUser) throw new Error('Not signed in');
+  if (!subjectConfig) throw new Error('Subject config not loaded');
+  
+  // Validate and clean content
+  const cleanedContent = validateAndCleanContent(post.content);
+  
+  const ref = await addDoc(collection(db, subjectConfig.collectionName), {
+    title: post.title,
+    content: cleanedContent, // Use cleaned content
+    excerpt: post.excerpt,
+    featuredImage: '',
+    videoLink: '',
+    practiceLink: '',
+    subject: post.subject,
+    classLevel: post.classLevel,
+    status: 'published',
+    authorId: currentUser.uid,
+    authorEmail: currentUser.email,
+    publishedAt: serverTimestamp(),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    views: 0,
+    likes: [],
+    imagesAdded: false,
+    linksAdded: false,
+    modelUsed: post.modelUsed,
+    source: subjectConfig.source
+  });
+  return ref.id;
 }

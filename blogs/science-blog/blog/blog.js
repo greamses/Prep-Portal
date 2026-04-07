@@ -3,10 +3,86 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, query, orderBy, getDocs, doc, getDoc, updateDoc, increment, addDoc, serverTimestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
 
-// Import subject configuration (change this to switch subjects)
-// For Life Sciences: import * as subjectData from './life-science-data.js';
-// For Physical Science: import * as subjectData from './physical-science-data.js';
-// For Health: import * as subjectData from './health-data.js';
+// Add this at the top of blog.js after the imports
+// ─── ASSET LOADING WITH PATH DETECTION ─────────────────────
+
+function getBasePath() {
+  // Detect if we're in a subdirectory
+  const scripts = document.getElementsByTagName('script');
+  for (const script of scripts) {
+    if (script.src && script.src.includes('blog.js')) {
+      const url = new URL(script.src);
+      const path = url.pathname.substring(0, url.pathname.lastIndexOf('/'));
+      return path || '.';
+    }
+  }
+  return '.';
+}
+
+const BASE_PATH = getBasePath();
+
+function ensureLessonNoteStyles() {
+  if (document.querySelector('link[href*="lesson-note.css"]')) return true;
+  
+  const paths = [
+    `${BASE_PATH}/lesson-note.css`,
+    `./lesson-note.css`,
+    `../lesson-note.css`,
+    `/lesson-note.css`,
+    `${BASE_PATH}/css/lesson-note.css`
+  ];
+  
+  for (const path of paths) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = path;
+    link.onerror = () => console.warn(`Failed to load: ${path}`);
+    link.onload = () => {
+      console.log(`Loaded: ${path}`);
+      document.head.appendChild(link);
+      return true;
+    };
+    document.head.appendChild(link);
+    // Check if it loaded successfully
+    if (link.sheet) return true;
+  }
+  return false;
+}
+
+function ensureThemeStyles() {
+  if (document.querySelector('link[href*="theme.css"]')) return;
+  
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = `${BASE_PATH}/utils/theme/theme.css`;
+  link.onerror = () => console.warn('Failed to load theme.css');
+  document.head.appendChild(link);
+}
+
+function ensureThemeScript() {
+  if (document.querySelector('script[src*="theme.js"]')) return;
+  
+  const script = document.createElement('script');
+  script.src = `${BASE_PATH}/utils/theme/theme.js`;
+  script.async = true;
+  script.defer = true;
+  script.onload = () => console.log('theme.js loaded');
+  script.onerror = () => console.warn('Failed to load theme.js');
+  document.head.appendChild(script);
+}
+
+function ensureLessonAssets() {
+  console.log(' Loading lesson assets from base path:', BASE_PATH);
+  ensureLessonNoteStyles();
+  ensureThemeStyles();
+  ensureThemeScript();
+}
+
+// Call this once when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  ensureLessonAssets();
+});
+
 import * as subjectData from '../auto/data.js';
 
 const firebaseConfig = {
@@ -21,6 +97,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
 
 // ─── SUBJECT CONFIGURATION ─────────────────────────────────
 const COLLECTION_NAME = subjectData.SUBJECT_CONFIG?.collectionName || 'science-posts';
@@ -407,8 +484,10 @@ async function incViews(id) {
 }
 
 function showSinglePost(post) {
+ensureLessonAssets(); 
+
   activePost = post;
-  const subj = post.subject || Object.keys(SUBJECT_LABELS)[0] || 'default';
+const subj = post.subject || Object.keys(SUBJECT_LABELS)[0] || 'default';
   const cls = post.classLevel || 'ss-1';
   const sciCls = getSubjectStyle(subj);
   const clsCls = getClassStyle(cls);
