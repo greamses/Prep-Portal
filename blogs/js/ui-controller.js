@@ -361,13 +361,13 @@ async function openContentEditor(postId, postTitle) {
   pendingContentId = postId;
   const subtitle = document.getElementById('contentModalSubtitle');
   if (subtitle) subtitle.textContent = `"${postTitle}"`;
-  if (contentEditorTextarea) contentEditorTextarea.value = '';
+  if (contentEditorTextarea) contentEditorTextarea.value = '<link rel="stylesheet" href="../../render.css">';
   if (contentPreviewPane) contentPreviewPane.innerHTML = '';
   contentModal.classList.add('active');
   try {
     const post = await getPost(postId);
     if (!post) { addLog('[CONTENT] Post not found', 'error'); return; }
-    contentEditorTextarea.value = post.content || '';
+    contentEditorTextarea.value += post.content || '<link rel="stylesheet" href="../../render.css">';
     contentPreviewPane.innerHTML = post.content || '';
     if (window.MathJax) MathJax.typesetPromise([contentPreviewPane]);
   } catch (e) {
