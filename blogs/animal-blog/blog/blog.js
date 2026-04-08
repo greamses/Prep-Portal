@@ -1,4 +1,4 @@
-// blog.js - Dynamic archive viewer that adapts to any subject data
+// blog.js - Dynamic viewer that adapts to any subject data
 import { initializeApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, query, orderBy, getDocs, doc, getDoc, updateDoc, increment, addDoc, serverTimestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
@@ -116,9 +116,9 @@ const CLASS_STYLES = subjectData.CLASS_STYLES || {
 };
 
 // Update page title dynamically
-document.title = `${SUBJECT_NAME} Archive | Prep Portal 2026`;
+document.title = `${SUBJECT_NAME} | Prep Portal 2026`;
 const heroTitle = document.querySelector('.hero-title');
-if (heroTitle) heroTitle.innerHTML = `${SUBJECT_NAME}<br>Archive.`;
+if (heroTitle) heroTitle.innerHTML = `${SUBJECT_NAME}.`;
 
 const heroTagline = document.querySelector('.hero-tagline');
 if (heroTagline && subjectData.SUBJECT_CONFIG?.description) {
@@ -506,7 +506,7 @@ const subj = post.subject || Object.keys(SUBJECT_LABELS)[0] || 'default';
   
   incViews(post.id);
   history.pushState({ postId: post.id }, post.title, `${window.location.pathname}#${post.id}`);
-  document.title = `${post.title} | ${SUBJECT_NAME} Archive`;
+  document.title = `${post.title} | ${SUBJECT_NAME} `;
   
   singlePostContent.innerHTML = `
     <h1 class="post-title">${escHtml(post.title)}</h1>
@@ -636,7 +636,7 @@ function closePostView() {
   singlePostView.classList.remove('active');
   document.body.style.overflow = '';
   history.pushState('', document.title, window.location.pathname + window.location.search);
-  document.title = `${SUBJECT_NAME} Archive | Prep Portal 2026`;
+  document.title = `${SUBJECT_NAME} | Prep Portal 2026`;
   activePost = null;
 }
 
