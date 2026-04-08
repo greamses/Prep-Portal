@@ -6,29 +6,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Prep Portal 2026 | Archives</title>
   
-  <!-- Load config -->
-  <script src="../../../../js/path-config.js"></script>
-  
-  <!-- Load all CSS -->
-  <script>
-    CONFIG.loadAllCSS();
-  </script>
-  
-  <!-- Load all JS -->
-  <script>
-    CONFIG.loadAllJS();
-  </script>
-  
   <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
   <meta name="theme-color" content="#000000">
   <meta name="description" content="Science notes, worked examples, and equations for Primary 1 to SS3 — Maths, Physics, Chemistry, Biology, Basic Science, and Basic Technology.">
   <meta name="author" content="Prep Portal">
   
+  <!-- Hide body until CSS loads -->
+  <style>
+    body {
+      visibility: hidden;
+    }
+  </style>
+  
+  <!-- Load config -->
+  <script src="../../../../js/path-config.js"></script>
+  
+  <!-- Load CSS -->
+  <script>
+    CONFIG.loadAllCSS();
+  </script>
+  
   <!-- MathJax -->
   <script>
     window.MathJax = {
       tex: {
-        inlineMath: [['\\(', '\\)']],
+        inlineMath: [
+          ['\\(', '\\)']
+        ],
         displayMath: ['\\[', '\\]'],
         processEscapes: true,
         tags: 'ams'
@@ -38,14 +42,19 @@
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
   
-    <script type="importmap">
+  <script type="importmap">
     {
-    "imports": {
-      "firebase/app":       "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js",
-      "firebase/auth":      "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js",
-      "firebase/firestore": "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js"
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js"
+      }
     }
-  }
+  </script>
+  
+  <!-- Load JS after CSS -->
+  <script>
+    CONFIG.loadAllJS();
   </script>
 </head>
 
