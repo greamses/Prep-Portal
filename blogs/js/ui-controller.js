@@ -76,6 +76,13 @@ let pendingImgId = null;
 let pendingImgContent = '';
 let pendingLinksId = null;
 let pendingContentId = null;
+let currentUser = null;
+
+// Helper function to safely get short ID (prevents null substring error)
+function getShortId(id) {
+  if (!id || typeof id !== 'string') return 'unknown';
+  return id.substring(0, 8);
+}
 
 // ─── INITIALIZATION ────────────────────────────────────────
 export function initUI(config, dataModule) {
@@ -103,8 +110,10 @@ function addLog(msg, type = 'info') {
   el.className = 'log-entry';
   const cls = { success: 'log-success', error: 'log-error', warn: 'log-warn' } [type] || 'log-info';
   el.innerHTML = `<span class="log-time">[${t}]</span> <span class="${cls}">${escapeHtml(msg)}</span>`;
-  logContainer.appendChild(el);
-  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (logContainer) {
+    logContainer.appendChild(el);
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
 }
 
 const escapeHtml = s => { if (!s) return ''; return s.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' } [m])); };
@@ -133,9 +142,9 @@ function getSubjectStyle(subject) {
 }
 
 function updateNextDisplay(ms) {
-  if (!ms) {
-    nextRunMinutesSpan.innerText = '--';
-    nextRunDetailSpan.innerText = 'Next: idle';
+  if (!ms || !nextRunMinutesSpan || !nextRunDetailSpan) {
+    if (nextRunMinutesSpan) nextRunMinutesSpan.innerText = '--';
+    if (nextRunDetailSpan) nextRunDetailSpan.innerText = 'Next: idle';
     return;
   }
   const m = Math.round(ms / 60000);
@@ -162,6 +171,7 @@ function scheduleNextRun(ms) {
 }
 
 function showRoutingBadge(provider, isFallback) {
+  if (!routingIndicator) return;
   const cls = isFallback ? 'fallback' : provider.toLowerCase();
   const lbl = (isFallback ? `Fallback: ${provider}` : provider).toUpperCase();
   routingIndicator.innerHTML = `<div class="routing-badge ${cls}"><svg style="width:11px;height:11px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg> ${lbl}</div>`;
@@ -174,6 +184,26 @@ async function runPublishCycle() {
     showRoutingBadge(provider, isFallback);
     addLog(`[MODEL] Using ${modelLabel}${isFallback ? ' (fallback)' : ''}`, 'info');
   });
+}
+
+// ─── CSS CLEANING UTILITY ──────────────────────────────────
+function cleanDuplicateCssLinks(html) {
+  if (!html || typeof html !== 'string') return '';
+  
+  // Remove all CSS links first
+  const cssLinkRegex = /<link[^>]*rel=["']stylesheet["'][^>]*>/gi;
+  let cleaned = html.replace(cssLinkRegex, '');
+  
+  // Add CSS link once at the top if content has educational structure
+  const cssLink = '<link rel="stylesheet" href="../../../css/render.css">';
+  
+  if (cleaned.includes('<div class="lesson-note">') || 
+      cleaned.includes('<div class="ln-') ||
+      cleaned.includes('<div class="science-note">')) {
+    cleaned = cssLink + '\n' + cleaned;
+  }
+  
+  return cleaned;
 }
 
 // ─── VIDEO & PRACTICE PREVIEW ──────────────────────────────
@@ -191,41 +221,45 @@ function getDomain(url) {
   }
 }
 
-videoUrlInput?.addEventListener('input', () => {
-  let input = videoUrlInput.value.trim();
-  if (input.includes('<iframe')) {
-    const srcMatch = input.match(/src=["']([^"']+)["']/);
-    input = srcMatch ? srcMatch[1] : input;
-  }
-  const thumb = getYouTubeThumbnail(input);
-  if (thumb) {
-    videoThumbImg.src = thumb;
-    videoThumbImg.classList.add('visible');
-    videoPlayBadge.style.display = 'flex';
-  } else {
-    videoThumbImg.classList.remove('visible');
-    videoPlayBadge.style.display = 'none';
-  }
-});
+if (videoUrlInput) {
+  videoUrlInput.addEventListener('input', () => {
+    let input = videoUrlInput.value.trim();
+    if (input.includes('<iframe')) {
+      const srcMatch = input.match(/src=["']([^"']+)["']/);
+      input = srcMatch ? srcMatch[1] : input;
+    }
+    const thumb = getYouTubeThumbnail(input);
+    if (thumb && videoThumbImg && videoPlayBadge) {
+      videoThumbImg.src = thumb;
+      videoThumbImg.classList.add('visible');
+      videoPlayBadge.style.display = 'flex';
+    } else if (videoThumbImg && videoPlayBadge) {
+      videoThumbImg.classList.remove('visible');
+      videoPlayBadge.style.display = 'none';
+    }
+  });
+}
 
-practiceUrlInput?.addEventListener('input', () => {
-  let input = practiceUrlInput.value.trim();
-  if (input.includes('<iframe')) {
-    const srcMatch = input.match(/src=["']([^"']+)["']/);
-    input = srcMatch ? srcMatch[1] : input;
-  }
-  if (input) {
-    const domain = getDomain(input);
-    practiceDomain.textContent = domain;
-    practiceFavicon.src = `https://image.thum.io/get/width/100/crop/100/${input}`;
-    practiceFavicon.onerror = () => {
-      practiceFavicon.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
-    };
-    practicePreviewCard.classList.add('visible');
-  } else {
-    practicePreviewCard.classList.remove('visible');
-  }
-});
+if (practiceUrlInput) {
+  practiceUrlInput.addEventListener('input', () => {
+    let input = practiceUrlInput.value.trim();
+    if (input.includes('<iframe')) {
+      const srcMatch = input.match(/src=["']([^"']+)["']/);
+      input = srcMatch ? srcMatch[1] : input;
+    }
+    if (input && practicePreviewCard && practiceDomain && practiceFavicon) {
+      const domain = getDomain(input);
+      practiceDomain.textContent = domain;
+      practiceFavicon.src = `https://image.thum.io/get/width/100/crop/100/${input}`;
+      practiceFavicon.onerror = () => {
+        practiceFavicon.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+      };
+      practicePreviewCard.classList.add('visible');
+    } else if (practicePreviewCard) {
+      practicePreviewCard.classList.remove('visible');
+    }
+  });
+}
 
 // ─── LOAD POSTS UI ─────────────────────────────────────────
 async function renderRecentPosts() {
@@ -303,152 +337,116 @@ function attachButtonListeners(container) {
   container.querySelectorAll('.meta-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       pendingMetaId = btn.dataset.id;
-      document.getElementById('metaTitle').value = btn.dataset.title || '';
-      document.getElementById('metaSubject').value = btn.dataset.subject || Object.keys(subjectLabels || {})[0] || 'default';
-      document.getElementById('metaClass').value = btn.dataset.class || 'ss-1';
-      document.getElementById('metaExcerpt').value = btn.dataset.excerpt || '';
-      metaModal.classList.add('active');
+      const metaTitle = document.getElementById('metaTitle');
+      const metaSubject = document.getElementById('metaSubject');
+      const metaClass = document.getElementById('metaClass');
+      const metaExcerpt = document.getElementById('metaExcerpt');
+      if (metaTitle) metaTitle.value = btn.dataset.title || '';
+      if (metaSubject) metaSubject.value = btn.dataset.subject || Object.keys(subjectLabels || {})[0] || 'default';
+      if (metaClass) metaClass.value = btn.dataset.class || 'ss-1';
+      if (metaExcerpt) metaExcerpt.value = btn.dataset.excerpt || '';
+      if (metaModal) metaModal.classList.add('active');
     });
   });
   container.querySelectorAll('.content-btn').forEach(btn => {
-    btn.addEventListener('click', () => openContentEditor(btn.dataset.id, btn.dataset.title));
+    btn.addEventListener('click', () => {
+      const postId = btn.dataset.id;
+      const postTitle = btn.dataset.title || 'Untitled';
+      if (!postId) {
+        addLog('[ERROR] Invalid post ID', 'error');
+        return;
+      }
+      openContentEditor(postId, postTitle);
+    });
   });
   container.querySelectorAll('.del-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       pendingDeleteId = btn.dataset.id;
-      confirmPostTitle.textContent = `"${btn.dataset.title}" — this cannot be undone.`;
-      confirmModal.classList.add('active');
+      if (confirmPostTitle) confirmPostTitle.textContent = `"${btn.dataset.title}" — this cannot be undone.`;
+      if (confirmModal) confirmModal.classList.add('active');
     });
   });
 }
 
+// ─── CONTENT EDITOR ─────────────────────────────────────────
+async function openContentEditor(postId, postTitle) {
+  if (!postId) {
+    addLog('[CONTENT] Invalid post ID', 'error');
+    return;
+  }
+  
+  pendingContentId = postId;
+  const subtitle = document.getElementById('contentModalSubtitle');
+  if (subtitle) subtitle.textContent = `"${postTitle || 'Untitled'}"`;
+  
+  if (contentEditorTextarea) contentEditorTextarea.value = '';
+  if (contentPreviewPane) contentPreviewPane.innerHTML = '';
+  if (contentModal) contentModal.classList.add('active');
+  
+  try {
+    const post = await getPost(postId);
+    if (!post) { 
+      addLog('[CONTENT] Post not found', 'error'); 
+      if (contentModal) contentModal.classList.remove('active');
+      pendingContentId = null;
+      return; 
+    }
+    
+    let existingContent = post.content || '';
+    existingContent = cleanDuplicateCssLinks(existingContent);
+    
+    if (contentEditorTextarea) contentEditorTextarea.value = existingContent;
+    if (contentPreviewPane) contentPreviewPane.innerHTML = existingContent;
+    
+    if (window.MathJax && contentPreviewPane) {
+      await MathJax.typesetPromise([contentPreviewPane]);
+    }
+  } catch (e) {
+    addLog(`[ERR] ${e.message}`, 'error');
+    if (contentModal) contentModal.classList.remove('active');
+    pendingContentId = null;
+  }
+}
+
 // ─── MODAL HANDLERS ─────────────────────────────────────────
 function openLinksModal(postId, postTitle, currentVideo, currentPractice) {
+  if (!postId) return;
   pendingLinksId = postId;
   const subtitle = document.getElementById('linksModalSubtitle');
-  if (subtitle) subtitle.textContent = `"${postTitle}" — add video and interactive practice link.`;
-  videoUrlInput.value = currentVideo || '';
-  practiceUrlInput.value = currentPractice || '';
-  videoThumbImg.classList.remove('visible');
-  videoPlayBadge.style.display = 'none';
-  practicePreviewCard.classList.remove('visible');
-  if (currentVideo) videoUrlInput.dispatchEvent(new Event('input'));
-  if (currentPractice) practiceUrlInput.dispatchEvent(new Event('input'));
-  linksModal.classList.add('active');
+  if (subtitle) subtitle.textContent = `"${postTitle || 'Untitled'}" — add video and interactive practice link.`;
+  if (videoUrlInput) videoUrlInput.value = currentVideo || '';
+  if (practiceUrlInput) practiceUrlInput.value = currentPractice || '';
+  if (videoThumbImg) videoThumbImg.classList.remove('visible');
+  if (videoPlayBadge) videoPlayBadge.style.display = 'none';
+  if (practicePreviewCard) practicePreviewCard.classList.remove('visible');
+  if (currentVideo && videoUrlInput) videoUrlInput.dispatchEvent(new Event('input'));
+  if (currentPractice && practiceUrlInput) practiceUrlInput.dispatchEvent(new Event('input'));
+  if (linksModal) linksModal.classList.add('active');
 }
 
 async function openImageEditor(postId, postTitle, currentFeatured) {
+  if (!postId) return;
   pendingImgId = postId;
   const subtitle = document.getElementById('imgModalSubtitle');
-  if (subtitle) subtitle.textContent = `"${postTitle}" — paste image URLs per paragraph.`;
-  paraBlocksList.innerHTML = `<div class="manage-loading"><div class="spinner-ring"></div>Loading...</div>`;
-  imgPendingBanner.style.display = 'none';
-  featuredImgInput.value = currentFeatured || '';
+  if (subtitle) subtitle.textContent = `"${postTitle || 'Untitled'}" — paste image URLs per paragraph.`;
+  if (paraBlocksList) paraBlocksList.innerHTML = `<div class="manage-loading"><div class="spinner-ring"></div>Loading...</div>`;
+  if (imgPendingBanner) imgPendingBanner.style.display = 'none';
+  if (featuredImgInput) featuredImgInput.value = currentFeatured || '';
   updateFeaturedThumb(currentFeatured || '');
-  imgModal.classList.add('active');
+  if (imgModal) imgModal.classList.add('active');
   try {
     const post = await getPost(postId);
     if (!post) { addLog('[IMG] Post not found', 'error'); return; }
     pendingImgContent = post.content || '';
-    imgPendingBanner.style.display = (!post.featuredImage && !post.imagesAdded) ? 'flex' : 'none';
+    if (imgPendingBanner) imgPendingBanner.style.display = (!post.featuredImage && !post.imagesAdded) ? 'flex' : 'none';
     renderParaBlocks(pendingImgContent);
   } catch (e) {
-    paraBlocksList.innerHTML = `<div class="manage-empty">Error: ${escapeHtml(e.message)}</div>`;
+    if (paraBlocksList) paraBlocksList.innerHTML = `<div class="manage-empty">Error: ${escapeHtml(e.message)}</div>`;
   }
 }
-
-// Add this to your ui-controller.js
-const CSS_MANAGER = {
-  knownStylesheets: [
-    '../../../css/render.css',
-    '../blog/render.css',
-    './render.css'
-  ],
-  
-  clean(html) {
-    if (!html) return '';
-    
-    let result = html;
-    
-    // Remove all CSS link tags
-    for (const cssPath of this.knownStylesheets) {
-      const regex = new RegExp(`<link[^>]*href=["']${cssPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>`, 'gi');
-      result = result.replace(regex, '');
-    }
-    
-    // Also catch any CSS link with any path ending with render.css
-    const genericRegex = /<link[^>]*href=["'][^"']*render\.css["'][^>]*>/gi;
-    result = result.replace(genericRegex, '');
-    
-    // Add single CSS link at the top if content needs it
-    if (result.includes('<div class="lesson-note">') ||
-      result.includes('<div class="science-note">') ||
-      result.includes('<div class="ln-')) {
-      result = '<link rel="stylesheet" href="../../../css/render.css">\n' + result;
-    }
-    
-    return result;
-  },
-  
-  // Check if content has CSS already
-  hasCss(html, cssPath) {
-    if (!html) return false;
-    return html.includes(`href="${cssPath}"`);
-  }
-};
-
-// Use in openContentEditor:
-async function openContentEditor(postId, postTitle) {
-  pendingContentId = postId;
-  const subtitle = document.getElementById('contentModalSubtitle');
-  if (subtitle) subtitle.textContent = `"${postTitle}"`;
-  
-  contentEditorTextarea.value = '';
-  contentPreviewPane.innerHTML = '';
-  contentModal.classList.add('active');
-  
-  try {
-    const post = await getPost(postId);
-    if (!post) { addLog('[CONTENT] Post not found', 'error'); return; }
-    
-    let existingContent = post.content || '';
-    // Clean using CSS manager
-    existingContent = CSS_MANAGER.clean(existingContent);
-    
-    contentEditorTextarea.value = existingContent;
-    contentPreviewPane.innerHTML = existingContent;
-    
-    if (window.MathJax) await MathJax.typesetPromise([contentPreviewPane]);
-  } catch (e) {
-    addLog(`[ERR] ${e.message}`, 'error');
-  }
-}
-
-// Also clean before saving
-saveContentBtn?.addEventListener('click', async () => {
-  if (!pendingContentId) return;
-  let content = contentEditorTextarea.value.trim();
-  if (!content) { addLog('[CONTENT] Content cannot be empty', 'warn'); return; }
-  
-  // Clean before saving
-  content = CSS_MANAGER.clean(content);
-  
-  saveContentBtn.disabled = true;
-  saveContentBtn.textContent = 'Saving...';
-  try {
-    await updatePostContent(pendingContentId, content);
-    addLog(`[CONTENT] Saved for ${pendingContentId.substring(0,10)}...`, 'success');
-    contentModal.classList.remove('active');
-    pendingContentId = null;
-    await renderRecentPosts();
-  } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
-  finally {
-    saveContentBtn.disabled = false;
-    saveContentBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Save Content`;
-  }
-});
 
 function renderParaBlocks(html) {
+  if (!paraBlocksList) return;
   const container = document.createElement('div');
   container.innerHTML = html;
   const BLOCK_TAGS = new Set(['H1', 'H2', 'H3', 'H4', 'P', 'UL', 'OL', 'BLOCKQUOTE', 'TABLE', 'PRE', 'DIV']);
@@ -480,27 +478,30 @@ function renderParaBlocks(html) {
     paraBlocksList.appendChild(row);
     const input = row.querySelector('.para-img-input');
     const prev = row.querySelector('.para-img-preview');
-    input.addEventListener('input', () => {
-      const u = input.value.trim();
-      if (u) {
-        input.classList.add('has-img');
-        prev.src = u;
-        prev.classList.add('visible');
-        prev.onerror = () => {
+    if (input && prev) {
+      input.addEventListener('input', () => {
+        const u = input.value.trim();
+        if (u) {
+          input.classList.add('has-img');
+          prev.src = u;
+          prev.classList.add('visible');
+          prev.onerror = () => {
+            prev.src = '';
+            prev.classList.remove('visible');
+          };
+        } else {
+          input.classList.remove('has-img');
           prev.src = '';
           prev.classList.remove('visible');
-        };
-      } else {
-        input.classList.remove('has-img');
-        prev.src = '';
-        prev.classList.remove('visible');
-      }
-    });
+        }
+      });
+    }
   });
   paraBlocksList._blocks = blocks;
 }
 
 function updateFeaturedThumb(url) {
+  if (!featuredImgThumb) return;
   if (url) {
     featuredImgThumb.src = url;
     featuredImgThumb.classList.add('visible');
@@ -515,187 +516,290 @@ function updateFeaturedThumb(url) {
 }
 
 // ─── CONTENT EDITOR LIVE PREVIEW ───────────────────────────
-contentEditorTextarea?.addEventListener('input', () => {
-  contentPreviewPane.innerHTML = contentEditorTextarea.value;
-  if (window.MathJax) MathJax.typesetPromise([contentPreviewPane]);
-});
-
-// ─── SAVE HANDLERS ─────────────────────────────────────────
-saveContentBtn?.addEventListener('click', async () => {
-  if (!pendingContentId) return;
-  const content = contentEditorTextarea.value.trim();
-  if (!content) { addLog('[CONTENT] Content cannot be empty', 'warn'); return; }
-  saveContentBtn.disabled = true;
-  saveContentBtn.textContent = 'Saving...';
-  try {
-    await updatePostContent(pendingContentId, content);
-    addLog(`[CONTENT] Saved for ${pendingContentId.substring(0,10)}...`, 'success');
-    contentModal.classList.remove('active');
-    pendingContentId = null;
-    await renderRecentPosts();
-  } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
-  finally {
-    saveContentBtn.disabled = false;
-    saveContentBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Save Content`;
-  }
-});
-
-saveLinksBtn?.addEventListener('click', async () => {
-  if (!pendingLinksId) return;
-  const video = videoUrlInput.value.trim();
-  const practice = practiceUrlInput.value.trim();
-  saveLinksBtn.disabled = true;
-  saveLinksBtn.textContent = 'Saving...';
-  try {
-    await updatePostLinks(pendingLinksId, video, practice, !!(video || practice));
-    addLog(`[LINKS] Saved for ${pendingLinksId.substring(0,10)}...`, 'success');
-    linksModal.classList.remove('active');
-    pendingLinksId = null;
-    await renderRecentPosts();
-  } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
-  finally {
-    saveLinksBtn.disabled = false;
-    saveLinksBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Save Links`;
-  }
-});
-
-saveImgBtn?.addEventListener('click', async () => {
-  if (!pendingImgId) return;
-  const featured = featuredImgInput.value.trim();
-  const blocks = paraBlocksList._blocks || [];
-  const inputs = paraBlocksList.querySelectorAll('.para-img-input');
-  const IMG_STYLE = 'width:100%;max-width:100%;height:auto;border-radius:8px;margin:1.25rem 0;display:block;';
-  let newContent = '';
-  blocks.forEach((block, idx) => {
-    newContent += block.outerHTML;
-    const input = inputs[idx];
-    if (input?.value.trim()) newContent += `<img src="${escapeHtml(input.value.trim())}" alt="${escapeHtml(block.textContent.trim().substring(0,40))}" style="${IMG_STYLE}">`;
+if (contentEditorTextarea && contentPreviewPane) {
+  contentEditorTextarea.addEventListener('input', () => {
+    contentPreviewPane.innerHTML = contentEditorTextarea.value;
+    if (window.MathJax) MathJax.typesetPromise([contentPreviewPane]);
   });
-  if (!newContent) newContent = pendingImgContent;
-  const hasAnyImg = !!featured || [...inputs].some(i => i.value.trim());
-  saveImgBtn.disabled = true;
-  saveImgBtn.textContent = 'Saving...';
-  try {
-    await updatePostImages(pendingImgId, newContent, featured, hasAnyImg);
-    addLog(`[IMG] Images saved for ${pendingImgId.substring(0,10)}...`, 'success');
-    imgModal.classList.remove('active');
-    pendingImgId = null;
-    pendingImgContent = '';
-    await renderRecentPosts();
-  } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
-  finally {
-    saveImgBtn.disabled = false;
-    saveImgBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Save Images`;
-  }
-});
+}
 
-saveMetaBtn?.addEventListener('click', async () => {
-  if (!pendingMetaId) return;
-  const title = document.getElementById('metaTitle').value.trim();
-  const subject = document.getElementById('metaSubject').value;
-  const cls = document.getElementById('metaClass').value;
-  const excerpt = document.getElementById('metaExcerpt').value.trim();
-  if (!title) { addLog('[META] Title required', 'warn'); return; }
-  saveMetaBtn.disabled = true;
-  saveMetaBtn.textContent = 'Saving...';
-  try {
-    await updatePostMeta(pendingMetaId, { title, subject, classLevel: cls, excerpt });
-    addLog(`[META] Updated: "${title}"`, 'success');
-    metaModal.classList.remove('active');
-    pendingMetaId = null;
-    await renderRecentPosts();
-  } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
-  finally {
-    saveMetaBtn.disabled = false;
-    saveMetaBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Save Details`;
-  }
-});
+// ─── SAVE HANDLERS (ALL WITH SAFE substring) ───────────────
+if (saveContentBtn) {
+  saveContentBtn.addEventListener('click', async () => {
+    if (!pendingContentId) {
+      addLog('[CONTENT] No post selected for editing', 'warn');
+      if (contentModal) contentModal.classList.remove('active');
+      return;
+    }
+    
+    if (!contentEditorTextarea) {
+      addLog('[CONTENT] Editor not found', 'error');
+      return;
+    }
+    
+    let content = contentEditorTextarea.value.trim();
+    if (!content) { 
+      addLog('[CONTENT] Content cannot be empty', 'warn'); 
+      return; 
+    }
+    
+    content = cleanDuplicateCssLinks(content);
+    
+    saveContentBtn.disabled = true;
+    const originalText = saveContentBtn.innerHTML;
+    saveContentBtn.textContent = 'Saving...';
+    
+    try {
+      await updatePostContent(pendingContentId, content);
+      addLog(`[CONTENT] Saved for ${getShortId(pendingContentId)}...`, 'success');
+      if (contentModal) contentModal.classList.remove('active');
+      pendingContentId = null;
+      await renderRecentPosts();
+    } catch (e) { 
+      addLog(`[ERR] ${e.message}`, 'error'); 
+    } finally {
+      if (saveContentBtn) {
+        saveContentBtn.disabled = false;
+        saveContentBtn.innerHTML = originalText;
+      }
+    }
+  });
+}
 
-confirmDeleteBtn?.addEventListener('click', async () => {
-  if (!pendingDeleteId) return;
-  confirmDeleteBtn.disabled = true;
-  confirmDeleteBtn.textContent = 'Deleting...';
-  try {
-    await deletePost(pendingDeleteId);
-    addLog(`[DEL] ${pendingDeleteId.substring(0,10)}...`, 'success');
-    confirmModal.classList.remove('active');
-    pendingDeleteId = null;
-    await renderRecentPosts();
-  } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
-  finally {
-    confirmDeleteBtn.disabled = false;
-    confirmDeleteBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4h6v2"></path></svg>Yes, Delete`;
-  }
-});
+if (saveLinksBtn) {
+  saveLinksBtn.addEventListener('click', async () => {
+    if (!pendingLinksId) {
+      addLog('[LINKS] No post selected', 'warn');
+      if (linksModal) linksModal.classList.remove('active');
+      return;
+    }
+    const video = videoUrlInput ? videoUrlInput.value.trim() : '';
+    const practice = practiceUrlInput ? practiceUrlInput.value.trim() : '';
+    saveLinksBtn.disabled = true;
+    const originalText = saveLinksBtn.innerHTML;
+    saveLinksBtn.textContent = 'Saving...';
+    try {
+      await updatePostLinks(pendingLinksId, video, practice, !!(video || practice));
+      addLog(`[LINKS] Saved for ${getShortId(pendingLinksId)}...`, 'success');
+      if (linksModal) linksModal.classList.remove('active');
+      pendingLinksId = null;
+      await renderRecentPosts();
+    } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
+    finally {
+      if (saveLinksBtn) {
+        saveLinksBtn.disabled = false;
+        saveLinksBtn.innerHTML = originalText;
+      }
+    }
+  });
+}
+
+if (saveImgBtn) {
+  saveImgBtn.addEventListener('click', async () => {
+    if (!pendingImgId) {
+      addLog('[IMAGES] No post selected', 'warn');
+      if (imgModal) imgModal.classList.remove('active');
+      return;
+    }
+    const featured = featuredImgInput ? featuredImgInput.value.trim() : '';
+    const blocks = paraBlocksList ? (paraBlocksList._blocks || []) : [];
+    const inputs = paraBlocksList ? paraBlocksList.querySelectorAll('.para-img-input') : [];
+    const IMG_STYLE = 'width:100%;max-width:100%;height:auto;border-radius:8px;margin:1.25rem 0;display:block;';
+    let newContent = '';
+    blocks.forEach((block, idx) => {
+      newContent += block.outerHTML;
+      if (inputs[idx] && inputs[idx].value.trim()) {
+        newContent += `<img src="${escapeHtml(inputs[idx].value.trim())}" alt="${escapeHtml(block.textContent.trim().substring(0,40))}" style="${IMG_STYLE}">`;
+      }
+    });
+    if (!newContent) newContent = pendingImgContent;
+    const hasAnyImg = !!featured || [...inputs].some(i => i && i.value.trim());
+    saveImgBtn.disabled = true;
+    const originalText = saveImgBtn.innerHTML;
+    saveImgBtn.textContent = 'Saving...';
+    try {
+      await updatePostImages(pendingImgId, newContent, featured, hasAnyImg);
+      addLog(`[IMG] Images saved for ${getShortId(pendingImgId)}...`, 'success');
+      if (imgModal) imgModal.classList.remove('active');
+      pendingImgId = null;
+      pendingImgContent = '';
+      await renderRecentPosts();
+    } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
+    finally {
+      if (saveImgBtn) {
+        saveImgBtn.disabled = false;
+        saveImgBtn.innerHTML = originalText;
+      }
+    }
+  });
+}
+
+if (saveMetaBtn) {
+  saveMetaBtn.addEventListener('click', async () => {
+    if (!pendingMetaId) {
+      addLog('[META] No post selected', 'warn');
+      if (metaModal) metaModal.classList.remove('active');
+      return;
+    }
+    const titleInput = document.getElementById('metaTitle');
+    const subjectInput = document.getElementById('metaSubject');
+    const classInput = document.getElementById('metaClass');
+    const excerptInput = document.getElementById('metaExcerpt');
+    
+    const title = titleInput ? titleInput.value.trim() : '';
+    const subject = subjectInput ? subjectInput.value : '';
+    const cls = classInput ? classInput.value : '';
+    const excerpt = excerptInput ? excerptInput.value.trim() : '';
+    
+    if (!title) { addLog('[META] Title required', 'warn'); return; }
+    saveMetaBtn.disabled = true;
+    const originalText = saveMetaBtn.innerHTML;
+    saveMetaBtn.textContent = 'Saving...';
+    try {
+      await updatePostMeta(pendingMetaId, { title, subject, classLevel: cls, excerpt });
+      addLog(`[META] Updated: "${title}"`, 'success');
+      if (metaModal) metaModal.classList.remove('active');
+      pendingMetaId = null;
+      await renderRecentPosts();
+    } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
+    finally {
+      if (saveMetaBtn) {
+        saveMetaBtn.disabled = false;
+        saveMetaBtn.innerHTML = originalText;
+      }
+    }
+  });
+}
+
+if (confirmDeleteBtn) {
+  confirmDeleteBtn.addEventListener('click', async () => {
+    if (!pendingDeleteId) {
+      addLog('[DELETE] No post selected', 'warn');
+      if (confirmModal) confirmModal.classList.remove('active');
+      return;
+    }
+    confirmDeleteBtn.disabled = true;
+    const originalText = confirmDeleteBtn.innerHTML;
+    confirmDeleteBtn.textContent = 'Deleting...';
+    try {
+      await deletePost(pendingDeleteId);
+      addLog(`[DEL] ${getShortId(pendingDeleteId)}...`, 'success');
+      if (confirmModal) confirmModal.classList.remove('active');
+      pendingDeleteId = null;
+      await renderRecentPosts();
+    } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
+    finally {
+      if (confirmDeleteBtn) {
+        confirmDeleteBtn.disabled = false;
+        confirmDeleteBtn.innerHTML = originalText;
+      }
+    }
+  });
+}
 
 // ─── CLOSE MODALS ──────────────────────────────────────────
-cancelContentBtn?.addEventListener('click', () => {
-  contentModal.classList.remove('active');
-  pendingContentId = null;
-});
-cancelLinksBtn?.addEventListener('click', () => {
-  linksModal.classList.remove('active');
-  pendingLinksId = null;
-});
-cancelImgBtn?.addEventListener('click', () => {
-  imgModal.classList.remove('active');
-  pendingImgId = null;
-  pendingImgContent = '';
-});
-cancelMetaBtn?.addEventListener('click', () => {
-  metaModal.classList.remove('active');
-  pendingMetaId = null;
-});
-cancelDeleteBtn?.addEventListener('click', () => {
-  confirmModal.classList.remove('active');
-  pendingDeleteId = null;
-});
+if (cancelContentBtn) {
+  cancelContentBtn.addEventListener('click', () => {
+    if (contentModal) contentModal.classList.remove('active');
+    pendingContentId = null;
+    if (contentEditorTextarea) contentEditorTextarea.value = '';
+    if (contentPreviewPane) contentPreviewPane.innerHTML = '';
+  });
+}
 
+if (cancelLinksBtn) {
+  cancelLinksBtn.addEventListener('click', () => {
+    if (linksModal) linksModal.classList.remove('active');
+    pendingLinksId = null;
+  });
+}
+
+if (cancelImgBtn) {
+  cancelImgBtn.addEventListener('click', () => {
+    if (imgModal) imgModal.classList.remove('active');
+    pendingImgId = null;
+    pendingImgContent = '';
+  });
+}
+
+if (cancelMetaBtn) {
+  cancelMetaBtn.addEventListener('click', () => {
+    if (metaModal) metaModal.classList.remove('active');
+    pendingMetaId = null;
+  });
+}
+
+if (cancelDeleteBtn) {
+  cancelDeleteBtn.addEventListener('click', () => {
+    if (confirmModal) confirmModal.classList.remove('active');
+    pendingDeleteId = null;
+  });
+}
+
+// Close modals when clicking outside
 [confirmModal, metaModal, linksModal, imgModal, contentModal].forEach(modal => {
-  modal?.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+  if (modal) {
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+  }
 });
 
+// Escape key closes modals
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape')[confirmModal, metaModal, linksModal, imgModal, contentModal].forEach(m => { m?.classList.remove('active'); });
+  if (e.key === 'Escape') {
+    if (confirmModal) confirmModal.classList.remove('active');
+    if (metaModal) metaModal.classList.remove('active');
+    if (linksModal) linksModal.classList.remove('active');
+    if (imgModal) imgModal.classList.remove('active');
+    if (contentModal) contentModal.classList.remove('active');
+  }
 });
 
 // ─── FORCE PUBLISH & RESTART ───────────────────────────────
-forceBtn?.addEventListener('click', async () => {
-  if (!hasApiKeys()) {
-    if (currentUser) await loadApiKeys(currentUser, subjectConfig);
-    else { addLog('[MAN] No user signed in', 'error'); return; }
-  }
-  clearScheduler();
-  addLog(`[MAN] Manual ${subjectConfig?.name} post publish`, 'info');
-  await runPublishCycle();
-});
+if (forceBtn) {
+  forceBtn.addEventListener('click', async () => {
+    if (!hasApiKeys()) {
+      if (currentUser) await loadApiKeys(currentUser, subjectConfig);
+      else { addLog('[MAN] No user signed in', 'error'); return; }
+    }
+    clearScheduler();
+    addLog(`[MAN] Manual ${subjectConfig?.name} post publish`, 'info');
+    await runPublishCycle();
+  });
+}
 
-restartBtn?.addEventListener('click', () => {
-  clearScheduler();
-  if (hasApiKeys()) {
-    scheduleNextRun(Math.floor(Math.random() * 5 * 60 * 1000 + 10 * 60 * 1000));
-    addLog('[OK] Scheduler restarted', 'success');
-  } else addLog('[WARN] No API keys available', 'error');
-});
+if (restartBtn) {
+  restartBtn.addEventListener('click', () => {
+    clearScheduler();
+    if (hasApiKeys()) {
+      scheduleNextRun(Math.floor(Math.random() * 5 * 60 * 1000 + 10 * 60 * 1000));
+      addLog('[OK] Scheduler restarted', 'success');
+    } else addLog('[WARN] No API keys available', 'error');
+  });
+}
 
-testBtn?.addEventListener('click', async () => {
-  addLog('[TEST] Testing Firestore connection...', 'info');
-  try {
-    const posts = await loadRecentPosts(5);
-    addLog(`[OK] Found ${posts.length} ${subjectConfig?.name} posts`, 'success');
-  } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
-});
+if (testBtn) {
+  testBtn.addEventListener('click', async () => {
+    addLog('[TEST] Testing Firestore connection...', 'info');
+    try {
+      const posts = await loadRecentPosts(5);
+      addLog(`[OK] Found ${posts.length} ${subjectConfig?.name} posts`, 'success');
+    } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
+  });
+}
 
-refreshPostsBtn?.addEventListener('click', renderRecentPosts);
+if (refreshPostsBtn) {
+  refreshPostsBtn.addEventListener('click', renderRecentPosts);
+}
 
 // ─── AUTH & INIT ───────────────────────────────────────────
 const saved = localStorage.getItem(`${subjectConfig?.collectionName}Count`);
-if (saved) {
+if (saved && publishCountSpan) {
   publishCount = parseInt(saved);
-  if (publishCountSpan) publishCountSpan.innerText = publishCount;
+  publishCountSpan.innerText = publishCount;
 }
 
 onAuthStateChanged(auth, async user => {
+  currentUser = user;
   if (user) {
     setCurrentUser(user);
     const short = user.email.length > 26 ? user.email.substring(0, 24) + '...' : user.email;
