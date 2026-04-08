@@ -11,8 +11,8 @@ export const navData = {
   
   links: [
     { name: "Dashboard", href: "/", active: false },
-    { name: "Science", href: "#", active: true },
-    { name: "Publisher", href: "auto-science.html", active: false, isCta: true }
+    { name: "Life and Health", href: "#", active: true },
+    { name: "Animals", href: "../../animal-blog/blog/blog-science.html", active: false, isCta: true }
   ],
   
   showAuth: true,
