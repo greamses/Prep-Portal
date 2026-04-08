@@ -1,18 +1,19 @@
 // nav-data.js
-import CONFIG from '../../../../js/config.js';
+import {CONFIG} from './path-config.js';
 
+// nav-data.js
 export const navData = {
   logo: {
-    iconPath: CONFIG.logoLight,
+    iconPath: window.CONFIG?.logoLight || '../../../../../logo/logo-light.svg',
     brandName: "PrepPortal",
     brandTop: "Prep",
     brandBottom: "Portal"
   },
   
   links: [
-    { name: "Dashboard", href: CONFIG.getPath('dashboardIndex'), active: false },
-    { name: "Life and Health", href: CONFIG.getPath('blogHtml'), active: true },
-    { name: "Animals", href: CONFIG.getPath('blogHtml'), active: false, isCta: true },
+    { name: "Dashboard", href: window.CONFIG?.paths?.dashboardIndex || '#', active: false },
+    { name: "Life and Health", href: window.CONFIG?.paths?.blogHtml || '#', active: true },
+    { name: "Animals", href: window.CONFIG?.paths?.blogHtml || '#', active: false, isCta: true },
     { name: "Earth Science", href: "#", active: false },
     { name: "Space Science", href: "#", active: false },
   ],

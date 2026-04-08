@@ -16,7 +16,7 @@ import {
   hasApiKeys,
   getSubjectName
 } from './publisher-core.js';
-
+import { CONFIG } from './path-config.js';
 // This module expects subjectConfig and subjectData to be passed in
 let subjectConfig = null;
 let subjectData = null;
@@ -195,11 +195,11 @@ function cleanDuplicateCssLinks(html) {
   let cleaned = html.replace(cssLinkRegex, '');
   
   // Add CSS link once at the top if content has educational structure
-  const cssLink = '<link rel="stylesheet" href="../../../css/render.css">';
+  const cssLink = `<link rel="stylesheet" href="${window.CONFIG?.paths?.renderCss}">`;
   
-  if (cleaned.includes('<div class="lesson-note">') || 
-      cleaned.includes('<div class="ln-') ||
-      cleaned.includes('<div class="science-note">')) {
+  if (cleaned.includes('<div class="lesson-note">') ||
+    cleaned.includes('<div class="ln-') ||
+    cleaned.includes('<div class="science-note">')) {
     cleaned = cssLink + '\n' + cleaned;
   }
   
@@ -385,11 +385,11 @@ async function openContentEditor(postId, postTitle) {
   
   try {
     const post = await getPost(postId);
-    if (!post) { 
-      addLog('[CONTENT] Post not found', 'error'); 
+    if (!post) {
+      addLog('[CONTENT] Post not found', 'error');
       if (contentModal) contentModal.classList.remove('active');
       pendingContentId = null;
-      return; 
+      return;
     }
     
     let existingContent = post.content || '';
@@ -538,9 +538,9 @@ if (saveContentBtn) {
     }
     
     let content = contentEditorTextarea.value.trim();
-    if (!content) { 
-      addLog('[CONTENT] Content cannot be empty', 'warn'); 
-      return; 
+    if (!content) {
+      addLog('[CONTENT] Content cannot be empty', 'warn');
+      return;
     }
     
     content = cleanDuplicateCssLinks(content);
@@ -555,8 +555,8 @@ if (saveContentBtn) {
       if (contentModal) contentModal.classList.remove('active');
       pendingContentId = null;
       await renderRecentPosts();
-    } catch (e) { 
-      addLog(`[ERR] ${e.message}`, 'error'); 
+    } catch (e) {
+      addLog(`[ERR] ${e.message}`, 'error');
     } finally {
       if (saveContentBtn) {
         saveContentBtn.disabled = false;

@@ -18,12 +18,14 @@
     }
   </style>
   
-  <!-- Load config -->
-  <script src="../../../../js/path-config.js"></script>
   
   <!-- Load CSS -->
-  <script>
+  <script type="module">
+    import { CONFIG } from '../../../../js/path-config.js'
     CONFIG.loadAllCSS();
+    CONFIG.loadAllJS();
+    
+    window.CONFIG = CONFIG
   </script>
   
   <!-- MathJax -->
@@ -52,10 +54,6 @@
     }
   </script>
   
-  <!-- Load JS after CSS -->
-  <script>
-    CONFIG.loadAllJS();
-  </script>
 </head>
 
 <body>
@@ -226,7 +224,7 @@
     </div>
   </footer>
   
-  <script>
+  <script type="module">
     document.getElementById('footerLogo').src = CONFIG.logoLight;
   </script>
 </body>
