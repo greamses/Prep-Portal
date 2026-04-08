@@ -19,8 +19,13 @@ const CONFIG = {
   logoIcon: '../../../../../logo/logo-light.svg',
   logoLight: '../../../../../logo/logo-light.svg',
   logoLoading: '../../../../../logo/logo-light.svg',
+  // Helper method
+  getPath: function(key) {
+      return this.paths[key] || this[key];
+    },
+    
     // Load all CSS
-  loadAllCSS: function() {
+    loadAllCSS: function() {
       let loaded = 0;
       this.cssFiles.forEach(file => {
         const link = document.createElement('link');
@@ -29,7 +34,6 @@ const CONFIG = {
         link.onload = () => {
           loaded++;
           if (loaded === this.cssFiles.length) {
-            // All CSS loaded, show body
             document.body.style.visibility = 'visible';
           }
         };
@@ -52,5 +56,4 @@ const CONFIG = {
 };
 
 window.CONFIG = CONFIG;
-
 

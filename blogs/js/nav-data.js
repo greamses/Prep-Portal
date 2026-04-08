@@ -1,18 +1,18 @@
-
-
 // nav-data.js
+import CONFIG from '../../../../js/config.js';
+
 export const navData = {
   logo: {
-    iconPath: "../../../../logo/logo-light.svg",
+    iconPath: CONFIG.logoLight,
     brandName: "PrepPortal",
     brandTop: "Prep",
     brandBottom: "Portal"
   },
   
   links: [
-    { name: "Dashboard", href: "../../../../dashboard/dashboard.html", active: false },
-    { name: "Life and Health", href: "../../animal/blog/blog.html", active: true },
-    { name: "Animals", href: "../../animal/blog/blog.html", active: false, isCta: true },
+    { name: "Dashboard", href: CONFIG.getPath('dashboardIndex'), active: false },
+    { name: "Life and Health", href: CONFIG.getPath('blogHtml'), active: true },
+    { name: "Animals", href: CONFIG.getPath('blogHtml'), active: false, isCta: true },
     { name: "Earth Science", href: "#", active: false },
     { name: "Space Science", href: "#", active: false },
   ],
@@ -21,4 +21,3 @@ export const navData = {
   showThemeToggle: true,
   userAvatar: null
 };
-
