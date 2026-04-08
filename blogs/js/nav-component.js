@@ -46,25 +46,6 @@ class NavComponent {
       return `<li><a href="${link.href}" class="${activeClass} ${ctaClass}" data-nav-link="${link.name}">${link.name}</a></li>`;
     }).join('');
     
-    let authHTML = '';
-    if (showAuth) {
-      if (userAvatar) {
-        authHTML = `
-          <div class="nav-auth">
-            <img src="${userAvatar}" alt="User avatar" class="user-avatar" />
-            <button class="logout-btn" id="logoutBtn">Logout</button>
-          </div>
-        `;
-      } else {
-        authHTML = `
-          <div class="nav-auth">
-            <button class="login-btn" id="loginBtn">Login</button>
-            <button class="signup-btn" id="signupBtn">Sign Up</button>
-          </div>
-        `;
-      }
-    }
-    
     let themeHTML = '';
     if (showThemeToggle) {
       themeHTML = `
@@ -98,7 +79,6 @@ class NavComponent {
       ${logoHTML}
       <ul class="nav-links" id="navLinks">
         ${linksHTML}
-        ${showAuth ? `<li class="nav-auth-mobile">${authHTML}</li>` : ''}
       </ul>
       ${showThemeToggle ? themeHTML : ''}
       ${mobileToggle}

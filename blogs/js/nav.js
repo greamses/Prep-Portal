@@ -1,4 +1,4 @@
-import { initNav } from './NavComponent.js';
+import { initNav } from './nav-component.js';
 import { navData } from './nav-data.js';
 
 initNav({

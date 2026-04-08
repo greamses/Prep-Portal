@@ -1,9 +1,9 @@
-// nav-data.js
+
 
 // nav-data.js
 export const navData = {
   logo: {
-    iconPath: "../logo/logo-icon.svg",
+    iconPath: "../../../logo/logo-light.svg",
     brandName: "PrepPortal",
     brandTop: "Prep",
     brandBottom: "Portal"
