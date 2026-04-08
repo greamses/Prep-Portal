@@ -359,7 +359,6 @@ async function openImageEditor(postId, postTitle, currentFeatured) {
 
 // Add this to your ui-controller.js
 const CSS_MANAGER = {
-  // Known CSS files that should only appear once
   knownStylesheets: [
     '../../../css/render.css',
     '../blog/render.css',
