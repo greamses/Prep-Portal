@@ -10,9 +10,11 @@ export const navData = {
   },
   
   links: [
-    { name: "Dashboard", href: "/", active: false },
+    { name: "Dashboard", href: "../../../dashboard/dashboard.html", active: false },
     { name: "Life and Health", href: "#", active: true },
-    { name: "Animals", href: "../../animal-blog/blog/blog-science.html", active: false, isCta: true }
+    { name: "Animals", href: "../../animal-blog/blog/blog-science.html", active: false, isCta: true },
+    { name: "Earth Science", href: "#", active: false },
+    { name: "Space Science", href: "#", active: false },
   ],
   
   showAuth: true,
