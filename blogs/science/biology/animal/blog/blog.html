@@ -7,9 +7,13 @@
   <title>Prep Portal 2026 | Archives</title>
   
   <!-- Load config FIRST -->
-  <script src="config.js"></script>
+  <script src="../../../../js/path-config.js"></script>
   
-  <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
+  <!-- Load favicon using CONFIG -->
+  <script>
+    CONFIG.loadFavicon();
+  </script>
+  
   <meta name="theme-color" content="#000000">
   <meta name="description" content="Science notes, worked examples, and equations for Primary 1 to SS3 — Maths, Physics, Chemistry, Biology, Basic Science, and Basic Technology.">
   <meta name="author" content="Prep Portal">
@@ -23,7 +27,9 @@
   <script>
     window.MathJax = {
       tex: {
-        inlineMath: [['\\(', '\\)']],
+        inlineMath: [
+          ['\\(', '\\)']
+        ],
         displayMath: ['\\[', '\\]'],
         processEscapes: true,
         tags: 'ams'
@@ -49,7 +55,6 @@
   
   <!-- Load all JS automatically -->
   <script>
-    // Load all JavaScript files
     CONFIG.loadAllJS();
   </script>
 </head>
@@ -203,19 +208,31 @@
   <footer class="site-footer">
     <div class="footer-top">
       <div class="footer-brand">
-        <a href="/" class="nav-logo"><img src="../../../../logo/logo-light.svg" alt="PrepPortal logo" />
-          <div class="logo-brand"><span class="brand-top">Prep</span><span class="brand-bottom">Portal</span></div>
+        <a href="/" class="nav-logo">
+          <!-- Logo loaded dynamically with CONFIG -->
+          <img id="footerLogo" alt="PrepPortal logo" />
+          <div class="logo-brand">
+            <span class="brand-top">Prep</span>
+            <span class="brand-bottom">Portal</span>
+          </div>
         </a>
         <p>Science content for Nigerian students, Primary 1 to SS3.</p>
       </div>
     </div>
     <div class="footer-bottom">
       <p>&copy; 2026 Prep Portal. All rights reserved.</p>
-      <div class="footer-links"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Contact</a></div>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Contact</a>
+      </div>
     </div>
   </footer>
   
-  <!-- No need for separate script tags - CONFIG handles everything -->
+  <script>
+    // Set logo source dynamically
+    document.getElementById('footerLogo').src = CONFIG.getLogo('light');
+  </script>
 </body>
 
 </html>
