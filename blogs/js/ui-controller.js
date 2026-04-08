@@ -361,7 +361,7 @@ async function openContentEditor(postId, postTitle) {
   pendingContentId = postId;
   const subtitle = document.getElementById('contentModalSubtitle');
   if (subtitle) subtitle.textContent = `"${postTitle}"`;
-  if (contentEditorTextarea) contentEditorTextarea.value = '<link rel="stylesheet" href="../../render.css">';
+  if (contentEditorTextarea) contentEditorTextarea.value = '<link rel="stylesheet" href="../../css/render.css">';
   if (contentPreviewPane) contentPreviewPane.innerHTML = '';
   contentModal.classList.add('active');
   try {
