@@ -384,7 +384,7 @@ const CSS_MANAGER = {
     if (result.includes('<div class="lesson-note">') ||
       result.includes('<div class="science-note">') ||
       result.includes('<div class="ln-')) {
-      result = '<link rel="stylesheet" href="../blog/render.css">\n' + result;
+      result = '<link rel="stylesheet" href="../../../css/render.css">\n' + result;
     }
     
     return result;
