@@ -382,20 +382,27 @@ export function validateAndCleanContent(html) {
   return cleaned;
 }
 
-// Update publishPost to use validation
+export async function updatePostVideos(postId, videos, videoThumbnailsAdded) {
+  if (!subjectConfig) throw new Error('Subject config not loaded');
+  await updateDoc(doc(db, subjectConfig.collectionName, postId), {
+    videos: videos || [],
+    videoThumbnailsAdded: videoThumbnailsAdded || false,
+    updatedAt: serverTimestamp()
+  });
+}
+
 export async function publishPost(post) {
   if (!currentUser) throw new Error('Not signed in');
   if (!subjectConfig) throw new Error('Subject config not loaded');
   
-  // Validate and clean content
   const cleanedContent = validateAndCleanContent(post.content);
   
   const ref = await addDoc(collection(db, subjectConfig.collectionName), {
     title: post.title,
-    content: cleanedContent, // Use cleaned content
+    content: cleanedContent,
     excerpt: post.excerpt,
     featuredImage: '',
-    videoLink: '',
+    videos: [], // Array of video objects
     practiceLink: '',
     subject: post.subject,
     classLevel: post.classLevel,
@@ -408,6 +415,7 @@ export async function publishPost(post) {
     views: 0,
     likes: [],
     imagesAdded: false,
+    videoThumbnailsAdded: false,
     linksAdded: false,
     modelUsed: post.modelUsed,
     source: subjectConfig.source

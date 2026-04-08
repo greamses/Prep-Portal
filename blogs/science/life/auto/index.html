@@ -295,6 +295,43 @@
     </div>
   </div>
   
+  <!-- VIDEOS MODAL (Multiple Video Thumbnails) -->
+  <div class="modal-overlay" id="videosModal" role="dialog" aria-modal="true" aria-label="Add video thumbnails">
+    <div class="modal-box modal-large">
+      <h3>
+        <svg style="width:20px;height:20px;vertical-align:-3px;margin-right:.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="M10 9L15 12L10 15V9Z" fill="currentColor"/>
+        </svg>
+        Video Thumbnails
+      </h3>
+      <p class="modal-subtitle" id="videosModalSubtitle">Add multiple video thumbnails for this lesson.</p>
+      
+      <div id="videoThumbnailsList" class="video-thumbnails-list">
+        <!-- Video rows will be added here dynamically -->
+      </div>
+      
+      <button id="addVideoBtn" class="btn-add-video">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="8" y1="2" x2="8" y2="14"/>
+          <line x1="2" y1="8" x2="14" y2="8"/>
+        </svg>
+        Add Another Video
+      </button>
+      
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="saveVideosBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>Save Videos
+        </button>
+        <button class="btn" id="cancelVideosBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+  
   <!-- IMAGE EDITOR MODAL -->
   <div class="modal-overlay" id="imgModal" role="dialog" aria-modal="true" aria-label="Add images to post">
     <div class="modal-box">
