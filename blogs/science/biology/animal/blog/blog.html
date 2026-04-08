@@ -6,56 +6,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Prep Portal 2026 | Archives</title>
   
-  <!-- Load config FIRST -->
+  <!-- Load config -->
   <script src="../../../../js/path-config.js"></script>
   
-  <!-- Load favicon using CONFIG -->
-  <script>
-    CONFIG.loadFavicon();
-  </script>
-  
-  <meta name="theme-color" content="#000000">
-  <meta name="description" content="Science notes, worked examples, and equations for Primary 1 to SS3 — Maths, Physics, Chemistry, Biology, Basic Science, and Basic Technology.">
-  <meta name="author" content="Prep Portal">
-  
-  <!-- Load all CSS automatically -->
+  <!-- Load all CSS -->
   <script>
     CONFIG.loadAllCSS();
   </script>
   
-  <!-- MathJax config -->
+  <!-- Load all JS -->
+  <script>
+    CONFIG.loadAllJS();
+  </script>
+  
+  <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Science notes, worked examples, and equations for Primary 1 to SS3 — Maths, Physics, Chemistry, Biology, Basic Science, and Basic Technology.">
+  <meta name="author" content="Prep Portal">
+  
+  <!-- MathJax -->
   <script>
     window.MathJax = {
       tex: {
-        inlineMath: [
-          ['\\(', '\\)']
-        ],
+        inlineMath: [['\\(', '\\)']],
         displayMath: ['\\[', '\\]'],
         processEscapes: true,
         tags: 'ams'
       },
-      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] },
       startup: { typeset: false }
     };
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
   
-  <!-- Load MathJax from CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async id="MathJax-script"></script>
-  
-  <!-- Dynamic importmap -->
-  <script type="importmap">
+    <script type="importmap">
     {
-      "imports": {
-        "firebase/app": "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js",
-        "firebase/auth": "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js",
-        "firebase/firestore": "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js"
-      }
+    "imports": {
+      "firebase/app":       "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js",
+      "firebase/auth":      "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js"
     }
-  </script>
-  
-  <!-- Load all JS automatically -->
-  <script>
-    CONFIG.loadAllJS();
+  }
   </script>
 </head>
 
@@ -104,14 +94,14 @@
         <span class="filter-label filter-label-cell">Filter:</span>
         
         <div class="custom-dropdown" id="subjectDropdown">
-          <button class="dropdown-btn" id="subjectDropdownBtn" aria-haspopup="listbox" aria-expanded="false">
+          <button class="dropdown-btn" id="subjectDropdownBtn">
             <span id="subjectFilterText">All Subjects</span>
             <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
-          <div class="dropdown-menu" id="subjectDropdownMenu" role="listbox">
-            <div class="dropdown-item active" data-filter="all" role="option">All Subjects</div>
+          <div class="dropdown-menu" id="subjectDropdownMenu">
+            <div class="dropdown-item active" data-filter="all">All Subjects</div>
             <div class="dropdown-item" data-filter="math">Mathematics</div>
             <div class="dropdown-item" data-filter="physics">Physics</div>
             <div class="dropdown-item" data-filter="chemistry">Chemistry</div>
@@ -122,13 +112,13 @@
         </div>
         
         <div class="custom-dropdown" id="classDropdown">
-          <button class="dropdown-btn" id="classDropdownBtn" aria-haspopup="listbox" aria-expanded="false">
+          <button class="dropdown-btn" id="classDropdownBtn">
             <span id="classFilterText">All Classes</span>
             <svg class="dropdown-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
-          <div class="dropdown-menu" id="classDropdownMenu" role="listbox">
+          <div class="dropdown-menu" id="classDropdownMenu">
             <div class="dropdown-item active" data-filter="all">All Classes</div>
             <div class="dropdown-item" data-filter="primary-1">P1</div>
             <div class="dropdown-item" data-filter="primary-2">P2</div>
@@ -154,8 +144,8 @@
     </div>
   </div>
   
-  <div id="singlePostView" class="single-post-view" role="dialog" aria-modal="true" aria-label="Science post">
-    <button class="close-post" id="closePostBtn" aria-label="Close">
+  <div id="singlePostView" class="single-post-view">
+    <button class="close-post" id="closePostBtn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
         <line x1="18" y1="6" x2="6" y2="18"></line>
         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -165,20 +155,20 @@
     <div id="singlePostContent" class="single-post-content"></div>
   </div>
   
-  <button class="scroll-top" id="scrollTop" aria-label="Scroll to top">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+  <button class="scroll-top" id="scrollTop">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
       <polyline points="18 15 12 9 6 15"></polyline>
     </svg>
   </button>
   
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="toast" id="toast"></div>
   
-  <div class="embed-overlay" id="embedOverlay" role="dialog" aria-modal="true" aria-label="Embedded resource">
+  <div class="embed-overlay" id="embedOverlay">
     <div class="embed-box">
       <div class="embed-header">
         <span class="embed-title" id="embedTitle">Loading...</span>
         <div class="embed-actions">
-          <a class="embed-open-btn" id="embedOpenLink" href="#" target="_blank" rel="noopener noreferrer">
+          <a class="embed-open-btn" id="embedOpenLink" href="#" target="_blank">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
               <polyline points="15 3 21 3 21 9"></polyline>
@@ -199,8 +189,7 @@
         <div class="embed-spinner" id="embedSpinner">
           <div class="spinner-ring"></div>Loading...
         </div>
-        <iframe id="embedFrame" title="Embedded resource" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox">
-        </iframe>
+        <iframe id="embedFrame" title="Embedded resource"></iframe>
       </div>
     </div>
   </div>
@@ -209,7 +198,6 @@
     <div class="footer-top">
       <div class="footer-brand">
         <a href="/" class="nav-logo">
-          <!-- Logo loaded dynamically with CONFIG -->
           <img id="footerLogo" alt="PrepPortal logo" />
           <div class="logo-brand">
             <span class="brand-top">Prep</span>
@@ -230,8 +218,7 @@
   </footer>
   
   <script>
-    // Set logo source dynamically
-    document.getElementById('footerLogo').src = CONFIG.getLogo('light');
+    document.getElementById('footerLogo').src = CONFIG.logoLight;
   </script>
 </body>
 
