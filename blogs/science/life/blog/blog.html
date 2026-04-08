@@ -4,15 +4,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Prep Portal 2026 | Science Archive</title>
+  <title>Prep Portal 2026 | Archives</title>
   
   <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
   <meta name="theme-color" content="#000000">
   <meta name="description" content="Science notes, worked examples, and equations for Primary 1 to SS3 — Maths, Physics, Chemistry, Biology, Basic Science, and Basic Technology.">
   <meta name="author" content="Prep Portal">
-  <link rel="stylesheet" href="../../../main.css">
-  <link rel="stylesheet" href="../../css/blog.css">
-  <script type="module" src="../../js/nav.js"></script>
+
+
+  <link rel="stylesheet" href="../../../../main.css">
+  <script type="module" src="../../../js/nav.js"></script>
+  <link rel="stylesheet" href="../../../css/blog.css">
+
+  
   <!-- MathJax 3 — renders LaTeX equations inside blog content -->
   <script>
     window.MathJax = {
@@ -42,10 +46,18 @@
     }
   }
   </script>
+<script src="../../../../utils/loader/loader.js"></script>
 </head>
 
 <body>
-  
+
+    <div id="loader">
+      <div id="loader-wrapper">
+        <div class="logo-cluster"></div> <!-- JS will inject the 3 images here -->
+      </div>
+      <div class="loader-word"><span>Life & Health</span></div>
+      <div class="loader-bar"></div>
+    </div>
  <div class="site-nav"></div>
   
   <div class="ticker" aria-hidden="true">
@@ -59,7 +71,7 @@
   
   <div class="hero">
     <div class="hero-left">
-      <h1 class="hero-title">Science<br>Archive.</h1>
+      <h1 class="hero-title"></h1>
     </div>
     <div class="hero-right">
       <p class="hero-tagline">Scientific facts at a glance.</p>

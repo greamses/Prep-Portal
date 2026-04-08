@@ -357,23 +357,97 @@ async function openImageEditor(postId, postTitle, currentFeatured) {
   }
 }
 
+// Add this to your ui-controller.js
+const CSS_MANAGER = {
+  // Known CSS files that should only appear once
+  knownStylesheets: [
+    '../../../css/render.css',
+    '../blog/render.css',
+    './render.css'
+  ],
+  
+  clean(html) {
+    if (!html) return '';
+    
+    let result = html;
+    
+    // Remove all CSS link tags
+    for (const cssPath of this.knownStylesheets) {
+      const regex = new RegExp(`<link[^>]*href=["']${cssPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}["'][^>]*>`, 'gi');
+      result = result.replace(regex, '');
+    }
+    
+    // Also catch any CSS link with any path ending with render.css
+    const genericRegex = /<link[^>]*href=["'][^"']*render\.css["'][^>]*>/gi;
+    result = result.replace(genericRegex, '');
+    
+    // Add single CSS link at the top if content needs it
+    if (result.includes('<div class="lesson-note">') ||
+      result.includes('<div class="science-note">') ||
+      result.includes('<div class="ln-')) {
+      result = '<link rel="stylesheet" href="../blog/render.css">\n' + result;
+    }
+    
+    return result;
+  },
+  
+  // Check if content has CSS already
+  hasCss(html, cssPath) {
+    if (!html) return false;
+    return html.includes(`href="${cssPath}"`);
+  }
+};
+
+// Use in openContentEditor:
 async function openContentEditor(postId, postTitle) {
   pendingContentId = postId;
   const subtitle = document.getElementById('contentModalSubtitle');
   if (subtitle) subtitle.textContent = `"${postTitle}"`;
-  if (contentEditorTextarea) contentEditorTextarea.value = '<link rel="stylesheet" href="../../css/render.css">';
-  if (contentPreviewPane) contentPreviewPane.innerHTML = '';
+  
+  contentEditorTextarea.value = '';
+  contentPreviewPane.innerHTML = '';
   contentModal.classList.add('active');
+  
   try {
     const post = await getPost(postId);
     if (!post) { addLog('[CONTENT] Post not found', 'error'); return; }
-    contentEditorTextarea.value += post.content || '<link rel="stylesheet" href="../../render.css">';
-    contentPreviewPane.innerHTML = post.content || '';
-    if (window.MathJax) MathJax.typesetPromise([contentPreviewPane]);
+    
+    let existingContent = post.content || '';
+    // Clean using CSS manager
+    existingContent = CSS_MANAGER.clean(existingContent);
+    
+    contentEditorTextarea.value = existingContent;
+    contentPreviewPane.innerHTML = existingContent;
+    
+    if (window.MathJax) await MathJax.typesetPromise([contentPreviewPane]);
   } catch (e) {
     addLog(`[ERR] ${e.message}`, 'error');
   }
 }
+
+// Also clean before saving
+saveContentBtn?.addEventListener('click', async () => {
+  if (!pendingContentId) return;
+  let content = contentEditorTextarea.value.trim();
+  if (!content) { addLog('[CONTENT] Content cannot be empty', 'warn'); return; }
+  
+  // Clean before saving
+  content = CSS_MANAGER.clean(content);
+  
+  saveContentBtn.disabled = true;
+  saveContentBtn.textContent = 'Saving...';
+  try {
+    await updatePostContent(pendingContentId, content);
+    addLog(`[CONTENT] Saved for ${pendingContentId.substring(0,10)}...`, 'success');
+    contentModal.classList.remove('active');
+    pendingContentId = null;
+    await renderRecentPosts();
+  } catch (e) { addLog(`[ERR] ${e.message}`, 'error'); }
+  finally {
+    saveContentBtn.disabled = false;
+    saveContentBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>Save Content`;
+  }
+});
 
 function renderParaBlocks(html) {
   const container = document.createElement('div');
