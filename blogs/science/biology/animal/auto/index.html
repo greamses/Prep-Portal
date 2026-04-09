@@ -11,6 +11,13 @@
   <meta name="description" content="Admin dashboard: auto science content publisher for Primary 1 to SS3.">
   <meta name="robots" content="noindex, nofollow">
   
+    <!-- Hide body until CSS loads -->
+  <style>
+    body {
+      visibility: hidden;
+    }
+  </style>
+  
   <!-- Load CSS -->
   <script type="module">
     import { CONFIG } from '../../../../js/path-config.js'
@@ -32,6 +39,15 @@
 </head>
 
 <body>
+  
+    <div id="loader">
+    <div id="loader-wrapper">
+      <div class="logo-cluster"></div>
+    </div>
+    <div class="loader-word"><span>Animals Auto</span></div>
+    <div class="loader-bar"></div>
+  </div>
+  
   
   <nav class="site-nav">
     <a href="/" class="nav-logo">
@@ -386,42 +402,42 @@
   </div>
   
   <!-- VIDEOS MODAL -->
-<div class="modal-overlay" id="videosModal" role="dialog" aria-modal="true" aria-label="Add video thumbnails">
-  <div class="modal-box">
-    <h3>
-      <svg style="width:20px;height:20px;vertical-align:-3px;margin-right:.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="2" y="4" width="20" height="16" rx="2"></rect>
-        <path d="M10 9L15 12L10 15V9Z"></path>
-      </svg>
-      Video Thumbnails
-    </h3>
-    <p class="modal-subtitle" id="videosModalSubtitle">Add educational videos for this lesson</p>
-    
-    <div class="video-thumbnails-container">
-      <div id="videoThumbnailsList" class="video-thumbnails-list">
-        <!-- Video rows will be added here dynamically -->
-      </div>
-      <button class="btn btn-sm" id="addVideoBtn" type="button">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
+  <div class="modal-overlay" id="videosModal" role="dialog" aria-modal="true" aria-label="Add video thumbnails">
+    <div class="modal-box">
+      <h3>
+        <svg style="width:20px;height:20px;vertical-align:-3px;margin-right:.4rem" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+          <path d="M10 9L15 12L10 15V9Z"></path>
         </svg>
-        Add Video
-      </button>
-    </div>
-    
-    <div class="modal-actions">
-      <button class="btn btn-primary" id="saveVideosBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-          <polyline points="17 21 17 13 7 13 7 21"></polyline>
-          <polyline points="7 3 7 8 15 8"></polyline>
-        </svg>Save Videos
-      </button>
-      <button class="btn" id="cancelVideosBtn">Cancel</button>
+        Video Thumbnails
+      </h3>
+      <p class="modal-subtitle" id="videosModalSubtitle">Add educational videos for this lesson</p>
+      
+      <div class="video-thumbnails-container">
+        <div id="videoThumbnailsList" class="video-thumbnails-list">
+          <!-- Video rows will be added here dynamically -->
+        </div>
+        <button class="btn btn-sm" id="addVideoBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add Video
+        </button>
+      </div>
+      
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="saveVideosBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>Save Videos
+        </button>
+        <button class="btn" id="cancelVideosBtn">Cancel</button>
+      </div>
     </div>
   </div>
-</div>
   
   <footer class="site-footer">
     <div class="footer-top">
