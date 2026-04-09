@@ -9,9 +9,6 @@
     --bg: #ffffff;
     --app-bg: #f0ece3;
     --ink: #0a0a0a;
-    --ink-secondary: #1a1a1a;
-    --ink-muted: #555555;
-    --ink-light: #888888;
     --yellow: #ffe500;
     --blue: #0055ff;
     --red: #ff2200;
@@ -22,12 +19,8 @@
     --off: #f7f4ee;
     --paper: #fffef8;
     --border-color: #0a0a0a;
-    --card-bg: #ffffff;
     --card-hover: #0a0a0a;
     --text-light: #ffffff;
-    --text-dark: #0a0a0a;
-    --link-color: #0055ff;
-    --link-hover: #0a0a0a;
     
     /* Shadows & Effects */
     --shadow-sm: 3px 3px 0 var(--ink);
@@ -74,129 +67,30 @@
     --radius-sm: 2px;
 }
 
-/* DARK THEME - Enhanced for better contrast */
+/* DARK THEME */
 [data-theme="dark"] {
-    /* Base Colors - Dark Mode */
     --bg: #0a0a0a;
     --app-bg: #121212;
-    --ink: #ffffff;  /* Pure white for better contrast */
-    --ink-secondary: #e0e0e0;  /* Slightly softer for secondary text */
-    --ink-muted: #b0b0b0;  /* Brighter muted text for better readability */
-    --ink-light: #909090;  /* Lighter gray for subtle text */
+    --ink: #f0f0f0;
     --yellow: #ffea2e;
-    --blue: #60a5fa;  /* Brighter blue for better contrast */
-    --red: #ff6b6b;  /* Brighter red */
-    --green: #34d399;  /* Brighter green */
-    --amber: #fbbf24;  /* Brighter amber */
+    --blue: #3b82f6;
+    --red: #ff4444;
+    --green: #10b981;
+    --amber: #f59e0b;
     --muted: #a0a0a0;
-    --light-muted: #808080;
+    --light-muted: #707070;
     --off: #1a1a1a;
-    --paper: #151515;  /* Slightly lighter paper for depth */
-    --border-color: #404040;  /* Visible but not harsh */
-    --card-bg: #1a1a1a;  /* Card background */
-    --card-hover: #333333;  /* Card hover state */
-    --text-light: #ffffff;
-    --text-dark: #ffffff;
-    --link-color: #60a5fa;
-    --link-hover: #93c5fd;
+    --paper: #0f0f0f;
+    --border-color: #f0f0f0;
+    --card-hover: #f0f0f0;
+    --text-light: #0a0a0a;
     
-    /* Shadows - Dark Mode */
-    --shadow-sm: 3px 3px 0 rgba(255, 255, 255, 0.15);
-    --shadow-md: 5px 5px 0 rgba(255, 255, 255, 0.12);
-    --shadow-lg: 6px 6px 0 rgba(255, 255, 255, 0.1);
-    --shadow-xl: 9px 9px 0 rgba(255, 255, 255, 0.08);
+    --shadow-sm: 3px 3px 0 var(--ink);
+    --shadow-md: 5px 5px 0 var(--ink);
+    --shadow-lg: 6px 6px 0 var(--ink);
+    --shadow-xl: 9px 9px 0 var(--ink);
     --shadow-cta: 6px 6px 0 rgba(255, 234, 46, 0.35);
     --shadow-cta-hover: 8px 8px 0 rgba(255, 255, 255, 0.15);
-}
-
-/* ============================================
-   BASE STYLES FOR BETTER CONTRAST
-   ============================================ */
-
-/* Ensure all text uses proper contrast colors */
-body {
-    background-color: var(--app-bg);
-    color: var(--ink);
-}
-
-h1, h2, h3, h4, h5, h6 {
-    color: var(--ink);
-}
-
-p, li, span, div:not([class*="bg-"]) {
-    color: var(--ink);
-}
-
-a {
-    color: var(--link-color);
-    text-decoration: none;
-}
-
-a:hover {
-    color: var(--link-hover);
-}
-
-/* Card backgrounds */
-.card, 
-.subject-card,
-[class*="card"],
-[class*="Card"] {
-    background-color: var(--card-bg);
-    border: var(--border);
-    color: var(--ink);
-}
-
-/* Input fields */
-input, 
-textarea, 
-select {
-    background-color: var(--paper);
-    color: var(--ink);
-    border: var(--border);
-}
-
-input::placeholder,
-textarea::placeholder {
-    color: var(--ink-muted);
-}
-
-/* Tables */
-table {
-    background-color: var(--card-bg);
-    color: var(--ink);
-}
-
-th, td {
-    border-color: var(--border-color);
-    color: var(--ink);
-}
-
-/* Code blocks and pre */
-pre, code {
-    background-color: var(--off);
-    color: var(--ink);
-    border-color: var(--border-color);
-}
-
-/* Muted text should use ink-muted for better readability */
-.muted,
-.text-muted,
-[class*="muted"] {
-    color: var(--ink-muted) !important;
-}
-
-/* Secondary text */
-.secondary,
-.text-secondary,
-[class*="secondary"] {
-    color: var(--ink-secondary) !important;
-}
-
-/* Subtle text */
-.subtle,
-.text-subtle,
-.light {
-    color: var(--ink-light) !important;
 }
 
 /* ============================================
@@ -349,122 +243,32 @@ pre, code {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--ink);
+    font-size: 18px;
     transition: transform var(--duration-base) var(--ease-default);
 }
 
 .theme-toggle:hover {
     transform: scale(1.1);
-    background-color: var(--off);
-    border-radius: var(--radius-sm);
 }
 
-.theme-toggle svg {
-    stroke: var(--ink);
-}
-
-/* Smooth theme transitions for all themed properties */
-body,
-body * {
-    transition: 
-        background-color var(--duration-smooth) var(--ease-default),
-        border-color var(--duration-smooth) var(--ease-default),
-        color var(--duration-smooth) var(--ease-default),
-        box-shadow var(--duration-smooth) var(--ease-default);
-}
-
-/* Prevent transition on page load */
-.no-transitions * {
-    transition: none !important;
-}
-
-/* ============================================
-   ADDITIONAL CONTRAST ENHANCEMENTS
-   ============================================ */
-
-/* Ensure proper contrast in dark mode for specific elements */
-[data-theme="dark"] {
-    /* Make buttons more visible */
-    button:not(.theme-toggle) {
-        background-color: var(--card-bg);
-        color: var(--ink);
-        border-color: var(--border-color);
-    }
-    
-    button:not(.theme-toggle):hover {
-        background-color: var(--card-hover);
-    }
-    
-    /* Ensure form elements have proper contrast */
-    input, 
-    textarea, 
-    select {
-        background-color: var(--paper);
-        color: var(--ink);
-        border-color: var(--border-color);
-    }
-    
-    /* Improve contrast for disabled states */
-    .disabled,
-    [disabled] {
-        opacity: 0.6;
-        color: var(--ink-muted);
-    }
-    
-    /* Ensure hover states are visible */
-    .hoverable:hover {
-        background-color: var(--card-hover);
-    }
-    
-    /* Improve contrast for navigation */
-    .nav-links a {
-        color: var(--ink);
-    }
-    
-    .nav-links a:hover {
-        color: var(--link-color);
-    }
-    
-    /* Ensure badges and tags are readable */
-    .badge,
-    .tag {
-        background-color: var(--card-bg);
-        color: var(--ink);
-        border-color: var(--border-color);
-    }
-    
-    /* Improve contrast for dividers */
-    hr,
-    .divider {
-        border-color: var(--border-color);
-    }
-    
-    /* Ensure shadows are visible */
-    .shadow-hover:hover {
-        box-shadow: var(--shadow-md);
+/* System preference detection support */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: #0a0a0a;
+        --app-bg: #121212;
+        --ink: #f0f0f0;
+        --yellow: #ffea2e;
+        --blue: #3b82f6;
+        --red: #ff4444;
+        --green: #10b981;
+        --amber: #f59e0b;
+        --muted: #a0a0a0;
+        --light-muted: #707070;
+        --off: #1a1a1a;
+        --paper: #0f0f0f;
+        --border-color: #f0f0f0;
+        --card-hover: #f0f0f0;
+        --text-light: #0a0a0a;
     }
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-    [data-theme="dark"] {
-        --ink: #ffffff;
-        --ink-secondary: #ffffff;
-        --ink-muted: #d0d0d0;
-        --border-color: #ffffff;
-        --card-hover: #404040;
-    }
-}
-
-/* Print styles */
-@media print {
-    body {
-        background-color: white !important;
-        color: black !important;
-    }
-    
-    [data-theme="dark"] {
-        --bg: white;
-        --ink: black;
-    }
-}

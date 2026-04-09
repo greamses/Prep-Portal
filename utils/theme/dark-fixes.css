@@ -1,0 +1,492 @@
+/* ══════════════════════════════════════════════════════════
+   PREP PORTAL 2026 — DARK MODE FIXES
+   Import at the BOTTOM of main.css:
+     @import url('./utils/theme/dark-fixes.css');
+   Or paste these rules at the end of main.css.
+   ══════════════════════════════════════════════════════════
+
+   ROOT CAUSE FIXED HERE:
+   `--ink` flips to white in dark mode, breaking every
+   element that uses `background: var(--ink)` as an
+   inverted (dark) surface. The --panel token (always #0a0a0a)
+   replaces those uses. Text/border uses of --ink are untouched.
+   ══════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════
+   1. TICKER  (Image 2 — white bg in dark mode)
+   ══════════════════════════════════════════ */
+.ticker {
+    background: var(--panel);           /* was var(--ink) → became white */
+    border-bottom: 2.5px solid var(--panel-border);
+}
+
+.ticker-item {
+    color: var(--yellow);               /* already correct, keep explicit */
+    font-size: 11px;                    /* raise from 9.5px for readability */
+}
+
+.ticker-dot {
+    color: var(--yellow);
+    opacity: 0.5;
+}
+
+
+/* ══════════════════════════════════════════
+   2. NAVIGATION HOVER STATES
+   (dark mode: var(--ink) → white hover bg)
+   ══════════════════════════════════════════ */
+
+/* Light mode: dark flood-fill hover (already works) */
+.nav-links li a:hover {
+    background: var(--panel);
+    color: var(--panel-fg);
+}
+
+/* Dark mode: yellow accent hover — punchy, legible */
+.dark .nav-links li a:hover {
+    background: var(--yellow);
+    color: #0a0a0a;
+}
+
+/* CTA button: both modes */
+.nav-links li a.nav-cta {
+    font-size: 10px;                    /* keep compact for nav */
+}
+
+.dark .nav-links li a.nav-cta:hover {
+    background: var(--yellow);
+    color: #0a0a0a;
+    border-color: var(--yellow);
+}
+
+
+/* ══════════════════════════════════════════
+   3. MOBILE NAV DROPDOWN  (Image 3)
+   Plain gray links → neobrutalist list
+   ══════════════════════════════════════════ */
+@media (max-width: 640px) {
+    .nav-links {
+        /* Ensure the dropdown is themed properly */
+        background: var(--bg);
+        border-bottom: var(--border);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .nav-links li a {
+        /* Raise font size — was var(--text-mono-base) = 10px original */
+        font-size: 12px;
+        font-weight: var(--weight-bold);
+        letter-spacing: var(--tracking-widest);
+        color: var(--ink);
+        /* Proper neobrutalist border between items */
+        border-bottom: var(--border);
+        padding: 14px var(--padding-xs);
+        transition:
+            background  var(--duration-base) var(--ease-default),
+            color       var(--duration-base) var(--ease-default),
+            padding-left var(--duration-base) var(--ease-default);
+    }
+
+    .nav-links li a:hover {
+        padding-left: calc(var(--padding-xs) + 8px);
+    }
+
+    /* Dark mode: yellow hover on mobile nav */
+   .dark .nav-links li a:hover {
+        background: var(--yellow);
+        color: #0a0a0a;
+        padding-left: calc(var(--padding-xs) + 8px);
+    }
+
+    /* CTA in mobile nav */
+    .nav-links li a.nav-cta {
+        background: var(--yellow);
+        color: #0a0a0a;
+        margin: 12px var(--padding-xs);
+        border: var(--border);
+        box-shadow: var(--shadow-sm);
+        font-size: 10px;
+    }
+}
+
+
+/* ══════════════════════════════════════════
+   4. CATEGORY CARD INTERNALS  (Image 1)
+   ══════════════════════════════════════════ */
+
+/* ── List item rows: thin 1px → full 2.5px border ── */
+.item-list {
+    border-top: var(--border);          /* was 1px solid */
+    margin-top: 1rem;
+    padding-top: 0;
+}
+
+.list-item {
+    border-bottom: var(--border);       /* was 1px solid */
+    font-size: var(--text-body-sm);     /* was hardcoded 0.85rem */
+    font-weight: var(--weight-semibold);
+    padding: 0.75rem 0;                 /* slightly more breathing room */
+    color: var(--ink);
+}
+
+.list-item:hover {
+    background: transparent;
+    padding-left: 8px;
+    color: var(--blue);
+}
+
+.dark .list-item:hover {
+    color: var(--yellow);               /* yellow hover on dark */
+}
+
+/* ── Status badges: semantic colour coding ──────────
+   BEFORE: .status.live { background: var(--ink) }
+   → in dark mode = white badge with yellow text = unreadable.
+   NOW: green for Live, amber for Coming Soon, etc.
+────────────────────────────────────────────────── */
+.status {
+    /* Fix: raise from 0.6rem (9.6px) to readable size */
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    padding: 0.25rem 0.6rem;
+    border: 1.5px solid transparent;
+    display: inline-block;
+}
+
+/* Default (unknown/pending) */
+.status:not(.live):not(.coming-soon):not(.new):not(.beta) {
+    background: var(--surface-sunken, #ede8df);
+    color: var(--ink-muted);
+    border-color: var(--border-color);
+}
+
+.dark .status:not(.live):not(.coming-soon):not(.new):not(.beta) {
+    background: var(--surface-sunken, #111111);
+    color: var(--ink-muted);
+    border-color: var(--border-color);
+}
+
+/* Live — green */
+.status.live {
+    background: var(--green) !important;
+    color: #ffffff !important;
+    border-color: var(--green) !important;
+}
+
+/* Coming Soon — amber */
+.status.coming-soon,
+.status[class*="coming"] {
+    background: var(--amber) !important;
+    color: #ffffff !important;
+    border-color: var(--amber) !important;
+}
+
+/* New — blue */
+.status.new {
+    background: var(--blue) !important;
+    color: #ffffff !important;
+    border-color: var(--blue) !important;
+}
+
+/* Beta — purple */
+.status.beta {
+    background: var(--purple, #6600cc) !important;
+    color: #ffffff !important;
+    border-color: var(--purple, #6600cc) !important;
+}
+
+/* Badge (category card bottom) */
+.badge {
+    /* Ensure badge is visible in dark mode */
+    background: var(--surface-sunken, var(--off));
+    color: var(--ink);
+    border: var(--border);
+    box-shadow: var(--shadow-xs);
+    font-size: 11px;                    /* raise from var(--text-badge) 0.65rem */
+}
+
+.dark .badge {
+    background: var(--surface-raised);
+    color: var(--ink);
+    border-color: var(--border-color);
+}
+
+/* Card hover states: ensure text-light works in dark mode */
+.dark .card:hover .card-inner {
+    color: var(--panel-fg);
+}
+
+.dark .card:hover p {
+    color: var(--panel-fg);
+    opacity: 0.8;
+}
+
+.dark .card:hover .list-item {
+    color: var(--panel-fg);
+    border-bottom-color: rgba(240, 240, 240, 0.2);
+}
+
+.dark .card:hover .status {
+    /* Don't override semantic status colours on hover */
+    opacity: 0.9;
+}
+
+
+/* ══════════════════════════════════════════
+   5. SUBJECT TAG & DRILL TAG
+   (background: var(--ink) → white in dark)
+   ══════════════════════════════════════════ */
+.subject-tag,
+.drill-tag {
+    background: var(--panel);           /* was var(--ink) */
+    color: var(--panel-fg);             /* was var(--bg) */
+    border-color: var(--panel);
+}
+
+/* Dark mode: add visible border so it doesn't disappear */
+.dark .subject-tag,
+.dark .drill-tag {
+    border: var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+
+/* ══════════════════════════════════════════
+   6. HERO STATS BLOCK  (Image 2 — flat, no shadow)
+   ══════════════════════════════════════════ */
+.hero-stats {
+    box-shadow: var(--shadow-lg);       /* ensure hard shadow is applied */
+}
+
+.dark .hero-stats {
+    /* In dark mode --shadow-lg = 7px 7px 0 #f0f0f0 = white shadow = correct */
+    box-shadow: var(--shadow-lg);
+    border: var(--border);
+}
+
+.stat strong {
+    /* Ensure the number stands out */
+    color: var(--ink);
+}
+
+/* Raise stat label from micro size */
+.stat span {
+    font-size: 11px;                    /* was var(--text-mono-xs) = 8.5px */
+    color: var(--ink-muted);
+    letter-spacing: var(--tracking-ultra);
+}
+
+
+/* ══════════════════════════════════════════
+   7. SECTION HEADER SUBTITLE
+   ══════════════════════════════════════════ */
+.section-header span {
+    color: var(--ink-muted);            /* was var(--light-muted) */
+    font-size: 11px;                    /* raise from 9.5px */
+}
+
+
+/* ══════════════════════════════════════════
+   8. CTA BAND  (Image 4 — white bg in dark mode)
+   ══════════════════════════════════════════ */
+.cta-band {
+    background: var(--panel);           /* was var(--ink) → became white */
+    border-top: 2.5px solid var(--panel);
+}
+
+.cta-band h2 {
+    color: var(--panel-fg);             /* was var(--bg) → invisible on white */
+}
+
+.cta-band h2 em {
+    color: var(--yellow);               /* stays yellow — correct */
+}
+
+/* CTA button: raise font size */
+.cta-btn {
+    font-size: 12px;                    /* was var(--text-cta) = 10px */
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-widest);
+    box-shadow: var(--shadow-yellow, 5px 5px 0 var(--yellow));
+}
+
+.cta-btn:hover {
+    background: var(--panel-fg);
+    color: #0a0a0a;
+    border-color: var(--panel-fg);
+    box-shadow: var(--shadow-lg);
+    transform: translate(-2px, -2px);
+}
+
+.dark .cta-btn:hover {
+    background: var(--yellow);
+    color: #0a0a0a;
+    border-color: var(--yellow);
+}
+
+
+/* ══════════════════════════════════════════
+   9. SITE FOOTER  (Images 3 & 4 — white bg, invisible text)
+   ══════════════════════════════════════════ */
+.site-footer {
+    background: var(--panel);           /* was var(--ink) → became white */
+}
+
+/* ── Footer borders on panel background ── */
+.footer-top {
+    border-bottom: 1.5px solid var(--panel-border);
+}
+
+.footer-brand {
+    border-right-color: var(--panel-border);
+}
+
+.footer-col {
+    border-right-color: var(--panel-border);
+}
+
+/* ── Footer brand text: remove invisible opacity hacks ── */
+.footer-logo {
+    color: var(--panel-fg);             /* was var(--bg) */
+}
+
+.footer-logo span {
+    color: var(--yellow);               /* brand accent — correct */
+}
+
+/* was: color: var(--bg); opacity: 0.38 → near invisible */
+.footer-brand p {
+    color: var(--panel-muted) !important;
+    opacity: 1 !important;
+    font-size: 12px;                    /* raise from var(--text-body-xs) */
+    line-height: var(--leading-relaxed);
+}
+
+/* Footer logo brand in footer (uses .logo-brand inside footer) */
+.site-footer .logo-brand {
+    border-left-color: var(--panel-border);
+    opacity: 1;                         /* remove 0.5 opacity */
+}
+
+.site-footer .brand-top {
+    color: var(--blue);                 /* stays brand blue */
+}
+
+.site-footer .brand-bottom {
+    background: var(--yellow);
+    color: #0a0a0a;
+}
+
+/* ── Footer column headings: opacity: 0.28 → explicit colour ── */
+.footer-col h4 {
+    /* was: color: var(--bg); opacity: 0.28 — near invisible */
+    color: var(--panel-muted) !important;
+    opacity: 1 !important;
+    font-size: 10px;                    /* raise from 8px */
+    letter-spacing: var(--tracking-terra);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+}
+
+/* ── Footer links: opacity: 0.55 → clean colour ── */
+.footer-col ul li a {
+    /* was: color: var(--bg); opacity: 0.55 */
+    color: var(--panel-fg) !important;
+    opacity: 0.72 !important;
+    font-size: 11px;                    /* raise from var(--text-body-xs) */
+    text-decoration: none;
+    transition:
+        color   var(--duration-base) var(--ease-default),
+        opacity var(--duration-base) var(--ease-default);
+}
+
+.footer-col ul li a:hover {
+    color: var(--yellow) !important;
+    opacity: 1 !important;
+}
+
+/* ── Footer bottom bar ── */
+.footer-bottom {
+    border-top: 1.5px solid var(--panel-border);
+}
+
+/* was: opacity: 0.28 */
+.footer-bottom p {
+    color: var(--panel-muted) !important;
+    opacity: 1 !important;
+    font-size: 11px;
+}
+
+.footer-links a {
+    color: var(--panel-muted) !important;
+    opacity: 1 !important;
+    font-size: 11px;
+    transition:
+        color   var(--duration-base) var(--ease-default);
+}
+
+.footer-links a:hover {
+    color: var(--yellow) !important;
+}
+
+
+/* ══════════════════════════════════════════
+   10. INFO STRIP
+   ══════════════════════════════════════════ */
+.info-label {
+    color: var(--ink-muted);            /* was var(--light-muted) */
+    font-size: 11px;
+}
+
+.info-label::before {
+    background: var(--ink);             /* the accent dash — correct */
+}
+
+.info-cell p {
+    color: var(--ink-muted);            /* was var(--muted) — now explicit */
+    font-size: 13px;                    /* raise from var(--text-mono-lg) = 11.5px */
+    line-height: var(--leading-relaxed);
+}
+
+
+/* ══════════════════════════════════════════
+   11. EYEBROW LABELS  (subject / drill headers)
+   Ensure they stay readable in dark mode.
+   ══════════════════════════════════════════ */
+.subject-header-text .eyebrow,
+.drill-header-text .eyebrow {
+    background: var(--yellow);
+    color: #0a0a0a;                     /* always dark on yellow */
+    border: var(--border);
+}
+
+.dark .subject-header-text h2,
+.dark .drill-header-text h2 {
+    color: var(--ink);                  /* white in dark mode — correct */
+}
+
+
+/* ══════════════════════════════════════════
+   12. DARK BODY GRADIENT
+   Clamp the gradient so it doesn't bleed
+   into cards on dark bg.
+   ══════════════════════════════════════════ */
+.dark body {
+    background-image:
+        radial-gradient(circle at 14% 78%, rgba(255, 234, 0, 0.06) 0%, transparent 38%),
+        radial-gradient(circle at 83% 11%, rgba(91, 156, 255, 0.05) 0%, transparent 38%);
+}
+
+/* ── Ensure nav has solid bg in dark mode (no gradient bleed) ── */
+.dark .site-nav {
+    background: var(--bg);
+    border-bottom: var(--border);
+}
+
+.dark .hero {
+    background: var(--bg);
+}
