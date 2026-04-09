@@ -13,7 +13,6 @@
     '../../../../js/path-config.js',
     '../../../../js/nav.js',
     './blog.js',
-
   ],
   
   // Paths for nav-data
