@@ -12,8 +12,8 @@ export const navData = {
   
   links: [
     { name: "Dashboard", href: window.CONFIG?.paths?.dashboardIndex || '#', active: false },
-    { name: "Life and Health", href: window.CONFIG?.paths?.blogHtml || '#', active: true },
-    { name: "Animals", href: window.CONFIG?.paths?.blogHtml || '#', active: false, isCta: true },
+    { name: "Life and Health", href: window.CONFIG?.paths?.lifeHtml || '#', active: true },
+    { name: "Animals", href: window.CONFIG?.paths?.animalsHtml || '#', active: false, isCta: true },
     { name: "Earth Science", href: "#", active: false },
     { name: "Space Science", href: "#", active: false },
   ],

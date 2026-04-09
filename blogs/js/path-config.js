@@ -19,7 +19,8 @@
   // Paths for nav-data
   paths: {
     dashboardIndex: '../../../../../dashboard/dashboard.html',
-    blogHtml: '../../animal/blog/blog.html',
+    lifeHtml: '../../life/blog/blog.html',
+    animalHtml: '../../animal/blog/blog.html',
     renderCss: '../../../../css/render.css',
   },
   
