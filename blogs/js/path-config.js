@@ -9,11 +9,11 @@
   
   // JS files  
   jsFiles: [
-    
+    '../../../../../utils/loader/loader.js',
     '../../../../js/path-config.js',
     '../../../../js/nav.js',
-    '../../../../../utils/loader/loader.js',
-    './blog.js'
+    './blog.js',
+
   ],
   
   // Paths for nav-data

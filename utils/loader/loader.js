@@ -46,6 +46,7 @@
         transform: translateY(110%); animation: loaderWordIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
 
+      /* Highlight last word with your color */
       .loader-word:last-of-type span { color: ${accentColor}; }
 
       @keyframes loaderWordIn { to { transform: translateY(0); } }
@@ -55,55 +56,8 @@
         margin-top: 20px; animation: lb 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
       }
       @keyframes lb { to { width: 140px; } }
-      
-      /* Ensure body becomes visible when loader hides */
-      body.portal-ready {
-        visibility: visible !important;
-      }
     `;
   document.head.appendChild(style);
-  
-// State tracking
-let cssReady = false;
-let pageLoaded = false;
-let loaderHidden = false;
-
-// Function to check if we can hide loader
-function tryHideLoader() {
-  if (loaderHidden) return;
-  
-  // STRICTLY rely on CONFIG's tracking. Do NOT guess using document.styleSheets.
-  const configCssReady = (window.CONFIG && window.CONFIG.isCssReady && window.CONFIG.isCssReady()) || window.__CONFIG_CSS_READY === true;
-  
-  cssReady = configCssReady;
-  
-  // Hide loader ONLY when both CSS is fully loaded AND page is loaded
-  if ((cssReady && pageLoaded) || window.__FORCE_HIDE_LOADER) {
-    hideLoader();
-  }
-}
-
-function hideLoader() {
-  if (loaderHidden) return;
-  loaderHidden = true;
-  
-  const loader = document.getElementById(loaderId);
-  if (!loader) return;
-  
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      
-      document.body.style.visibility = 'visible';
-      document.body.classList.add('portal-ready');
-      loader.classList.add('done');
-      
-      setTimeout(() => {
-        loader.style.display = 'none';
-      }, 850);
-      
-    });
-  });
-}
   
   // 2. ENHANCE HTML CONTENT
   function init() {
@@ -123,51 +77,13 @@ function hideLoader() {
       span.style.animationDelay = `${0.4 + (i * 0.15)}s`;
     });
     
-    // Listen for CSS ready event from CONFIG
-    window.addEventListener('configCssReady', () => {
-      console.log('[Loader] Received configCssReady event');
-      cssReady = true;
-      tryHideLoader();
-    });
-    
-    // Page load event
+    // Hide when page is fully loaded
     window.addEventListener('load', () => {
-      console.log('[Loader] Page load complete');
-      pageLoaded = true;
-      tryHideLoader();
+      setTimeout(() => {
+        loader.classList.add('done');
+        document.body.classList.add('portal-ready');
+      }, 1800);
     });
-    
-    // Safety timeout - force hide loader after 5 seconds max
-    setTimeout(() => {
-      if (!loaderHidden) {
-        console.warn('[Loader] Safety timeout - forcing loader hide');
-        window.__FORCE_HIDE_LOADER = true;
-        hideLoader();
-      }
-    }, 5000);
-    
-    // Also check periodically in case events were missed
-    const checkInterval = setInterval(() => {
-      if (loaderHidden) {
-        clearInterval(checkInterval);
-        return;
-      }
-      
-      // Check if CONFIG has marked CSS ready
-      if (window.CONFIG?.isCssReady?.() || window.__CONFIG_CSS_READY) {
-        cssReady = true;
-        tryHideLoader();
-      }
-      
-      // Check if page is loaded
-      if (document.readyState === 'complete') {
-        pageLoaded = true;
-        tryHideLoader();
-      }
-    }, 100);
-    
-    // Clean up interval after 6 seconds
-    setTimeout(() => clearInterval(checkInterval), 6000);
   }
   
   // Run as soon as DOM is ready
