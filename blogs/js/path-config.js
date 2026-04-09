@@ -3,7 +3,8 @@
   // CSS files
   cssFiles: [
     '../../../../../main.css',
-    '../../../../css/blog.css'
+    '../../../../css/blog.css',
+    '../../../../css/style.css'
   ],
   
   // JS files  
@@ -17,7 +18,7 @@
   
   // Paths for nav-data
   paths: {
-    dashboardIndex: '../../../../dashboard/dashboard.html',
+    dashboardIndex: '../../../../../dashboard/dashboard.html',
     blogHtml: '../../animal/blog/blog.html',
     renderCss: '../../../../css/render.css',
   },
@@ -63,5 +64,5 @@
   
 };
 
-// window.CONFIG = CONFIG;
+window.CONFIG = CONFIG;
 

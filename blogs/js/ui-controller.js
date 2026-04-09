@@ -1,5 +1,7 @@
 // ui-controller.js - 100% reusable across all subjects
+import { CONFIG } from './path-config.js';
 import { auth } from './config.js';
+
 import { onAuthStateChanged } from 'firebase/auth';
 import {
   initPublisher,
@@ -11,12 +13,13 @@ import {
   updatePostImages,
   updatePostLinks,
   updatePostContent,
+  updatePostVideos,
   deletePost,
   getPost,
   hasApiKeys,
   getSubjectName
 } from './publisher-core.js';
-import { CONFIG } from './path-config.js';
+
 // This module expects subjectConfig and subjectData to be passed in
 let subjectConfig = null;
 let subjectData = null;
@@ -66,6 +69,11 @@ const saveContentBtn = document.getElementById('saveContentBtn');
 const cancelContentBtn = document.getElementById('cancelContentBtn');
 const contentEditorTextarea = document.getElementById('contentEditorTextarea');
 const contentPreviewPane = document.getElementById('contentPreviewPane');
+const videosModal = document.getElementById('videosModal');
+const saveVideosBtn = document.getElementById('saveVideosBtn');
+const cancelVideosBtn = document.getElementById('cancelVideosBtn');
+const videoThumbnailsList = document.getElementById('videoThumbnailsList');
+const addVideoBtn = document.getElementById('addVideoBtn');
 
 // ─── STATE ─────────────────────────────────────────────────
 let activeTimeout = null;
@@ -76,6 +84,7 @@ let pendingImgId = null;
 let pendingImgContent = '';
 let pendingLinksId = null;
 let pendingContentId = null;
+let pendingVideosId = null;
 let currentUser = null;
 
 // Helper function to safely get short ID (prevents null substring error)
@@ -195,7 +204,7 @@ function cleanDuplicateCssLinks(html) {
   let cleaned = html.replace(cssLinkRegex, '');
   
   // Add CSS link once at the top if content has educational structure
-  const cssLink = `<link rel="stylesheet" href="${window.CONFIG?.paths?.renderCss}">`;
+  const cssLink = `<link rel="stylesheet" href="${window.CONFIG?.paths?.renderCss || '../../../../css/render.css'}">`;
   
   if (cleaned.includes('<div class="lesson-note">') ||
     cleaned.includes('<div class="ln-') ||
@@ -211,6 +220,12 @@ function getYouTubeThumbnail(url) {
   if (!url) return null;
   const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|shorts\/)([^&\n?#]+)/);
   return m ? `https://img.youtube.com/vi/${m[1]}/mqdefault.jpg` : null;
+}
+
+function extractYouTubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|shorts\/)([^&\n?#]+)/);
+  return match ? match[1] : null;
 }
 
 function getDomain(url) {
@@ -261,6 +276,110 @@ if (practiceUrlInput) {
   });
 }
 
+// ─── VIDEOS MODAL FUNCTIONS ────────────────────────────────
+function openVideosModal(postId, postTitle, existingVideos = []) {
+  if (!postId) return;
+  pendingVideosId = postId;
+  
+  const subtitle = document.getElementById('videosModalSubtitle');
+  if (subtitle) {
+    subtitle.textContent = `"${postTitle || 'Untitled'}" — add video thumbnails for this lesson.`;
+  }
+  
+  // Clear and populate the videos list
+  if (videoThumbnailsList) {
+    videoThumbnailsList.innerHTML = '';
+    
+    if (existingVideos && existingVideos.length > 0) {
+      existingVideos.forEach(video => {
+        addVideoRow(video.title || '', video.url || '', video.duration || '');
+      });
+    } else {
+      // Add one empty row by default
+      addVideoRow('', '', '');
+    }
+  }
+  
+  if (videosModal) videosModal.classList.add('active');
+}
+
+function addVideoRow(title = '', url = '', duration = '') {
+  if (!videoThumbnailsList) return;
+  
+  const row = document.createElement('div');
+  row.className = 'video-thumbnail-row';
+  row.innerHTML = `
+    <div class="video-row-fields">
+      <input type="text" class="video-title-input" placeholder="Video title" value="${escapeHtml(title)}">
+      <input type="url" class="video-url-input" placeholder="YouTube URL" value="${escapeHtml(url)}">
+      <input type="text" class="video-duration-input" placeholder="Duration (e.g., 2:14)" value="${escapeHtml(duration)}">
+    </div>
+    <div class="video-row-preview">
+      <div class="video-preview-thumb">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#0a0a0a" stroke-width="2"/>
+          <path d="M13 11L21 16L13 21V11Z" fill="#0a0a0a" stroke="#0a0a0a" stroke-width="1" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="video-preview-info">
+        <span class="video-preview-title">${escapeHtml(title) || 'Untitled video'}</span>
+        <span class="video-preview-duration">${escapeHtml(duration) || '--:--'}</span>
+      </div>
+    </div>
+    <button class="btn-remove-video" type="button" title="Remove video">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="4" y1="4" x2="12" y2="12"/>
+        <line x1="12" y1="4" x2="4" y2="12"/>
+      </svg>
+    </button>
+  `;
+  
+  // Add remove functionality
+  const removeBtn = row.querySelector('.btn-remove-video');
+  removeBtn.addEventListener('click', () => {
+    row.remove();
+    // If no rows left, add an empty one
+    if (videoThumbnailsList.children.length === 0) {
+      addVideoRow('', '', '');
+    }
+  });
+  
+  // Update preview when inputs change
+  const titleInput = row.querySelector('.video-title-input');
+  const urlInput = row.querySelector('.video-url-input');
+  const durationInput = row.querySelector('.video-duration-input');
+  const previewTitle = row.querySelector('.video-preview-title');
+  const previewDuration = row.querySelector('.video-preview-duration');
+  
+  titleInput.addEventListener('input', () => {
+    previewTitle.textContent = titleInput.value || 'Untitled video';
+  });
+  
+  durationInput.addEventListener('input', () => {
+    previewDuration.textContent = durationInput.value || '--:--';
+  });
+  
+  // Extract video ID and update preview on URL input
+  urlInput.addEventListener('input', () => {
+    const videoId = extractYouTubeId(urlInput.value);
+    if (videoId) {
+      const thumbContainer = row.querySelector('.video-preview-thumb');
+      thumbContainer.innerHTML = `<img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg" alt="Thumbnail" style="width:100%;height:100%;object-fit:cover;">`;
+    }
+  });
+  
+  // Trigger initial preview if URL exists
+  if (url) {
+    const videoId = extractYouTubeId(url);
+    if (videoId) {
+      const thumbContainer = row.querySelector('.video-preview-thumb');
+      thumbContainer.innerHTML = `<img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg" alt="Thumbnail" style="width:100%;height:100%;object-fit:cover;">`;
+    }
+  }
+  
+  videoThumbnailsList.appendChild(row);
+}
+
 // ─── LOAD POSTS UI ─────────────────────────────────────────
 async function renderRecentPosts() {
   const list = document.getElementById('managePostsList');
@@ -279,6 +398,7 @@ async function renderRecentPosts() {
       const clsLbl = getClassLabel(cls);
       const hasImg = !!post.featuredImage || post.imagesAdded;
       const hasLinks = post.linksAdded || (post.videoLink || post.practiceLink);
+      const hasVideos = post.videosAdded || (post.videos && post.videos.length > 0);
       
       const li = document.createElement('li');
       li.className = 'manage-post-item';
@@ -293,12 +413,17 @@ async function renderRecentPosts() {
             ${post.views ? `<span>${post.views} views</span>` : ''}
             ${!hasImg ? `<span class="pill-pending"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>No imgs</span>` : ''}
             ${!hasLinks ? `<span class="pill-pending pill-links-missing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>No links</span>` : ''}
+            ${!hasVideos ? `<span class="pill-pending pill-videos-missing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M10 9L15 12L10 15V9Z"></path></svg>No videos</span>` : ''}
           </div>
         </div>
         <div class="manage-post-actions">
           <button class="btn btn-sm btn-links links-btn" data-id="${post.id}" data-title="${escapeHtml(post.title || 'Untitled')}" data-video="${escapeHtml(post.videoLink || '')}" data-practice="${escapeHtml(post.practiceLink || '')}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
             <span class="btn-label">Links</span>
+          </button>
+          <button class="btn btn-sm btn-videos videos-btn" data-id="${post.id}" data-title="${escapeHtml(post.title || 'Untitled')}" data-videos='${JSON.stringify(post.videos || []).replace(/'/g, "&apos;")}'>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M10 9L15 12L10 15V9Z" fill="currentColor"></path></svg>
+            <span class="btn-label">Videos</span>
           </button>
           <button class="btn btn-sm btn-edit img-btn" data-id="${post.id}" data-title="${escapeHtml(post.title || 'Untitled')}" data-featured="${escapeHtml(post.featuredImage || '')}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
@@ -330,6 +455,19 @@ async function renderRecentPosts() {
 function attachButtonListeners(container) {
   container.querySelectorAll('.links-btn').forEach(btn => {
     btn.addEventListener('click', () => openLinksModal(btn.dataset.id, btn.dataset.title, btn.dataset.video, btn.dataset.practice));
+  });
+  container.querySelectorAll('.videos-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      let videos = [];
+      try {
+        const videoData = btn.dataset.videos.replace(/&apos;/g, "'");
+        videos = JSON.parse(videoData || '[]');
+      } catch (e) {
+        console.warn('Failed to parse videos:', e);
+        videos = [];
+      }
+      openVideosModal(btn.dataset.id, btn.dataset.title, videos);
+    });
   });
   container.querySelectorAll('.img-btn').forEach(btn => {
     btn.addEventListener('click', () => openImageEditor(btn.dataset.id, btn.dataset.title, btn.dataset.featured));
@@ -523,7 +661,7 @@ if (contentEditorTextarea && contentPreviewPane) {
   });
 }
 
-// ─── SAVE HANDLERS (ALL WITH SAFE substring) ───────────────
+// ─── SAVE HANDLERS ─────────────────────────────────────────
 if (saveContentBtn) {
   saveContentBtn.addEventListener('click', async () => {
     if (!pendingContentId) {
@@ -589,6 +727,49 @@ if (saveLinksBtn) {
       if (saveLinksBtn) {
         saveLinksBtn.disabled = false;
         saveLinksBtn.innerHTML = originalText;
+      }
+    }
+  });
+}
+
+if (saveVideosBtn) {
+  saveVideosBtn.addEventListener('click', async () => {
+    if (!pendingVideosId) {
+      addLog('[VIDEOS] No post selected', 'warn');
+      if (videosModal) videosModal.classList.remove('active');
+      return;
+    }
+    
+    // Collect all video data
+    const videos = [];
+    const rows = videoThumbnailsList ? videoThumbnailsList.querySelectorAll('.video-thumbnail-row') : [];
+    
+    rows.forEach(row => {
+      const title = row.querySelector('.video-title-input')?.value.trim() || '';
+      const url = row.querySelector('.video-url-input')?.value.trim() || '';
+      const duration = row.querySelector('.video-duration-input')?.value.trim() || '';
+      
+      if (title && url) {
+        videos.push({ title, url, duration });
+      }
+    });
+    
+    saveVideosBtn.disabled = true;
+    const originalText = saveVideosBtn.innerHTML;
+    saveVideosBtn.textContent = 'Saving...';
+    
+    try {
+      await updatePostVideos(pendingVideosId, videos, videos.length > 0);
+      addLog(`[VIDEOS] Saved ${videos.length} video(s) for ${getShortId(pendingVideosId)}...`, 'success');
+      if (videosModal) videosModal.classList.remove('active');
+      pendingVideosId = null;
+      await renderRecentPosts();
+    } catch (e) {
+      addLog(`[ERR] ${e.message}`, 'error');
+    } finally {
+      if (saveVideosBtn) {
+        saveVideosBtn.disabled = false;
+        saveVideosBtn.innerHTML = originalText;
       }
     }
   });
@@ -714,6 +895,13 @@ if (cancelLinksBtn) {
   });
 }
 
+if (cancelVideosBtn) {
+  cancelVideosBtn.addEventListener('click', () => {
+    if (videosModal) videosModal.classList.remove('active');
+    pendingVideosId = null;
+  });
+}
+
 if (cancelImgBtn) {
   cancelImgBtn.addEventListener('click', () => {
     if (imgModal) imgModal.classList.remove('active');
@@ -736,8 +924,15 @@ if (cancelDeleteBtn) {
   });
 }
 
+// Add Video button handler
+if (addVideoBtn) {
+  addVideoBtn.addEventListener('click', () => {
+    addVideoRow('', '', '');
+  });
+}
+
 // Close modals when clicking outside
-[confirmModal, metaModal, linksModal, imgModal, contentModal].forEach(modal => {
+[confirmModal, metaModal, linksModal, imgModal, contentModal, videosModal].forEach(modal => {
   if (modal) {
     modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
   }
@@ -746,12 +941,9 @@ if (cancelDeleteBtn) {
 // Escape key closes modals
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    if (confirmModal) confirmModal.classList.remove('active');
-    if (metaModal) metaModal.classList.remove('active');
-    if (linksModal) linksModal.classList.remove('active');
-    if (imgModal) imgModal.classList.remove('active');
-    if (contentModal) contentModal.classList.remove('active');
-    if (videosModal) videosModal.classList.remove('active');
+    [confirmModal, metaModal, linksModal, imgModal, contentModal, videosModal].forEach(modal => {
+      if (modal) modal.classList.remove('active');
+    });
   }
 });
 
@@ -791,216 +983,6 @@ if (testBtn) {
 if (refreshPostsBtn) {
   refreshPostsBtn.addEventListener('click', renderRecentPosts);
 }
-
-
-
-// ui-controller.js - Add these new elements and functions
-
-// Add these DOM element references at the top
-const videosModal = document.getElementById('videosModal');
-const saveVideosBtn = document.getElementById('saveVideosBtn');
-const cancelVideosBtn = document.getElementById('cancelVideosBtn');
-const videoThumbnailsList = document.getElementById('videoThumbnailsList');
-const addVideoBtn = document.getElementById('addVideoBtn');
-
-// Add this state variable
-let pendingVideosId = null;
-
-// Add this function to open the videos modal
-function openVideosModal(postId, postTitle, existingVideos = []) {
-  if (!postId) return;
-  pendingVideosId = postId;
-  
-  const subtitle = document.getElementById('videosModalSubtitle');
-  if (subtitle) {
-    subtitle.textContent = `"${postTitle || 'Untitled'}" — add video thumbnails for this lesson.`;
-  }
-  
-  // Clear and populate the videos list
-  if (videoThumbnailsList) {
-    videoThumbnailsList.innerHTML = '';
-    
-    if (existingVideos && existingVideos.length > 0) {
-      existingVideos.forEach(video => {
-        addVideoRow(video.title || '', video.url || '', video.duration || '');
-      });
-    } else {
-      // Add one empty row by default
-      addVideoRow('', '', '');
-    }
-  }
-  
-  if (videosModal) videosModal.classList.add('active');
-}
-
-// Add this function to create a new video row
-function addVideoRow(title = '', url = '', duration = '') {
-  if (!videoThumbnailsList) return;
-  
-  const row = document.createElement('div');
-  row.className = 'video-thumbnail-row';
-  row.innerHTML = `
-    <div class="video-row-fields">
-      <input type="text" class="video-title-input" placeholder="Video title" value="${escapeHtml(title)}">
-      <input type="url" class="video-url-input" placeholder="YouTube URL" value="${escapeHtml(url)}">
-      <input type="text" class="video-duration-input" placeholder="Duration (e.g., 2:14)" value="${escapeHtml(duration)}">
-    </div>
-    <div class="video-row-preview">
-      <div class="video-preview-thumb">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <circle cx="16" cy="16" r="14" stroke="#0a0a0a" stroke-width="2"/>
-          <path d="M13 11L21 16L13 21V11Z" fill="#0a0a0a" stroke="#0a0a0a" stroke-width="1" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="video-preview-info">
-        <span class="video-preview-title">${title || 'Untitled video'}</span>
-        <span class="video-preview-duration">${duration || '--:--'}</span>
-      </div>
-    </div>
-    <button class="btn-remove-video" type="button" title="Remove video">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="4" y1="4" x2="12" y2="12"/>
-        <line x1="12" y1="4" x2="4" y2="12"/>
-      </svg>
-    </button>
-  `;
-  
-  // Add remove functionality
-  const removeBtn = row.querySelector('.btn-remove-video');
-  removeBtn.addEventListener('click', () => {
-    row.remove();
-    // If no rows left, add an empty one
-    if (videoThumbnailsList.children.length === 0) {
-      addVideoRow('', '', '');
-    }
-  });
-  
-  // Update preview when inputs change
-  const titleInput = row.querySelector('.video-title-input');
-  const urlInput = row.querySelector('.video-url-input');
-  const durationInput = row.querySelector('.video-duration-input');
-  const previewTitle = row.querySelector('.video-preview-title');
-  const previewDuration = row.querySelector('.video-preview-duration');
-  
-  titleInput.addEventListener('input', () => {
-    previewTitle.textContent = titleInput.value || 'Untitled video';
-  });
-  
-  durationInput.addEventListener('input', () => {
-    previewDuration.textContent = durationInput.value || '--:--';
-  });
-  
-  // Extract video ID and update preview on URL input
-  urlInput.addEventListener('input', () => {
-    const videoId = extractYouTubeId(urlInput.value);
-    if (videoId) {
-      const thumbContainer = row.querySelector('.video-preview-thumb');
-      thumbContainer.innerHTML = `<img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg" alt="Thumbnail" style="width:100%;height:100%;object-fit:cover;">`;
-    }
-  });
-  
-  videoThumbnailsList.appendChild(row);
-}
-
-// Helper function to extract YouTube video ID
-function extractYouTubeId(url) {
-  if (!url) return null;
-  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|shorts\/)([^&\n?#]+)/);
-  return match ? match[1] : null;
-}
-
-// Add event listener for "Add Video" button
-if (addVideoBtn) {
-  addVideoBtn.addEventListener('click', () => {
-    addVideoRow('', '', '');
-  });
-}
-
-// Add save handler for videos
-if (saveVideosBtn) {
-  saveVideosBtn.addEventListener('click', async () => {
-    if (!pendingVideosId) {
-      addLog('[VIDEOS] No post selected', 'warn');
-      if (videosModal) videosModal.classList.remove('active');
-      return;
-    }
-    
-    // Collect all video data
-    const videos = [];
-    const rows = videoThumbnailsList ? videoThumbnailsList.querySelectorAll('.video-thumbnail-row') : [];
-    
-    rows.forEach(row => {
-      const title = row.querySelector('.video-title-input')?.value.trim() || '';
-      const url = row.querySelector('.video-url-input')?.value.trim() || '';
-      const duration = row.querySelector('.video-duration-input')?.value.trim() || '';
-      
-      if (title && url) {
-        videos.push({ title, url, duration });
-      }
-    });
-    
-    saveVideosBtn.disabled = true;
-    const originalText = saveVideosBtn.innerHTML;
-    saveVideosBtn.textContent = 'Saving...';
-    
-    try {
-      await updatePostVideos(pendingVideosId, videos, videos.length > 0);
-      addLog(`[VIDEOS] Saved ${videos.length} video(s) for ${getShortId(pendingVideosId)}...`, 'success');
-      if (videosModal) videosModal.classList.remove('active');
-      pendingVideosId = null;
-      await renderRecentPosts();
-    } catch (e) {
-      addLog(`[ERR] ${e.message}`, 'error');
-    } finally {
-      if (saveVideosBtn) {
-        saveVideosBtn.disabled = false;
-        saveVideosBtn.innerHTML = originalText;
-      }
-    }
-  });
-}
-
-// Add cancel handler
-if (cancelVideosBtn) {
-  cancelVideosBtn.addEventListener('click', () => {
-    if (videosModal) videosModal.classList.remove('active');
-    pendingVideosId = null;
-  });
-}
-
-// Update the renderRecentPosts function to include a Videos button
-// Find the button section and add this button:
-`
-<button class="btn btn-sm btn-videos videos-btn" data-id="${post.id}" data-title="${escapeHtml(post.title || 'Untitled')}" data-videos='${JSON.stringify(post.videos || [])}'>
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-    <rect x="2" y="4" width="20" height="16" rx="2"/>
-    <path d="M10 9L15 12L10 15V9Z" fill="currentColor"/>
-  </svg>
-  <span class="btn-label">Videos</span>
-</button>
-`
-
-// Add event listener for videos buttons in attachButtonListeners
-container.querySelectorAll('.videos-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    let videos = [];
-    try {
-      videos = JSON.parse(btn.dataset.videos || '[]');
-    } catch (e) {
-      videos = [];
-    }
-    openVideosModal(btn.dataset.id, btn.dataset.title, videos);
-  });
-});
-
-// Add the videos modal to the close handlers
-[videosModal].forEach(modal => {
-  if (modal) {
-    modal.addEventListener('click', e => {
-      if (e.target === modal) modal.classList.remove('active');
-    });
-  }
-});
 
 // ─── AUTH & INIT ───────────────────────────────────────────
 const saved = localStorage.getItem(`${subjectConfig?.collectionName}Count`);

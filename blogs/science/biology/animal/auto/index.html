@@ -11,11 +11,14 @@
   <meta name="description" content="Admin dashboard: auto science content publisher for Primary 1 to SS3.">
   <meta name="robots" content="noindex, nofollow">
   
-  <script src="../../../../js/path-config.js" type="module"></script>
-  
-  <link rel="stylesheet" href="../../../../main.css">
-  <link rel="stylesheet" href="./style.css">
-  <link rel="stylesheet" href="./content-editor.css">
+  <!-- Load CSS -->
+  <script type="module">
+    import { CONFIG } from '../../../../js/path-config.js'
+    CONFIG.loadAllCSS();
+    CONFIG.loadAllJS();
+    
+    window.CONFIG = CONFIG
+  </script>
   
   <script type="importmap">
     {
