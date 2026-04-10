@@ -620,6 +620,7 @@
 
 /* ── MOBILE OVERFLOW HANDLING ── */
 @media (max-width: 768px) {
+
   .ln-headline,
   .ln-byline,
   .ln-facts-strip,
@@ -630,27 +631,27 @@
     padding-left: 10px;
     padding-right: 10px;
   }
-
+  
   .ln-facts-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-
+  
   .ln-table-section {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-
+  
   .ln-table {
     min-width: 720px;
     font-size: 9px;
   }
-
+  
   .ln-table thead th,
   .ln-table tbody td {
     padding: 8px 10px;
   }
-
+  
   .ln-chip {
     font-size: 9px;
     padding: 1px 4px;
@@ -658,34 +659,34 @@
     word-break: keep-all;
     display: inline-block;
   }
-
+  
   .ln-features-grid {
     grid-template-columns: 1fr;
   }
-
+  
   .ln-activity {
     flex-direction: column;
   }
-
+  
   .ln-activity-icon {
     width: 44px;
     height: 44px;
   }
-
+  
   .ln-pull-quote {
     box-shadow: 3px 3px 0 var(--ink, #0a0a0a);
   }
-
+  
   .ln-quote-mark {
     font-size: 36px;
     top: 4px;
     right: 10px;
   }
-
+  
   .ln-h1 {
     max-width: 100%;
   }
-
+  
   .ln-lede {
     max-width: 100%;
   }
@@ -695,27 +696,27 @@
   .ln-byline {
     gap: 6px;
   }
-
+  
   .ln-byline-dot {
     display: none;
   }
-
-  .ln-byline > *:not(:first-child) {
+  
+  .ln-byline>*:not(:first-child) {
     margin-left: 0;
   }
-
+  
   .ln-fact-num {
     font-size: 24px;
   }
-
+  
   .ln-fact-text {
     font-size: 9px;
   }
-
+  
   .ln-table {
     min-width: 460px;
   }
-
+  
   .ln-table thead th,
   .ln-table tbody td {
     padding: 6px 8px;
