@@ -168,6 +168,9 @@ onAuthStateChanged(auth, async u => {
         geminiApiKeyPublic = d.geminiKey || d.geminiApiKey || d.apiKey || null;
       }
     } catch (_) {}
+    
+    // ← ADD THIS: reload comments if a post is already open
+    if (activePost) await loadComments(activePost.id);
   }
 });
 
@@ -177,56 +180,56 @@ onAuthStateChanged(auth, async u => {
 // started converting at source.
 function markdownToHtml(text) {
   if (!text) return text;
-
+  
   // If 6+ block-level HTML tags already present, treat as proper HTML
   const tagCount = (text.match(/<(h[1-6]|p|ul|ol|li|blockquote|table|pre|div)\b/gi) || []).length;
   if (tagCount >= 6) return text;
-
+  
   let html = text;
-
+  
   // Strip leftover code fences
   html = html.replace(/```[\w]*\n?/g, '').replace(/```/g, '');
-
+  
   // Headings
   html = html.replace(/^######\s+(.+)$/gm, '<h6>$1</h6>');
-  html = html.replace(/^#####\s+(.+)$/gm,  '<h5>$1</h5>');
-  html = html.replace(/^####\s+(.+)$/gm,   '<h4>$1</h4>');
-  html = html.replace(/^###\s+(.+)$/gm,    '<h3>$1</h3>');
-  html = html.replace(/^##\s+(.+)$/gm,     '<h2>$1</h2>');
-  html = html.replace(/^#\s+(.+)$/gm,      '<h1>$1</h1>');
-
+  html = html.replace(/^#####\s+(.+)$/gm, '<h5>$1</h5>');
+  html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^###\s+(.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^#\s+(.+)$/gm, '<h1>$1</h1>');
+  
   // Horizontal rules
   html = html.replace(/^[-*_]{3,}\s*$/gm, '<hr>');
-
+  
   // Bold + italic combined
   html = html.replace(/\*\*\*(.+?)\*\*\*/gs, '<strong><em>$1</em></strong>');
-  html = html.replace(/___(.+?)___/gs,        '<strong><em>$1</em></strong>');
-
+  html = html.replace(/___(.+?)___/gs, '<strong><em>$1</em></strong>');
+  
   // Bold
   html = html.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
-  html = html.replace(/__(.+?)__/gs,      '<strong>$1</strong>');
-
+  html = html.replace(/__(.+?)__/gs, '<strong>$1</strong>');
+  
   // Italic
   html = html.replace(/\*(.+?)\*/gs, '<em>$1</em>');
-  html = html.replace(/_(.+?)_/gs,   '<em>$1</em>');
-
+  html = html.replace(/_(.+?)_/gs, '<em>$1</em>');
+  
   // Inline code
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-
+  
   // Blockquotes
   html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
-
+  
   // Unordered list items → group into <ul>
   html = html.replace(/^[-*+]\s+(.+)$/gm, '<li>$1</li>');
   html = html.replace(/(<li>[^]*?<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
-
+  
   // Ordered list items → group into <ol>
   html = html.replace(/^\d+\.\s+(.+)$/gm, '<oli>$1</oli>');
   html = html.replace(/(<oli>[^]*?<\/oli>\n?)+/g, m =>
     '<ol>' + m.replace(/<oli>/g, '<li>').replace(/<\/oli>/g, '</li>') + '</ol>'
   );
   html = html.replace(/<oli>/g, '<li>').replace(/<\/oli>/g, '</li>');
-
+  
   // Paragraphs — wrap bare text blocks
   const BLOCK = /^<(h[1-6]|p|ul|ol|blockquote|hr|table|pre|div|figure)/i;
   html = html
@@ -239,7 +242,7 @@ function markdownToHtml(text) {
     })
     .filter(Boolean)
     .join('\n');
-
+  
   return html;
 }
 
@@ -484,10 +487,10 @@ async function incViews(id) {
 }
 
 function showSinglePost(post) {
-ensureLessonAssets(); 
-
+  ensureLessonAssets();
+  
   activePost = post;
-const subj = post.subject || Object.keys(SUBJECT_LABELS)[0] || 'default';
+  const subj = post.subject || Object.keys(SUBJECT_LABELS)[0] || 'default';
   const cls = post.classLevel || 'ss-1';
   const sciCls = getSubjectStyle(subj);
   const clsCls = getClassStyle(cls);
@@ -500,7 +503,7 @@ const subj = post.subject || Object.keys(SUBJECT_LABELS)[0] || 'default';
   const liked = currentUser && likes.includes(currentUser.uid);
   const videoThumb = getYouTubeThumbnail(post.videoLink);
   const practiceDomain = post.practiceLink ? getDomain(post.practiceLink) : null;
-
+  
   // Convert any markdown-formatted content to HTML before rendering
   const postBody = markdownToHtml(post.content || '<p>Content not available.</p>');
   
@@ -753,7 +756,14 @@ async function loadComments(postId) {
         </div>
         <div class="replies-section" id="replies-${d.id}" style="display:none">
           <div class="replies-list" id="replies-list-${d.id}"></div>
-          ${currentUser?`<div class="reply-form-area" id="reply-form-${d.id}"><textarea class="reply-textarea" id="reply-input-${d.id}" placeholder="Write a reply..." maxlength="500"></textarea><div class="reply-form-actions"><button class="reply-submit-btn" data-comment-id="${d.id}" data-post-id="${postId}">Post Reply</button><button class="reply-cancel-btn" data-comment-id="${d.id}">Cancel</button></div></div>`:''}
+
+<div class="reply-form-area" id="reply-form-${d.id}">
+  <textarea class="reply-textarea" id="reply-input-${d.id}" placeholder="Write a reply..." maxlength="500"></textarea>
+  <div class="reply-form-actions">
+    <button class="reply-submit-btn" data-comment-id="${d.id}" data-post-id="${postId}">Post Reply</button>
+    <button class="reply-cancel-btn" data-comment-id="${d.id}">Cancel</button>
+  </div>
+</div>
         </div>`;
       list.appendChild(el);
     }
@@ -984,12 +994,19 @@ async function silentUpdatePosts() {
   snap.forEach(d => {
     const data = d.data();
     newPosts.push({
-      id: d.id, title: data.title || 'Untitled', content: data.content || '',
-      excerpt: data.excerpt || '', featuredImage: data.featuredImage || '',
-      videoLink: data.videoLink || '', practiceLink: data.practiceLink || '',
+      id: d.id,
+      title: data.title || 'Untitled',
+      content: data.content || '',
+      excerpt: data.excerpt || '',
+      featuredImage: data.featuredImage || '',
+      videoLink: data.videoLink || '',
+      practiceLink: data.practiceLink || '',
       subject: data.subject || Object.keys(SUBJECT_LABELS)[0] || 'default',
-      classLevel: data.classLevel || 'ss-1', publishedAt: data.publishedAt,
-      modelUsed: data.modelUsed || '', views: data.views || 0, likes: data.likes || []
+      classLevel: data.classLevel || 'ss-1',
+      publishedAt: data.publishedAt,
+      modelUsed: data.modelUsed || '',
+      views: data.views || 0,
+      likes: data.likes || []
     });
   });
   
