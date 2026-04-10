@@ -47,7 +47,7 @@
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: -0.02em;
-  max-width: 620px;
+  max-width: 900px;
   margin-bottom: 16px;
 }
 
@@ -61,7 +61,7 @@
   font-family: var(--font-serif, 'DM Serif Display', serif);
   font-size: clamp(15px, 2.2vw, 18px);
   line-height: 1.55;
-  max-width: 580px;
+  max-width: 900px;
   padding-bottom: 20px;
   border-left: 4px solid var(--yellow, #ffe500);
   padding-left: 14px;
@@ -627,8 +627,8 @@
   .ln-table-section,
   .ln-features,
   .ln-activity {
-    padding-left: 18px;
-    padding-right: 18px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   .ln-facts-grid {
@@ -642,7 +642,7 @@
   }
 
   .ln-table {
-    min-width: 520px;
+    min-width: 720px;
     font-size: 9px;
   }
 
