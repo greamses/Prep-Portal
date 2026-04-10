@@ -170,7 +170,7 @@ onAuthStateChanged(auth, async u => {
     } catch (_) {}
     
     // ← ADD THIS: reload comments if a post is already open
-    if (activePost) await loadComments(activePost.id);
+    
   }
 });
 
@@ -721,11 +721,15 @@ function copyToClipboard(text) {
 }
 
 // ─── COMMENTS ─────────────────────────────────────────────
+let commentsLoading = false; // add near top with other state vars
+
 async function loadComments(postId) {
-  const list = document.getElementById('commentsList');
-  const cnt = document.getElementById('commentCount');
-  if (!list) return;
-  list.innerHTML = `<div class="loading-spinner" style="grid-column:unset;padding:1.5rem"><div class="spinner-ring"></div></div>`;
+    if (commentsLoading) return; // ← guard
+    commentsLoading = true;
+    const list = document.getElementById('commentsList');
+    const cnt = document.getElementById('commentCount');
+    if (!list) { commentsLoading = false; return; }
+    list.innerHTML = `<div class="loading-spinner" ...></div>`;
   try {
     const snap = await getDocs(query(collection(db, COLLECTION_NAME, postId, 'comments'), orderBy('createdAt', 'asc')));
     if (cnt) cnt.textContent = snap.size;
@@ -771,7 +775,11 @@ async function loadComments(postId) {
     list.querySelectorAll('.reply-toggle-btn').forEach(btn => btn.addEventListener('click', () => toggleReplies(btn.dataset.postId, btn.dataset.commentId)));
     list.querySelectorAll('.reply-submit-btn').forEach(btn => btn.addEventListener('click', () => submitReply(btn.dataset.postId, btn.dataset.commentId)));
     list.querySelectorAll('.reply-cancel-btn').forEach(btn => btn.addEventListener('click', () => { const s = document.getElementById(`replies-${btn.dataset.commentId}`); if (s) s.style.display = 'none'; }));
-  } catch (_) { list.innerHTML = '<p class="no-comments">Could not load comments.</p>'; }
+  } catch (_) {
+  list.innerHTML = '<p class="no-comments">Could not load comments.</p>';
+} finally {
+  commentsLoading = false; 
+}
 }
 
 async function toggleCommentLike(postId, commentId, btn) {
