@@ -43,7 +43,7 @@
 
 .ln-h1 {
   font-family: var(--font-display, 'Unbounded', sans-serif);
-  font-size: clamp(24px, 5vw, 44px);
+  font-size: clamp(2rem, 4vw, 2.5rem);
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: -0.02em;
