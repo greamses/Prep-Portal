@@ -144,7 +144,8 @@
 }
 
 /* ── SYSTEM DARK PREFERENCE (when no data-theme set) ────── */
-@media (prefers-color-scheme: dark) {
+
+/* @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
         --bg: #0a0a0a;
         --app-bg: #111111;
@@ -189,7 +190,7 @@
         --exam-tip-bg: #252200;
         --card-hover: #f0f0f0;
     }
-}
+} */
 
 /* ============================================
    TYPOGRAPHY
