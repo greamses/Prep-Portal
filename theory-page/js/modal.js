@@ -28,21 +28,48 @@ export function initModal() {
   });
   
   document.getElementById('submit-btn').addEventListener('click', async function() {
-    // Get answers from all editors
-    const answers = [];
-    document.querySelectorAll('.paper-editable').forEach((ed, i) => {
-      answers[i] = ed.innerHTML;
-    });
-    
-    this.disabled = true;
-    this.textContent = 'Marking…';
-    _showPhase('results');
-    
-    await TheoryAnalyser.analyseAll(getSlotData(), answers, state.st.name, state.submissionDate);
-    
-    this.disabled = false;
-    this.textContent = 'Submit for Marking';
+  // Snapshot answers and slot data BEFORE switching phases
+  const answers = [];
+  document.querySelectorAll('.paper-editable').forEach((ed, i) => {
+    answers[i] = ed.innerHTML;
   });
+  const slotData = getSlotData();
+  const name = state.st.name;
+  const subDate = state.submissionDate;
+  
+  this.disabled = true;
+  this.textContent = 'Marking…';
+  _showPhase('results');
+  
+  const resultsEl = document.getElementById('theory-results');
+  let succeeded = false;
+  
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    if (attempt === 2) {
+      resultsEl.innerHTML =
+        '<p style="text-align:center;padding:2rem;opacity:.5;font-family:var(--mono,monospace);font-size:.85rem">Retrying…</p>';
+      await new Promise(r => setTimeout(r, 1500));
+    }
+    
+    try {
+      await TheoryAnalyser.analyseAll(slotData, answers, name, subDate);
+      succeeded = true;
+      break;
+    } catch (err) {
+      console.error(`Marking attempt ${attempt} failed:`, err);
+      if (attempt === 2) {
+        resultsEl.innerHTML =
+          `<p style="text-align:center;padding:2rem;color:var(--red,#ff2200);font-family:var(--mono,monospace);font-size:.85rem">
+              Marking failed — click <strong>Try Again</strong> and resubmit.<br>
+              <span style="opacity:.6">${err.message}</span>
+            </p>`;
+      }
+    }
+  }
+  
+  this.disabled = false;
+  this.textContent = 'Submit for Marking';
+});
   
   document.getElementById('try-again-btn').addEventListener('click', () => {
     _showPhase('write');
