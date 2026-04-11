@@ -1,4 +1,4 @@
-/* science-blog.css - Fixed version */
+/* science-blog.css — full light + dark theme support */
 
 *,
 *::before,
@@ -25,18 +25,18 @@ table {
   max-width: 100%;
 }
 
-/* Add smooth scrolling */
 html {
   scroll-behavior: smooth;
 }
 
+/* ─── CONTAINER ───────────────────────────────────────── */
 .science-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem clamp(1rem, 4vw, 2rem);
 }
 
-/* ─── FILTER BAR ─────────────────────────────────────── */
+/* ─── FILTER BAR ──────────────────────────────────────── */
 .filter-bar {
   margin-bottom: 2rem;
   padding-bottom: 1rem;
@@ -75,6 +75,7 @@ html {
   white-space: nowrap;
 }
 
+/* ─── CUSTOM DROPDOWN ─────────────────────────────────── */
 .custom-dropdown {
   position: relative;
   display: inline-block;
@@ -166,7 +167,7 @@ html {
   flex-shrink: 0;
 }
 
-/* Search */
+/* ─── SEARCH ──────────────────────────────────────────── */
 .search-wrapper {
   position: relative;
   width: 100%;
@@ -202,7 +203,6 @@ html {
   box-shadow: var(--shadow-sm);
 }
 
-/* Fix autofill styling */
 .search-input:-webkit-autofill,
 .search-input:-webkit-autofill:hover,
 .search-input:-webkit-autofill:focus {
@@ -217,19 +217,19 @@ html {
   gap: 2rem;
 }
 
+/* ─── CARD ────────────────────────────────────────────── */
 .science-card {
   border: var(--border);
   background: var(--bg);
   box-shadow: var(--shadow-md);
-  transition: transform var(--duration-bounce) var(--ease-bounce), 
-              box-shadow var(--duration-base) var(--ease-default);
+  transition: transform var(--duration-bounce) var(--ease-bounce),
+    box-shadow var(--duration-base) var(--ease-default);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
   will-change: transform;
-  /* Fix for Safari border-radius clipping */
   transform: translateZ(0);
 }
 
@@ -254,13 +254,12 @@ html {
   flex-shrink: 0;
 }
 
-/* Fix for missing images */
 .card-featured-img[src=""],
 .card-featured-img:not([src]) {
   display: none;
 }
 
-.card-featured-img + .card-featured-img-placeholder {
+.card-featured-img+.card-featured-img-placeholder {
   width: 100%;
   height: 180px;
   background: var(--off);
@@ -279,6 +278,7 @@ html {
   min-width: 0;
 }
 
+/* ─── BADGES ──────────────────────────────────────────── */
 .card-badges {
   display: flex;
   gap: 0.4rem;
@@ -301,44 +301,45 @@ html {
   box-shadow: 2px 2px 0 var(--ink);
 }
 
-/* Subject colors */
+/* Subject badge colors — use theme variables */
 .sci-math {
-  background: var(--yellow);
+  background: var(--badge-math-bg);
 }
 
 .sci-chemistry {
-  background: #e8b3ff;
+  background: var(--badge-chemistry-bg);
 }
 
 .sci-biology {
-  background: #b3f0b3;
+  background: var(--badge-biology-bg);
 }
 
 .sci-physics {
-  background: #b3d9ff;
+  background: var(--badge-physics-bg);
 }
 
 .sci-basicscience {
-  background: #ffd6b3;
+  background: var(--badge-basicscience-bg);
 }
 
 .sci-basictech {
-  background: #b3f0e8;
+  background: var(--badge-basictech-bg);
 }
 
-/* Class level colors */
+/* Class level badge colors */
 .cls-primary {
-  background: #c8f5c8;
+  background: var(--badge-cls-primary-bg);
 }
 
 .cls-jss {
-  background: #c8deff;
+  background: var(--badge-cls-jss-bg);
 }
 
 .cls-ss {
-  background: #fff3b3;
+  background: var(--badge-cls-ss-bg);
 }
 
+/* ─── CARD META ───────────────────────────────────────── */
 .card-title {
   font-family: var(--font-display);
   font-weight: var(--weight-black);
@@ -452,7 +453,7 @@ html {
   transform: translateX(5px);
 }
 
-/* ─── SINGLE POST VIEW ───────────────────────────────── */
+/* ─── SINGLE POST VIEW ────────────────────────────────── */
 .single-post-view {
   display: none;
   position: fixed;
@@ -469,7 +470,6 @@ html {
   animation: fadeIn var(--duration-smooth) var(--ease-default);
 }
 
-/* Fix for body scroll when modal is open */
 body:has(.single-post-view.active) {
   overflow: hidden;
 }
@@ -478,6 +478,7 @@ body:has(.single-post-view.active) {
   from {
     opacity: 0;
   }
+  
   to {
     opacity: 1;
   }
@@ -485,7 +486,6 @@ body:has(.single-post-view.active) {
 
 .single-post-content {
   max-width: 1020px;
-  border: 2px solid red ;
   margin: 0 auto;
   padding: 5rem clamp(1rem, 5vw, 2rem) 4rem;
   overflow-wrap: break-word;
@@ -539,6 +539,7 @@ body:has(.single-post-view.active) {
   white-space: nowrap;
 }
 
+/* ─── ACTION BUTTONS ──────────────────────────────────── */
 .reader-actions {
   display: flex;
   gap: 0.6rem;
@@ -577,6 +578,7 @@ body:has(.single-post-view.active) {
 
 .action-btn.liked {
   background: var(--yellow);
+  color: var(--ink);
 }
 
 .action-btn.share-btn:hover {
@@ -584,7 +586,7 @@ body:has(.single-post-view.active) {
   color: var(--bg);
 }
 
-/* ─── RESOURCE LINKS SECTION ─────────────────────────── */
+/* ─── RESOURCE LINKS SECTION ──────────────────────────── */
 .resource-links-section {
   margin-bottom: 2rem;
 }
@@ -710,13 +712,14 @@ body:has(.single-post-view.active) {
   flex: 1;
 }
 
+/* Resource card footer — intentionally always dark */
 .resource-card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 1rem;
-  background: var(--ink);
-  color: var(--bg);
+  background: #111;
+  color: #f0f0f0;
 }
 
 .resource-type-label {
@@ -739,20 +742,70 @@ body:has(.single-post-view.active) {
 }
 
 .resource-card.video-resource .resource-card-footer {
-  background: #c0392b;
+  background: #b91c1c;
 }
 
 .resource-card.practice-resource .resource-card-footer {
-  background: #6b21a8;
+  background: #5b21b6;
 }
 
-/* ─── EMBED MODAL ─────────────────────────────────────── */
+/* ─── PRACTICE THUMB AREA ─────────────────────────────── */
+.practice-thumb-area {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--off);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: var(--border-subtle);
+}
+
+/* Subject-tinted practice card backgrounds */
+.sci-math-bg {
+  background: var(--bg-math-card);
+}
+
+.sci-physics-bg {
+  background: var(--bg-physics-card);
+}
+
+.sci-chemistry-bg {
+  background: var(--bg-chemistry-card);
+}
+
+.sci-biology-bg {
+  background: var(--bg-biology-card);
+}
+
+.practice-large-icon {
+  width: 64px;
+  height: 64px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  z-index: 2;
+}
+
+.practice-platform-tag {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  padding: 2px 6px;
+  font-size: var(--text-body-xxs);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── EMBED MODAL (intentionally always dark) ─────────── */
 .embed-overlay {
   display: none;
   position: fixed;
   inset: 0;
   z-index: 2000;
-  background: rgba(10, 10, 10, 0.88);
+  background: rgba(0, 0, 0, 0.88);
   align-items: center;
   justify-content: center;
   padding: 1rem;
@@ -763,15 +816,14 @@ body:has(.single-post-view.active) {
   display: flex;
 }
 
-/* Fix body scroll when embed is open */
 body:has(.embed-overlay.active) {
   overflow: hidden;
 }
 
 .embed-box {
-  background: var(--ink);
-  border: var(--border);
-  box-shadow: var(--shadow-xl);
+  background: #0f0f0f;
+  border: 2.5px solid #333;
+  box-shadow: 9px 9px 0 rgba(255, 255, 255, 0.08);
   width: 100%;
   max-width: 1200px;
   display: flex;
@@ -784,7 +836,7 @@ body:has(.embed-overlay.active) {
   align-items: center;
   justify-content: space-between;
   padding: 0.6rem 1rem;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #2a2a2a;
   gap: 0.75rem;
   flex-shrink: 0;
 }
@@ -815,19 +867,20 @@ body:has(.embed-overlay.active) {
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
   padding: 0.35rem 0.75rem;
-  background: #333;
-  color: #fff;
-  border: 1px solid #555;
+  background: #1e1e1e;
+  color: #d0d0d0;
+  border: 1px solid #3a3a3a;
   cursor: pointer;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  transition: background var(--duration-fast);
+  transition: background var(--duration-fast), color var(--duration-fast);
 }
 
 .embed-open-btn:hover {
-  background: #555;
+  background: #2e2e2e;
+  color: #ffffff;
 }
 
 .embed-open-btn svg {
@@ -844,8 +897,8 @@ body:has(.embed-overlay.active) {
   letter-spacing: var(--tracking-wide);
   padding: 0.35rem 0.75rem;
   background: transparent;
-  color: #aaa;
-  border: 1px solid #555;
+  color: #888;
+  border: 1px solid #3a3a3a;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -854,9 +907,9 @@ body:has(.embed-overlay.active) {
 }
 
 .embed-close-btn:hover {
-  background: #c0392b;
-  color: #fff;
-  border-color: #c0392b;
+  background: #b91c1c;
+  color: #ffffff;
+  border-color: #b91c1c;
 }
 
 .embed-close-btn svg {
@@ -887,40 +940,10 @@ body:has(.embed-overlay.active) {
   display: block;
 }
 
-/* Fixed fullscreen styles */
-.embed-frame-wrap:fullscreen {
-  width: 100vw !important;
-  height: 100vh !important;
-  max-width: none !important;
-  max-height: none !important;
-  aspect-ratio: auto !important;
-  background-color: #000 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-.embed-frame-wrap:-webkit-full-screen {
-  width: 100vw !important;
-  height: 100vh !important;
-  max-width: none !important;
-  max-height: none !important;
-  aspect-ratio: auto !important;
-  background-color: #000 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-.embed-frame-wrap:-moz-full-screen {
-  width: 100vw !important;
-  height: 100vh !important;
-  max-width: none !important;
-  max-height: none !important;
-  aspect-ratio: auto !important;
-  background-color: #000 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
+/* Fullscreen — all vendor prefixes */
+.embed-frame-wrap:fullscreen,
+.embed-frame-wrap:-webkit-full-screen,
+.embed-frame-wrap:-moz-full-screen,
 .embed-frame-wrap:-ms-fullscreen {
   width: 100vw !important;
   height: 100vh !important;
@@ -932,21 +955,9 @@ body:has(.embed-overlay.active) {
   padding: 0 !important;
 }
 
-.embed-frame-wrap:fullscreen iframe {
-  width: 100vw !important;
-  height: 100vh !important;
-}
-
-.embed-frame-wrap:-webkit-full-screen iframe {
-  width: 100vw !important;
-  height: 100vh !important;
-}
-
-.embed-frame-wrap:-moz-full-screen iframe {
-  width: 100vw !important;
-  height: 100vh !important;
-}
-
+.embed-frame-wrap:fullscreen iframe,
+.embed-frame-wrap:-webkit-full-screen iframe,
+.embed-frame-wrap:-moz-full-screen iframe,
 .embed-frame-wrap:-ms-fullscreen iframe {
   width: 100vw !important;
   height: 100vh !important;
@@ -958,7 +969,7 @@ body:has(.embed-overlay.active) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #111;
+  background: #0a0a0a;
   color: #555;
   font-family: var(--font-mono);
   font-size: var(--text-mono-sm);
@@ -970,7 +981,7 @@ body:has(.embed-overlay.active) {
   border-top-color: transparent;
 }
 
-/* ─── AI REPLY BADGE ──────────────────────────────────── */
+/* ─── AI REPLY BADGE (intentionally always dark) ──────── */
 .ai-reply-badge {
   display: inline-flex;
   align-items: center;
@@ -980,9 +991,9 @@ body:has(.embed-overlay.active) {
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
-  background: #1a1a1a;
+  background: #111;
   color: var(--yellow);
-  border: 1px solid #444;
+  border: 1px solid #333;
   font-family: var(--font-mono);
 }
 
@@ -990,27 +1001,6 @@ body:has(.embed-overlay.active) {
   width: 10px;
   height: 10px;
   flex-shrink: 0;
-}
-
-.single-post-body .worked-example {
-  background: var(--off);
-  padding: 1rem 1.25rem;
-  margin: 1.5rem 0;
-}
-
-.single-post-body .worked-example h4 {
-  font-family: var(--font-display);
-  font-size: var(--text-h3);
-  font-weight: var(--weight-black);
-  margin-bottom: 0.75rem;
-}
-
-.single-post-body .exam-tip {
-  font-size: var(--text-body);
-  background: #fffde7;
-  padding: 0.5rem 0.75rem;
-  margin-top: 0.75rem;
-  font-style: italic;
 }
 
 /* ─── POST BODY ───────────────────────────────────────── */
@@ -1088,7 +1078,7 @@ body:has(.embed-overlay.active) {
 
 .single-post-body th,
 .single-post-body td {
-  border: 1px solid var(--ink);
+  border: 1px solid var(--border-color);
   padding: 0.45rem 0.75rem;
   text-align: left;
   white-space: nowrap;
@@ -1105,9 +1095,10 @@ body:has(.embed-overlay.active) {
   background: var(--off);
 }
 
+/* Code blocks — intentionally always dark (conventional) */
 .single-post-body pre {
-  background: #111418;
-  color: #d4d4d4;
+  background: #0e1117;
+  color: #c9d1d9;
   padding: 1rem 1.25rem;
   margin: 1.25rem 0;
   overflow-x: auto;
@@ -1118,6 +1109,7 @@ body:has(.embed-overlay.active) {
 
 .single-post-body code {
   background: var(--off);
+  color: var(--ink);
   padding: 0.15rem 0.4rem;
   font-size: 0.875em;
   border-radius: var(--radius-sm);
@@ -1125,58 +1117,37 @@ body:has(.embed-overlay.active) {
 
 .single-post-body pre code {
   background: none;
+  color: inherit;
   padding: 0;
   border-radius: 0;
 }
 
-.practice-thumb-area {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
+/* Worked example & exam tip */
+.single-post-body .worked-example {
   background: var(--off);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  border-left: 3px solid var(--yellow);
 }
 
-.sci-math-bg {
-  background: #fffde7;
+.single-post-body .worked-example h4 {
+  font-family: var(--font-display);
+  font-size: var(--text-h3);
+  font-weight: var(--weight-black);
+  margin-bottom: 0.75rem;
 }
 
-.sci-physics-bg {
-  background: #e3f2fd;
+.single-post-body .exam-tip {
+  font-size: var(--text-body);
+  background: var(--exam-tip-bg);
+  color: var(--ink);
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.75rem;
+  font-style: italic;
+  border-left: 3px solid var(--amber);
 }
 
-.sci-chemistry-bg {
-  background: #f3e5f5;
-}
-
-.sci-biology-bg {
-  background: #e8f5e9;
-}
-
-.practice-large-icon {
-  width: 64px;
-  height: 64px;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-  z-index: 2;
-}
-
-.practice-platform-tag {
-  position: absolute;
-  bottom: 0.5rem;
-  right: 0.5rem;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 2px 6px;
-  font-size: var(--text-body-xxs);
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  border-radius: var(--radius-sm);
-}
-
+/* MathJax */
 .single-post-body .MathJax {
   overflow-x: auto;
   max-width: 100%;
@@ -1187,7 +1158,7 @@ body:has(.embed-overlay.active) {
   overflow-x: auto;
 }
 
-/* ─── CLOSE BUTTON ───────────────────────────────────── */
+/* ─── CLOSE BUTTON ────────────────────────────────────── */
 .close-post {
   position: fixed;
   top: 1rem;
@@ -1230,7 +1201,7 @@ body:has(.embed-overlay.active) {
   }
 }
 
-/* ─── COMMENTS ───────────────────────────────────────── */
+/* ─── COMMENTS ────────────────────────────────────────── */
 .comments-section {
   margin-top: 3rem;
   padding-top: 2rem;
@@ -1245,6 +1216,7 @@ body:has(.embed-overlay.active) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  color: var(--ink);
 }
 
 .comments-title svg {
@@ -1277,6 +1249,7 @@ body:has(.embed-overlay.active) {
   font-weight: var(--weight-bold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
+  color: var(--ink);
 }
 
 .comment-time {
@@ -1291,6 +1264,7 @@ body:has(.embed-overlay.active) {
   line-height: var(--leading-normal);
   overflow-wrap: break-word;
   margin: 0 0 0.6rem;
+  color: var(--ink);
 }
 
 .comment-actions {
@@ -1307,7 +1281,7 @@ body:has(.embed-overlay.active) {
   font-size: var(--text-body-xxs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   background: var(--bg);
   cursor: pointer;
   color: var(--muted);
@@ -1331,8 +1305,9 @@ body:has(.embed-overlay.active) {
   color: var(--ink);
 }
 
+/* ─── REPLIES ─────────────────────────────────────────── */
 .replies-section {
-  border-top: 1px solid #d0cdc8;
+  border-top: var(--border-subtle);
   background: var(--bg);
 }
 
@@ -1369,6 +1344,7 @@ body:has(.embed-overlay.active) {
   font-size: var(--text-body-xs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
+  color: var(--ink);
 }
 
 .reply-time {
@@ -1383,6 +1359,7 @@ body:has(.embed-overlay.active) {
   line-height: var(--leading-snug);
   overflow-wrap: break-word;
   margin: 0 0 0.4rem;
+  color: var(--ink);
 }
 
 .reply-like-btn {
@@ -1394,7 +1371,7 @@ body:has(.embed-overlay.active) {
   font-size: var(--text-body-xxs);
   font-weight: var(--weight-bold);
   text-transform: uppercase;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   background: var(--bg);
   cursor: pointer;
   color: var(--muted);
@@ -1417,10 +1394,9 @@ body:has(.embed-overlay.active) {
   color: var(--ink);
 }
 
-
-/* AFTER */
+/* ─── REPLY FORM ──────────────────────────────────────── */
 .reply-form-area {
-  border-top: 1px solid #d0cdc8;
+  border-top: var(--border-subtle);
   padding: 0.75rem 1.1rem;
   background: var(--bg);
 }
@@ -1442,6 +1418,7 @@ body:has(.embed-overlay.active) {
 .reply-textarea:focus {
   outline: none;
   background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--yellow);
 }
 
 .reply-form-actions {
@@ -1456,6 +1433,7 @@ body:has(.embed-overlay.active) {
   text-transform: uppercase;
   padding: 0.45rem 1rem;
   background: var(--yellow);
+  color: var(--ink);
   border: var(--border);
   cursor: pointer;
   box-shadow: 2px 2px 0 var(--ink);
@@ -1481,9 +1459,10 @@ body:has(.embed-overlay.active) {
   text-transform: uppercase;
   padding: 0.45rem 0.75rem;
   background: none;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   cursor: pointer;
   color: var(--muted);
+  transition: all var(--duration-fast) var(--ease-default);
 }
 
 .reply-cancel-btn:hover {
@@ -1491,13 +1470,14 @@ body:has(.embed-overlay.active) {
   color: var(--ink);
 }
 
+/* ─── ADD COMMENT FORM ────────────────────────────────── */
 .no-comments {
   font-family: var(--font-mono);
   font-size: var(--text-body-sm);
   color: var(--muted);
   text-align: center;
   padding: 1.5rem;
-  border: 1px dashed currentColor;
+  border: 1px dashed var(--border-color);
 }
 
 .add-comment-form {
@@ -1533,7 +1513,6 @@ body:has(.embed-overlay.active) {
 
 .comment-textarea:focus {
   outline: none;
-  background: var(--bg);
   box-shadow: inset 0 0 0 2px var(--yellow);
 }
 
@@ -1545,6 +1524,7 @@ body:has(.embed-overlay.active) {
   letter-spacing: var(--tracking-wider);
   padding: 0.55rem 1.4rem;
   background: var(--yellow);
+  color: var(--ink);
   border: var(--border);
   cursor: pointer;
   box-shadow: 3px 3px 0 var(--ink);
@@ -1569,11 +1549,11 @@ body:has(.embed-overlay.active) {
   color: var(--muted);
   padding: 1rem;
   text-align: center;
-  border: 1px dashed currentColor;
+  border: 1px dashed var(--border-color);
   margin-top: 1rem;
 }
 
-/* ─── STATES ─────────────────────────────────────────── */
+/* ─── STATES ──────────────────────────────────────────── */
 .loading-spinner {
   display: flex;
   align-items: center;
@@ -1610,7 +1590,7 @@ body:has(.embed-overlay.active) {
   grid-column: 1 / -1;
 }
 
-/* ─── SCROLL TOP ─────────────────────────────────────── */
+/* ─── SCROLL TOP ──────────────────────────────────────── */
 .scroll-top {
   position: fixed;
   bottom: 1.5rem;
@@ -1656,7 +1636,7 @@ body:has(.embed-overlay.active) {
   }
 }
 
-/* ─── TOAST ──────────────────────────────────────────── */
+/* ─── TOAST ───────────────────────────────────────────── */
 .toast {
   position: fixed;
   bottom: 1.5rem;
@@ -1681,20 +1661,19 @@ body:has(.embed-overlay.active) {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Error state */
 .toast.error {
-  background: #c0392b;
-  border-color: #ff6b6b;
+  background: #b91c1c;
+  border-color: #ef4444;
+  color: #fff;
 }
 
-/* Success state */
 .toast.success {
-  background: #27ae60;
-  border-color: #2ecc71;
+  background: #15803d;
+  border-color: #22c55e;
+  color: #fff;
 }
 
-/* ─── ACCESSIBILITY ──────────────────────────────────── */
-/* Focus visible styles */
+/* ─── ACCESSIBILITY ───────────────────────────────────── */
 .dropdown-btn:focus-visible,
 .search-input:focus-visible,
 .action-btn:focus-visible,
@@ -1710,8 +1689,9 @@ body:has(.embed-overlay.active) {
   outline-offset: 2px;
 }
 
-/* Reduced motion preference */
+/* ─── REDUCED MOTION ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -1726,8 +1706,9 @@ body:has(.embed-overlay.active) {
   }
 }
 
-/* Print styles */
+/* ─── PRINT ───────────────────────────────────────────── */
 @media print {
+
   .filter-bar,
   .reader-actions,
   .close-post,

@@ -5,7 +5,7 @@
 /* LIGHT THEME (default) */
 :root,
 [data-theme="light"] {
-    /* Colors - Light Mode */
+    /* ── Core Palette ───────────────────────── */
     --bg: #ffffff;
     --app-bg: #f0ece3;
     --ink: #0a0a0a;
@@ -18,11 +18,16 @@
     --light-muted: #888888;
     --off: #f7f4ee;
     --paper: #fffef8;
-    --border-color: #0a0a0a;
-    --card-hover: #0a0a0a;
     --text-light: #ffffff;
     
-    /* Shadows & Effects */
+    /* ── Border ─────────────────────────────── */
+    --border-color: #0a0a0a;
+    --border-width: 2.5px;
+    --border-style: solid;
+    --border: var(--border-width) var(--border-style) var(--border-color);
+    --border-subtle: 1px solid rgba(10, 10, 10, 0.15);
+    
+    /* ── Shadows ────────────────────────────── */
     --shadow-sm: 3px 3px 0 var(--ink);
     --shadow-md: 5px 5px 0 var(--ink);
     --shadow-lg: 6px 6px 0 var(--ink);
@@ -30,31 +35,48 @@
     --shadow-cta: 6px 6px 0 rgba(255, 229, 0, 0.35);
     --shadow-cta-hover: 8px 8px 0 rgba(255, 255, 255, 0.15);
     
-    /* Border */
-    --border-width: 2.5px;
-    --border-style: solid;
-    --border: var(--border-width) var(--border-style) var(--border-color);
+    /* ── Subject Badge BGs (light) ──────────── */
+    --badge-math-bg: var(--yellow);
+    --badge-chemistry-bg: #e8b3ff;
+    --badge-biology-bg: #b3f0b3;
+    --badge-physics-bg: #b3d9ff;
+    --badge-basicscience-bg: #ffd6b3;
+    --badge-basictech-bg: #b3f0e8;
+    --badge-cls-primary-bg: #c8f5c8;
+    --badge-cls-jss-bg: #c8deff;
+    --badge-cls-ss-bg: #fff3b3;
     
-    /* Transitions */
+    /* ── Subject Practice Card BGs (light) ─── */
+    --bg-math-card: #fffde7;
+    --bg-physics-card: #e3f2fd;
+    --bg-chemistry-card: #f3e5f5;
+    --bg-biology-card: #e8f5e9;
+    
+    /* ── Exam Tip ────────────────────────────── */
+    --exam-tip-bg: #fffde7;
+    
+    /* ── Card hover ──────────────────────────── */
+    --card-hover: #0a0a0a;
+    
+    /* ── Transitions ────────────────────────── */
     --transition-fast: 0.12s;
     --transition-base: 0.15s;
     --transition-smooth: 0.25s;
     --transition-bounce: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     --transition-char: 0.65s cubic-bezier(0.16, 1, 0.3, 1);
     
-    /* Z-Index Layers */
+    /* ── Z-Index Layers ─────────────────────── */
     --z-nav: 200;
     --z-mobile-nav: 199;
     --z-overlay: 1;
     
-    /* Container Padding */
+    /* ── Spacing ─────────────────────────────── */
     --padding-xs: clamp(18px, 5vw, 56px);
     --padding-sm: clamp(18px, 4vw, 52px);
     --padding-md: clamp(22px, 4vw, 44px);
     --padding-lg: clamp(28px, 5vw, 52px);
     --padding-xl: clamp(56px, 9vw, 90px);
     
-    /* Gap Spacing */
     --gap-xs: 2px;
     --gap-sm: 8px;
     --gap-md: 12px;
@@ -62,39 +84,115 @@
     --gap-xl: 24px;
     --gap-2xl: 36px;
     
-    /* Border Radius */
+    /* ── Border Radius ───────────────────────── */
     --radius-none: 0;
     --radius-sm: 2px;
 }
 
-/* DARK THEME */
+/* ── DARK THEME ─────────────────────────────────────────── */
 [data-theme="dark"] {
+    /* ── Core Palette ───────────────────────── */
     --bg: #0a0a0a;
-    --app-bg: #121212;
+    --app-bg: #111111;
     --ink: #f0f0f0;
     --yellow: #ffea2e;
-    --blue: #3b82f6;
+    --blue: #4d8fff;
     --red: #ff4444;
     --green: #10b981;
     --amber: #f59e0b;
-    --muted: #a0a0a0;
-    --light-muted: #707070;
+    --muted: #999999;
+    --light-muted: #666666;
     --off: #1a1a1a;
     --paper: #0f0f0f;
-    --border-color: #f0f0f0;
-    --card-hover: #f0f0f0;
     --text-light: #0a0a0a;
     
+    /* ── Border ─────────────────────────────── */
+    --border-color: #f0f0f0;
+    --border: var(--border-width) var(--border-style) var(--border-color);
+    --border-subtle: 1px solid rgba(240, 240, 240, 0.15);
+    
+    /* ── Shadows ────────────────────────────── */
     --shadow-sm: 3px 3px 0 var(--ink);
     --shadow-md: 5px 5px 0 var(--ink);
     --shadow-lg: 6px 6px 0 var(--ink);
     --shadow-xl: 9px 9px 0 var(--ink);
     --shadow-cta: 6px 6px 0 rgba(255, 234, 46, 0.35);
     --shadow-cta-hover: 8px 8px 0 rgba(255, 255, 255, 0.15);
+    
+    /* ── Subject Badge BGs (dark — richer/deeper) */
+    --badge-math-bg: var(--yellow);
+    --badge-chemistry-bg: #5a1875;
+    --badge-biology-bg: #1a4d1a;
+    --badge-physics-bg: #1a3560;
+    --badge-basicscience-bg: #5c2a00;
+    --badge-basictech-bg: #0d3d35;
+    --badge-cls-primary-bg: #1a4d1a;
+    --badge-cls-jss-bg: #1a3560;
+    --badge-cls-ss-bg: #4d3a00;
+    
+    /* ── Subject Practice Card BGs (dark) ──── */
+    --bg-math-card: #252200;
+    --bg-physics-card: #0a1929;
+    --bg-chemistry-card: #1a0a20;
+    --bg-biology-card: #0a1f0a;
+    
+    /* ── Exam Tip ────────────────────────────── */
+    --exam-tip-bg: #252200;
+    
+    /* ── Card hover ──────────────────────────── */
+    --card-hover: #f0f0f0;
+}
+
+/* ── SYSTEM DARK PREFERENCE (when no data-theme set) ────── */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: #0a0a0a;
+        --app-bg: #111111;
+        --ink: #f0f0f0;
+        --yellow: #ffea2e;
+        --blue: #4d8fff;
+        --red: #ff4444;
+        --green: #10b981;
+        --amber: #f59e0b;
+        --muted: #999999;
+        --light-muted: #666666;
+        --off: #1a1a1a;
+        --paper: #0f0f0f;
+        --text-light: #0a0a0a;
+        
+        --border-color: #f0f0f0;
+        --border: var(--border-width) var(--border-style) var(--border-color);
+        --border-subtle: 1px solid rgba(240, 240, 240, 0.15);
+        
+        --shadow-sm: 3px 3px 0 var(--ink);
+        --shadow-md: 5px 5px 0 var(--ink);
+        --shadow-lg: 6px 6px 0 var(--ink);
+        --shadow-xl: 9px 9px 0 var(--ink);
+        --shadow-cta: 6px 6px 0 rgba(255, 234, 46, 0.35);
+        --shadow-cta-hover: 8px 8px 0 rgba(255, 255, 255, 0.15);
+        
+        --badge-math-bg: var(--yellow);
+        --badge-chemistry-bg: #5a1875;
+        --badge-biology-bg: #1a4d1a;
+        --badge-physics-bg: #1a3560;
+        --badge-basicscience-bg: #5c2a00;
+        --badge-basictech-bg: #0d3d35;
+        --badge-cls-primary-bg: #1a4d1a;
+        --badge-cls-jss-bg: #1a3560;
+        --badge-cls-ss-bg: #4d3a00;
+        
+        --bg-math-card: #252200;
+        --bg-physics-card: #0a1929;
+        --bg-chemistry-card: #1a0a20;
+        --bg-biology-card: #0a1f0a;
+        
+        --exam-tip-bg: #252200;
+        --card-hover: #f0f0f0;
+    }
 }
 
 /* ============================================
-   TYPOGRAPHY - FONT SIZES WITH CLAMP
+   TYPOGRAPHY
    ============================================ */
 :root {
     /* Font Families */
@@ -129,8 +227,6 @@
     --leading-extra-loose: 1.85;
     --leading-ultra-loose: 1.9;
     
-    /* ===== FONT SIZES (clamp based) ===== */
-    
     /* Display / Hero */
     --text-hero: clamp(52px, 10vw, 108px);
     --text-hero-bg: clamp(80px, 20vw, 220px);
@@ -149,7 +245,7 @@
     --text-body-xs: 10.5px;
     --text-body-xxs: 9.5px;
     
-    /* Mono / Code Text */
+    /* Mono / Code */
     --text-mono-xs: 8.5px;
     --text-mono-sm: 9.5px;
     --text-mono-base: 10px;
@@ -166,45 +262,37 @@
     --text-cta: 10px;
     --text-arrow: 20px;
     
-    /* Responsive Font Adjustments */
     --text-brand-top-mobile: 15px;
     --text-brand-bottom-mobile: 8.5px;
 }
 
 /* ============================================
-   SPACING & LAYOUT VARIABLES
+   SPACING & LAYOUT
    ============================================ */
 :root {
-    /* Navbar */
     --nav-height: 62px;
     --ticker-height: 34px;
     
-    /* Card Dimensions */
     --card-min-height: 220px;
     --subject-card-min-height: 160px;
     
-    /* Grid Gaps */
     --grid-gap-sm: 0;
     --grid-gap-md: 16px;
     --grid-gap-lg: 2rem;
     
-    /* Grid Columns */
     --grid-cols-category: repeat(auto-fit, minmax(320px, 1fr));
     --grid-cols-subject: repeat(auto-fill, minmax(280px, 1fr));
     --grid-cols-drill: repeat(auto-fill, minmax(300px, 1fr));
     --grid-cols-info: repeat(3, 1fr);
     --grid-cols-footer: 2fr 1fr 1fr 1fr;
     
-    /* Hero Layout */
     --hero-gap: clamp(24px, 6vw, 80px);
     --hero-max-width: 440px;
     
-    /* Container Max Widths */
     --container-max-sm: 380px;
     --container-max-md: 500px;
     --container-max-lg: 640px;
     
-    /* Section Spacing */
     --section-padding-y: clamp(56px, 10vw, 110px);
     --section-padding-bottom: clamp(48px, 8vw, 80px);
 }
@@ -213,7 +301,6 @@
    ANIMATION DURATIONS & EASINGS
    ============================================ */
 :root {
-    /* Durations */
     --duration-instant: 0.08s;
     --duration-fast: 0.12s;
     --duration-base: 0.15s;
@@ -224,7 +311,6 @@
     --duration-bounce: 0.5s;
     --duration-char: 0.65s;
     
-    /* Easings */
     --ease-default: ease;
     --ease-in-out: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-bounce: cubic-bezier(0.16, 1, 0.3, 1);
@@ -234,7 +320,6 @@
 /* ============================================
    THEME UTILITY CLASSES
    ============================================ */
-/* Theme Toggle Button Styles */
 .theme-toggle {
     background: none;
     border: none;
@@ -250,25 +335,3 @@
 .theme-toggle:hover {
     transform: scale(1.1);
 }
-
-/* System preference detection support */
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        --bg: #0a0a0a;
-        --app-bg: #121212;
-        --ink: #f0f0f0;
-        --yellow: #ffea2e;
-        --blue: #3b82f6;
-        --red: #ff4444;
-        --green: #10b981;
-        --amber: #f59e0b;
-        --muted: #a0a0a0;
-        --light-muted: #707070;
-        --off: #1a1a1a;
-        --paper: #0f0f0f;
-        --border-color: #f0f0f0;
-        --card-hover: #f0f0f0;
-        --text-light: #0a0a0a;
-    }
-}
-
