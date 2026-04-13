@@ -161,7 +161,7 @@ const siteData = {
         {
             name: "Mathematics",
             description: "Arithmetic · Algebra · Geometry · Calculus · Statistics",
-            link: "./prep-math/index.html",
+            link: "../prep-math/index.html",
             color: "yellow",
             badge: "/Math/",
             cta: "Explore"
