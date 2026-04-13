@@ -4,12 +4,11 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   onAuthStateChanged,
   sendPasswordResetEmail,
-  updateProfile,
-  setPersistence,
-  browserLocalPersistence
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 
 // ── SVG ICONS ──
@@ -35,14 +34,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
-
-setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log('Auth persistence set to LOCAL (survives refreshes)');
-  })
-  .catch((error) => {
-    console.error(' Failed to set persistence:', error);
-  });
 
 const msgBox = document.getElementById('msg');
 const loginPanel = document.getElementById('panel-login');
@@ -72,10 +63,21 @@ function setLoading(btn, isLoading) {
 // ── CHECK IF ALREADY LOGGED IN ──
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    console.log('User already logged in, redirecting to dashboard');
     window.location.href = "dashboard.html";
   }
 });
+
+// ── HANDLE REDIRECT RESULT ──
+getRedirectResult(auth)
+  .then((result) => {
+    if (result) {
+      window.location.href = "dashboard.html";
+    }
+  }).catch((error) => {
+    if (error.code !== 'auth/redirect-cancelled-by-user') {
+      showMsg("Google Login Error: " + error.message);
+    }
+  });
 
 function switchTab(mode) {
   msgBox.className = 'msg';
@@ -122,124 +124,55 @@ document.querySelectorAll('.pw-toggle').forEach(btn => {
   });
 });
 
-// ── REGISTER WITH EMAIL/PASSWORD ──
 document.getElementById('btn-register').addEventListener('click', async (e) => {
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
+  const name = document.getElementById('reg-name').value;
+  const email = document.getElementById('reg-email').value;
   const pass = document.getElementById('reg-pw').value;
-  
   if (!name || !email || pass.length < 6) {
     showMsg("Fill all fields. Password must be 6+ characters.");
     return;
   }
-  
   setLoading(e.target, true);
   try {
-    // Ensure persistence is set before creating user
-    await setPersistence(auth, browserLocalPersistence);
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     await updateProfile(userCredential.user, { displayName: name });
-    console.log('✅ User registered:', userCredential.user.email);
     window.location.href = "dashboard.html";
   } catch (error) {
-    console.error('Registration error:', error);
-    showMsg(getReadableErrorMessage(error.code));
+    showMsg(error.message);
     setLoading(e.target, false);
   }
 });
 
-// ── LOGIN WITH EMAIL/PASSWORD ──
 document.getElementById('btn-login').addEventListener('click', async (e) => {
-  const email = document.getElementById('login-email').value.trim();
+  const email = document.getElementById('login-email').value;
   const pass = document.getElementById('login-pw').value;
-  
-  if (!email || !pass) {
-    showMsg("Enter email and password.");
-    return;
-  }
-  
+  if (!email || !pass) { showMsg("Enter email and password."); return; }
   setLoading(e.target, true);
   try {
-    // Ensure persistence is set before signing in
-    await setPersistence(auth, browserLocalPersistence);
     await signInWithEmailAndPassword(auth, email, pass);
-    console.log('User logged in:', email);
     window.location.href = "dashboard.html";
   } catch (error) {
-    console.error('Login error:', error);
-    showMsg(getReadableErrorMessage(error.code));
+    showMsg("Invalid login credentials.");
     setLoading(e.target, false);
   }
 });
 
-// ── GOOGLE SIGN-IN WITH POPUP (Better persistence) ──
 document.querySelectorAll('.btn-google').forEach(btn => {
   btn.addEventListener('click', async () => {
     try {
-      // Ensure persistence is set
-      await setPersistence(auth, browserLocalPersistence);
-      
-      // Use popup instead of redirect for better state persistence
-      const result = await signInWithPopup(auth, googleProvider);
-      
-      console.log('✅ Google sign-in successful:', result.user.displayName);
-      showMsg("Login successful! Redirecting...", "success");
-      
-      // Redirect to dashboard
-      setTimeout(() => {
-        window.location.href = "dashboard.html";
-      }, 500);
-      
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
-      console.error('Google sign-in error:', error);
-      
-      if (error.code === 'auth/popup-blocked') {
-        showMsg("Popup was blocked. Please allow popups for this site.");
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        showMsg("Sign-in cancelled. Please try again.");
-      } else if (error.code === 'auth/account-exists-with-different-credential') {
-        showMsg("An account already exists with the same email address but different sign-in credentials.");
-      } else {
-        showMsg(getReadableErrorMessage(error.code));
-      }
+      showMsg("Google failed: " + error.message);
     }
   });
 });
 
-// ── PASSWORD RESET ──
 document.getElementById('forgot-link').addEventListener('click', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  
-  if (!email) {
-    showMsg("Enter your email first.");
-    return;
-  }
-  
+  const email = document.getElementById('login-email').value;
+  if (!email) { showMsg("Enter your email first."); return; }
   try {
     await sendPasswordResetEmail(auth, email);
-    showMsg("Password reset link sent to your email!", "success");
-  } catch (error) {
-    console.error('Password reset error:', error);
-    showMsg(getReadableErrorMessage(error.code));
-  }
+    showMsg("Reset link sent!", "success");
+  } catch (error) { showMsg(error.message); }
 });
-
-// ── HELPER: Readable error messages ──
-function getReadableErrorMessage(code) {
-  const messages = {
-    'auth/invalid-email': 'Invalid email address.',
-    'auth/user-disabled': 'This account has been disabled.',
-    'auth/user-not-found': 'No account found with this email.',
-    'auth/wrong-password': 'Incorrect password.',
-    'auth/email-already-in-use': 'Email already in use.',
-    'auth/weak-password': 'Password should be at least 6 characters.',
-    'auth/network-request-failed': 'Network error. Check your connection.',
-    'auth/too-many-requests': 'Too many attempts. Try again later.',
-    'auth/popup-blocked': 'Popup blocked. Allow popups and try again.',
-    'auth/popup-closed-by-user': 'Sign-in cancelled.',
-    'auth/account-exists-with-different-credential': 'Account exists with different sign-in method.',
-    'auth/operation-not-allowed': 'This sign-in method is not enabled.'
-  };
-  return messages[code] || `Authentication error: ${code}`;
-}

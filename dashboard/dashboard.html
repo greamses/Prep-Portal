@@ -177,43 +177,43 @@
   <!-- Logout Functionality Script -->
   <script type="module">
     // Handle navigation logout click
-document.addEventListener('DOMContentLoaded', () => {
-  const navLogout = document.getElementById('nav-logout');
-  
-  if (navLogout) {
-    navLogout.addEventListener('click', async (e) => {
-      e.preventDefault();
+    document.addEventListener('DOMContentLoaded', () => {
+      const navLogout = document.getElementById('nav-logout');
       
-      // Import auth dynamically if not already available
-      const { auth } = await import('../firebase-init.js');
-      const { signOut } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js');
-      
-      try {
-        // Show loading state
-        navLogout.style.opacity = '0.7';
-        navLogout.style.pointerEvents = 'none';
-        navLogout.textContent = 'Logging out...';
-        
-        // Sign out
-        await signOut(auth);
-        console.log('User signed out successfully');
-        
-        // Redirect to login page
-        window.location.href = '../login/login.html';
-        
-      } catch (error) {
-        console.error('Logout error:', error);
-        
-        // Reset button on error
-        navLogout.style.opacity = '1';
-        navLogout.style.pointerEvents = 'auto';
-        navLogout.textContent = 'Logout';
-        
-        alert('Failed to sign out. Please try again.');
+      if (navLogout) {
+        navLogout.addEventListener('click', async (e) => {
+          e.preventDefault();
+          
+          // Import auth dynamically if not already available
+          const { auth } = await import('../firebase-init.js');
+          const { signOut } = await import('https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js');
+          
+          try {
+            // Show loading state
+            navLogout.style.opacity = '0.7';
+            navLogout.style.pointerEvents = 'none';
+            navLogout.textContent = 'Logging out...';
+            
+            // Sign out
+            await signOut(auth);
+            console.log('User signed out successfully');
+            
+            // Redirect to login page
+            window.location.href = '../login/login.html';
+            
+          } catch (error) {
+            console.error('Logout error:', error);
+            
+            // Reset button on error
+            navLogout.style.opacity = '1';
+            navLogout.style.pointerEvents = 'auto';
+            navLogout.textContent = 'Logout';
+            
+            alert('Failed to sign out. Please try again.');
+          }
+        });
       }
     });
-  }
-});
   </script>
   
 </body>
