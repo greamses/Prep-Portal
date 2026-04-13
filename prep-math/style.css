@@ -1775,3 +1775,151 @@
   }
 }
 
+/* ════════════════════════════════════════════════════
+   WORD PROBLEM OVERLAY — BASE STYLES
+   (these come from JS injection; mirrored here for
+   specificity and media-query overrides)
+════════════════════════════════════════════════════ */
+.fs-problem-banner {
+  background: var(--yellow);
+  border: 2.5px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink);
+  width: 100%;
+}
+
+.fs-problem-banner strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: var(--weight-black);
+  letter-spacing: var(--tracking-ultra);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  opacity: 0.55;
+}
+
+.fs-mark-solved-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  padding: 10px 20px;
+  cursor: pointer;
+  border: 2.5px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  background: var(--yellow);
+  color: var(--ink);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fs-mark-solved-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+/* ════════════════════════════════════════════════════
+   WORD PROBLEM OVERLAY — MOBILE FIXES  ≤ 560px
+════════════════════════════════════════════════════ */
+@media (max-width: 560px) {
+  
+  /* Footer: stack hint row above action buttons */
+  .fs-ftr {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  
+  /* Hint row takes full width so banner never competes with close button */
+  .fs-hint-row {
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  /* Banner: smaller font + tighter padding on phone */
+  .fs-problem-banner {
+    font-size: 12.5px;
+    line-height: 1.6;
+    padding: 11px 13px;
+    margin-bottom: 6px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  
+  .fs-problem-banner strong {
+    font-size: 8px;
+    margin-bottom: 5px;
+  }
+  
+  /* Hint text: slightly smaller */
+  .fs-hint-txt {
+    font-size: 12px;
+  }
+  
+  /* Button row: NEW + MARK SOLVED side by side, full width */
+  .fs-btn-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+  
+  /* Mark solved: no longer absolute, sits in normal flow */
+  .fs-mark-solved-btn {
+    position: static;
+    flex: 1;
+    padding: 9px 14px;
+    font-size: 10px;
+    box-shadow: 2px 2px 0 var(--ink);
+    justify-content: center;
+  }
+  
+  /* NEW button: equal flex alongside mark solved */
+  .fs-new-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 9px 14px;
+    font-size: 9px;
+  }
+  
+  /* Canvas: give it a defined height so footer doesn't get squeezed off screen */
+  .fs-canvas-wrap {
+    flex: none;
+    height: 42dvh;
+    min-height: 160px;
+  }
+  
+  #gm-fs-canvas {
+    min-height: unset;
+    height: 100%;
+  }
+  
+  /* Close button: keep it accessible but not taking row space */
+  .fs-close-btn {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+  }
+  
+  .fs-hdr {
+    position: relative;
+    padding-right: 52px;
+    /* clear the absolute close btn */
+  }
+}

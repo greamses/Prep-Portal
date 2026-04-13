@@ -565,73 +565,19 @@ function ensureWordProblemUI() {
         hintEl.parentNode.insertBefore(banner, hintEl);
     }
     
-    // Inject "Mark as Solved" button into the overlay controls area
-    const overlay = document.getElementById('fs-overlay');
-    if (overlay && !document.getElementById('fs-mark-solved-btn')) {
+    // Inject "Mark as Solved" button into the footer button row
+    // It sits alongside the NEW button so it flows naturally on all screen sizes
+    const fsHdr = document.getElementById('fs-hdr') || document.querySelector('.fs-hdr');
+    if (fsHdr && !document.getElementById('fs-mark-solved-btn')) {
         const btn = document.createElement('button');
         btn.id = 'fs-mark-solved-btn';
-        btn.className = 'btn btn-yellow fs-mark-solved-btn';
+        btn.className = 'fs-mark-solved-btn';
         btn.textContent = 'Mark as Solved ✓';
         btn.style.display = 'none';
         btn.addEventListener('click', handleSuccess);
-        overlay.appendChild(btn);
+        // Insert after the NEW button (first child of header)
+        fsHdr.insertBefore(btn, fsHdr.children[1] || null);
     }
-    
-    // Inject styles
-    const style = document.createElement('style');
-    style.textContent = `
-        .fs-problem-banner {
-            background: var(--color-yellow, #ffe500);
-            border: 2.5px solid var(--color-ink, #1a1a1a);
-            box-shadow: 3px 3px 0 var(--color-ink, #1a1a1a);
-            padding: 14px 16px;
-            margin-bottom: 12px;
-            font-family: var(--font-mono, 'JetBrains Mono', monospace);
-            font-size: 14px;
-            line-height: 1.65;
-            color: var(--color-ink, #1a1a1a);
-        }
-        .fs-problem-banner strong {
-            display: block;
-            font-family: var(--font-display, 'Unbounded', sans-serif);
-            font-size: 10px;
-            font-weight: 900;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-            opacity: .6;
-        }
-        .fs-mark-solved-btn {
-            position: absolute;
-            bottom: 16px;
-            right: 16px;
-            font-family: var(--font-display, 'Unbounded', sans-serif);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .06em;
-            text-transform: uppercase;
-            padding: 10px 20px;
-            cursor: pointer;
-            border: 2.5px solid var(--color-ink, #1a1a1a);
-            box-shadow: 3px 3px 0 var(--color-ink, #1a1a1a);
-            background: var(--color-yellow, #ffe500);
-        }
-        .fs-mark-solved-btn:hover {
-            transform: translate(-1px, -1px);
-            box-shadow: 4px 4px 0 var(--color-ink, #1a1a1a);
-        }
-        @media (max-width: 768px) {
-            #gm-fs-canvas { min-height: 200px; }
-            .fs-canvas-wrap { padding: 10px; }
-        }
-        @media (min-width: 769px) and (max-width: 1024px) {
-            #gm-fs-canvas { min-height: 250px; }
-        }
-        @media (min-width: 1025px) {
-            #gm-fs-canvas { min-height: 300px; }
-        }
-    `;
-    document.head.appendChild(style);
 }
 
 // ─── 10. CANVAS INTEGRATION ───────────────────────────────────
