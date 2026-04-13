@@ -1,9 +1,7 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { auth, googleProvider } from "../firebase-init.js";
 import {
-  getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  GoogleAuthProvider,
   signInWithRedirect,
   getRedirectResult,
   onAuthStateChanged,
@@ -20,20 +18,6 @@ const ICON_EYE_CLOSED = `<svg xmlns="http://www.w3.org/2000/svg" width="20" heig
 const style = document.createElement('style');
 style.textContent = `@keyframes eyeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }`;
 document.head.appendChild(style);
-
-const firebaseConfig = {
-  apiKey: "AIzaSyA2N3uI_XfSIVsto2Ku1g_qSezmD3qFmbk",
-  authDomain: "prep-portal-2026.web.app",
-  projectId: "prep-portal-2026",
-  storageBucket: "prep-portal-2026.firebasestorage.app",
-  messagingSenderId: "837672918701",
-  appId: "1:837672918701:web:e64c0c25dc01b542e23024",
-  measurementId: "G-2PDS7LL77R"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const googleProvider = new GoogleAuthProvider();
 
 const msgBox = document.getElementById('msg');
 const loginPanel = document.getElementById('panel-login');
@@ -107,23 +91,19 @@ footLink.addEventListener('click', () => {
   switchTab(isLogin ? 'register' : 'login');
 });
 
-// ── UPDATED PASSWORD TOGGLE WITH SVG ──
+// ── PASSWORD TOGGLE ──
 document.querySelectorAll('.pw-toggle').forEach(btn => {
-  // Set initial state
   btn.innerHTML = ICON_EYE_CLOSED;
   
   btn.addEventListener('click', () => {
     const input = document.getElementById(btn.dataset.target);
     const isVisible = input.type === 'text';
-    
-    // Toggle type
     input.type = isVisible ? 'password' : 'text';
-    
-    // Toggle SVG with small animation
     btn.innerHTML = isVisible ? ICON_EYE_CLOSED : ICON_EYE_OPEN;
   });
 });
 
+// ── REGISTER ──
 document.getElementById('btn-register').addEventListener('click', async (e) => {
   const name = document.getElementById('reg-name').value;
   const email = document.getElementById('reg-email').value;
@@ -143,6 +123,7 @@ document.getElementById('btn-register').addEventListener('click', async (e) => {
   }
 });
 
+// ── SIGN IN ──
 document.getElementById('btn-login').addEventListener('click', async (e) => {
   const email = document.getElementById('login-email').value;
   const pass = document.getElementById('login-pw').value;
@@ -157,6 +138,7 @@ document.getElementById('btn-login').addEventListener('click', async (e) => {
   }
 });
 
+// ── GOOGLE SIGN IN ──
 document.querySelectorAll('.btn-google').forEach(btn => {
   btn.addEventListener('click', async () => {
     try {
@@ -167,6 +149,7 @@ document.querySelectorAll('.btn-google').forEach(btn => {
   });
 });
 
+// ── FORGOT PASSWORD ──
 document.getElementById('forgot-link').addEventListener('click', async (e) => {
   e.preventDefault();
   const email = document.getElementById('login-email').value;
