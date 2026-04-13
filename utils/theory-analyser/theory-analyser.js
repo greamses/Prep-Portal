@@ -14,12 +14,13 @@
     _midx = 0;
   
   const MODELS = [
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent',
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent',
-    'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent',
-    'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent',
-    'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent',
-  ];
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent',
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent',
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent', // v1 → v1beta
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', // v1 → v1beta
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent', // v1 → v1beta
+];
+  
   const QUOTA = new Set([429, 503, 529]);
   
   /* ─── Key resolver — checks multiple sources ─── */
