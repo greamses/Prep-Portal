@@ -20,6 +20,16 @@ const TOPICS_BY_CLASS = {
     ss3: ["Advanced Factorization", "Binomial Theorem", "Coordinate Geometry"],
 };
 
+// Topics that need a word problem shown as text — student writes their own equation
+const WORD_PROBLEM_TOPICS = new Set([
+    "Basic Patterns",
+    "Number Sequences",
+    "Word Problems",
+    "Ratios Intro",
+    "Area & Perimeter",
+    "Ratios & Proportion",
+    "Word Problems (Algebra)",
+]);
 
 // Canvas settings for responsive design
 const canvasFullscreenSettings = {
@@ -78,15 +88,15 @@ const GEMINI_MODELS = [
 ];
 
 let appState = {
-    classId:     null,
-    topic:       null,
-    method:      'transfer',
+    classId: null,
+    topic: null,
+    method: 'transfer',
     solvedCount: 0,
     currentGoal: null,
-    gmCanvas:    null,
-    isGMLoaded:  false,
-    geminiKey:   null,
-    layoutManager: null, // For responsive font sizing
+    gmCanvas: null,
+    isGMLoaded: false,
+    geminiKey: null,
+    layoutManager: null,
 };
 
 // ─── 2. CUSTOM MODAL SYSTEM ───────────────────────────────────
@@ -150,7 +160,7 @@ function ensureModal() {
 .pp-modal-box.type-success .pp-modal-hd{border-bottom:2px solid #4caf50;padding-bottom:10px;}
 .pp-modal-box.type-success .pp-modal-ok-btn{background:#4caf50;border-color:#4caf50;color:#fff;}
 </style>`);
-
+    
     document.getElementById('pp-modal-ok').addEventListener('click', closeModal);
     document.getElementById('pp-modal-overlay').addEventListener('click', (e) => {
         if (e.target === document.getElementById('pp-modal-overlay')) closeModal();
@@ -158,19 +168,19 @@ function ensureModal() {
 }
 
 const MODAL_META = {
-    info:    { icon: 'ℹ', title: 'Note' },
-    warn:    { icon: '⚠', title: 'Heads up' },
-    error:   { icon: '✕', title: 'Error' },
+    info: { icon: 'ℹ', title: 'Note' },
+    warn: { icon: '⚠', title: 'Heads up' },
+    error: { icon: '✕', title: 'Error' },
     success: { icon: '✓', title: 'Correct!' },
 };
 
 function ppAlert(message, type = 'info') {
     ensureModal();
     const meta = MODAL_META[type] || MODAL_META.info;
-    document.getElementById('pp-modal-box').className  = `pp-modal-box type-${type}`;
-    document.getElementById('pp-modal-icon').textContent  = meta.icon;
+    document.getElementById('pp-modal-box').className = `pp-modal-box type-${type}`;
+    document.getElementById('pp-modal-icon').textContent = meta.icon;
     document.getElementById('pp-modal-title').textContent = meta.title;
-    document.getElementById('pp-modal-body').textContent  = message;
+    document.getElementById('pp-modal-body').textContent = message;
     document.getElementById('pp-modal-overlay').style.display = 'flex';
     document.getElementById('pp-modal-ok').focus();
 }
@@ -195,10 +205,10 @@ function showStatus(msg, type = 'info') {
 
 function applyGeminiKey(key) {
     appState.geminiKey = key || null;
-
+    
     const display = document.getElementById('gemini-key-display');
-    const dot     = document.getElementById('gemini-key-dot');
-
+    const dot = document.getElementById('gemini-key-dot');
+    
     if (key) {
         if (display) {
             display.value = key;
@@ -210,7 +220,7 @@ function applyGeminiKey(key) {
             dot.classList.remove('key-dot--missing');
             dot.title = 'Gemini key ready';
         }
-        showStatus('Gemini key loaded — AI equations enabled.', 'info');
+        showStatus('Gemini key loaded — AI questions enabled.', 'info');
     } else {
         if (display) {
             display.value = '';
@@ -242,7 +252,8 @@ if (window.PrepPortalKeys?.gemini) {
 document.addEventListener('DOMContentLoaded', () => {
     initCustomDropdown();
     initMethodSelector();
-
+    ensureWordProblemUI();
+    
     if (typeof loadGM !== 'undefined') {
         loadGM(initSystem, { version: 'latest' });
     } else {
@@ -250,13 +261,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-
-
 // Responsive font size settings
 function getResponsiveFontSettings() {
     const isSmallScreen = window.innerWidth <= 768;
     const isTablet = window.innerWidth <= 1024 && window.innerWidth > 768;
-    
     return {
         mayAdjustCanvasHeight: true,
         minCanvasHeight: isSmallScreen ? 200 : (isTablet ? 250 : 300),
@@ -267,30 +275,19 @@ function getResponsiveFontSettings() {
     };
 }
 
-// Handle window resize for responsive font sizing
-// Handle window resize for responsive font sizing
 function handleResponsiveResize() {
     if (appState.gmCanvas) {
         try {
             const settings = getResponsiveFontSettings();
-            
-            // Try to use layoutManager if it exists and has the method
             if (appState.layoutManager && typeof appState.layoutManager.updateLayout === 'function') {
-                appState.layoutManager = gmath.autoLayout.autoLayoutCanvasForOutlier(
-                    appState.gmCanvas,
-                    settings
-                );
+                appState.layoutManager = gmath.autoLayout.autoLayoutCanvasForOutlier(appState.gmCanvas, settings);
             }
-            
-            // Adjust font size if needed
             if (settings.mayAdjustFontSize && appState.gmCanvas.controller) {
                 const currentFontSize = appState.gmCanvas.controller.get_font_size();
                 if (currentFontSize > settings.maxFontSize) {
                     appState.gmCanvas.controller.set_font_size(settings.maxFontSize);
                 }
             }
-            
-            // Force view update as fallback
             if (appState.gmCanvas.view && typeof appState.gmCanvas.view.update === 'function') {
                 appState.gmCanvas.view.update();
             }
@@ -300,7 +297,6 @@ function handleResponsiveResize() {
     }
 }
 
-// Debounced resize handler
 let resizeTimeout;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
@@ -314,16 +310,16 @@ function initSystem() {
 }
 
 function initCustomDropdown() {
-    const trigger      = document.getElementById('cdd-trigger');
-    const panel        = document.getElementById('cdd-panel');
-    const options      = document.querySelectorAll('.cdd-option');
+    const trigger = document.getElementById('cdd-trigger');
+    const panel = document.getElementById('cdd-panel');
+    const options = document.querySelectorAll('.cdd-option');
     const valueDisplay = document.getElementById('cdd-value');
-
+    
     trigger.addEventListener('click', (e) => {
         e.stopPropagation();
         panel.classList.toggle('open');
     });
-
+    
     options.forEach(opt => {
         opt.addEventListener('click', () => {
             appState.classId = opt.dataset.value;
@@ -333,7 +329,7 @@ function initCustomDropdown() {
             document.getElementById('stat-class').innerText = opt.innerText;
         });
     });
-
+    
     document.addEventListener('click', () => panel.classList.remove('open'));
 }
 
@@ -355,7 +351,7 @@ window.selectTopic = (btn, topic) => {
 function initMethodSelector() {
     const chips = document.querySelectorAll('.method-chip');
     chips.forEach(chip => {
-        chip.addEventListener('click', function () {
+        chip.addEventListener('click', function() {
             chips.forEach(c => c.classList.remove('active'));
             this.classList.add('active');
             appState.method = this.dataset.method;
@@ -363,14 +359,37 @@ function initMethodSelector() {
     });
 }
 
-// ─── 6. GEMINI EQUATION GENERATOR ────────────────────────────
+// ─── 6. GEMINI QUESTION GENERATOR ────────────────────────────
 
 async function generateWithGemini(classId, topic, method, apiKey) {
-    const hintStyle = method === 'balancing'
-        ? 'phrase the hint using the balancing method (do the same to both sides)'
-        : 'phrase the hint using the transposing/transfer method (move terms across the equals sign)';
+    const isWordProblem = WORD_PROBLEM_TOPICS.has(topic);
+    
+    // Random seed numbers injected into prompt to prevent repetition
+    const a = Math.floor(Math.random() * 80) + 5;
+    const b = Math.floor(Math.random() * 50) + 3;
+    const c = Math.floor(Math.random() * 20) + 2;
+    
+    const hintStyle = method === 'balancing' ?
+        'phrase the hint using the balancing method (do the same to both sides)' :
+        'phrase the hint using the transposing/transfer method (move terms across the equals sign)';
+    
+    const prompt = isWordProblem ?
+        `You are a math question generator for Nigerian school students.
 
-    const prompt = `You are an algebra question generator for Nigerian school students.
+Generate ONE word problem for the topic "${topic}" at the "${classId}" level (P1-P6 = Primary, JSS1-JSS3 = Junior Secondary, SS1-SS3 = Senior Secondary).
+
+STRICT RULES:
+- Write a realistic, age-appropriate scenario. Use Nigerian names, places, or contexts where natural.
+- The student will read the problem and write the equation themselves — do NOT include any equation in the problem field.
+- The "hint" is one friendly sentence giving a formula or approach, not the answer.
+- Vary the numbers every time. Use these seed values as a guide for this question: ${a}, ${b}, ${c}.
+- Match difficulty: Primary = simple counting/ratios; JSS = multi-step; SS = algebraic word problems.
+
+Respond with ONLY a raw JSON object, nothing else.
+Example: {"type":"word","problem":"A trader bought ${a} oranges and sold ${b} of them. How many oranges does she have left?","hint":"Subtract the number sold from the number bought."}`
+        
+        :
+        `You are an algebra question generator for Nigerian school students.
 
 Generate ONE algebra question for the topic "${topic}" at the "${classId}" level (P1-P6 = Primary, JSS1-JSS3 = Junior Secondary, SS1-SS3 = Senior Secondary).
 
@@ -380,13 +399,13 @@ STRICT RULES:
 - The "goal" must be the exact simplified solution in ASCII with no spaces (e.g. "x=7" or "x=3,y=2").
 - The "hint" is one friendly sentence. ${hintStyle}.
 - Match difficulty: Primary = whole-number arithmetic; JSS = single-variable linear; SS = quadratic/simultaneous.
-- Vary the numbers — do not always use the same values.
+- Vary the numbers every time. Use these seed values as a guide: ${a}, ${b}, ${c}. Do NOT always use 7 or simple round numbers.
 
 Respond with ONLY a raw JSON object, nothing else.
-Example: {"eq":"2*x-4=10","goal":"x=7","hint":"Add 4 to both sides, then divide by 2."}`;
-
+Example: {"type":"equation","eq":"${b}*x-${c}=${a}","goal":"x=${Math.round((a + c) / b)}","hint":"Add ${c} to both sides, then divide by ${b}."}`;
+    
     let lastError = null;
-
+    
     for (const model of GEMINI_MODELS) {
         const url = `${model.url}?key=${encodeURIComponent(apiKey)}`;
         try {
@@ -396,40 +415,47 @@ Example: {"eq":"2*x-4=10","goal":"x=7","hint":"Add 4 to both sides, then divide 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.9, maxOutputTokens: 300 }
+                    generationConfig: { temperature: 1.0, maxOutputTokens: 300 }
                 })
             });
-
+            
             if (res.status === 404) {
                 console.warn(`[AlgebraLab] ${model.label} not found, trying next…`);
                 continue;
             }
-
+            
             if (!res.ok) {
                 const errText = await res.text().catch(() => '');
                 throw new Error(`HTTP ${res.status} — ${errText.slice(0, 200)}`);
             }
-
-            const data  = await res.json();
-            const raw   = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+            
+            const data = await res.json();
+            const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
             const clean = raw.replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').trim();
-
             const parsed = JSON.parse(clean);
-
-            if (!parsed.eq || !parsed.goal || !parsed.hint) {
-                throw new Error(`Incomplete fields in response: ${clean}`);
+            
+            // Validate by type
+            if (parsed.type === 'word') {
+                if (!parsed.problem || !parsed.hint) {
+                    throw new Error(`Incomplete word problem fields: ${clean}`);
+                }
+            } else {
+                if (!parsed.eq || !parsed.goal || !parsed.hint) {
+                    throw new Error(`Incomplete equation fields: ${clean}`);
+                }
+                parsed.type = 'equation';
+                parsed.goal = parsed.goal.replace(/\s/g, '');
             }
-
-            parsed.goal = parsed.goal.replace(/\s/g, '');
-            console.log(`[AlgebraLab] ✓ Equation from ${model.label}:`, parsed);
+            
+            console.log(`[AlgebraLab] ✓ Question from ${model.label}:`, parsed);
             return parsed;
-
+            
         } catch (err) {
             console.warn(`[AlgebraLab] ${model.label} failed:`, err.message);
             lastError = err;
         }
     }
-
+    
     throw lastError || new Error('All Gemini models failed.');
 }
 
@@ -437,15 +463,45 @@ Example: {"eq":"2*x-4=10","goal":"x=7","hint":"Add 4 to both sides, then divide 
 
 function getFallbackTemplate(topic) {
     const templates = {
-        "Missing Numbers (1-10)": { eq: "x+3=10",     goal: "x=7", hint: "What number plus 3 equals 10?" },
-        "Simple Addition":        { eq: "x+5=12",     goal: "x=7", hint: "Subtract 5 from both sides." },
-        "Linear Equations":       { eq: "2*x-4=10",   goal: "x=7", hint: "Add 4 to both sides, then divide by 2." },
-        "Solving for X":          { eq: "3*x=15",     goal: "x=5", hint: "Divide both sides by 3." },
-        "Quadratic Equations":    { eq: "x^2-5*x+6=0", goal: "x=2", hint: "Factorise — find two numbers that multiply to 6 and add to -5." },
-        "Simultaneous Equations": { eq: "x+y=5",      goal: "x=3", hint: "Use substitution or elimination." },
-        "Factorization":          { eq: "x^2-9=0",    goal: "x=3", hint: "Difference of two squares: (x+3)(x-3)=0." },
+        // Equation topics
+        "Missing Numbers (1-10)": { type: 'equation', eq: "x+3=10", goal: "x=7", hint: "What number plus 3 equals 10?" },
+        "Missing Numbers (1-20)": { type: 'equation', eq: "x+8=17", goal: "x=9", hint: "Subtract 8 from both sides." },
+        "Missing Numbers (1-100)": { type: 'equation', eq: "x+34=71", goal: "x=37", hint: "Subtract 34 from both sides." },
+        "Simple Addition": { type: 'equation', eq: "x+5=12", goal: "x=7", hint: "Subtract 5 from both sides." },
+        "Addition & Subtraction": { type: 'equation', eq: "x-6=13", goal: "x=19", hint: "Add 6 to both sides." },
+        "Multiplication Intro": { type: 'equation', eq: "4*x=28", goal: "x=7", hint: "Divide both sides by 4." },
+        "Simple Division": { type: 'equation', eq: "x/3=9", goal: "x=27", hint: "Multiply both sides by 3." },
+        "Multiplication & Division": { type: 'equation', eq: "5*x=45", goal: "x=9", hint: "Divide both sides by 5." },
+        "Fractions Intro": { type: 'equation', eq: "x/4=3", goal: "x=12", hint: "Multiply both sides by 4." },
+        "Fractions & Decimals": { type: 'equation', eq: "x/5=2", goal: "x=10", hint: "Multiply both sides by 5." },
+        "Order of Operations": { type: 'equation', eq: "2*(x+3)=14", goal: "x=4", hint: "Divide by 2 first, then subtract 3." },
+        "Solving for X": { type: 'equation', eq: "3*x=15", goal: "x=5", hint: "Divide both sides by 3." },
+        "Algebraic Simplification": { type: 'equation', eq: "3*x+2*x=25", goal: "x=5", hint: "Collect like terms first." },
+        "Linear Equations": { type: 'equation', eq: "2*x-4=10", goal: "x=7", hint: "Add 4 to both sides, then divide by 2." },
+        "Brackets & Fractions": { type: 'equation', eq: "3*(x-2)=12", goal: "x=6", hint: "Expand brackets, then solve for x." },
+        "Indices & Powers": { type: 'equation', eq: "x^2=49", goal: "x=7", hint: "Take the square root of both sides." },
+        "Number Bases": { type: 'equation', eq: "x+10=21", goal: "x=11", hint: "Solve for x in base 10." },
+        "Simultaneous Equations": { type: 'equation', eq: "x+y=5", goal: "x=3", hint: "Use substitution or elimination." },
+        "Quadratic Equations": { type: 'equation', eq: "x^2-5*x+6=0", goal: "x=2", hint: "Factorise — find two numbers that multiply to 6 and add to -5." },
+        "Factorization": { type: 'equation', eq: "x^2-9=0", goal: "x=3", hint: "Difference of two squares: (x+3)(x-3)=0." },
+        "Sets & Sequences": { type: 'equation', eq: "2*x+1=15", goal: "x=7", hint: "Subtract 1 from both sides, then divide by 2." },
+        "Linear Inequalities": { type: 'equation', eq: "2*x+3=11", goal: "x=4", hint: "Subtract 3, then divide by 2." },
+        "Partial Fractions": { type: 'equation', eq: "x+3=8", goal: "x=5", hint: "Subtract 3 from both sides." },
+        "Advanced Factorization": { type: 'equation', eq: "x^2+5*x+6=0", goal: "x=-2", hint: "Factorise into two brackets." },
+        "Binomial Theorem": { type: 'equation', eq: "x^2+2*x+1=0", goal: "x=-1", hint: "This is a perfect square — (x+1)^2=0." },
+        "Coordinate Geometry": { type: 'equation', eq: "2*x+y=10", goal: "y=4", hint: "Substitute x=3 and solve for y." },
+        
+        // Word problem topics
+        "Basic Patterns": { type: 'word', problem: "Amaka arranges tiles in a pattern: 2, 4, 6, 8, … What will the 10th number in the pattern be?", hint: "Each term increases by the same amount — find the rule." },
+        "Number Sequences": { type: 'word', problem: "A number sequence starts at 5 and each term is 3 more than the last. What is the 7th term?", hint: "Add 3 repeatedly starting from 5, or use: first term + (position − 1) × common difference." },
+        "Word Problems": { type: 'word', problem: "Chukwu has 48 mangoes and shares them equally among 6 friends. How many mangoes does each friend get?", hint: "Divide the total number of mangoes by the number of friends." },
+        "Ratios Intro": { type: 'word', problem: "A recipe uses flour and sugar in the ratio 3:1. If you use 12 cups of flour, how many cups of sugar do you need?", hint: "If flour is 3 parts, find what 1 part equals, then scale the sugar." },
+        "Area & Perimeter": { type: 'word', problem: "A rectangular garden is 8 m long and 5 m wide. What is its perimeter and what is its area?", hint: "Perimeter = 2 × (length + width). Area = length × width." },
+        "Ratios & Proportion": { type: 'word', problem: "If 4 pens cost ₦120, how much will 7 pens cost at the same rate?", hint: "Find the cost of 1 pen first, then multiply by 7." },
+        "Word Problems (Algebra)": { type: 'word', problem: "Tunde is 4 years older than his sister Bisi. The sum of their ages is 28. How old is each person?", hint: "Let Bisi's age = x, then Tunde's age = x + 4. Write an equation for their sum." },
     };
-    return templates[topic] || { eq: "x+2=5", goal: "x=3", hint: "Solve for x." };
+    
+    return templates[topic] || { type: 'equation', eq: "x+2=5", goal: "x=3", hint: "Solve for x." };
 }
 
 // ─── 8. CORE GENERATE FLOW ────────────────────────────────────
@@ -459,14 +515,16 @@ window.generateQuestion = async () => {
         ppAlert("The math engine is still loading. Give it a moment and try again.", 'info');
         return;
     }
-
+    
     const genBtn = document.getElementById('gen-btn');
     genBtn.classList.add('loading');
     genBtn.disabled = true;
-    showStatus('Generating equation with Gemini AI…', 'info');
-
+    
+    const isWordProblem = WORD_PROBLEM_TOPICS.has(appState.topic);
+    showStatus(isWordProblem ? 'Generating word problem…' : 'Generating equation with Gemini AI…', 'info');
+    
     let data;
-
+    
     if (appState.geminiKey) {
         try {
             data = await generateWithGemini(
@@ -475,120 +533,189 @@ window.generateQuestion = async () => {
                 appState.method,
                 appState.geminiKey
             );
-            showStatus(`Equation ready — ${appState.topic}`, 'info');
+            showStatus(`Question ready — ${appState.topic}`, 'info');
         } catch (err) {
             console.error('[AlgebraLab] Gemini error:', err);
             data = getFallbackTemplate(appState.topic);
-            showStatus(`AI generation failed (${err.message}) — using a sample equation.`, 'warn');
+            showStatus(`AI generation failed (${err.message}) — using a sample question.`, 'warn');
         }
     } else {
         data = getFallbackTemplate(appState.topic);
-        showStatus('No Gemini key — showing a sample equation. Add your key in API Keys to enable AI equations.', 'warn');
+        showStatus('No Gemini key — showing a sample question. Add your key in API Keys to enable AI questions.', 'warn');
     }
-
+    
     openOverlay(data);
-
+    
     genBtn.classList.remove('loading');
     genBtn.disabled = false;
 };
 
-// ─── 9. CANVAS INTEGRATION WITH RESPONSIVE FONTS ──────────────
+// ─── 9. WORD PROBLEM UI INJECTION ────────────────────────────
 
-// ─── 9. CANVAS INTEGRATION WITH RESPONSIVE FONTS ──────────────
+function ensureWordProblemUI() {
+    if (document.getElementById('fs-problem-banner')) return;
+    
+    // Inject problem banner above the hint text inside the overlay
+    const hintEl = document.getElementById('fs-hint-text');
+    if (hintEl) {
+        const banner = document.createElement('div');
+        banner.id = 'fs-problem-banner';
+        banner.className = 'fs-problem-banner';
+        banner.style.display = 'none';
+        hintEl.parentNode.insertBefore(banner, hintEl);
+    }
+    
+    // Inject "Mark as Solved" button into the overlay controls area
+    const overlay = document.getElementById('fs-overlay');
+    if (overlay && !document.getElementById('fs-mark-solved-btn')) {
+        const btn = document.createElement('button');
+        btn.id = 'fs-mark-solved-btn';
+        btn.className = 'btn btn-yellow fs-mark-solved-btn';
+        btn.textContent = 'Mark as Solved ✓';
+        btn.style.display = 'none';
+        btn.addEventListener('click', handleSuccess);
+        overlay.appendChild(btn);
+    }
+    
+    // Inject styles
+    const style = document.createElement('style');
+    style.textContent = `
+        .fs-problem-banner {
+            background: var(--color-yellow, #ffe500);
+            border: 2.5px solid var(--color-ink, #1a1a1a);
+            box-shadow: 3px 3px 0 var(--color-ink, #1a1a1a);
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-size: 14px;
+            line-height: 1.65;
+            color: var(--color-ink, #1a1a1a);
+        }
+        .fs-problem-banner strong {
+            display: block;
+            font-family: var(--font-display, 'Unbounded', sans-serif);
+            font-size: 10px;
+            font-weight: 900;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            opacity: .6;
+        }
+        .fs-mark-solved-btn {
+            position: absolute;
+            bottom: 16px;
+            right: 16px;
+            font-family: var(--font-display, 'Unbounded', sans-serif);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 2.5px solid var(--color-ink, #1a1a1a);
+            box-shadow: 3px 3px 0 var(--color-ink, #1a1a1a);
+            background: var(--color-yellow, #ffe500);
+        }
+        .fs-mark-solved-btn:hover {
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0 var(--color-ink, #1a1a1a);
+        }
+        @media (max-width: 768px) {
+            #gm-fs-canvas { min-height: 200px; }
+            .fs-canvas-wrap { padding: 10px; }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+            #gm-fs-canvas { min-height: 250px; }
+        }
+        @media (min-width: 1025px) {
+            #gm-fs-canvas { min-height: 300px; }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ─── 10. CANVAS INTEGRATION ───────────────────────────────────
 
 function openOverlay(data) {
     const overlay = document.getElementById('fs-overlay');
     overlay.classList.add('open');
     overlay.style.pointerEvents = 'auto';
     
-    document.getElementById('fs-hint-text').innerText = data.hint;
-    appState.currentGoal = data.goal.replace(/\s/g, '');
-    
+    const banner = document.getElementById('fs-problem-banner');
+    const hintEl = document.getElementById('fs-hint-text');
+    const markBtn = document.getElementById('fs-mark-solved-btn');
     const canvasWrap = document.getElementById('gm-fs-canvas');
+    
     canvasWrap.innerHTML = '';
     
-    // Get responsive settings based on screen size
-    const responsiveSettings = getResponsiveFontSettings();
-    
-    // Initialize canvas with fullscreen settings
-    appState.gmCanvas = new gmath.Canvas('#gm-fs-canvas', canvasFullscreenSettings);
-    
-    // Apply responsive font size if needed
-    if (responsiveSettings.mayAdjustFontSize) {
-        const initialFontSize = Math.min(40, responsiveSettings.maxFontSize);
-        appState.gmCanvas.controller.set_font_size(initialFontSize);
-    }
-    
-    const derivation = appState.gmCanvas.model.createElement('derivation', {
-        eq: data.eq,
-        ...singleLineDerivationSettings
-    });
-    
-    // Apply auto-layout with responsive settings
-    try {
-        const layoutResult = gmath.autoLayout.autoLayoutCanvasForOutlier(
-            appState.gmCanvas,
-            responsiveSettings
-        );
+    if (data.type === 'word') {
+        // Show problem banner
+        if (banner) {
+            banner.innerHTML = `<strong>Question</strong>${data.problem}`;
+            banner.style.display = 'block';
+        }
+        hintEl.innerText = '💡 ' + data.hint;
+        if (markBtn) markBtn.style.display = 'block';
         
-        // Check what was returned and store appropriately
-        if (layoutResult && typeof layoutResult.updateLayout === 'function') {
-            appState.layoutManager = layoutResult;
-        } else if (layoutResult && typeof layoutResult === 'object') {
-            // Some versions might return a different structure
-            appState.layoutManager = {
-                updateLayout: () => {
-                    // Try to manually trigger a layout update
-                    if (appState.gmCanvas && appState.gmCanvas.view) {
-                        appState.gmCanvas.view.update();
-                    }
-                }
-            };
-        } else {
-            // Fallback: create a simple layout manager wrapper
-            appState.layoutManager = {
-                updateLayout: () => {
-                    if (appState.gmCanvas && appState.gmCanvas.view) {
-                        appState.gmCanvas.view.update();
-                    }
-                }
-            };
+        appState.currentGoal = null;
+        
+        // Blank canvas — student writes their own equation
+        const responsiveSettings = getResponsiveFontSettings();
+        appState.gmCanvas = new gmath.Canvas('#gm-fs-canvas', canvasFullscreenSettings);
+        if (responsiveSettings.mayAdjustFontSize) {
+            appState.gmCanvas.controller.set_font_size(Math.min(40, responsiveSettings.maxFontSize));
         }
-    } catch (layoutError) {
-        console.warn('[AlgebraLab] Auto-layout error:', layoutError);
-        // Create a dummy layout manager to prevent future errors
-        appState.layoutManager = {
-            updateLayout: () => {
-                if (appState.gmCanvas && appState.gmCanvas.view) {
-                    appState.gmCanvas.view.update();
-                }
+        
+    } else {
+        // Equation mode — hide word problem UI
+        if (banner) banner.style.display = 'none';
+        if (markBtn) markBtn.style.display = 'none';
+        
+        hintEl.innerText = data.hint;
+        appState.currentGoal = data.goal.replace(/\s/g, '');
+        
+        const responsiveSettings = getResponsiveFontSettings();
+        appState.gmCanvas = new gmath.Canvas('#gm-fs-canvas', canvasFullscreenSettings);
+        if (responsiveSettings.mayAdjustFontSize) {
+            appState.gmCanvas.controller.set_font_size(Math.min(40, responsiveSettings.maxFontSize));
+        }
+        
+        const derivation = appState.gmCanvas.model.createElement('derivation', {
+            eq: data.eq,
+            ...singleLineDerivationSettings
+        });
+        
+        try {
+            const layoutResult = gmath.autoLayout.autoLayoutCanvasForOutlier(appState.gmCanvas, responsiveSettings);
+            appState.layoutManager = (layoutResult && typeof layoutResult.updateLayout === 'function') ?
+                layoutResult :
+                { updateLayout: () => appState.gmCanvas?.view?.update() };
+        } catch {
+            appState.layoutManager = { updateLayout: () => appState.gmCanvas?.view?.update() };
+        }
+        
+        derivation.events.on('change', () => {
+            const currentASCII = derivation.getLastModel().to_ascii().replace(/\s/g, '');
+            if (currentASCII === appState.currentGoal) handleSuccess();
+        });
+        
+        setTimeout(() => {
+            if (typeof appState.layoutManager?.updateLayout === 'function') {
+                appState.layoutManager.updateLayout();
+            } else {
+                appState.gmCanvas?.view?.update();
             }
-        };
+        }, 100);
     }
-    
-    derivation.events.on('change', () => {
-        const currentASCII = derivation.getLastModel().to_ascii().replace(/\s/g, '');
-        if (currentASCII === appState.currentGoal) handleSuccess();
-    });
-    
-    // Add a small delay to ensure proper rendering
-    setTimeout(() => {
-        if (appState.layoutManager && typeof appState.layoutManager.updateLayout === 'function') {
-            appState.layoutManager.updateLayout();
-        } else if (appState.gmCanvas && appState.gmCanvas.view) {
-            // Fallback: manually update the view
-            appState.gmCanvas.view.update();
-        }
-    }, 100);
 }
 
 function handleSuccess() {
     const wrap = document.getElementById('fs-canvas-wrap');
     wrap.classList.add('solved');
-
+    
     appState.solvedCount++;
     document.getElementById('stat-count').innerText = appState.solvedCount;
-
+    
     setTimeout(() => {
         wrap.classList.remove('solved');
         ppAlert(`That's ${appState.solvedCount} solved. Keep going!`, 'success');
@@ -604,27 +731,3 @@ window.closeOverlay = () => {
 window.toggleWordProblemModal = () => {
     document.getElementById('wp-modal').classList.toggle('open');
 };
-
-// Add CSS for responsive canvas container
-const responsiveStyles = document.createElement('style');
-responsiveStyles.textContent = `
-    @media (max-width: 768px) {
-        #gm-fs-canvas {
-            min-height: 200px;
-        }
-        .fs-canvas-wrap {
-            padding: 10px;
-        }
-    }
-    @media (min-width: 769px) and (max-width: 1024px) {
-        #gm-fs-canvas {
-            min-height: 250px;
-        }
-    }
-    @media (min-width: 1025px) {
-        #gm-fs-canvas {
-            min-height: 300px;
-        }
-    }
-`;
-document.head.appendChild(responsiveStyles);
