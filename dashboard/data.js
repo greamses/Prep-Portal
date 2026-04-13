@@ -27,7 +27,8 @@ const siteData = {
         { text: "Theory Drill", href: "#theory" },
         { text: "About", href: "#about" },
         { text: "Blogs", href: "../blogs/science/biology/animal/blog/blog.html" },
-        { text: "Authentication", href: "../utils/auth/auth.html" }
+        { text: "Authentication", href: "../utils/auth/auth.html" },
+        { text: "Logout", href: "./login.html", id: "nav-logout", class: "nav-cta logout-nav-item" }  // Added logout
     ],
     ctaButton: { text: "Start Revising", href: "#exams" },
     
