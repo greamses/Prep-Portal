@@ -1,7 +1,7 @@
 import { rnd, pick, expQ, binomialCoefficient } from './utils.js';
 
 export function binomialExpansion() {
-    const a=rnd(1,4);
+    const a = rnd(1, 4);
     const expressions = [
         expQ(`(x+${a})^2`, `x^2+${2*a}*x+${a*a}`, `Pascal's row 1,2,1: x²+2(${a})x+${a}²=x²+${2*a}x+${a*a}.`),
         expQ(`(x-${a})^2`, `x^2-${2*a}*x+${a*a}`, `Pascal's row 1,2,1: x²-2(${a})x+${a}²=x²-${2*a}x+${a*a}.`),
@@ -12,7 +12,8 @@ export function binomialExpansion() {
 }
 
 export function binomialGeneralTerm() {
-    const n=rnd(3,6), a=rnd(1,3);
+    const n = rnd(3, 6),
+        a = rnd(1, 3);
     const terms = [];
     for (let k = 0; k <= n; k++) {
         const coeff = binomialCoefficient(n, k);
