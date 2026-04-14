@@ -96,29 +96,23 @@ export function renderTopicChips(classId, topicsMap, onSelect) {
         return;
     }
     
-    // Type badge colours
-    const TYPE_COLORS = {
+    // Type accent colors (only for dots and borders, not text)
+    const TYPE_ACCENTS = {
         equation: 'var(--blue, #0055ff)',
         expression: 'var(--yellow, #ffe500)',
         inequality: 'var(--red, #ff2200)',
         word: 'var(--green, #00a550)',
     };
-    const TYPE_TEXT_COLORS = {
-        equation: '#fff',
-        expression: 'var(--ink, #1a1a1a)',
-        inequality: '#fff',
-        word: '#fff',
-    };
     
-    // Build level-1 group chips
+    // Build level-1 group chips - unified text color, colored accents only
     container.innerHTML = `
         <div class="topic-group-chips" id="topic-group-chips">
             ${groups.map((g, i) => `
                 <button class="topic-chip topic-group-chip" data-group-index="${i}"
                         title="${g.type}"
-                        style="--type-color:${TYPE_COLORS[g.type]};--type-text:${TYPE_TEXT_COLORS[g.type]}">
-                    <span class="topic-type-dot" style="background:${TYPE_COLORS[g.type]}"></span>
-                    ${g.topic}
+                        data-type="${g.type}">
+                    <span class="topic-type-dot" style="background:${TYPE_ACCENTS[g.type]}"></span>
+                    <span class="topic-type-text">${g.topic}</span>
                 </button>
             `).join('')}
         </div>
@@ -130,13 +124,20 @@ export function renderTopicChips(classId, topicsMap, onSelect) {
         const s = document.createElement('style');
         s.id = 'pp-topic-chip-styles';
         s.textContent = `
-            .topic-type-dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-right:4px;}
-            .subtopic-container{margin-top:10px;}
+            .topic-type-dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-right:6px;}
+            .topic-type-text{color:var(--ink,#1a1a1a);font-weight:600;}
+            .topic-group-chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+            .topic-group-chip{padding:8px 16px;font-family:var(--font-mono,'JetBrains Mono',monospace);font-size:12px;font-weight:600;background:var(--off,#e8e3db);border:2px solid var(--ink,#1a1a1a);cursor:pointer;transition:all .18s ease;display:inline-flex;align-items:center;}
+            .topic-group-chip:hover{background:var(--ink,#1a1a1a);}
+            .topic-group-chip:hover .topic-type-text{color:var(--bg,#f5f0e8);}
+            .topic-group-chip.active{background:var(--ink,#1a1a1a);border-color:var(--yellow,#ffe500);}
+            .topic-group-chip.active .topic-type-text{color:var(--yellow,#ffe500);}
+            .subtopic-container{margin-top:12px;}
             .subtopic-chips{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;}
-            .subtopic-chip{padding:7px 14px;font-family:var(--font-mono,'JetBrains Mono',monospace);font-size:11px;font-weight:600;background:var(--off,#e8e3db);border:2px solid var(--ink,#1a1a1a);cursor:pointer;transition:all .18s ease;}
+            .subtopic-chip{padding:7px 14px;font-family:var(--font-mono,'JetBrains Mono',monospace);font-size:11px;font-weight:600;color:var(--ink,#1a1a1a);background:var(--off,#e8e3db);border:2px solid var(--ink,#1a1a1a);cursor:pointer;transition:all .18s ease;}
             .subtopic-chip:hover{background:var(--ink,#1a1a1a);color:var(--bg,#f5f0e8);}
             .subtopic-chip.active{background:var(--ink,#1a1a1a);color:var(--yellow,#ffe500);border-color:var(--yellow,#ffe500);}
-            .subtopic-group-label{font-family:var(--font-display,'Unbounded',sans-serif);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--type-color,var(--ink));padding:4px 0 6px;border-bottom:2px solid var(--type-color,var(--ink));margin-bottom:6px;}
+            .subtopic-group-label{font-family:var(--font-display,'Unbounded',sans-serif);font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--ink,#1a1a1a);padding:4px 0 6px;border-bottom:2px solid currentColor;margin-bottom:6px;}
         `;
         document.head.appendChild(s);
     }
@@ -152,7 +153,7 @@ export function renderTopicChips(classId, topicsMap, onSelect) {
             const sub = document.getElementById('subtopic-container');
             sub.style.display = 'block';
             sub.innerHTML = `
-                <div class="subtopic-group-label" style="--type-color:${TYPE_COLORS[group.type]}">
+                <div class="subtopic-group-label" style="border-bottom-color:${TYPE_ACCENTS[group.type]}">
                     ${group.topic} — pick a subtopic
                 </div>
                 <div class="subtopic-chips">
