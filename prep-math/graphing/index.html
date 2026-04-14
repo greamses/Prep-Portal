@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Prep Portal 2026 | Graph Predictor</title>
+    
+    <link rel="icon" type="image/svg+xml" href="../../logo/logo-icon.svg">
+    <meta name="theme-color" content="#000000">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../../main.css">
+    <link rel="stylesheet" href="../../theory-page/style.css">
+    <link rel="stylesheet" href="./style.css">
+
+    <!-- GeoGebra API -->
+    <script src="https://www.geogebra.org/apps/deployggb.js"></script>
+    
+    <!-- MathJax v3 -->
+    <script>
+        window.MathJax = {
+            loader: { load: ['[tex]/html'] },
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                packages: { '[+]': ['html'] }
+            },
+            startup: { typeset: false },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    
+    <script src="../../utils/loader/loader.js"></script>
+    
+    
+</head>
+
+<body>
+    
+    <div id="loader">
+        <div id="loader-wrapper">
+            <div class="logo-cluster"></div>
+        </div>
+        <div class="loader-word"><span>Graph</span></div>
+        <div class="loader-bar"></div>
+    </div>
+    
+    <nav class="site-nav">
+        <a href="index.html" class="nav-logo">
+            <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
+            <div class="logo-brand">
+                <span class="brand-top">Prep</span>
+                <span class="brand-bottom">Portal</span>
+            </div>
+        </a>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="waec.html">WAEC</a></li>
+            <li><a href="jamb.html">JAMB</a></li>
+            <li><a href="algebra-practice.html" class="active">Algebra</a></li>
+        </ul>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+    
+    <div class="ticker" aria-hidden="true">
+        <div class="ticker-track" id="ticker-track"></div>
+    </div>
+    
+    <header class="pg-header">
+        <div class="ph-left">
+            <p class="pg-eyebrow">PrepBot · Mathematics</p>
+            <h1 class="pg-title">GRAPH<br><em>PREDICTOR</em></h1>
+        </div>
+        <div class="ph-right">
+            <p>Analyze the graph and type the equation you think it represents. Your answer is plotted instantly for comparison.</p>
+            <div class="ph-stats">
+                <div class="ph-stat"><strong id="gp-stat-solved">0</strong><span>Solved</span></div>
+                <div class="ph-stat"><strong id="gp-stat-topic">Linear</strong><span>Topic</span></div>
+            </div>
+        </div>
+    </header>
+    
+    <div id="gp-status-bar" class="status-bar" role="status" aria-live="polite"></div>
+    
+    <!-- Dashboard -->
+    <section class="gp-dashboard" id="gp-dashboard">
+        <div class="gp-dash-body">
+            <p class="gp-dash-desc">
+                Choose a topic and start practicing. The app will show you a graph — type the equation that matches it.
+            </p>
+            
+            <!-- Topic Dropdown -->
+            <div class="gp-custom-dropdown" id="gp-topic-dropdown">
+                <span class="gp-custom-dropdown-label">Select Topic</span>
+                <div class="gp-custom-dropdown-header" id="gp-dropdown-header">
+                    <span id="gp-dropdown-selected-text">Linear Equations (y = mx + c)</span>
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </div>
+                <div class="gp-custom-dropdown-list" id="gp-dropdown-list"></div>
+            </div>
+            
+            <!-- Start Button -->
+            <button id="gp-open-modal-btn" class="gp-btn-start">
+                <svg viewBox="0 0 24 24">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+                Start Practice
+            </button>
+        </div>
+    </section>
+    
+    <!-- Fullscreen Modal -->
+    <div id="gp-graph-modal" class="gp-modal-overlay">
+        <div class="modal-header">
+            <!-- Close Button -->
+            <button id="gp-close-modal-btn" class="btn btn-secondary" title="Exit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="square">
+                    <path d="M18 6L6 18" />
+                    <path d="M6 6l12 12" />
+                </svg>
+            </button>
+            
+            <!-- New Graph Button -->
+            <button id="gp-new-prob-btn" class="btn" title="New Graph">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2L21 8 15 8" />
+                    <path d="M3 22L3 16 9 16" />
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10" />
+                    <path d="M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                </svg>
+            </button>
+            
+            <!-- Toggle Keyboard Button -->
+            <button id="gp-toggle-keyboard-btn" class="btn btn-secondary" title="Toggle keyboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="6" width="20" height="12" rx="2" />
+                    <path d="M6 10h2" />
+                    <path d="M10 10h2" />
+                    <path d="M14 10h2" />
+                    <path d="M18 10h2" />
+                    <path d="M8 14h8" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- GeoGebra Canvas -->
+        <div id="ggb-element"></div>
+        
+        <!-- Bottom Sheet -->
+        <div class="gp-bottom-sheet" id="gp-bottom-sheet">
+            <div id="gp-feedback-box" class="gp-feedback-box">Analyze the graph and type the equation!</div>
+            
+            <div class="gp-input-row">
+                <div class="gp-icon-plus">+</div>
+                <div class="gp-math-display" id="gp-math-display">
+                    <span class="gp-math-placeholder" id="gp-math-placeholder">Type an equation…</span>
+                    <span id="gp-math-before"></span>
+                    <span class="gp-cursor-blink" id="gp-cursor"></span>
+                    <span id="gp-math-after"></span>
+                </div>
+            </div>
+            
+            <div class="gp-keyboard-tabs" id="gp-keyboard-tabs"></div>
+            
+            <div class="gp-virtual-keyboard" id="gp-virtual-keyboard"></div>
+        </div>
+    </div>
+    
+    <script src="./main.js"></script>
+</body>
+
+</html>
