@@ -145,53 +145,6 @@
 
 /* ── SYSTEM DARK PREFERENCE (when no data-theme set) ────── */
 
-/* @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        --bg: #0a0a0a;
-        --app-bg: #111111;
-        --ink: #f0f0f0;
-        --yellow: #ffea2e;
-        --blue: #4d8fff;
-        --red: #ff4444;
-        --green: #10b981;
-        --amber: #f59e0b;
-        --muted: #999999;
-        --light-muted: #666666;
-        --off: #1a1a1a;
-        --paper: #0f0f0f;
-        --text-light: #0a0a0a;
-        
-        --border-color: #f0f0f0;
-        --border: var(--border-width) var(--border-style) var(--border-color);
-        --border-subtle: 1px solid rgba(240, 240, 240, 0.15);
-        
-        --shadow-sm: 3px 3px 0 var(--ink);
-        --shadow-md: 5px 5px 0 var(--ink);
-        --shadow-lg: 6px 6px 0 var(--ink);
-        --shadow-xl: 9px 9px 0 var(--ink);
-        --shadow-cta: 6px 6px 0 rgba(255, 234, 46, 0.35);
-        --shadow-cta-hover: 8px 8px 0 rgba(255, 255, 255, 0.15);
-        
-        --badge-math-bg: var(--yellow);
-        --badge-chemistry-bg: #5a1875;
-        --badge-biology-bg: #1a4d1a;
-        --badge-physics-bg: #1a3560;
-        --badge-basicscience-bg: #5c2a00;
-        --badge-basictech-bg: #0d3d35;
-        --badge-cls-primary-bg: #1a4d1a;
-        --badge-cls-jss-bg: #1a3560;
-        --badge-cls-ss-bg: #4d3a00;
-        
-        --bg-math-card: #252200;
-        --bg-physics-card: #0a1929;
-        --bg-chemistry-card: #1a0a20;
-        --bg-biology-card: #0a1f0a;
-        
-        --exam-tip-bg: #252200;
-        --card-hover: #f0f0f0;
-    }
-} */
-
 /* ============================================
    TYPOGRAPHY
    ============================================ */
