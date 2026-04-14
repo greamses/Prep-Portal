@@ -11,7 +11,7 @@
  * All three sub-generators work without an API key.
  */
 
-import { generateEquation }   from './generators/equations.js';
+import { generateEquation }   from './generators/equations/equations.js';
 import { generateExpression } from './generators/expressions.js';
 import { generateInequality } from './generators/inequalities.js';
 
