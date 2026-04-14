@@ -172,17 +172,11 @@
             height: 0 !important;
             min-height: 0 !important;
             overflow: hidden;
-            opacity: 0;
-            pointer-events: none;
+            display: none;
+            /* pointer-events: none; */
         }
         
-        /* ═══ WORD PROBLEM MODAL — centered dialog ══════════════════
-           One minimize button (—) collapses the body+footer.
-           One close button (✕) fully hides the modal.
-           No "Dismiss" anywhere.
-        ════════════════════════════════════════════════════════════ */
-        
-        /* Full-overlay backdrop — resets the bottom-sheet from style.css */
+
         .wp-modal {
             position: absolute;
             inset: 0;
@@ -191,7 +185,6 @@
             justify-content: center;
             padding: 20px;
             background: rgba(0, 0, 0, .62);
-            /* neutralise bottom-sheet remnants */
             transform: none !important;
             max-height: none !important;
             border-top: none !important;
