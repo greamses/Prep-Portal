@@ -1,29 +1,54 @@
-import { rnd, pick, ineqQ } from './utils.js';
+import { rnd, pick, gmIneqQ } from './utils.js';
 
 export function absoluteValueInequality() {
-    const a = rnd(1, 6), c = rnd(3, 10);
-    const b = rnd(0, 4);
+    const a = rnd(1, 4);
+    const b = rnd(1, 6);
+    const c = rnd(5, 15);
     const op = pick(['<', '>', '≤', '≥']);
-    let solution;
+    
+    const expression = `${a}*x${b >= 0 ? `-${b}` : `+${-b}`}`;
+    const fullInequality = `|${a}x-${b}| ${op} ${c}`;
+    
+    let goal, hint;
+    
     if (op === '<' || op === '≤') {
-        solution = `${(b - c) / a} < x < ${(b + c) / a}`;
+        const lower = ((b - c) / a).toFixed(1);
+        const upper = ((b + c) / a).toFixed(1);
+        goal = `${lower} < x < ${upper}`;
+        hint = `${fullInequality}\n\n` +
+            `Step 1: Remove absolute value: -${c} ${op} ${a}x-${b} ${op} ${c}\n` +
+            `Step 2: Add ${b} to all parts: ${b - c} ${op} ${a}x ${op} ${b + c}\n` +
+            `Step 3: Divide by ${a}: ${lower} ${op} x ${op} ${upper}\n` +
+            `Solution: ${goal}`;
     } else {
-        solution = `x < ${(b - c) / a} or x > ${(b + c) / a}`;
+        const lower = ((b - c) / a).toFixed(1);
+        const upper = ((b + c) / a).toFixed(1);
+        goal = `x < ${lower} or x > ${upper}`;
+        hint = `${fullInequality}\n\n` +
+            `Step 1: Remove absolute value: ${a}x-${b} ${op} ${c} OR ${a}x-${b} ${op} -${c}\n` +
+            `Step 2: Add ${b} to both sides of each\n` +
+            `Step 3: Divide by ${a}: x ${op} ${upper} OR x ${op} ${lower}\n` +
+            `Solution: ${goal}`;
     }
-    return ineqQ(`${a}*x-${b}`,
-        solution,
-        `Solve |${a}x-${b}| ${op} ${c}: `
-        + (op === '<' || op === '≤'
-            ? `-${c} ${op} ${a}x-${b} ${op} ${c}. Add ${b}: ${b - c} ${op} ${a}x ${op} ${b + c}. Divide by ${a}.`
-            : `${a}x-${b} > ${c} or ${a}x-${b} < -${c}.`)
-    );
+    
+    return gmIneqQ(expression, goal, hint, fullInequality);
 }
 
-export function absQuadratic() {
-    const a = rnd(1, 5), b = rnd(1, 6);
-    return ineqQ(`x^2-${a*2}*x+${a*a-b}`,
-        `|...| analysis needed`,
-        `Solve |x²-${2*a}x+${a*a-b}| < ${b}: equivalent to -${b} < x²-${2*a}x+${a*a-b} < ${b}. `
-        + `Solve both halves: x²-${2*a}x+${a*a-2*b}<0 and x²-${2*a}x+${a*a}>0.`
-    );
+export function absoluteValueQuadraticInequality() {
+    const a = rnd(1, 3);
+    const b = rnd(2, 5);
+    const c = rnd(3, 8);
+    
+    const expression = `x^2-${2*a}*x+${a*a-b}`;
+    const fullInequality = `|x² - ${2*a}x + ${a*a - b}| < ${c}`;
+    const goal = `compound inequality needed`;
+    
+    const hint = `${fullInequality}\n\n` +
+        `Step 1: Remove absolute value: -${c} < x² - ${2*a}x + ${a*a - b} < ${c}\n` +
+        `Step 2: Solve two inequalities:\n` +
+        `   x² - ${2*a}x + ${a*a - b + c} > 0\n` +
+        `   x² - ${2*a}x + ${a*a - b - c} < 0\n` +
+        `Step 3: Find intersection of solution sets`;
+    
+    return gmIneqQ(expression, goal, hint, fullInequality);
 }

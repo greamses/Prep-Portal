@@ -202,48 +202,6 @@ window.generateQuestion = async () => {
     if (genBtn) { genBtn.classList.remove('loading'); genBtn.disabled = false; }
 };
 
-// ─── Overlay ─────────────────────────────────────────────────
-
-function openOverlay(data) {
-    const overlay   = document.getElementById('fs-overlay');
-    const hintEl    = document.getElementById('fs-hint-text');
-    const wpBtn     = document.getElementById('wp-modal-btn');
-    const doneBtn   = document.getElementById('fs-mark-done-btn');
-    const wpText    = document.getElementById('wp-modal-text');
-    const canvasEl  = document.getElementById('gm-fs-canvas');
-
-    overlay.classList.add('open');
-    overlay.style.pointerEvents = 'auto';
-    appState.currentType = data.type;
-
-    closeWordProblemModal();
-    restoreCanvas();
-    canvasEl.innerHTML = '';
-
-    // Show/hide footer action buttons by type
-    wpBtn.style.display   = data.type === 'word'       ? 'inline-flex' : 'none';
-    doneBtn.style.display = (data.type === 'expression' || data.type === 'inequality')
-                            ? 'inline-flex' : 'none';
-
-    hintEl.innerText = data.hint;
-
-    if (data.type === 'word') {
-        wpText.textContent = data.problem;
-        appState.currentGoal = null;
-        openWordProblemModal();
-        mountBlankCanvas();
-
-    } else if (data.type === 'expression' || data.type === 'inequality') {
-        appState.currentGoal = null;
-        mountExpressionCanvas(data.eq);   // no auto-check
-
-    } else {
-        // equation — auto-check
-        appState.currentGoal = data.goal.replace(/\s/g, '');
-        mountEquationCanvas(data.eq, appState.currentGoal);
-    }
-}
-
 // ─── Canvas Mounting ─────────────────────────────────────────
 
 function mountBlankCanvas() {
@@ -307,11 +265,129 @@ window.closeOverlay = () => {
     restoreCanvas();
 };
 
-window.openOverlay = () => {
+// ─── Overlay ─────────────────────────────────────────────────
+
+function openOverlay(data) {
     const overlay = document.getElementById('fs-overlay');
+    const hintEl = document.getElementById('fs-hint-text');
+    const wpBtn = document.getElementById('wp-modal-btn');
+    const doneBtn = document.getElementById('fs-mark-done-btn');
+    const wpText = document.getElementById('wp-modal-text');
+    const canvasEl = document.getElementById('gm-fs-canvas');
+    const titleEl = document.getElementById('fs-title'); // Add this to your HTML
+    
     overlay.classList.add('open');
     overlay.style.pointerEvents = 'auto';
-};
+    appState.currentType = data.type;
+    
+    closeWordProblemModal();
+    restoreCanvas();
+    canvasEl.innerHTML = '';
+    
+    // Show/hide footer action buttons by type
+    wpBtn.style.display = data.type === 'word' ? 'inline-flex' : 'none';
+    doneBtn.style.display = (data.type === 'expression' || data.type === 'inequality') ?
+        'inline-flex' : 'none';
+    
+    hintEl.innerText = data.hint;
+    
+    // Set a title for better context
+    if (titleEl) {
+        if (data.type === 'inequality') {
+            titleEl.innerText = `Inequality: ${data.fullInequality || 'Solve'}`;
+        } else if (data.type === 'expression') {
+            titleEl.innerText = `Expression: Simplify`;
+        } else if (data.type === 'word') {
+            titleEl.innerText = `Word Problem`;
+        } else {
+            titleEl.innerText = `Equation: Solve`;
+        }
+    }
+    
+    if (data.type === 'word') {
+        wpText.textContent = data.problem;
+        appState.currentGoal = null;
+        openWordProblemModal();
+        mountBlankCanvas();
+        
+    } else if (data.type === 'expression') {
+        appState.currentGoal = null;
+        mountExpressionCanvas(data.eq);
+        
+    } else if (data.type === 'inequality') {
+        // For inequalities: mount expression, hint contains full inequality steps
+        appState.currentGoal = null;
+        mountInequalityCanvas(data.eq, data.hint, data.fullInequality);
+        
+    } else {
+        // equation — auto-check
+        appState.currentGoal = data.goal.replace(/\s/g, '');
+        mountEquationCanvas(data.eq, appState.currentGoal);
+    }
+}
+
+// ─── New: Inequality Canvas with Context ──────────────────────
+
+// ─── New: Inequality Canvas with Context ──────────────────────
+
+// ─── New: Inequality Canvas with Context ──────────────────────
+
+function mountInequalityCanvas(eq, hint, fullInequality) {
+    const rs = getResponsiveFontSettings();
+    
+    // 1. Use fullInequality because your generator might be chopping up 'eq'
+    // Fall back to eq if fullInequality is missing.
+    let rawString = fullInequality || eq;
+    
+    // 2. Aggressively convert LaTeX or Unicode into Graspable Math's strict AsciiMath.
+    // Adding spaces around the operator ensures GM parses the left and right sides properly.
+    let safeEq = rawString
+        .replace(/≤/g, ' <= ')
+        .replace(/≥/g, ' >= ')
+        .replace(/\\leq?/gi, ' <= ') // Catches LaTeX \leq or \le
+        .replace(/\\geq?/gi, ' >= ') // Catches LaTeX \geq or \ge
+        .replace(/&le;/gi, ' <= ') // Catches HTML entities
+        .replace(/&ge;/gi, ' >= ');
+    
+    // (Optional) Open your browser console to verify what is being sent to GM
+    console.log("Sending to GM Canvas:", safeEq);
+    
+    appState.gmCanvas = new gmath.Canvas('#gm-fs-canvas', CANVAS_SETTINGS);
+    if (rs.mayAdjustFontSize) appState.gmCanvas.controller.set_font_size(Math.min(40, rs.maxFontSize));
+    
+    // 3. Mount the newly cleaned, complete inequality
+    appState.gmCanvas.model.createElement('derivation', { eq: safeEq, ...DERIVATION_SETTINGS });
+    _applyLayout(rs);
+    
+    // Add a note in the hint about the inequality sign
+    const hintEl = document.getElementById('fs-hint-text');
+    if (hintEl && fullInequality) {
+        hintEl.innerHTML = `<strong>Inequality to solve:</strong> ${fullInequality}<br><br>${hint}`;
+    }
+}
+
+// ─── Clean up inequality context when closing ─────────────────
+
+function restoreCanvas() {
+    const wrap = document.getElementById('fs-canvas-wrap');
+    const btn = document.getElementById('fs-canvas-toggle-btn');
+    const contextLabel = document.getElementById('inequality-context');
+    
+    wrap?.classList.remove('canvas-hidden');
+    btn?.classList.remove('canvas-off');
+    if (btn) btn.title = 'Hide canvas';
+    
+    // Hide the inequality context label
+    if (contextLabel) {
+        contextLabel.style.display = 'none';
+    }
+    
+    // Also restore the hint text (remove inequality context)
+    const hintEl = document.getElementById('fs-hint-text');
+    if (hintEl && hintEl.innerHTML.includes('Inequality to solve')) {
+        // The original hint will be restored from data when reopening
+    }
+}
 
 window.toggleCanvas = () => {
     const wrap = document.getElementById('fs-canvas-wrap');
@@ -321,14 +397,6 @@ window.toggleCanvas = () => {
     btn?.classList.toggle('canvas-off', hiding);
     if (btn) btn.title = hiding ? 'Show canvas' : 'Hide canvas';
 };
-
-function restoreCanvas() {
-    const wrap = document.getElementById('fs-canvas-wrap');
-    const btn  = document.getElementById('fs-canvas-toggle-btn');
-    wrap?.classList.remove('canvas-hidden');
-    btn?.classList.remove('canvas-off');
-    if (btn) btn.title = 'Hide canvas';
-}
 
 // ─── Word Problem Modal ───────────────────────────────────────
 

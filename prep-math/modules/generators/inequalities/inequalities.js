@@ -1,71 +1,61 @@
-import { ineqQ } from './utils.js';
-import { simpleLinear, simpleLinearMult, negativeCoeff, linearWordInequality } from './linear.js';
-import { compoundAnd, systemLinearInequalities } from './compound.js';
-import { quadraticInequality, signChartInequality } from './quadratic.js';
-import { rationalInequality, rationalRadicalInequality } from './rational.js';
-import { absoluteValueInequality, absQuadratic } from './absolute.js';
-import { polynomialInequality } from './polynomial.js';
-import { linearProgramming } from './linear_programming.js';
-import { linearTwoVar } from './two_var.js';
-
 /**
- * Generate an inequality based on topic and class level
- * @param {string} topic - Main topic (e.g., "linear inequality", "quadratic inequality")
- * @param {string} subtopic - Specific subtopic (e.g., "negative coefficient", "compound")
- * @param {string} classId - Class level like "jss1", "jss2", "jss3", "ss1", "ss2", "ss3"
- * @returns {InequalityObject} Inequality with eq, goal, and hint
+ * inequalities/index.js - Main dispatch for GM-compatible inequalities
+ * 
+ * GM canvas doesn't render inequality symbols, so we mount:
+ * - eq: just the expression (LHS or boundary)
+ * - fullInequality: the complete inequality for display
+ * - hint: step-by-step solution with inequality signs
  */
+
+import { linearInequality, simpleLinearInequality, linearInequalityNegativeCoeff } from './linear.js';
+import { compoundInequality } from './compound.js';
+import { quadraticInequality, quadraticInequalitySignChart } from './quadratic.js';
+import { absoluteValueInequality, absoluteValueQuadraticInequality } from './absolute.js';
+import { linearTwoVarInequality } from './two_var.js';
+
 export function generateInequality(topic, subtopic, classId) {
   const t = topic.toLowerCase();
   const s = (subtopic || '').toLowerCase();
   
-  // JSS1 - Introduction
-  if (t.includes('introduction') || t.includes('simple inequality') || t.includes('intro')) {
-    return s.includes('multiply') || s.includes('2x') ? simpleLinearMult() : simpleLinear();
+  // Absolute value inequalities
+  if (t.includes('absolute value') || t.includes('absolute val')) {
+    if (t.includes('quadratic')) {
+      return absoluteValueQuadraticInequality();
+    }
+    return absoluteValueInequality();
   }
   
-  // JSS2 - Negative coefficients
-  if (t.includes('negative coefficient')) return negativeCoeff();
+  // Linear inequalities (JSS1, JSS2)
+  if (t.includes('linear') || t.includes('simple') || t.includes('intro')) {
+    if (s.includes('negative') || t.includes('negative coefficient')) {
+      return linearInequalityNegativeCoeff();
+    }
+    if (t.includes('two variable') || t.includes('graphing')) {
+      return linearTwoVarInequality();
+    }
+    return linearInequality();
+  }
   
-  // JSS2 - Compound inequalities
-  if (t.includes('compound') && t.includes('and')) return compoundAnd();
+  // Compound inequalities (JSS2)
+  if (t.includes('compound') || (t.includes('double') && t.includes('inequality'))) {
+    return compoundInequality();
+  }
   
-  // JSS3 - Linear in two variables
-  if (t.includes('linear') && t.includes('two variable')) return linearTwoVar();
+  // Quadratic inequalities (JSS3, SS1)
+  if (t.includes('quadratic')) {
+    if (s.includes('sign chart') || s.includes('cubic') || s.includes('advanced')) {
+      return quadraticInequalitySignChart();
+    }
+    return quadraticInequality();
+  }
   
-  // SS1 - Quadratic (advanced / sign chart)
-  if (t.includes('quadratic') && t.includes('advanced')) return signChartInequality();
-  
-  // JSS3/SS1 - Quadratic inequality
-  if (t.includes('quadratic') && t.includes('inequalit')) return quadraticInequality();
-  
-  // SS3 - Rational with radicals
-  if (t.includes('rational') && t.includes('radical')) return rationalRadicalInequality();
-  
-  // SS1 - Rational inequality
-  if (t.includes('rational') && t.includes('inequalit')) return rationalInequality();
-  
-  // SS3 - Absolute value with quadratics
-  if (t.includes('absolute value') && t.includes('quadratic')) return absQuadratic();
-  
-  // SS1/SS3 - Absolute value inequality
-  if (t.includes('absolute value') || t.includes('absolute val')) return absoluteValueInequality();
-  
-  // SS2 - Polynomial inequality
-  if (t.includes('polynomial')) return polynomialInequality();
-  
-  // SS2 - Linear programming
-  if (t.includes('linear programming') || t.includes('programming')) return linearProgramming();
-  
-  // System of linear inequalities
-  if (t.includes('system') && t.includes('linear')) return systemLinearInequalities();
-  
-  // Word problems
-  if (t.includes('word') && t.includes('inequalit')) return linearWordInequality();
+  // Linear in two variables / graphing (JSS3)
+  if ((t.includes('two variable') || t.includes('graphing')) && t.includes('linear')) {
+    return linearTwoVarInequality();
+  }
   
   // Fallback
-  return simpleLinear();
+  return linearInequality();
 }
 
-// Default export for convenience
 export default { generateInequality };

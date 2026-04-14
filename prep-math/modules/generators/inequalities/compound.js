@@ -1,16 +1,22 @@
-import { rnd, v, ineqQ } from './utils.js';
+import { rnd, gmIneqQ } from './utils.js';
 
-export function compoundAnd() {
-    const vr = v(), a = rnd(2, 6), b = rnd(1, 5);
-    const lo = rnd(1, 5), hi = rnd(lo + 3, 12);
-    const loSol = ((lo - b) / a).toFixed(1);
-    const hiSol = ((hi - b) / a).toFixed(1);
-    return ineqQ(`${a}*${vr}+${b}`,
-        `${loSol} < ${vr} < ${hiSol}`,
-        `Solve ${lo} < ${a}${vr}+${b} < ${hi}: subtract ${b} from all parts → ${lo - b} < ${a}${vr} < ${hi - b}, then divide by ${a} → ${loSol} < ${vr} < ${hiSol}.`
-    );
-}
-
-export function systemLinearInequalities() {
-    return compoundAnd();
+export function compoundInequality() {
+    const a = rnd(2, 5);
+    const b = rnd(1, 8);
+    const low = rnd(0, 5);
+    const high = rnd(low + 5, low + 12);
+    
+    const expression = `${a}*x${b >= 0 ? `+${b}` : `${b}`}`;
+    const fullInequality = `${low} < ${a}x${b >= 0 ? `+${b}` : `${b}`} < ${high}`;
+    
+    const lowSol = ((low - b) / a).toFixed(1);
+    const highSol = ((high - b) / a).toFixed(1);
+    
+    const goal = `${lowSol} < x < ${highSol}`;
+    const hint = `${fullInequality}\n\n` +
+        `Step 1: Subtract ${b} from all parts: ${low - b} < ${a}x < ${high - b}\n` +
+        `Step 2: Divide by ${a}: ${lowSol} < x < ${highSol}\n` +
+        `Solution: ${goal}`;
+    
+    return gmIneqQ(expression, goal, hint, fullInequality);
 }

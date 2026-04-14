@@ -1,41 +1,56 @@
-import { rnd, pickOp, v, ineqQ } from './utils.js';
+import { rnd, pickOp, gmIneqQ } from './utils.js';
 
-export function simpleLinear() {
-    const vr = v(), op = pickOp();
-    const x = rnd(1, 10), a = rnd(1, 8);
-    const rhs = x + a;
-    return ineqQ(`${vr}+${a}`,
-        `${vr} ${op} ${x}`,
-        `Solve ${vr}+${a} ${op} ${rhs}: subtract ${a} from both sides → ${vr} ${op} ${x}.`
-    );
-}
-
-export function simpleLinearMult() {
-    const vr = v(), a = rnd(2, 8), x = rnd(1, 10);
+export function linearInequality() {
+    const a = rnd(2, 8);
+    const b = rnd(1, 12);
+    const c = rnd(a * 2 + b, a * 8 + b);
     const op = pickOp();
-    return ineqQ(`${a}*${vr}`,
-        `${vr} ${op} ${x}`,
-        `Solve ${a}${vr} ${op} ${a*x}: divide both sides by ${a} (positive, sign keeps) → ${vr} ${op} ${x}.`
-    );
+    
+    const solution = ((c - b) / a).toFixed(1);
+    const flipNote = a < 0 ? ' (FLIP the sign!)' : '';
+    
+    const expression = `${a}*x${b >= 0 ? `+${b}` : `${b}`}`;
+    const fullInequality = `${a}x${b >= 0 ? `+${b}` : `${b}`} ${op} ${c}`;
+    
+    let goal, hint;
+    const step1RHS = c - b;
+    
+    const opMap = {
+        '<': { goal: `x < ${solution}`, hint: `x < ${solution}` },
+        '>': { goal: `x > ${solution}`, hint: `x > ${solution}` },
+        '≤': { goal: `x ≤ ${solution}`, hint: `x ≤ ${solution}` },
+        '≥': { goal: `x ≥ ${solution}`, hint: `x ≥ ${solution}` }
+    };
+    
+    goal = opMap[op].goal;
+    hint = `${fullInequality}\n\n` +
+        `Step 1: Subtract ${b} from both sides: ${a}x ${op} ${step1RHS}\n` +
+        `Step 2: Divide by ${a}${flipNote}: x ${op} ${solution}\n` +
+        `Solution: ${goal}`;
+    
+    return gmIneqQ(expression, goal, hint, fullInequality);
 }
 
-export function negativeCoeff() {
-    const vr = v();
-    const a = rnd(2, 8), b = rnd(1, 10), op = pickOp();
-    const rhs = rnd(5, 20);
-    const numRHS = rhs - b;
-    const sol = (-numRHS / a).toFixed(1);
-    return ineqQ(`-${a}*${vr}+${b}`,
-        `${vr} ${flip[op]} ${sol}`,
-        `Solve -${a}${vr}+${b} ${op} ${rhs}: subtract ${b} → -${a}${vr} ${op} ${numRHS}. `
-        + `Divide by -${a} (FLIP sign): ${vr} ${flip[op]} ${sol}.`
-    );
+export function simpleLinearInequality() {
+    return linearInequality();
 }
 
-export function linearWordInequality() {
-    const x = rnd(5, 20), a = rnd(2, 6);
-    return ineqQ(`${a}*x+${rnd(1,8)}`,
-        `x ≤ ${x}`,
-        `"At most ${a*x+rnd(1,8)} total" → set up ${a}x+... ≤ limit and solve.`
-    );
+export function linearInequalityNegativeCoeff() {
+    const a = -rnd(2, 6); // negative coefficient
+    const b = rnd(1, 10);
+    const c = rnd(5, 20);
+    const op = pickOp();
+    const flippedOp = flip[op];
+    
+    const solution = ((c - b) / a).toFixed(1);
+    const expression = `${a}*x${b >= 0 ? `+${b}` : `${b}`}`;
+    const fullInequality = `${a}x${b >= 0 ? `+${b}` : `${b}`} ${op} ${c}`;
+    const goal = `x ${flippedOp} ${solution}`;
+    
+    const hint = `${fullInequality}\n\n` +
+        `Step 1: Subtract ${b} from both sides: ${a}x ${op} ${c - b}\n` +
+        `Step 2: Divide by ${a} (negative, FLIP sign!): x ${flippedOp} ${solution}\n` +
+        `Solution: x ${flippedOp} ${solution}`;
+    
+    return gmIneqQ(expression, goal, hint, fullInequality);
 }
