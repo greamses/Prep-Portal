@@ -1,9 +1,13 @@
 /**
  * modules/gemini.js
- * Gemini AI question generation — supports equation, expression, and word types.
+ * Generates WORD PROBLEMS only via Gemini AI.
+ * Equations, expressions, and inequalities are handled offline in generator.js.
+ *
+ * Called when: type === 'word' AND geminiKey is present.
+ * If no key, the caller (script.js) should show a prompt to add a key.
  */
 
-export const GEMINI_MODELS = [
+const GEMINI_MODELS = [
     { label: 'Gemini 3.1 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent' },
     { label: 'Gemini 3.1 Pro',        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent' },
     { label: 'Gemini 3 Flash',        url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent' },
@@ -12,93 +16,50 @@ export const GEMINI_MODELS = [
     { label: 'Gemini 2.5 Pro',        url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent' },
 ];
 
-// Topic → question type mapping (mirrors topics.js without importing to keep this module standalone)
-const WORD_TOPICS = new Set([
-    'Basic Patterns','Number Sequences','Word Problems','Ratios Intro',
-    'Area & Perimeter','Ratios & Proportion','Word Problems (Algebra)',
-    'Number Bases','Sets & Sequences',
-]);
-const EXPRESSION_TOPICS = new Set([
-    'Order of Operations','Algebraic Simplification','Indices & Powers',
-    'Factorization','Advanced Factorization','Binomial Theorem','Partial Fractions',
-]);
-
-function buildPrompt(topic, classId, method) {
-    const isWord       = WORD_TOPICS.has(topic);
-    const isExpression = EXPRESSION_TOPICS.has(topic);
-
-    // Anti-repetition: inject random seed numbers
+/**
+ * Build a word-problem prompt from topic + subtopic.
+ * Injects random seed numbers to prevent repetition.
+ */
+function buildWordPrompt(topic, subtopic, classId) {
     const a = Math.floor(Math.random() * 80) + 5;
     const b = Math.floor(Math.random() * 40) + 3;
-    const c = Math.floor(Math.random() * 20) + 2;
+    const levelNote = `"${classId}" level (P1-P6 = Primary, JSS1-JSS3 = Junior Secondary, SS1-SS3 = Senior Secondary)`;
 
-    const levelNote = `${classId} level (P1-P6 = Primary, JSS1-JSS3 = Junior Secondary, SS1-SS3 = Senior Secondary)`;
-    const hintStyle = method === 'balancing'
-        ? 'phrase the hint using the balancing method (do the same operation to both sides)'
-        : 'phrase the hint using the transposing/transfer method (move terms across the equals sign)';
+    return `You are a math word problem generator for Nigerian school students.
 
-    if (isWord) {
-        return `You are a math question generator for Nigerian school students.
+Generate ONE word problem for the topic "${topic}", specifically about: "${subtopic}", at the ${levelNote}.
 
-Generate ONE word problem for the topic "${topic}" at ${levelNote}.
+RULES:
+- Write a realistic, age-appropriate scenario. Use Nigerian names, places, or contexts naturally.
+- Do NOT include any equation, expression, or worked solution in the "problem" text — the student sets it up themselves.
+- The "hint" is ONE sentence: a formula, method, or first step. Do not reveal the answer.
+- Vary numbers on every call. Seed values for this question: ${a}, ${b}.
+- Match difficulty strictly to the level.
+- The problem must be clearly solvable using the concepts in "${subtopic}".
 
-STRICT RULES:
-- Write a realistic scenario using Nigerian names, places, or contexts where natural.
-- Do NOT include an equation — the student writes one themselves.
-- The "hint" is one sentence giving a formula or approach, not the answer.
-- Vary numbers every time. Seed values for this question: ${a}, ${b}, ${c}.
-- Match difficulty to the level.
-
-Respond with ONLY a raw JSON object, nothing else:
+Respond with ONLY a raw JSON object — no markdown, no explanation:
 {"type":"word","problem":"<problem text>","hint":"<one sentence hint>"}`;
-    }
-
-    if (isExpression) {
-        return `You are a math expression generator for Nigerian school students.
-
-Generate ONE expression (NO equals sign) for the topic "${topic}" at ${levelNote}.
-
-STRICT RULES:
-- "eq" is the unsimplified expression fed into Graspable Math canvas.
-  Use ONLY: letters, digits, +, -, *, /, ^, parentheses. No spaces inside eq.
-- "goal" is the fully simplified or factored form (ASCII, no spaces). Used for the hint only — not auto-checked.
-- "hint" is one sentence describing what to do (simplify / expand / factorise / evaluate).
-- Vary numbers every time. Seed values: ${a}, ${b}, ${c}.
-- Match difficulty to the level.
-
-Respond with ONLY a raw JSON object, nothing else:
-{"type":"expression","eq":"<expression>","goal":"<simplified form>","hint":"<one sentence>"}`;
-    }
-
-    // Equation (default)
-    return `You are an algebra question generator for Nigerian school students.
-
-Generate ONE algebra equation for the topic "${topic}" at ${levelNote}.
-
-STRICT RULES:
-- "eq" is fed into Graspable Math. Use ONLY: letters, digits, +, -, *, /, ^, =, parentheses. No spaces inside eq.
-- The equation MUST contain an equals sign.
-- "goal" is the exact solution in ASCII with no spaces (e.g. "x=7" or "x=3,y=2").
-- "hint" is one sentence. ${hintStyle}.
-- The solution must be a clean integer or simple fraction.
-- Vary numbers every time. Seed values: ${a}, ${b}, ${c}. Do NOT repeat the same values.
-
-Respond with ONLY a raw JSON object, nothing else:
-{"type":"equation","eq":"<equation>","goal":"<solution>","hint":"<one sentence>"}`;
 }
 
 /**
- * Generate a question via Gemini AI, trying models in chain order.
+ * Generate a word problem via Gemini API, trying models in fallback chain order.
+ *
+ * @param {string} topic     - topic group name
+ * @param {string} subtopic  - the specific subtopic string from topics.js
+ * @param {string} classId   - e.g. 'jss2'
+ * @param {string} apiKey    - Gemini API key
+ * @returns {Promise<{type:'word', problem:string, hint:string}>}
  * @throws if all models fail
  */
-export async function generateWithGemini(topic, classId, method, apiKey) {
-    const prompt = buildPrompt(topic, classId, method);
+export async function generateWordProblem(topic, subtopic, classId, apiKey) {
+    const prompt = buildWordPrompt(topic, subtopic, classId);
     let lastError = null;
 
     for (const model of GEMINI_MODELS) {
         const url = `${model.url}?key=${encodeURIComponent(apiKey)}`;
         try {
-            console.log(`[AlgebraLab] Trying ${model.label}…`);
+            console.log(`[Gemini] Trying ${model.label}…`);
+
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -109,35 +70,28 @@ export async function generateWithGemini(topic, classId, method, apiKey) {
             });
 
             if (res.status === 404) {
-                console.warn(`[AlgebraLab] ${model.label} not found, skipping…`);
+                console.warn(`[Gemini] ${model.label} not available, trying next…`);
                 continue;
             }
             if (!res.ok) {
-                const err = await res.text().catch(() => '');
-                throw new Error(`HTTP ${res.status} — ${err.slice(0, 200)}`);
+                const errText = await res.text().catch(() => '');
+                throw new Error(`HTTP ${res.status} — ${errText.slice(0, 200)}`);
             }
 
-            const data  = await res.json();
-            const raw   = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-            const clean = raw.replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').trim();
+            const data   = await res.json();
+            const raw    = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+            const clean  = raw.replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').trim();
             const parsed = JSON.parse(clean);
 
-            // Validate
-            if (parsed.type === 'word') {
-                if (!parsed.problem || !parsed.hint) throw new Error('Incomplete word fields');
-            } else if (parsed.type === 'expression') {
-                if (!parsed.eq || !parsed.hint) throw new Error('Incomplete expression fields');
-            } else {
-                parsed.type = 'equation';
-                if (!parsed.eq || !parsed.goal || !parsed.hint) throw new Error('Incomplete equation fields');
-                parsed.goal = parsed.goal.replace(/\s/g, '');
+            if (parsed.type !== 'word' || !parsed.problem || !parsed.hint) {
+                throw new Error(`Invalid word problem shape: ${clean}`);
             }
 
-            console.log(`[AlgebraLab] ✓ from ${model.label}:`, parsed);
+            console.log(`[Gemini] ✓ Word problem from ${model.label}`);
             return parsed;
 
         } catch (err) {
-            console.warn(`[AlgebraLab] ${model.label} failed:`, err.message);
+            console.warn(`[Gemini] ${model.label} failed:`, err.message);
             lastError = err;
         }
     }
