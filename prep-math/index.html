@@ -385,6 +385,31 @@
             color: #fff !important;
             border-color: var(--green, #00a550) !important;
         }
+        
+        /* ── Coming soon chip style ────────────────────────────────── */
+        .cdd-group .cdd-option.coming-soon {
+            opacity: 0.5;
+            cursor: not-allowed;
+            position: relative;
+        }
+        
+        .cdd-group .cdd-option.coming-soon:hover {
+            background: transparent;
+        }
+        
+        .cdd-group .cdd-option.coming-soon::after {
+            content: "soon";
+            margin-left: 8px;
+            font-size: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            background: var(--ink, #1a1a1a);
+            color: var(--yellow, #ffe500);
+            padding: 2px 6px;
+            border-radius: 2px;
+            opacity: 0.8;
+        }
     </style>
 </head>
 
@@ -466,15 +491,15 @@
                             </div>
                             <div class="cdd-group">
                                 <div class="cdd-group-label">Junior Secondary</div>
-                                <button class="cdd-option" role="option" data-value="jss1">JSS 1</button>
-                                <button class="cdd-option" role="option" data-value="jss2">JSS 2</button>
-                                <button class="cdd-option" role="option" data-value="jss3">JSS 3</button>
+                                <button class="cdd-option coming-soon" role="option" data-value="jss1" disabled>JSS 1</button>
+                                <button class="cdd-option coming-soon" role="option" data-value="jss2" disabled>JSS 2</button>
+                                <button class="cdd-option coming-soon" role="option" data-value="jss3" disabled>JSS 3</button>
                             </div>
                             <div class="cdd-group">
                                 <div class="cdd-group-label">Senior Secondary</div>
-                                <button class="cdd-option" role="option" data-value="ss1">SS 1</button>
-                                <button class="cdd-option" role="option" data-value="ss2">SS 2</button>
-                                <button class="cdd-option" role="option" data-value="ss3">SS 3</button>
+                                <button class="cdd-option coming-soon" role="option" data-value="ss1" disabled>SS 1</button>
+                                <button class="cdd-option coming-soon" role="option" data-value="ss2" disabled>SS 2</button>
+                                <button class="cdd-option coming-soon" role="option" data-value="ss3" disabled>SS 3</button>
                             </div>
                         </div>
                     </div>
@@ -661,6 +686,23 @@
     
     <script type="module" src="../theory-page/js/keys.js"></script>
     <script type="module" src="./script.js"></script>
+    
+    <script>
+        // Dynamic insertion of class options — only Primary 1-6 active for now
+        (function() {
+            // This runs before the full script.js loads, setting up the dropdown structure.
+            // The rest of the logic (JSS/SSS coming soon) is handled via the 'coming-soon' class and disabled attribute.
+            // If script.js later wants to enable more, it can manipulate the DOM.
+            
+            // Ensure the panel has the correct structure with coming-soon markers
+            const panel = document.getElementById('cdd-panel');
+            if (panel) {
+                // Panel already has the correct HTML structure from the static markup above.
+                // We just need to make sure any JS that reads options respects the 'disabled' attribute.
+                console.log('[Algebra Lab] Class dropdown initialized — Primary 1-6 active, JSS/SSS coming soon.');
+            }
+        })();
+    </script>
     
 </body>
 

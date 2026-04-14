@@ -12,7 +12,7 @@ const vr = () => pick(VARS);
 const signed = (n) => n >= 0 ? `+ ${n}` : `- ${-n}`;
 
 // Missing number symbol for P1-P3
-const BOX = '☐'; // Unicode ballot box
+const BOX = 'n';
 
 // =============================================
 // P1: ADDITION & SUBTRACTION WITHIN 10

@@ -1,95 +1,184 @@
-import { rnd, pick, eqQ } from './utils.js';
-import { missingAddend, missingProduct, fractionEq, decimalEq } from './primary.js';
-import { linearOneStep, linearBothSides, bracketEq, fractionLinearEq } from './linear.js';
-import { simultaneousSubstitution, simultaneousElimination } from './simultaneous.js';
-import { quadraticFactoring, quadraticCompleteSquare, quadraticFormula } from './quadratic.js';
-import { exponentialEq, logarithmicEq, trigEq, suRdEq } from './advanced.js';
-import { differentialEq } from './calculus.js';
+// generators/equations/equations.js
+import { pick } from './utils.js';
+import { linearEquations } from './linear.js';
+import { generateAlgebraicFraction } from './fractions.js';
 
 export function generateEquation(topic, subtopic, classId, method = 'transfer') {
-    const t = topic.toLowerCase();
     const s = (subtopic || '').toLowerCase();
+    const cls = (classId || '').toLowerCase();
 
-    // Primary — missing number
-    if (t.includes('addition') && (t.includes('1-10') || t.includes('within 10') || t.includes('p1') || classId === 'p1')) return missingAddend(10);
-    if (t.includes('addition') && (t.includes('1-20') || t.includes('within 20'))) return missingAddend(20);
-    if (t.includes('addition') && (t.includes('1-100') || t.includes('within 100'))) return missingAddend(100);
-    if (t.includes('addition')) return missingAddend(20);
-    if (t.includes('subtraction') && !t.includes('word')) return missingAddend(20);
-    if (t.includes('multiplication') && !t.includes('word') && !t.includes('multi-digit')) return missingProduct();
-    if (t.includes('division') && !t.includes('word') && !t.includes('remainder')) {
-        const d = pick([2,3,4,5,6]), x = rnd(2,10);
-        return eqQ(`x/${d}=${x}`, `x=${d*x}`, `Multiply both sides by ${d}.`);
+    // =============================================
+    // ALGEBRAIC FRACTIONS (P4-P6)
+    // Topic name is the exact key — route directly.
+    // =============================================
+    if (topic === 'Algebraic Fractions') {
+        return generateAlgebraicFraction(cls, s);
     }
-    if (t.includes('multi-digit multiplication')) {
-        const a = rnd(2,9), b = rnd(10,99);
-        return eqQ(`${a}*x=${a*b}`, `x=${b}`, `Divide both sides by ${a}.`);
-    }
-    if (t.includes('division with remainder')) {
-        const d = rnd(3,9), q = rnd(2,9), r = rnd(0, d-1);
-        return eqQ(`x/${d}=${q}`, `x=${d*q}`, `Multiply both sides by ${d}. (Ignore remainder for equation form.)`);
-    }
-    if (t.includes('fraction equation') || (t.includes('fraction') && t.includes('equation'))) return fractionEq();
-    if (t.includes('decimal equation') || (t.includes('decimal') && t.includes('equation'))) return decimalEq();
-    if (t.includes('percentage equation')) {
-        const pct = pick([10,20,25,50]), whole = rnd(4,20)*10;
-        return eqQ(`${pct/100}*x=${pct*whole/100}`, `x=${whole}`, `Divide both sides by ${pct/100} (i.e. multiply by ${100/pct}).`);
-    }
-    if (t.includes('ratio equation')) {
-        const a=rnd(2,6),b=rnd(2,6),k=rnd(2,5);
-        return eqQ(`${a}/x=${a*k}/${b*k}`, `x=${b}`, `Cross-multiply: ${a}×${b*k}=${a*k}×x, so x=${b}.`);
-    }
-    if (t.includes('order of operations') && t.includes('equation')) {
-        const m=rnd(2,5),x=rnd(2,8),a=rnd(2,10);
-        return eqQ(`${a}+${m}*x=${a+m*x}`, `x=${x}`, `Subtract ${a} first, then divide by ${m}.`);
-    }
-    if (t.includes('one-step equation')) return linearOneStep(method);
-    if (t.includes('two-step equation')) {
-        const a=rnd(2,8), x=rnd(1,10), b=rnd(1,12);
-        return eqQ(`${a}*x+${b}=${a*x+b}`, `x=${x}`,
-            `Subtract ${b} from both sides, then divide by ${a}.`);
-    }
-    if (t.includes('bracket') || t.includes('brackets')) return bracketEq(method);
-    if (t.includes('algebraic fraction') || (t.includes('fraction') && t.includes('variable'))) return fractionLinearEq(method);
-    if (t.includes('linear') && t.includes('both side')) return linearBothSides(method);
-    if (t.includes('linear equation') || t.includes('linear equations')) return linearOneStep(method);
-    if (t.includes('forming') && t.includes('solving')) return linearOneStep(method);
-    if (t.includes('number base')) {
-        const dec = rnd(5,30), base = pick([2,5,8]);
-        const conv = dec.toString(base);
-        return eqQ(`x=${dec}`, `x=${dec}`,
-            `${conv} in base ${base} = ${dec} in base 10. Check by expanding: ${conv.split('').map((d,i,a)=>`${d}×${base}^${a.length-1-i}`).join('+')} = ${dec}.`);
-    }
-    if (t.includes('substitution') && (t.includes('simultaneous') || t.includes('system'))) return simultaneousSubstitution();
-    if (t.includes('elimination') && t.includes('simultaneous')) return simultaneousElimination();
-    if (t.includes('simultaneous')) return pick([simultaneousSubstitution, simultaneousElimination])();
-    if (t.includes('quadratic') && t.includes('formula')) return quadraticFormula();
-    if (t.includes('quadratic') && t.includes('completing')) return quadraticCompleteSquare();
-    if (t.includes('quadratic') && (t.includes('factor') || t.includes('factori'))) return quadraticFactoring(false);
-    if (t.includes('quadratic') && (classId==='ss1'||classId==='ss2'||classId==='ss3')) return quadraticFactoring(true);
-    if (t.includes('quadratic')) return quadraticFactoring(['ss1','ss2','ss3'].includes(classId));
-    if (t.includes('nature of root') || t.includes('discriminant')) {
-        const a=rnd(1,4),b=rnd(-6,6),c=rnd(-8,8);
-        const d=b*b-4*a*c;
-        const verdict = d>0?'two distinct real roots':d===0?'one repeated root':'no real roots';
-        return eqQ(`${a!==1?a+'*':''}x^2${b>0?'+'+b:''+b}*x${c>0?'+'+c:''+c}=0`, `disc=${d}`,
-            `D=b²-4ac=${b}²-4(${a})(${c})=${d}. Since D${d>0?'>':d<0?'<':'='}0, there are ${verdict}.`);
-    }
-    if (t.includes('exponential')) return exponentialEq();
-    if (t.includes('logarithm') || t.includes('log')) return logarithmicEq();
-    if (t.includes('trigonometric') || t.includes('trig')) return trigEq();
-    if (t.includes('surd')) return suRdEq();
-    if (t.includes('differential') || t.includes('dy/dx')) return differentialEq();
-    if (t.includes('parametric')) {
-        const m=rnd(1,5), c=rnd(0,4);
-        return eqQ(`y-${m}*x=${c}`, `y=${m}*x+${c}`,
-            `Rearrange: y=${m}x+${c}. This is the Cartesian form of the parametric equations.`);
-    }
-    if (t.includes('exponential') && t.includes('system')) return exponentialEq();
 
-    // Fallback: generic linear
-    return linearOneStep(method);
+    // =============================================
+    // P1: LINEAR EQUATIONS (Missing numbers with ☐)
+    // =============================================
+    if (cls === 'p1') {
+        if (s.includes('addend'))                               return pick([linearEquations.p1MissingAddend, linearEquations.p1MissingSecondAddend])();
+        if (s.includes('sum'))                                  return linearEquations.p1MissingSum();
+        if (s.includes('balance'))                              return linearEquations.p1BalanceEquation();
+        if (s.includes('subtrahend'))                           return linearEquations.p1MissingSubtrahend();
+        if (s.includes('minuend'))                              return linearEquations.p1MissingMinuend();
+        if (s.includes('difference'))                           return linearEquations.p1MissingDifference();
+        if (s.includes('mixed') || s.includes('true') || s.includes('complete')) {
+            return pick([linearEquations.p1MissingAddend, linearEquations.p1MissingSubtrahend, linearEquations.p1MissingSum])();
+        }
+        return linearEquations.p1MissingAddend();
+    }
+
+    // =============================================
+    // P2: LINEAR EQUATIONS (Within 20)
+    // =============================================
+    if (cls === 'p2') {
+        if (s.includes('addend'))                               return linearEquations.p2MissingAddendWithin20();
+        if (s.includes('sum'))                                  return linearEquations.p2MissingSumWithin20();
+        if (s.includes('balance'))                              return linearEquations.p2BalanceWithin20();
+        if (s.includes('subtrahend'))                           return linearEquations.p2MissingSubtrahendWithin20();
+        if (s.includes('minuend'))                              return linearEquations.p2MissingMinuendWithin20();
+        if (s.includes('difference'))                           return linearEquations.p2MissingDifferenceWithin20();
+        if (s.includes('two-digit') && s.includes('addition'))  return linearEquations.p2TwoDigitAddMissingOnes();
+        if (s.includes('two-digit') && s.includes('subtraction')) return linearEquations.p2TwoDigitSubtractMissing();
+        // "Multiplication as repeated addition", "Missing factor", "Balance with multiplication"
+        if (s.includes('multiplication') || s.includes('repeated') || s.includes('factor')) {
+            return linearEquations.p3MultiplicationFacts();
+        }
+        return linearEquations.p2MissingAddendWithin20();
+    }
+
+    // =============================================
+    // P3: LINEAR EQUATIONS (Within 100, ×/÷ facts)
+    // =============================================
+    if (cls === 'p3') {
+        if (s.includes('addition'))                             return linearEquations.p3AdditionWithin100();
+        if (s.includes('subtraction'))                         return linearEquations.p3SubtractionWithin100();
+        if (s.includes('multiplication') || s.includes('product') || s.includes('factor')) {
+            return linearEquations.p3MultiplicationFacts();
+        }
+        if (s.includes('division') || s.includes('quotient') || s.includes('divisor') || s.includes('dividend')) {
+            return linearEquations.p3DivisionFacts();
+        }
+        if (s.includes('mixed') || s.includes('two-step') || s.includes('balance')) {
+            return linearEquations.p3MixedOperations();
+        }
+        return linearEquations.p3AdditionWithin100();
+    }
+
+    // =============================================
+    // P4: LINEAR EQUATIONS
+    // Subtopics from topics.js:
+    //   "Multiplication facts (6,7,8,9)" | "Missing product" | "Missing factor"
+    //   "Multi-digit multiplication" | "2-digit × 1-digit" | "3-digit × 1-digit"
+    //   "Division with remainders" | "Find quotient and remainder" | "Missing divisor" | "Missing dividend"
+    //   "Fraction equations" | "Find missing numerator" | "Find missing denominator"
+    //   "Decimal equations" | "Missing number in addition" | "Missing number in subtraction" | "Balance decimal equations"
+    // =============================================
+    if (cls === 'p4') {
+        // Multiplication — covers fact tables, multi-digit, ×-digit subtopics
+        if (s.includes('multiplication') || s.includes('product') ||
+            s.includes('multi-digit')    || s.includes('× 1-digit')) {
+            return linearEquations.p3MultiplicationFacts();
+        }
+        // Missing factor also shared with multiplication
+        if (s.includes('missing factor')) return linearEquations.p3MultiplicationFacts();
+
+        // Division — covers remainder, quotient, missing divisor/dividend
+        if (s.includes('division')  || s.includes('quotient') ||
+            s.includes('divisor')   || s.includes('dividend') ||
+            s.includes('remainder')) {
+            return linearEquations.p3DivisionFacts();
+        }
+
+        // Fraction equations — "Fraction equations", "Find missing numerator/denominator"
+        if (s.includes('fraction') || s.includes('numerator') || s.includes('denominator')) {
+            return pick([linearEquations.bracketDivideAdd, linearEquations.bracketDivideSubtract])();
+        }
+
+        // Decimal equations — all decimal subtopics
+        if (s.includes('decimal') || s.includes('balance decimal')) {
+            return linearEquations.oneStepAdd();
+        }
+
+        return linearEquations.oneStepAdd();
+    }
+
+    // =============================================
+    // P5: LINEAR EQUATIONS
+    // Subtopics from topics.js:
+    //   "Fraction equations" | "Add/subtract unlike denominators" | "Multiply fractions" | "Divide fractions"
+    //   "Decimal equations" | "Add/subtract decimals" | "Multiply decimals" | "Divide decimals"
+    //   "Percentage equations" | "Find percentage of a number" | "Find the whole" | "Find the percent"
+    //   "Ratio equations" | "Find missing term" | "Scale ratios"
+    //   "Order of operations equations" | "Find missing number" | "Insert parentheses"
+    // =============================================
+    if (cls === 'p5') {
+        // Fraction equations — all fraction/denominator subtopics
+        if (s.includes('fraction')     || s.includes('denominator') ||
+            s.includes('numerator')    || s.includes('unlike')) {
+            return pick([linearEquations.bracketDivideAdd, linearEquations.bracketDivideSubtract])();
+        }
+        // Decimal equations
+        if (s.includes('decimal')) return linearEquations.oneStepAdd();
+        // Percentage equations
+        if (s.includes('percentage') || s.includes('percent') ||
+            s.includes('find the whole') || s.includes('find the percent')) {
+            return linearEquations.oneStepAdd();
+        }
+        // Ratio equations
+        if (s.includes('ratio') || s.includes('missing term') || s.includes('scale ratio')) {
+            return linearEquations.oneStepAdd();
+        }
+        // Order of operations
+        if (s.includes('order of operations') || s.includes('insert parentheses')) {
+            return linearEquations.multistepBracketAddConst();
+        }
+        return pick([linearEquations.twoStepAdd, linearEquations.twoStepSubtract])();
+    }
+
+    // =============================================
+    // P6: LINEAR EQUATIONS
+    // Subtopics from topics.js:
+    //   "One-step equations" | "x + a = b" | "x - a = b" | "ax = b" | "x/a = b"
+    //   "Two-step equations" | "ax + b = c" | "ax - b = c" | "x/a + b = c"
+    //   "Equations with fractions" | "Fraction coefficients" | "Fraction constants"
+    //   "Equations with decimals" | "Decimal coefficients" | "Decimal constants"
+    // =============================================
+    if (cls === 'p6') {
+        // One-step — catches the group label AND each individual form (x + a = b etc.)
+        if (s.includes('one-step')       ||
+            s === 'x + a = b'            || s === 'x - a = b' ||
+            s === 'ax = b'               || s === 'x/a = b') {
+            return pick([
+                linearEquations.oneStepAdd,
+                linearEquations.oneStepSubtract,
+                linearEquations.oneStepAddReversed,
+                linearEquations.oneStepSubtractFrom,
+            ])();
+        }
+        // Two-step — catches the group label AND individual forms
+        if (s.includes('two-step')       ||
+            s.includes('ax + b')         || s.includes('ax - b') ||
+            s.includes('x/a + b')) {
+            return pick([linearEquations.twoStepAdd, linearEquations.twoStepSubtract])();
+        }
+        // Fraction equations — "Equations with fractions", "Fraction coefficients", "Fraction constants"
+        if (s.includes('fraction') || s.includes('coefficient') || s.includes('constant')) {
+            return pick([linearEquations.bracketDivideAdd, linearEquations.bracketDivideSubtract])();
+        }
+        // Decimal equations
+        if (s.includes('decimal')) return linearEquations.oneStepAdd();
+
+        return linearEquations.oneStepAdd();
+    }
+
+    // =============================================
+    // FALLBACK
+    // =============================================
+    return linearEquations.oneStepAdd();
 }
 
-// Default export for convenience
 export default { generateEquation };
