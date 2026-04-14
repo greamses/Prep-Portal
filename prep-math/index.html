@@ -17,349 +17,205 @@
     <link rel="stylesheet" href="../theory-page/style.css">
     <link rel="stylesheet" href="./style.css">
     
-    <!-- Graspable Math -->
     <script src="https://graspablemath.com/shared/libs/gmath/gm-inject.js"></script>
-    
     <script src="../utils/loader/loader.js"></script>
     
     <style>
         /* ── Key Status Row ─────────────────────────────────────────── */
-        .key-status-row {
-            margin-top: 4px;
-        }
-        
-        .key-status-grid {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        
-        .key-status-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-            min-width: 160px;
-        }
-        
+        .key-status-row { margin-top: 4px; }
+        .key-status-grid { display: flex; gap: 12px; flex-wrap: wrap; }
+        .key-status-item { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 160px; }
         .key-status-label {
             font-family: var(--font-mono, 'JetBrains Mono', monospace);
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-            color: var(--color-ink, #1a1a1a);
-            white-space: nowrap;
-            min-width: 52px;
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: .04em; color: var(--ink, #1a1a1a);
+            white-space: nowrap; min-width: 52px;
         }
-        
         .key-status-input {
             flex: 1;
             font-family: var(--font-mono, 'JetBrains Mono', monospace);
-            font-size: 12px;
-            padding: 6px 10px;
-            border: 2px solid var(--color-ink, #1a1a1a);
-            background: var(--color-bg, #f5f0e8);
-            color: var(--color-ink, #1a1a1a);
-            outline: none;
-            cursor: default;
+            font-size: 12px; padding: 6px 10px;
+            border: 2px solid var(--ink, #1a1a1a);
+            background: var(--bg, #f5f0e8); color: var(--ink, #1a1a1a);
+            outline: none; cursor: default; min-width: 0;
             transition: background 0.2s, border-color 0.2s;
-            min-width: 0;
-            box-shadow: 2px 2px 0 var(--color-ink, #1a1a1a);
+            box-shadow: 2px 2px 0 var(--ink, #1a1a1a);
         }
-        
         .key-status-input.key-filled {
-            background: #e8f5e9;
-            border-color: #2e7d32;
-            box-shadow: 2px 2px 0 #2e7d32;
-            color: #1b5e20;
+            background: #e8f5e9; border-color: #2e7d32;
+            box-shadow: 2px 2px 0 #2e7d32; color: #1b5e20;
         }
-        
         .key-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            border: 2px solid var(--color-ink, #1a1a1a);
-            flex-shrink: 0;
-            background: #ccc;
+            width: 10px; height: 10px; border-radius: 50%;
+            border: 2px solid var(--ink, #1a1a1a);
+            flex-shrink: 0; background: #ccc;
             transition: background 0.2s, border-color 0.2s;
         }
-        
-        .key-dot--ok {
-            background: #4caf50;
-            border-color: #2e7d32;
-        }
-        
-        .key-dot--missing {
-            background: #ef5350;
-            border-color: #b71c1c;
-        }
-        
-        /* ── Canvas responsive min-heights ─────────────────────────── */
+        .key-dot--ok      { background: #4caf50; border-color: #2e7d32; }
+        .key-dot--missing { background: #ef5350; border-color: #b71c1c; }
+
+        /* ═══ OVERLAY FLEX — explicit roles to stop footer expanding ═══
+           canvas-wrap → flex:1 1 0 (takes all remaining height)
+           fs-ftr      → flex:0 0 auto (shrinks to content, never grows)
+        ════════════════════════════════════════════════════════════════ */
+        .fs-overlay         { display: flex; flex-direction: column; }
+        .fs-canvas-wrap     { flex: 1 1 0; min-height: 0; }
+        .fs-ftr             { flex: 0 0 auto; }
+
+        /* Canvas responsive min-heights */
         @media (max-width: 768px) {
-            #gm-fs-canvas {
-                min-height: 200px;
-            }
-            
-            .fs-canvas-wrap {
-                padding: 10px;
-            }
+            #gm-fs-canvas   { min-height: 200px; }
+            .fs-canvas-wrap { padding: 10px; }
         }
-        
-        @media (min-width: 769px) and (max-width: 1024px) {
-            #gm-fs-canvas {
-                min-height: 250px;
-            }
-        }
-        
-        @media (min-width: 1025px) {
-            #gm-fs-canvas {
-                min-height: 300px;
-            }
-        }
-        
-        /* ── Canvas toggle ──────────────────────────────────────────── */
-        .fs-canvas-wrap {
-            transition: flex 0.3s ease, height 0.3s ease, opacity 0.25s ease;
-        }
-        
-        .fs-canvas-wrap.canvas-hidden {
-            flex: none !important;
-            height: 0 !important;
-            min-height: 0 !important;
-            overflow: hidden;
-            opacity: 0;
-            pointer-events: none;
-        }
-        
+        @media (min-width: 769px) and (max-width: 1024px) { #gm-fs-canvas { min-height: 250px; } }
+        @media (min-width: 1025px)                        { #gm-fs-canvas { min-height: 300px; } }
+
+        /* ── Canvas toggle button ───────────────────────────────────── */
         .fs-canvas-toggle-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            display: inline-flex; align-items: center; gap: 6px;
             padding: 8px 14px;
             font-family: var(--font-mono, 'JetBrains Mono', monospace);
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .08em;
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: .08em; line-height: 1; white-space: nowrap;
             background: transparent;
-            border: 1.5px solid rgba(255, 255, 255, 0.18);
-            color: rgba(255, 255, 255, 0.5);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-            line-height: 1;
+            border: 1.5px solid rgba(255,255,255,.18);
+            color: rgba(255,255,255,.5);
+            cursor: pointer; transition: all 0.2s ease;
         }
-        
         .fs-canvas-toggle-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: rgba(255, 255, 255, 0.9);
-            border-color: rgba(255, 255, 255, 0.35);
+            background: rgba(255,255,255,.08);
+            color: rgba(255,255,255,.9);
+            border-color: rgba(255,255,255,.35);
         }
-        
         .fs-canvas-toggle-btn.canvas-off {
-            background: rgba(255, 229, 0, 0.12);
+            background: rgba(255,229,0,.12);
             color: var(--yellow, #ffe500);
-            border-color: rgba(255, 229, 0, 0.4);
+            border-color: rgba(255,229,0,.4);
         }
-        
-        /* ── Mark Solved button (footer) ────────────────────────────── */
-        .fs-mark-solved-btn {
-            display: none;
-            /* shown via JS for word problems only */
-            align-items: center;
-            gap: 7px;
-            padding: 8px 16px;
-            font-family: var(--font-mono, 'JetBrains Mono', monospace);
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .08em;
-            background: var(--green, #00a550);
-            border: 1.5px solid rgba(255, 255, 255, 0.25);
-            color: #fff;
-            cursor: pointer;
-            white-space: nowrap;
-            flex-shrink: 0;
-            transition: all 0.2s ease;
-            line-height: 1;
+
+        /* Canvas hidden state — override flex:1 entirely */
+        .fs-canvas-wrap.canvas-hidden {
+            flex: 0 0 0% !important;
+            height: 0 !important; min-height: 0 !important;
+            overflow: hidden; opacity: 0; pointer-events: none;
         }
-        
-        .fs-mark-solved-btn:hover {
-            background: #00c060;
-            transform: translateY(-1px);
-        }
-        
-        /* ── Word Problem Modal — centered dialog ───────────────────── */
-        
-        /* Override the bottom-sheet from style.css */
+
+        /* ═══ WORD PROBLEM MODAL — centered dialog ══════════════════
+           One minimize button (—) collapses the body+footer.
+           One close button (✕) fully hides the modal.
+           No "Dismiss" anywhere.
+        ════════════════════════════════════════════════════════════ */
+
+        /* Full-overlay backdrop — resets the bottom-sheet from style.css */
         .wp-modal {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
             padding: 20px;
-            background: rgba(0, 0, 0, 0.65);
-            /* reset bottom-sheet transforms */
-            transform: none !important;
-            max-height: none !important;
-            border-top: none !important;
-            overflow: visible !important;
-            /* visibility */
-            opacity: 0;
-            pointer-events: none;
+            background: rgba(0,0,0,.62);
+            /* neutralise bottom-sheet remnants */
+            transform: none !important; max-height: none !important;
+            border-top: none !important; overflow: visible !important;
+            opacity: 0; pointer-events: none;
             transition: opacity 0.22s ease;
             z-index: 50;
         }
-        
-        .wp-modal.open {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        
+        .wp-modal.open { opacity: 1; pointer-events: auto; }
+
+        /* Click-away backdrop */
+        .wp-modal-backdrop { position: absolute; inset: 0; z-index: 0; cursor: pointer; }
+
+        /* Card */
         .wp-modal-card {
+            position: relative; z-index: 1;
             background: var(--bg, #f5f0e8);
             border: 2.5px solid var(--ink, #1a1a1a);
             box-shadow: 6px 6px 0 var(--ink, #1a1a1a);
-            width: 100%;
-            max-width: 480px;
-            max-height: 80dvh;
-            overflow-y: auto;
-            overscroll-behavior: contain;
+            width: 100%; max-width: 480px;
+            max-height: 80dvh; overflow-y: auto; overscroll-behavior: contain;
             transform: scale(0.94) translateY(12px);
-            transition: transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1);
+            transition: transform 0.25s cubic-bezier(0.34,1.2,0.64,1);
         }
-        
-        .wp-modal.open .wp-modal-card {
-            transform: scale(1) translateY(0);
-        }
-        
-        /* Close on backdrop click */
-        .wp-modal-backdrop {
-            position: absolute;
-            inset: 0;
-            cursor: pointer;
-            z-index: 0;
-        }
-        
-        .wp-modal-card {
-            position: relative;
-            z-index: 1;
-        }
-        
-        /* Reuse existing wp-hdr / wp-title / wp-close / wp-text from style.css,
-           just tweak colours to match light bg */
+        .wp-modal.open .wp-modal-card { transform: scale(1) translateY(0); }
+
+        /* Minimized — hides body + footer, shows only header */
+        .wp-modal-card.minimized .wp-modal-body,
+        .wp-modal-card.minimized .wp-modal-foot { display: none; }
+
+        /* Header: dark bar, title left, minimize + close right */
         .wp-modal .wp-hdr {
+            display: flex; align-items: center; gap: 8px;
             background: var(--ink, #1a1a1a);
-            border-bottom: 2px solid var(--ink, #1a1a1a);
-            padding: 12px 18px;
+            padding: 11px 14px;
+            border-bottom: none; /* override style.css */
         }
-        
         .wp-modal .wp-title {
-            color: var(--yellow, #ffe500);
-            font-size: 11px;
-        }
-        
-        .wp-modal .wp-close {
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .wp-modal .wp-close:hover {
-            color: #fff;
-        }
-        
-        .wp-modal .wp-text {
-            padding: 18px 20px 8px;
-            font-size: 14px;
-            line-height: 1.7;
-            color: var(--ink, #1a1a1a);
-        }
-        
-        .wp-modal-hint {
-            padding: 0 20px 14px;
-            font-family: var(--font-mono, 'JetBrains Mono', monospace);
-            font-size: 11px;
-            color: var(--muted, #888);
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            border-top: 1px solid rgba(0, 0, 0, 0.08);
-            margin-top: 8px;
-            padding-top: 10px;
-        }
-        
-        /* Mark Solved inside modal */
-        .wp-modal-foot {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            padding: 12px 20px 16px;
-            border-top: 1.5px solid rgba(0, 0, 0, 0.1);
-        }
-        
-        .wp-modal-solved-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 9px 18px;
+            flex: 1;
             font-family: var(--font-display, 'Unbounded', sans-serif);
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .06em;
+            font-size: 10px; font-weight: 900;
+            text-transform: uppercase; letter-spacing: .08em;
+            color: var(--yellow, #ffe500);
+        }
+
+        /* Shared base for both header icon buttons */
+        .wp-hdr-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 26px; height: 26px; flex-shrink: 0;
+            background: transparent;
+            border: 1.5px solid rgba(255,255,255,.2);
+            color: rgba(255,255,255,.45);
+            cursor: pointer; transition: all 0.18s ease;
+        }
+        .wp-hdr-btn:hover { background: rgba(255,255,255,.1); color: #fff; border-color: rgba(255,255,255,.4); }
+
+        /* Close turns red */
+        .wp-hdr-btn.wp-hdr-close:hover { background: var(--red, #ff2200); border-color: var(--red, #ff2200); color: #fff; }
+
+        /* Minimize turns yellow when card is minimized */
+        .wp-hdr-btn.wp-hdr-minimize.is-minimized {
+            background: rgba(255,229,0,.15);
+            color: var(--yellow, #ffe500);
+            border-color: rgba(255,229,0,.4);
+        }
+
+        /* Body */
+        .wp-modal-body { padding: 18px 20px 10px; }
+        .wp-modal .wp-text {
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-size: 14px; line-height: 1.72; color: var(--ink, #1a1a1a); margin: 0 0 10px;
+        }
+        .wp-modal-hint {
+            font-family: var(--font-mono, 'JetBrains Mono', monospace);
+            font-size: 11px; color: var(--muted, #777);
+            text-transform: uppercase; letter-spacing: .06em;
+            border-top: 1px solid rgba(0,0,0,.08);
+            padding-top: 10px; margin: 0;
+        }
+
+        /* Footer: Mark Solved only */
+        .wp-modal-foot {
+            display: flex; justify-content: flex-end;
+            padding: 12px 20px 16px;
+            border-top: 1.5px solid rgba(0,0,0,.08);
+        }
+        .wp-modal-solved-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 9px 20px;
+            font-family: var(--font-display, 'Unbounded', sans-serif);
+            font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
             background: var(--green, #00a550);
             border: 2px solid var(--ink, #1a1a1a);
             box-shadow: 3px 3px 0 var(--ink, #1a1a1a);
-            color: #fff;
-            cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s;
+            color: #fff; cursor: pointer;
+            transition: transform 0.14s, box-shadow 0.14s;
         }
-        
-        .wp-modal-solved-btn:hover {
-            transform: translate(-1px, -1px);
-            box-shadow: 4px 4px 0 var(--ink, #1a1a1a);
-        }
-        
-        .wp-modal-dismiss-btn {
-            display: inline-flex;
-            align-items: center;
-            padding: 9px 16px;
-            font-family: var(--font-mono, 'JetBrains Mono', monospace);
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            background: transparent;
-            border: 2px solid var(--ink, #1a1a1a);
-            color: var(--ink, #1a1a1a);
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-        
-        .wp-modal-dismiss-btn:hover {
-            background: var(--ink, #1a1a1a);
-            color: var(--bg, #f5f0e8);
-        }
-        
-        /* ── Mobile tweaks ──────────────────────────────────────────── */
+        .wp-modal-solved-btn:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--ink,#1a1a1a); }
+
+        /* Mobile */
         @media (max-width: 560px) {
-            .wp-modal {
-                padding: 14px;
-            }
-            
-            .wp-modal-card {
-                max-height: 85dvh;
-                box-shadow: 4px 4px 0 var(--ink, #1a1a1a);
-            }
-            
-            .wp-modal .wp-text {
-                font-size: 13px;
-            }
-            
-            .fs-canvas-toggle-btn {
-                padding: 7px 10px;
-                font-size: 9px;
-            }
+            .wp-modal              { padding: 14px; }
+            .wp-modal-card         { max-height: 85dvh; box-shadow: 4px 4px 0 var(--ink,#1a1a1a); }
+            .wp-modal .wp-text     { font-size: 13px; }
+            .fs-canvas-toggle-btn  { padding: 7px 10px; font-size: 9px; }
         }
     </style>
 </head>
@@ -367,14 +223,11 @@
 <body>
     
     <div id="loader">
-        <div id="loader-wrapper">
-            <div class="logo-cluster"></div>
-        </div>
+        <div id="loader-wrapper"><div class="logo-cluster"></div></div>
         <div class="loader-word"><span>Algebra</span></div>
         <div class="loader-bar"></div>
     </div>
     
-    <!-- Navigation -->
     <nav class="site-nav">
         <a href="index.html" class="nav-logo">
             <img src="../logo/logo-light.svg" alt="PrepPortal logo" />
@@ -394,12 +247,10 @@
         </button>
     </nav>
     
-    <!-- Ticker -->
     <div class="ticker" aria-hidden="true">
         <div class="ticker-track" id="ticker-track"></div>
     </div>
     
-    <!-- Page Header -->
     <header class="pg-header">
         <div class="ph-left">
             <p class="pg-eyebrow">PrepBot &middot; Mathematics</p>
@@ -408,29 +259,18 @@
         <div class="ph-right">
             <p>Curriculum-based algebra practice from Primary 1 to SS3. Select your class level and topic, then solve with interactive canvas.</p>
             <div class="ph-stats">
-                <div class="ph-stat">
-                    <strong id="stat-count">0</strong>
-                    <span>Solved</span>
-                </div>
-                <div class="ph-stat">
-                    <strong id="stat-class" class="stat-topic-val">—</strong>
-                    <span>Class</span>
-                </div>
-                <div class="ph-stat">
-                    <strong id="stat-topic" class="stat-topic-val">—</strong>
-                    <span>Topic</span>
-                </div>
+                <div class="ph-stat"><strong id="stat-count">0</strong><span>Solved</span></div>
+                <div class="ph-stat"><strong id="stat-class" class="stat-topic-val">—</strong><span>Class</span></div>
+                <div class="ph-stat"><strong id="stat-topic" class="stat-topic-val">—</strong><span>Topic</span></div>
             </div>
         </div>
     </header>
     
-    <!-- Status Bar -->
     <div id="status-bar" class="status-bar" role="status" aria-live="polite"></div>
     
-    <!-- Setup Section -->
     <section class="setup-section">
         <div class="setup-box">
-            <!-- Step 1: Class Level -->
+
             <div class="setup-row full">
                 <div class="setup-cell">
                     <div class="step-label">
@@ -441,7 +281,7 @@
                         <button class="cdd-trigger" id="cdd-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Select class level">
                             <span class="cdd-value" id="cdd-value">Select Class Level</span>
                             <svg class="cdd-arrow" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">
-                                <polyline points="3 6 9 13 15 6" />
+                                <polyline points="3 6 9 13 15 6"/>
                             </svg>
                         </button>
                         <div class="cdd-panel" id="cdd-panel" role="listbox" aria-label="Class level">
@@ -470,8 +310,7 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Step 2: Topic -->
+
             <div class="setup-row full">
                 <div class="setup-cell">
                     <div class="step-label">
@@ -483,8 +322,7 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Step 3: Hint Method -->
+
             <div class="setup-row">
                 <div class="setup-cell">
                     <div class="step-label">
@@ -497,7 +335,6 @@
                     </div>
                     <p class="step-sub">How should PrepBot phrase the hint?</p>
                 </div>
-                
                 <div class="setup-cell">
                     <div class="step-label">
                         <span class="step-num">4</span>
@@ -505,33 +342,32 @@
                     </div>
                     <button id="gen-btn" class="btn btn-yellow gen-btn" onclick="generateQuestion()">
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M8 1v3M8 12v3M1 8h3M12 8h3M3.05 3.05l2.12 2.12M10.83 10.83l2.12 2.12M3.05 12.95l2.12-2.12M10.83 5.17l2.12-2.12" />
+                            <path d="M8 1v3M8 12v3M1 8h3M12 8h3M3.05 3.05l2.12 2.12M10.83 10.83l2.12 2.12M3.05 12.95l2.12-2.12M10.83 5.17l2.12-2.12"/>
                         </svg>
                         Generate Equation
                     </button>
                 </div>
             </div>
-            
-            <!-- API Key Status -->
+
             <div class="setup-row full key-status-row">
                 <div class="setup-cell">
                     <div class="step-label">
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0">
-                            <circle cx="5.5" cy="5.5" r="3.5" />
-                            <path d="M8.5 8.5l4 4" />
-                            <path d="M5.5 4v3M4 5.5h3" />
+                            <circle cx="5.5" cy="5.5" r="3.5"/>
+                            <path d="M8.5 8.5l4 4M5.5 4v3M4 5.5h3"/>
                         </svg>
                         <span class="step-title">API Keys</span>
                     </div>
                     <div class="key-status-grid">
                         <div class="key-status-item">
                             <span class="key-status-label">Gemini</span>
-                            <input type="password" id="gemini-key-display" class="key-status-input" readonly placeholder="Not loaded" tabindex="-1" aria-label="Gemini API key status" />
+                            <input type="password" id="gemini-key-display" class="key-status-input" readonly placeholder="Not loaded" tabindex="-1" aria-label="Gemini API key status"/>
                             <span class="key-dot" id="gemini-key-dot" title="Gemini key status"></span>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
         
         <div id="page-placeholder" class="ap-placeholder">
@@ -539,102 +375,112 @@
         </div>
     </section>
     
-    <!-- ═══ FULLSCREEN OVERLAY ═══ -->
-    <div id="fs-overlay" class="fs-overlay" style="pointer-events: none;">
-        
-        <!-- Header: New · Canvas Toggle · Close -->
+    <!-- ═══ FULLSCREEN OVERLAY ══════════════════════════════════════ -->
+    <div id="fs-overlay" class="fs-overlay" style="pointer-events:none;">
+
+        <!-- Header -->
         <header class="fs-hdr" id="fs-hdr">
             <button id="fs-new-btn" class="fs-new-btn" onclick="generateQuestion()">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1.5 6.5a5 5 0 1 1 5 5" />
-                    <path d="M1.5 3.5v3h3" />
+                    <path d="M1.5 6.5a5 5 0 1 1 5 5"/><path d="M1.5 3.5v3h3"/>
                 </svg>
                 New
             </button>
-            
-            <!-- Canvas toggle -->
-            <button id="fs-canvas-toggle-btn" class="fs-canvas-toggle-btn" onclick="toggleCanvas()" title="Toggle canvas">
+            <button id="fs-canvas-toggle-btn" class="fs-canvas-toggle-btn" onclick="toggleCanvas()" title="Hide canvas">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <rect x="1" y="1" width="11" height="11" rx="1" />
-                    <path d="M1 4.5h11" />
+                    <rect x="1" y="1" width="11" height="11" rx="1"/>
+                    <path d="M1 4.5h11"/>
                 </svg>
                 Canvas
             </button>
-            
-            <button class="fs-close-btn" onclick="closeOverlay()">
+            <button class="fs-close-btn" onclick="closeOverlay()" aria-label="Close overlay">
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M1 1l10 10M11 1L1 11" />
+                    <path d="M1 1l10 10M11 1L1 11"/>
                 </svg>
             </button>
         </header>
-        
-        <!-- Canvas -->
+
+        <!-- Canvas: flex 1, takes all height between header and footer -->
         <div id="fs-canvas-wrap" class="fs-canvas-wrap">
             <div id="gm-fs-canvas"></div>
         </div>
-        
-        <!-- Footer: hint · problem btn · mark solved · close -->
+
+        <!-- Footer: auto height, hugs content -->
         <footer class="fs-ftr">
             <div class="fs-hint-row">
                 <span class="fs-hint-lbl">Hint</span>
                 <span id="fs-hint-text" class="fs-hint-txt"></span>
             </div>
-            
-            <!-- Shown only for word problems -->
-            <button id="wp-modal-btn" class="fs-wp-btn" onclick="toggleWordProblemModal()" style="display:none">
+            <button id="wp-modal-btn" class="fs-wp-btn" onclick="toggleWordProblemModal()" style="display:none" aria-label="Show problem">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <rect x=".9" y=".9" width="11.2" height="11.2" />
-                    <path d="M3 4.5h7M3 7.5h5" />
+                    <rect x=".9" y=".9" width="11.2" height="11.2"/>
+                    <path d="M3 4.5h7M3 7.5h5"/>
                 </svg>
                 Problem
             </button>
-            
             <button class="fs-dismiss-btn" onclick="closeOverlay()">
                 <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 1l9 9M10 1L1 10" />
+                    <path d="M1 1l9 9M10 1L1 10"/>
                 </svg>
                 Close
             </button>
         </footer>
-        
-        <!-- ── Word Problem Modal (centered dialog) ── -->
+
+        <!-- ── Word Problem Modal ────────────────────────────────── -->
         <div id="wp-modal" class="wp-modal" role="dialog" aria-modal="true" aria-labelledby="wp-modal-title">
-            
-            <!-- Invisible backdrop — click to dismiss -->
-            <div class="wp-modal-backdrop" onclick="toggleWordProblemModal()"></div>
-            
-            <div class="wp-modal-card">
+
+            <!-- Backdrop click = close -->
+            <div class="wp-modal-backdrop" onclick="closeWordProblemModal()"></div>
+
+            <div class="wp-modal-card" id="wp-modal-card">
+
+                <!-- Header: title · minimize (—) · close (✕) -->
                 <div class="wp-hdr">
                     <span id="wp-modal-title" class="wp-title">Word Problem</span>
-                    <button class="wp-close" onclick="toggleWordProblemModal()" aria-label="Close word problem">
-                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M1 1l9 9M10 1L1 10" />
+
+                    <button class="wp-hdr-btn wp-hdr-minimize" id="wp-minimize-btn"
+                            onclick="minimizeWordProblemModal()" aria-label="Minimize">
+                        <svg width="10" height="2" viewBox="0 0 10 2" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="square">
+                            <path d="M0 1h10"/>
+                        </svg>
+                    </button>
+
+                    <button class="wp-hdr-btn wp-hdr-close"
+                            onclick="closeWordProblemModal()" aria-label="Close word problem">
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"
+                             stroke="currentColor" stroke-width="2" stroke-linecap="square">
+                            <path d="M1 1l8 8M9 1L1 9"/>
                         </svg>
                     </button>
                 </div>
-                
-                <p id="wp-modal-text" class="wp-text"></p>
-                
-                <p class="wp-modal-hint">Set up the equation in the canvas above and solve it.</p>
-                
+
+                <!-- Body (hidden when minimized) -->
+                <div class="wp-modal-body">
+                    <p id="wp-modal-text" class="wp-text"></p>
+                    <p class="wp-modal-hint">Set up the equation in the canvas and solve it.</p>
+                </div>
+
+                <!-- Footer: Mark Solved only (hidden when minimized) -->
                 <div class="wp-modal-foot">
-                    <button class="wp-modal-dismiss-btn" onclick="toggleWordProblemModal()">Dismiss</button>
                     <button class="wp-modal-solved-btn" onclick="markSolvedFromModal()">
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                            <path d="M1.5 6.5l3 3 6-6" />
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                             stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <path d="M1.5 6.5l3 3 6-6"/>
                         </svg>
                         Mark Solved
                     </button>
                 </div>
+
             </div>
         </div>
-        
+
     </div><!-- /fs-overlay -->
     
     <button id="open-fab" class="open-fab" onclick="openOverlay()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5">
-            <rect x="1.5" y="1.5" width="13" height="13" />
-            <path d="M8 4.5v7M4.5 8h7" />
+            <rect x="1.5" y="1.5" width="13" height="13"/>
+            <path d="M8 4.5v7M4.5 8h7"/>
         </svg>
         Open Canvas
     </button>
@@ -643,5 +489,4 @@
     <script type="module" src="./script.js"></script>
     
 </body>
-
 </html>

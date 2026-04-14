@@ -562,7 +562,7 @@ function openOverlay(data) {
     overlay.style.pointerEvents = 'auto';
 
     // Always close word-problem modal and restore canvas when loading a new question
-    wpModal.classList.remove('open');
+    closeWordProblemModal();
     restoreCanvas();
 
     canvasEl.innerHTML = '';
@@ -578,7 +578,7 @@ function openOverlay(data) {
         appState.currentGoal = null;
 
         // Open modal immediately so student sees the question
-        wpModal.classList.add('open');
+        openWordProblemModal();
 
         // Blank canvas — student writes their own equation
         appState.gmCanvas = new gmath.Canvas('#gm-fs-canvas', canvasFullscreenSettings);
@@ -646,14 +646,46 @@ window.closeOverlay = () => {
     const overlay = document.getElementById('fs-overlay');
     overlay.classList.remove('open');
     overlay.style.pointerEvents = 'none';
-    // Close modal + restore canvas state on overlay close
-    document.getElementById('wp-modal').classList.remove('open');
+    closeWordProblemModal();
     restoreCanvas();
 };
 
 // Toggle the word-problem modal open / closed
 window.toggleWordProblemModal = () => {
-    document.getElementById('wp-modal').classList.toggle('open');
+    const modal = document.getElementById('wp-modal');
+    if (modal.classList.contains('open')) {
+        closeWordProblemModal();
+    } else {
+        openWordProblemModal();
+    }
+};
+
+// Open the word-problem modal (always restores from minimized first)
+function openWordProblemModal() {
+    const modal   = document.getElementById('wp-modal');
+    const card    = document.getElementById('wp-modal-card');
+    const minBtn  = document.getElementById('wp-minimize-btn');
+    card.classList.remove('minimized');
+    minBtn?.classList.remove('is-minimized');
+    modal.classList.add('open');
+}
+
+// Fully hide the word-problem modal and reset minimize state
+window.closeWordProblemModal = function () {
+    const modal  = document.getElementById('wp-modal');
+    const card   = document.getElementById('wp-modal-card');
+    const minBtn = document.getElementById('wp-minimize-btn');
+    modal.classList.remove('open');
+    card.classList.remove('minimized');
+    minBtn?.classList.remove('is-minimized');
+};
+
+// Collapse card to header bar only; click minimize again to restore
+window.minimizeWordProblemModal = () => {
+    const card   = document.getElementById('wp-modal-card');
+    const minBtn = document.getElementById('wp-minimize-btn');
+    const isMin  = card.classList.toggle('minimized');
+    minBtn?.classList.toggle('is-minimized', isMin);
 };
 
 // Toggle the GM canvas visibility
@@ -661,7 +693,6 @@ window.toggleCanvas = () => {
     const wrap = document.getElementById('fs-canvas-wrap');
     const btn  = document.getElementById('fs-canvas-toggle-btn');
     const isHiding = !wrap.classList.contains('canvas-hidden');
-
     wrap.classList.toggle('canvas-hidden', isHiding);
     btn.classList.toggle('canvas-off', isHiding);
     btn.title = isHiding ? 'Show canvas' : 'Hide canvas';
@@ -677,8 +708,8 @@ function restoreCanvas() {
     if (btn) btn.title = 'Hide canvas';
 }
 
-// "Mark Solved" from inside the word-problem modal
+// Mark Solved from inside the word-problem modal
 window.markSolvedFromModal = () => {
-    document.getElementById('wp-modal').classList.remove('open');
+    closeWordProblemModal();
     handleSuccess();
 };

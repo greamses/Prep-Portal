@@ -602,9 +602,6 @@
   color: var(--ink);
 }
 
-/* ════════════════════════════════════════════════════
-   FULLSCREEN OVERLAY
-════════════════════════════════════════════════════ */
 .fs-overlay {
   position: fixed;
   inset: 0;
@@ -626,7 +623,6 @@
   pointer-events: auto;
 }
 
-/* ── Overlay header — New + Close only ── */
 .fs-hdr {
   flex-shrink: 0;
   display: flex;
@@ -641,7 +637,6 @@
   z-index: 10;
 }
 
-/* ── FS header buttons ── */
 .fs-new-btn {
   display: inline-flex;
   align-items: center;
@@ -1830,12 +1825,7 @@
   box-shadow: 4px 4px 0 var(--ink);
 }
 
-/* ════════════════════════════════════════════════════
-   WORD PROBLEM OVERLAY — MOBILE FIXES  ≤ 560px
-════════════════════════════════════════════════════ */
 @media (max-width: 560px) {
-  
-  /* Footer: stack hint row above action buttons */
   .fs-ftr {
     flex-direction: column;
     align-items: stretch;
@@ -1843,7 +1833,6 @@
     gap: 8px;
   }
   
-  /* Hint row takes full width so banner never competes with close button */
   .fs-hint-row {
     flex: none;
     width: 100%;
@@ -1853,7 +1842,6 @@
     gap: 4px;
   }
   
-  /* Banner: smaller font + tighter padding on phone */
   .fs-problem-banner {
     font-size: 12.5px;
     line-height: 1.6;
@@ -1867,19 +1855,16 @@
     margin-bottom: 5px;
   }
   
-  /* Hint text: slightly smaller */
   .fs-hint-txt {
     font-size: 12px;
   }
   
-  /* Button row: NEW + MARK SOLVED side by side, full width */
   .fs-btn-row {
     display: flex;
     gap: 8px;
     width: 100%;
   }
   
-  /* Mark solved: no longer absolute, sits in normal flow */
   .fs-mark-solved-btn {
     position: static;
     flex: 1;
@@ -1889,7 +1874,6 @@
     justify-content: center;
   }
   
-  /* NEW button: equal flex alongside mark solved */
   .fs-new-btn {
     flex: 1;
     justify-content: center;
@@ -1897,7 +1881,6 @@
     font-size: 9px;
   }
   
-  /* Canvas: give it a defined height so footer doesn't get squeezed off screen */
   .fs-canvas-wrap {
     flex: none;
     height: 42dvh;
@@ -1909,7 +1892,6 @@
     height: 100%;
   }
   
-  /* Close button: keep it accessible but not taking row space */
   .fs-close-btn {
     position: absolute;
     top: 6px;
@@ -1921,6 +1903,5 @@
   .fs-hdr {
     position: relative;
     padding-right: 52px;
-    /* clear the absolute close btn */
   }
 }
