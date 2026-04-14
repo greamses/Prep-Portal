@@ -12,8 +12,8 @@
  */
 
 import { generateEquation }   from './generators/equations/equations.js';
-import { generateExpression } from './generators/expressions.js';
-import { generateInequality } from './generators/inequalities.js';
+import { generateExpression } from './generators/expressions/expressions.js';
+import { generateInequality } from './generators/inequalities/inequalities.js';
 
 /**
  * Generate a question for a non-word topic.
