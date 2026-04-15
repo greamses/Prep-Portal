@@ -10,152 +10,155 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
   
-<link rel="stylesheet" href="./style.css">
-    <script src="../../utils/loader/loader.js"></script>
-        <link rel="stylesheet" href="../../main.css">
-    <link rel="stylesheet" href="../../theory-page/style.css">
+  <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
-      <div id="loader">
-      <div id="loader-wrapper">
-        <div class="logo-cluster"></div>
-      </div>
-      <div class="loader-word"><span>Fraction</span></div>
-      <div class="loader-bar"></div>
-    </div>
-  <!-- Nav -->
-   <nav class="site-nav">
-     <a href="index.html" class="nav-logo">
-       <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
-       <div class="logo-brand">
-         <span class="brand-top">Prep</span>
-         <span class="brand-bottom">Portal</span>
-       </div>
-     </a>
-     <ul class="nav-links" id="nav-links">
-       <li><a href="index.html">Home</a></li>
-       <li><a href="waec.html">WAEC</a></li>
-       <li><a href="jamb.html">JAMB</a></li>
-       <li><a href="algebra-practice.html" class="active">Algebra</a></li>
-     </ul>
-     <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
-       <span></span><span></span><span></span>
-     </button>
-   </nav>
   
-  <!-- Ticker -->
+  <nav class="site-nav">
+    <a href="#" class="nav-logo">
+      <div class="logo-brand">
+        <span class="brand-top">Prep</span>
+        <span class="brand-bottom">Portal</span>
+      </div>
+    </a>
+  </nav>
+  
+  <!-- ── Ticker ────────────────────────────────────────────── -->
   <div class="ticker" aria-hidden="true">
     <div class="ticker-track" id="ticker-track"></div>
   </div>
   
-  <!-- Page Header -->
+  <!-- ── Page Header ──────────────────────────────────────── -->
   <header class="pg-header">
     <div class="ph-left">
       <p class="pg-eyebrow">PrepBot · Mathematics</p>
       <h1 class="pg-title">FRACTION<br><em>EXPLORER</em></h1>
     </div>
     <div class="ph-right">
-      <p>Study the fraction circle on the canvas and type what fraction it represents. Use the visual to reason your answer before submitting.</p>
+      <p>Configure your session, then start. Each correct answer automatically generates the next question — no limit.</p>
       <div class="ph-stats">
-        <div class="ph-stat">
-          <strong id="stat-solved">0</strong>
-          <span>Solved</span>
-        </div>
-        <div class="ph-stat">
-          <strong id="stat-topic">Halves</strong>
-          <span>Topic</span>
-        </div>
+        <div class="ph-stat"><strong id="stat-streak">0</strong><span>Streak</span></div>
+        <div class="ph-stat"><strong id="stat-total">0</strong><span>Solved</span></div>
       </div>
     </div>
   </header>
   
-  <!-- Dashboard -->
-  <section class="gp-dashboard">
-    <div class="gp-dash-body">
-      <p class="gp-dash-desc">
-        A fraction circle will appear on the canvas. Look at how many parts are shaded versus the total number of parts — then type the fraction in the answer box.
+  <!-- ── Settings Panel ───────────────────────────────────── -->
+  <section class="settings-panel">
+    <div class="settings-body">
+      <p class="settings-desc">
+        Choose a mode, select how many parts to divide the shape into, and pick the shape type. Hit Start when ready — questions will keep coming until you close.
       </p>
       
-      <div class="question-list" id="question-list">
-        <div class="q-item" data-q="0" onclick="openModal(0)">
-          <span class="q-num">Q1</span>
-          What fraction does the circle show?
+      <div class="settings-grid">
+        
+        <!-- Mode -->
+        <div class="pp-dropdown" id="dd-mode">
+          <span class="pp-dropdown-label">Mode</span>
+          <div class="pp-dropdown-header" onclick="toggleDropdown('dd-mode')">
+            <span class="dd-selected">Fractions</span>
+            <svg viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="pp-dropdown-list">
+            <div class="pp-dropdown-item selected" data-value="fractions">Fractions</div>
+            <div class="pp-dropdown-item" data-value="percents">Percents</div>
+            <div class="pp-dropdown-item" data-value="degrees">Degrees</div>
+            <div class="pp-dropdown-item" data-value="decimals">Decimals</div>
+          </div>
         </div>
-        <div class="q-item" data-q="1" onclick="openModal(1)">
-          <span class="q-num">Q2</span>
-          Identify the shaded fraction (thirds).
+        
+        <!-- Parts -->
+        <div class="pp-dropdown" id="dd-parts">
+          <span class="pp-dropdown-label">Parts</span>
+          <div class="pp-dropdown-header" onclick="toggleDropdown('dd-parts')">
+            <span class="dd-selected">Halves</span>
+            <svg viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="pp-dropdown-list">
+            <div class="pp-dropdown-item selected" data-value="2">Halves</div>
+            <div class="pp-dropdown-item" data-value="3">Thirds</div>
+            <div class="pp-dropdown-item" data-value="4">Fourths</div>
+            <div class="pp-dropdown-item" data-value="5">Fifths</div>
+            <div class="pp-dropdown-item" data-value="8">Eighths</div>
+          </div>
         </div>
-        <div class="q-item" data-q="2" onclick="openModal(2)">
-          <span class="q-num">Q3</span>
-          What fraction is shaded? (quarters)
+        
+        <!-- Type -->
+        <div class="pp-dropdown" id="dd-type">
+          <span class="pp-dropdown-label">Type</span>
+          <div class="pp-dropdown-header" onclick="toggleDropdown('dd-type')">
+            <span class="dd-selected">Circles</span>
+            <svg viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="pp-dropdown-list">
+            <div class="pp-dropdown-item selected" data-value="fraction-circle">Circles</div>
+            <div class="pp-dropdown-item" data-value="fraction-bar">Bars</div>
+          </div>
         </div>
-        <div class="q-item" data-q="3" onclick="openModal(3)">
-          <span class="q-num">Q4</span>
-          Name the fraction shown (sixths).
-        </div>
-        <div class="q-item" data-q="4" onclick="openModal(4)">
-          <span class="q-num">Q5</span>
-          Identify the shaded fraction (eighths).
-        </div>
+        
       </div>
       
-      <button class="gp-btn-start" onclick="openModal(currentQ)">
+      <button class="btn-start" onclick="startSession()">
         <svg viewBox="0 0 24 24">
           <polygon points="5 3 19 12 5 21 5 3" />
         </svg>
-        Start Activity
+        Start Session
       </button>
     </div>
   </section>
   
-  <!-- Fullscreen Modal -->
+  <!-- ── Modal ────────────────────────────────────────────── -->
   <div id="polypad-modal" class="gp-modal-overlay">
     
     <div class="modal-header">
-      <!-- Close -->
-      <button class="btn" id="btn-close" title="Exit" onclick="closeModal()">
+      <button class="btn" title="Exit" onclick="closeModal()">
         <svg viewBox="0 0 24 24">
           <path d="M18 6L6 18" />
           <path d="M6 6l12 12" />
         </svg>
       </button>
-      
-      <span class="modal-title" id="modal-title">Q1 — What fraction does the circle show?</span>
-      
-      <!-- Next question -->
-      <button class="btn" id="btn-next" title="Next question" onclick="nextQuestion()">
-        <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6" />
-        </svg>
-      </button>
+      <span class="modal-title" id="modal-title">What fraction does the shape show?</span>
+      <span class="modal-streak" id="modal-streak">0 in a row</span>
     </div>
     
-    <!-- Polypad -->
+    <!--
+      #polypad-wrap: the host for Polypad.
+      We deliberately have NO static #polypad div here.
+      Each question we call nukePad() then freshHost() to inject a brand-new
+      element, ensuring the shadow DOM from the previous instance is fully
+      detached and garbage-collected before Polypad.create() runs again.
+    -->
     <div id="polypad-wrap">
       <div id="pp-loader">
         <div class="pp-spinner"></div>
-        <div class="pp-loader-text">Loading canvas…</div>
+        <div class="pp-loader-text" id="pp-loader-text">Loading…</div>
       </div>
-      <div id="polypad"></div>
+      <div id="correct-flash"></div>
     </div>
     
-    <!-- Bottom Sheet -->
     <div class="gp-bottom-sheet">
-      <div class="gp-feedback-box" id="feedback-box">
-        Look at the shaded part of the circle and type the fraction below.
-      </div>
+      <div class="gp-feedback-box" id="feedback-box">Study the shape and type your answer below.</div>
       <div class="answer-row">
-        <span class="answer-label">Answer</span>
-        <input type="text" id="answer-input" class="answer-input" placeholder="e.g. 1/2" autocomplete="off" autocorrect="off" spellcheck="false" />
+        <span class="answer-label" id="answer-label">Answer</span>
+        <input type="text" id="answer-input" class="answer-input" autocomplete="off" autocorrect="off" spellcheck="false" />
         <button class="btn-check" onclick="checkAnswer()">Check</button>
       </div>
+      <div class="format-hint" id="format-hint"></div>
     </div>
     
   </div>
   
-  <script src="./script.js"></script>
   
+  <script src="./script.js">
+  
+  </script>
 </body>
 
 </html>

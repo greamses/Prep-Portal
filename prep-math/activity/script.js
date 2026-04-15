@@ -1,220 +1,362 @@
-
-    // ── Questions ──────────────────────────────────────────────
-    // fraction-circle: denominator = total parts, active = shaded parts
-    const QUESTIONS = [
-    {
-      label: 'Q1 — What fraction does the circle show?',
-      topic: 'Halves',
-      denominator: 2,
-      active: 1,
-      answer: '1/2',
-      hint: 'The circle is split into 2 equal parts. 1 is shaded.',
-    },
-    {
-      label: 'Q2 — Identify the shaded fraction (thirds).',
-      topic: 'Thirds',
-      denominator: 3,
-      active: 2,
-      answer: '2/3',
-      hint: 'The circle is split into 3 equal parts. 2 are shaded.',
-    },
-    {
-      label: 'Q3 — What fraction is shaded? (quarters)',
-      topic: 'Quarters',
-      denominator: 4,
-      active: 3,
-      answer: '3/4',
-      hint: 'The circle is split into 4 equal parts. 3 are shaded.',
-    },
-    {
-      label: 'Q4 — Name the fraction shown (sixths).',
-      topic: 'Sixths',
-      denominator: 6,
-      active: 4,
-      answer: '4/6',
-      acceptAlso: ['2/3'],
-      hint: 'The circle is split into 6 equal parts. 4 are shaded. (Also written as 2/3.)',
-    },
-    {
-      label: 'Q5 — Identify the shaded fraction (eighths).',
-      topic: 'Eighths',
-      denominator: 8,
-      active: 5,
-      answer: '5/8',
-      hint: 'The circle is split into 8 equal parts. 5 are shaded.',
-    }, ];
+    // ─────────────────────────────────────────────────────────
+    // CONFIG
+    // ─────────────────────────────────────────────────────────
+    const MODES = {
+      fractions: {
+        label: 'Fraction',
+        placeholder: 'e.g. 3/4',
+        hint: 'Type as numerator/denominator — e.g. 3/4',
+        polypadLabel: 'fraction',
+        modalQ: 'What fraction does the shape show?',
+      },
+      percents: {
+        label: 'Percent',
+        placeholder: 'e.g. 75%',
+        hint: 'Type the percentage — e.g. 75 or 75%',
+        polypadLabel: 'percentage',
+        modalQ: 'What percentage does the shape show?',
+      },
+      degrees: {
+        label: 'Degrees',
+        placeholder: 'e.g. 270°',
+        hint: 'Type the angle in degrees — e.g. 270 or 270°',
+        polypadLabel: 'hidden',
+        modalQ: 'How many degrees does the shaded sector represent?',
+      },
+      decimals: {
+        label: 'Decimal',
+        placeholder: 'e.g. 0.75',
+        hint: 'Type as a decimal — e.g. 0.75',
+        polypadLabel: 'decimal',
+        modalQ: 'What decimal does the shape show?',
+      },
+    };
     
-    // ── State ──────────────────────────────────────────────────
-    let pad = null; // Polypad instance
-    let scriptReady = false; // CDN script loaded?
-    let currentQ = 0;
-    let solved = 0;
-    const doneSet = new Set();
+    // ─────────────────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────────────────
+    let pad = null;
+    let scriptReady = false;
+    let streak = 0;
+    let totalSolved = 0;
+    let currentQ = null; // { active, denominator }
+    let isLoading = false;
     
-    // ── Ticker ─────────────────────────────────────────────────
-    const TICKER_ITEMS = [
-      'Fraction Explorer', 'JSS 1–3', 'Visual Fractions',
-      'Prep Portal 2026', 'Interactive Math', 'Halves · Thirds · Quarters',
-    ];
+    const settings = { mode: 'fractions', parts: 2, type: 'fraction-circle' };
+    
+    // ─────────────────────────────────────────────────────────
+    // TICKER
+    // ─────────────────────────────────────────────────────────
     (function buildTicker() {
+      const words = [
+        'Fraction Explorer', 'PrepBot · Maths', 'Visual Fractions',
+        'Prep Portal 2026', 'Circles · Bars', 'Endless Practice',
+      ];
       const track = document.getElementById('ticker-track');
-      const doubled = [...TICKER_ITEMS, ...TICKER_ITEMS];
-      doubled.forEach(t => {
-        const span = document.createElement('span');
-        span.className = 'ticker-item';
-        span.textContent = t;
-        track.appendChild(span);
+      [...words, ...words].forEach(t => {
+        const s = document.createElement('span');
+        s.className = 'ticker-item';
+        s.textContent = t;
+        track.appendChild(s);
       });
     })();
     
-    // ── Dynamic script loader ──────────────────────────────────
+    // ─────────────────────────────────────────────────────────
+    // DROPDOWN LOGIC
+    // ─────────────────────────────────────────────────────────
+    function toggleDropdown(id) {
+      const dd = document.getElementById(id);
+      const isOpen = dd.classList.contains('open');
+      document.querySelectorAll('.pp-dropdown.open').forEach(el => el.classList.remove('open'));
+      if (!isOpen) dd.classList.add('open');
+    }
+    
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.pp-dropdown'))
+        document.querySelectorAll('.pp-dropdown.open').forEach(el => el.classList.remove('open'));
+    });
+    
+    document.querySelectorAll('.pp-dropdown-list').forEach(list => {
+      list.addEventListener('click', e => {
+        const item = e.target.closest('.pp-dropdown-item');
+        if (!item) return;
+        const dd = item.closest('.pp-dropdown');
+        const value = item.dataset.value;
+        
+        list.querySelectorAll('.pp-dropdown-item').forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+        dd.querySelector('.dd-selected').textContent = item.textContent.trim();
+        dd.classList.remove('open');
+        
+        if (dd.id === 'dd-mode') settings.mode = value;
+        if (dd.id === 'dd-parts') settings.parts = parseInt(value, 10);
+        if (dd.id === 'dd-type') settings.type = value;
+      });
+    });
+    
+    // ─────────────────────────────────────────────────────────
+    // SCRIPT LOADER (once)
+    // ─────────────────────────────────────────────────────────
     function loadScript(src) {
       return new Promise((resolve, reject) => {
         const s = document.createElement('script');
         s.src = src;
         s.onload = resolve;
-        s.onerror = () => reject(new Error('Failed to load: ' + src));
+        s.onerror = () => reject(new Error('Script failed: ' + src));
         document.body.appendChild(s);
       });
     }
     
-    // ── Load Polypad for a given question ──────────────────────
-    async function loadQuestion(qIndex) {
-      const q = QUESTIONS[qIndex];
+    // ─────────────────────────────────────────────────────────
+    // SHADOW DOM FIX
+    //
+    // Problem: Polypad attaches a shadow root to the host element.
+    // pad.destroy() removes JS state/listeners but does NOT detach
+    // the shadow root from the DOM — calling Polypad.create() on
+    // the same element again conflicts with the orphaned shadow DOM.
+    //
+    // Fix:
+    //   1. pad.destroy()  — clean up JS
+    //   2. hostEl.remove() — removes the element from the DOM tree,
+    //      detaching its shadow root so the GC can collect it
+    //   3. Create a brand-new <div> — pristine, no shadow root
+    //   4. Polypad.create() on the fresh element — no conflicts
+    // ─────────────────────────────────────────────────────────
+    function nukePad() {
+      if (pad) {
+        try { pad.destroy(); } catch (_) {}
+        pad = null;
+      }
+      // Step 2: remove from DOM — this is the critical step that kills
+      // the shadow root; without it the orphaned shadow persists in memory
+      const existing = document.getElementById('polypad');
+      if (existing) existing.remove();
+    }
+    
+    function freshHost() {
+      // Step 3: brand-new element, completely untouched by Polypad
+      const div = document.createElement('div');
+      div.id = 'polypad';
+      div.style.cssText = 'width:100%;height:100%;position:absolute;inset:0;';
+      const wrap = document.getElementById('polypad-wrap');
+      // Insert before loader so it sits behind the overlay in z-order
+      wrap.insertBefore(div, wrap.querySelector('#pp-loader'));
+      return div;
+    }
+    
+    // ─────────────────────────────────────────────────────────
+    // QUESTION GENERATION
+    // ─────────────────────────────────────────────────────────
+    function generateQuestion() {
+      const denom = settings.parts;
+      const active = Math.floor(Math.random() * (denom - 1)) + 1; // 1 to denom-1
+      return { active, denominator: denom };
+    }
+    
+    function getCorrectAnswer(active, denominator, mode) {
+      switch (mode) {
+        case 'fractions':
+          return `${active}/${denominator}`;
+        case 'percents': {
+          const pct = (active / denominator) * 100;
+          return Number.isInteger(pct) ?
+            pct.toString() :
+            (Math.round(pct * 10) / 10).toString();
+        }
+        case 'degrees':
+          return Math.round((active / denominator) * 360).toString();
+        case 'decimals': {
+          // Max 4 decimal places, strip trailing zeros
+          return parseFloat((active / denominator).toFixed(4)).toString();
+        }
+      }
+    }
+    
+    function isCorrect(raw, correctVal, mode) {
+      const clean = raw.replace(/[°%\s]/g, '').toLowerCase();
+      const target = correctVal.replace(/[°%\s]/g, '').toLowerCase();
       
-      // Update modal title + stat
-      document.getElementById('modal-title').textContent = q.label;
-      document.getElementById('stat-topic').textContent = q.topic;
+      if (mode === 'fractions') return clean === target;
       
-      // Reset feedback + input
-      const fb = document.getElementById('feedback-box');
-      fb.className = 'gp-feedback-box';
-      fb.textContent = 'Look at the shaded part of the circle and type the fraction below.';
-      document.getElementById('answer-input').value = '';
-      document.getElementById('answer-input').focus();
+      const userNum = parseFloat(clean);
+      const targNum = parseFloat(target);
+      if (isNaN(userNum) || isNaN(targNum)) return false;
+      
+      const tolerance = mode === 'decimals' ? 0.005 : 1;
+      return Math.abs(userNum - targNum) <= tolerance;
+    }
+    
+    function displayAnswer(val, mode) {
+      switch (mode) {
+        case 'percents':
+          return val + '%';
+        case 'degrees':
+          return val + '°';
+        default:
+          return val;
+      }
+    }
+    
+    // ─────────────────────────────────────────────────────────
+    // LOAD QUESTION ONTO CANVAS
+    // ─────────────────────────────────────────────────────────
+    async function loadQuestion(q) {
+      if (isLoading) return;
+      isLoading = true;
+      currentQ = q;
       
       const loader = document.getElementById('pp-loader');
+      const loaderTxt = document.getElementById('pp-loader-text');
+      const fb = document.getElementById('feedback-box');
+      const input = document.getElementById('answer-input');
+      const m = MODES[settings.mode];
+      
       loader.classList.remove('hidden');
+      fb.className = 'gp-feedback-box';
+      fb.textContent = 'Study the shape and type your answer below.';
+      input.value = '';
+      
+      document.getElementById('modal-title').textContent = m.modalQ;
+      document.getElementById('format-hint').textContent = m.hint;
+      document.getElementById('answer-input').placeholder = m.placeholder;
+      document.getElementById('answer-label').textContent = m.label;
       
       try {
-        // 1. Load CDN script once
+        // Load Polypad CDN script once
         if (!scriptReady) {
-          loader.querySelector('.pp-loader-text').textContent = 'Loading Polypad…';
+          loaderTxt.textContent = 'Loading Polypad…';
           await loadScript('https://static.mathigon.org/api/polypad-en-v5.0.5.js');
           scriptReady = true;
         }
         
-        // 2. Destroy previous instance cleanly
-        if (pad) {
-          try { pad.destroy(); } catch (_) {}
-          pad = null;
-        }
+        // Destroy + remove old host (shadow DOM fix)
+        nukePad();
         
-        // 3. Build initial state
-        const initialState = {
-          options: {
-            grid: 'square-grid',
-            background: '#ffffff',
-          },
-          tiles: {
-            'fc1': {
-              name: 'fraction-circle',
-              x: 400,
-              y: 1200,
-              denominator: q.denominator,
-              active: q.active,
-              labels: 'hidden',
-              size: 8,
-            },
-          },
+        // Inject fresh host element
+        const host = freshHost();
+        
+        // Build tile — fully locked
+        const tile = {
+          name: settings.type,
+          x: settings.type === 'fraction-bar' ? 200 : 400,
+          y: 1200,
+          denominator: q.denominator,
+          active: q.active,
+          labels: m.polypadLabel,
+          size: settings.type === 'fraction-bar' ? 6 : 8,
+          status: 'locked', // no interaction whatsoever
+          hideHandles: true,
         };
         
-        // 4. Create new instance — Polypad.create returns a Promise
-        loader.querySelector('.pp-loader-text').textContent = 'Building canvas…';
-        pad = await Polypad.create(document.querySelector('#polypad'), {
+        loaderTxt.textContent = 'Building canvas…';
+        
+        // Polypad.create returns a Promise — must be awaited
+        pad = await Polypad.create(host, {
           sidebarTiles: false,
           sidebarSettings: false,
-          toolbar: true,
-          canvas: 'fixed',
-          initial: initialState,
+          toolbar: false,
+          noCopyPaste: true,
+          noDeleting: true,
+          noRotating: true,
+          noSnapping: true,
+          initial: {
+            options: { grid: 'square-grid', background: '#ffffff' },
+            tiles: { t1: tile },
+          },
         });
         
         pad.setTool('move');
-        
         loader.classList.add('hidden');
+        input.focus();
         
       } catch (err) {
         console.error('Polypad error:', err);
         loader.innerHTML = `
-          <div style="text-align:center;padding:24px;font-family:var(--font-mono);font-size:.75rem;color:#ff2200;">
+          <div style="text-align:center;padding:24px;font-family:var(--font-mono);
+               font-size:.75rem;color:var(--red);">
             <strong>Canvas failed to load.</strong><br/>${err.message}
           </div>`;
+      } finally {
+        isLoading = false;
       }
     }
     
-    // ── Open / Close modal ─────────────────────────────────────
-    function openModal(qIndex) {
-      currentQ = qIndex;
+    // ─────────────────────────────────────────────────────────
+    // SESSION OPEN / CLOSE
+    // ─────────────────────────────────────────────────────────
+    function startSession() {
+      streak = 0;
+      syncStats();
       document.getElementById('polypad-modal').classList.add('active');
       document.body.style.overflow = 'hidden';
-      loadQuestion(qIndex);
+      loadQuestion(generateQuestion());
     }
     
     function closeModal() {
       document.getElementById('polypad-modal').classList.remove('active');
       document.body.style.overflow = '';
+      nukePad();
     }
     
-    // ── Next question ──────────────────────────────────────────
-    function nextQuestion() {
-      const next = (currentQ + 1) % QUESTIONS.length;
-      openModal(next);
-    }
-    
-    // ── Check answer ───────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────
+    // ANSWER CHECKING
+    // ─────────────────────────────────────────────────────────
     function checkAnswer() {
-      const q = QUESTIONS[currentQ];
-      const raw = document.getElementById('answer-input').value.trim().toLowerCase();
+      if (!currentQ || isLoading) return;
+      
+      const raw = document.getElementById('answer-input').value.trim();
       const fb = document.getElementById('feedback-box');
       
       if (!raw) {
         fb.className = 'gp-feedback-box fb-error';
-        fb.textContent = 'Please type your answer first.';
+        fb.textContent = 'Type your answer first.';
         return;
       }
       
-      const correct = normalise(raw) === normalise(q.answer) ||
-        (q.acceptAlso || []).some(alt => normalise(raw) === normalise(alt));
+      const correct = getCorrectAnswer(currentQ.active, currentQ.denominator, settings.mode);
       
-      if (correct) {
+      if (isCorrect(raw, correct, settings.mode)) {
+        streak++;
+        totalSolved++;
+        syncStats();
+        
         fb.className = 'gp-feedback-box fb-success';
-        fb.textContent = `✓ Correct! The fraction is ${q.answer}. ${q.hint}`;
-        if (!doneSet.has(currentQ)) {
-          doneSet.add(currentQ);
-          solved++;
-          document.getElementById('stat-solved').textContent = solved;
-          // Mark question item done on entry page
-          const item = document.querySelector(`.q-item[data-q="${currentQ}"]`);
-          if (item) item.classList.add('q-done');
-        }
+        fb.textContent = `✓ Correct! The answer is ${displayAnswer(correct, settings.mode)}. Next question…`;
+        
+        // Green flash on canvas
+        const flash = document.getElementById('correct-flash');
+        flash.classList.add('show');
+        setTimeout(() => flash.classList.remove('show'), 300);
+        
+        // Auto-advance
+        setTimeout(() => loadQuestion(generateQuestion()), 850);
+        
       } else {
+        streak = 0;
+        syncStats();
         fb.className = 'gp-feedback-box fb-error';
-        fb.textContent = `✗ Not quite. Look at the number of shaded sections vs total sections.`;
+        fb.textContent = '✗ Not quite — count the shaded sections vs total sections carefully.';
+        document.getElementById('answer-input').select();
       }
     }
     
-    // Normalise answer: strip spaces, handle "1 / 2" → "1/2"
-    function normalise(str) {
-      return str.replace(/\s+/g, '').toLowerCase();
+    function syncStats() {
+      document.getElementById('modal-streak').textContent =
+        streak === 0 ? '0 in a row' : `🔥 ${streak} in a row`;
+      document.getElementById('stat-streak').textContent = streak;
+      document.getElementById('stat-total').textContent = totalSolved;
     }
     
-    // Enter key submits
+    // ─────────────────────────────────────────────────────────
+    // KEYBOARD
+    // ─────────────────────────────────────────────────────────
     document.getElementById('answer-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') checkAnswer();
     });
     
-    // Escape key closes modal
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Escape' &&
+        document.getElementById('polypad-modal').classList.contains('active')) {
+        closeModal();
+      }
     });
-  
