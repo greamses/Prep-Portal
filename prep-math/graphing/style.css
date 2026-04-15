@@ -158,29 +158,6 @@
   color: var(--muted, #777);
 }
 
-.gp-cursor-blink {
-  display: inline-block;
-  width: 2px;
-  height: 1.4em;
-  background-color: var(--ink, #1a1a1a);
-  margin: 0 2px;
-  vertical-align: middle;
-  animation: gp-blink 1s step-end infinite;
-  transition: opacity 0.15s ease;
-}
-
-@keyframes gp-blink {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-  
-  50% {
-    opacity: 0;
-  }
-}
-
 /* Fix MathJax background */
 mjx-container,
 mjx-container * {
@@ -202,16 +179,28 @@ mjx-container * {
   border-bottom: 1px solid var(--ruled, rgba(0, 0, 0, 0.1));
 }
 
+/* Ensure cursor is visible */
 .gp-cursor-blink {
   display: inline-block !important;
-  width: 2px;
-  height: 1.4em;
-  background-color: var(--ink, #1a1a1a);
-  margin: 0 2px;
-  vertical-align: middle;
-  animation: gp-blink 1s step-end infinite;
-  transition: opacity 0.15s ease;
+  width: 3px !important;
+  height: 1.4em !important;
+  background-color: #1a1a1a !important;
+  margin: 0 2px !important;
+  vertical-align: middle !important;
+  animation: gp-blink 1s step-end infinite !important;
   visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Cursor when input is empty */
+.gp-math-display:empty + .gp-cursor-blink,
+.gp-math-placeholder:not([style*="display: none"]) ~ .gp-cursor-blink {
+  margin-left: 0 !important;
+}
+
+@keyframes gp-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 .gp-tab {

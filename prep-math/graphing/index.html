@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="../../main.css">
     <link rel="stylesheet" href="../../theory-page/style.css">
     <link rel="stylesheet" href="./style.css">
-
+    
     <!-- GeoGebra API -->
     <script src="https://www.geogebra.org/apps/deployggb.js"></script>
     
@@ -25,7 +25,10 @@
         window.MathJax = {
             loader: { load: ['[tex]/html'] },
             tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                inlineMath: [
+                    ['$', '$'],
+                    ['\\(', '\\)']
+                ],
                 packages: { '[+]': ['html'] }
             },
             startup: { typeset: false },
@@ -150,7 +153,7 @@
                 </svg>
             </button>
         </div>
-
+        
         <!-- GeoGebra Canvas -->
         <div id="ggb-element"></div>
         
@@ -160,12 +163,12 @@
             
             <div class="gp-input-row">
                 <div class="gp-icon-plus">+</div>
-                <div class="gp-math-display" id="gp-math-display">
-                    <span class="gp-math-placeholder" id="gp-math-placeholder">Type an equation…</span>
-                    <span id="gp-math-before"></span>
-                    <span class="gp-cursor-blink" id="gp-cursor"></span>
-                    <span id="gp-math-after"></span>
-                </div>
+<div class="gp-math-display" id="gp-math-display" tabindex="0">
+    <span class="gp-math-placeholder" id="gp-math-placeholder"></span>
+    <span id="gp-math-before"></span>
+    <span class="gp-cursor-blink" id="gp-cursor"></span>
+    <span id="gp-math-after"></span>
+</div>
             </div>
             
             <div class="gp-keyboard-tabs" id="gp-keyboard-tabs"></div>
@@ -174,7 +177,8 @@
         </div>
     </div>
     
-    <script src="./main.js"></script>
+<!-- Change the script tag at the bottom of your HTML -->
+<script type="module" src="./main.js"></script>
 </body>
 
 </html>
