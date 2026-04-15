@@ -9,19 +9,39 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  
   <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="../../main.css">
+    <link rel="stylesheet" href="../../theory-page/style.css">
+
+    <script src="../../utils/loader/loader.js"></script>
 </head>
 
 <body>
+  <div id="loader">
+    <div id="loader-wrapper">
+      <div class="logo-cluster"></div>
+    </div>
+    <div class="loader-word"><span>Fractions</span></div>
+    <div class="loader-bar"></div>
+  </div>
   
   <nav class="site-nav">
-    <a href="#" class="nav-logo">
+    <a href="index.html" class="nav-logo">
+      <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
       <div class="logo-brand">
         <span class="brand-top">Prep</span>
         <span class="brand-bottom">Portal</span>
       </div>
     </a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="waec.html">WAEC</a></li>
+      <li><a href="jamb.html">JAMB</a></li>
+      <li><a href="algebra-practice.html" class="active">Algebra</a></li>
+    </ul>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
   
   <!-- ── Ticker ────────────────────────────────────────────── -->
@@ -52,7 +72,6 @@
       </p>
       
       <div class="settings-grid">
-        
         <!-- Mode -->
         <div class="pp-dropdown" id="dd-mode">
           <span class="pp-dropdown-label">Mode</span>
@@ -71,22 +90,24 @@
         </div>
         
         <!-- Parts -->
-        <div class="pp-dropdown" id="dd-parts">
-          <span class="pp-dropdown-label">Parts</span>
-          <div class="pp-dropdown-header" onclick="toggleDropdown('dd-parts')">
-            <span class="dd-selected">Halves</span>
-            <svg viewBox="0 0 24 24">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </div>
-          <div class="pp-dropdown-list">
-            <div class="pp-dropdown-item selected" data-value="2">Halves</div>
-            <div class="pp-dropdown-item" data-value="3">Thirds</div>
-            <div class="pp-dropdown-item" data-value="4">Fourths</div>
-            <div class="pp-dropdown-item" data-value="5">Fifths</div>
-            <div class="pp-dropdown-item" data-value="8">Eighths</div>
-          </div>
-        </div>
+<!-- Parts -->
+<div class="pp-dropdown" id="dd-parts">
+  <span class="pp-dropdown-label">Parts</span>
+  <div class="pp-dropdown-header" onclick="toggleDropdown('dd-parts')">
+    <span class="dd-selected">Halves</span>
+    <svg viewBox="0 0 24 24">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  </div>
+  <div class="pp-dropdown-list">
+    <div class="pp-dropdown-item selected" data-value="2">Halves</div>
+    <div class="pp-dropdown-item" data-value="3">Thirds</div>
+    <div class="pp-dropdown-item" data-value="4">Fourths</div>
+    <div class="pp-dropdown-item" data-value="5">Fifths</div>
+    <div class="pp-dropdown-item" data-value="8">Eighths</div>
+    <div class="pp-dropdown-item" data-value="mixed">Mixed Practice</div>
+  </div>
+</div>
         
         <!-- Type -->
         <div class="pp-dropdown" id="dd-type">
@@ -102,7 +123,6 @@
             <div class="pp-dropdown-item" data-value="fraction-bar">Bars</div>
           </div>
         </div>
-        
       </div>
       
       <button class="btn-start" onclick="startSession()">
@@ -116,7 +136,6 @@
   
   <!-- ── Modal ────────────────────────────────────────────── -->
   <div id="polypad-modal" class="gp-modal-overlay">
-    
     <div class="modal-header">
       <button class="btn" title="Exit" onclick="closeModal()">
         <svg viewBox="0 0 24 24">
@@ -128,17 +147,10 @@
       <span class="modal-streak" id="modal-streak">0 in a row</span>
     </div>
     
-    <!--
-      #polypad-wrap: the host for Polypad.
-      We deliberately have NO static #polypad div here.
-      Each question we call nukePad() then freshHost() to inject a brand-new
-      element, ensuring the shadow DOM from the previous instance is fully
-      detached and garbage-collected before Polypad.create() runs again.
-    -->
     <div id="polypad-wrap">
       <div id="pp-loader">
         <div class="pp-spinner"></div>
-        <div class="pp-loader-text" id="pp-loader-text">Loading…</div>
+        <div class="pp-loader-text" id="pp-loader-text">Rendering shape…</div>
       </div>
       <div id="correct-flash"></div>
     </div>
@@ -152,13 +164,9 @@
       </div>
       <div class="format-hint" id="format-hint"></div>
     </div>
-    
   </div>
   
-  
-  <script src="./script.js">
-  
-  </script>
+  <script src="./script.js"></script>
 </body>
 
 </html>
