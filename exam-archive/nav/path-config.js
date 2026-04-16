@@ -15,16 +15,16 @@ export const CONFIG = {
   
   // Paths for nav-data
   paths: {
-    dashboardIndex: '../../dashboard/dashboard.html',
+    dashboardIndex: '../../../dashboard/dashboard.html',
     homeIndex: '../../index.html',
-    fractionsHtml: '../activity/index.html',
-    graphHtml: '../graphing/index.html',
-    algebraHtml: '../drag/index.html',
+    nationalHtml: '#',
+    internationalHtml: '#',
+    competitionsHtml: '#',
     fractionExplorer: './index.html',
   },
   
   // Logo files
-  logoLight: '../../logo/logo-light.svg',
+  logoLight: '../../../logo/logo-light.svg',
   logoLoading: '../../logo/logo-light.svg',
   
   // Helper method

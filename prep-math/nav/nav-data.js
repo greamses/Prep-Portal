@@ -10,7 +10,7 @@ export const navData = {
   },
   
   links: [
-    { name: "Home", href: CONFIG.paths?.homeIndex || '../../index.html', active: true },
+    { name: "Dashboard", href: CONFIG.paths?.dashboardIndex || '../../dashboard/dashboard.html', active: false },
     { name: "Algebra", href: CONFIG.paths?.algebraHtml || '../drag/index.html', active: true },
     { name: "Graph", href: CONFIG.paths?.graphHtml || '../graphing/index.html', active: true },
     { name: "Fractions", href: CONFIG.paths?.fractionsHtml || '../activity/index.html', active: true },
