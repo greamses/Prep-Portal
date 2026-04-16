@@ -84,7 +84,8 @@ const settings = {
   type: 'fraction-circle',
   hideLines: false,
   hideUnshaded: false,
-  showTickMarks: true
+  showTickMarks: true,
+  showLabels: true
 };
 
 // ─────────────────────────────────────────────────────────
@@ -178,6 +179,13 @@ document.getElementById('show-ticks-modal')?.addEventListener('change', (e) => {
   }
 });
 
+document.getElementById('show-labels-modal')?.addEventListener('change', (e) => {
+  settings.showLabels = e.target.checked;
+  if (currentQ && document.getElementById('polypad-modal').classList.contains('active')) {
+    refreshSVG();
+  }
+});
+
 function updateCheckboxesState() {
   const mode = currentQ?.mode || settings.mode;
   const hideLinesCheckbox = document.getElementById('hide-lines');
@@ -203,6 +211,15 @@ function updateCheckboxesState() {
       checkboxContainer.style.pointerEvents = 'auto';
     }
   }
+}
+
+function refreshSVG() {
+  if (!currentQ) return;
+  const wrap = document.getElementById('polypad-wrap');
+  const oldSvg = wrap.querySelector('svg');
+  if (oldSvg) oldSvg.remove();
+  const svg = createFractionSVG(settings.type, currentQ, currentQ.mode || settings.mode);
+  wrap.appendChild(svg);
 }
 
 // ─────────────────────────────────────────────────────────
@@ -337,11 +354,11 @@ function createFractionSVG(type, q, mode) {
       drawCircle(svg, leftCx, cy, r, q.leftActive, q.leftDenom, INK, SHADED, UNSHADED);
       drawCircle(svg, rightCx, cy, r, q.rightActive, q.rightDenom, INK, SHADED, UNSHADED);
       
-      // Center labels on each circle
-      addCenterLabel(svg, leftCx, cy, `${q.leftActive}/${q.leftDenom}`, INK);
-      addCenterLabel(svg, rightCx, cy, `${q.rightActive}/${q.rightDenom}`, INK);
+      if (settings.showLabels) {
+        addCenterLabel(svg, leftCx, cy, `${q.leftActive}/${q.leftDenom}`, INK);
+        addCenterLabel(svg, rightCx, cy, `${q.rightActive}/${q.rightDenom}`, INK);
+      }
       
-      // VS text between
       const vsText = document.createElementNS(svgNS, "text");
       vsText.setAttribute("x", "400");
       vsText.setAttribute("y", "250");
@@ -371,8 +388,9 @@ function createFractionSVG(type, q, mode) {
       outlineCircle.setAttribute("stroke-width", "4");
       svg.appendChild(outlineCircle);
       
-      // Center box showing total
-      addCenterLabel(svg, cx, cy, `Total: ${q.total}`, INK, true);
+      if (settings.showLabels) {
+        addCenterLabel(svg, cx, cy, `Total: ${q.total}`, INK, true);
+      }
       
     } else if (isDifferentParts && q) {
       svg.setAttribute("viewBox", "0 0 800 800");
@@ -391,8 +409,9 @@ function createFractionSVG(type, q, mode) {
       outlineCircle.setAttribute("stroke-width", "4");
       svg.appendChild(outlineCircle);
       
-      // Add fraction labels on each sector
-      addSectorLabels(svg, cx, cy, r, q.sectors, INK);
+      if (settings.showLabels) {
+        addSectorLabels(svg, cx, cy, r, q.sectors, INK);
+      }
       
     } else {
       svg.setAttribute("viewBox", "0 0 800 800");
@@ -415,7 +434,7 @@ function createFractionSVG(type, q, mode) {
       outlineCircle.setAttribute("stroke-width", "4");
       svg.appendChild(outlineCircle);
       
-      if (isTimeMode) {
+      if (isTimeMode && settings.showLabels) {
         const fraction = q.active / q.denominator;
         let displayText = formatTimeDisplay(fraction, q.active, q.denominator);
         addCenterLabel(svg, cx, cy, displayText, INK, true);
@@ -435,28 +454,29 @@ function createFractionSVG(type, q, mode) {
       drawBar(svg, x, leftY, totalW, h, q.leftActive, q.leftDenom, INK, SHADED, UNSHADED);
       drawBar(svg, x, rightY, totalW, h, q.rightActive, q.rightDenom, INK, SHADED, UNSHADED);
       
-      // Labels above bars
-      const leftLabel = document.createElementNS(svgNS, "text");
-      leftLabel.setAttribute("x", "400");
-      leftLabel.setAttribute("y", "80");
-      leftLabel.setAttribute("text-anchor", "middle");
-      leftLabel.setAttribute("font-family", "'JetBrains Mono', monospace");
-      leftLabel.setAttribute("font-size", "22");
-      leftLabel.setAttribute("font-weight", "700");
-      leftLabel.setAttribute("fill", INK);
-      leftLabel.textContent = `${q.leftActive}/${q.leftDenom}`;
-      svg.appendChild(leftLabel);
-      
-      const rightLabel = document.createElementNS(svgNS, "text");
-      rightLabel.setAttribute("x", "400");
-      rightLabel.setAttribute("y", "260");
-      rightLabel.setAttribute("text-anchor", "middle");
-      rightLabel.setAttribute("font-family", "'JetBrains Mono', monospace");
-      rightLabel.setAttribute("font-size", "22");
-      rightLabel.setAttribute("font-weight", "700");
-      rightLabel.setAttribute("fill", INK);
-      rightLabel.textContent = `${q.rightActive}/${q.rightDenom}`;
-      svg.appendChild(rightLabel);
+      if (settings.showLabels) {
+        const leftLabel = document.createElementNS(svgNS, "text");
+        leftLabel.setAttribute("x", "400");
+        leftLabel.setAttribute("y", "80");
+        leftLabel.setAttribute("text-anchor", "middle");
+        leftLabel.setAttribute("font-family", "'JetBrains Mono', monospace");
+        leftLabel.setAttribute("font-size", "22");
+        leftLabel.setAttribute("font-weight", "700");
+        leftLabel.setAttribute("fill", INK);
+        leftLabel.textContent = `${q.leftActive}/${q.leftDenom}`;
+        svg.appendChild(leftLabel);
+        
+        const rightLabel = document.createElementNS(svgNS, "text");
+        rightLabel.setAttribute("x", "400");
+        rightLabel.setAttribute("y", "260");
+        rightLabel.setAttribute("text-anchor", "middle");
+        rightLabel.setAttribute("font-family", "'JetBrains Mono', monospace");
+        rightLabel.setAttribute("font-size", "22");
+        rightLabel.setAttribute("font-weight", "700");
+        rightLabel.setAttribute("fill", INK);
+        rightLabel.textContent = `${q.rightActive}/${q.rightDenom}`;
+        svg.appendChild(rightLabel);
+      }
       
       const vsText = document.createElementNS(svgNS, "text");
       vsText.setAttribute("x", "400");
@@ -483,16 +503,18 @@ function createFractionSVG(type, q, mode) {
       frame.setAttribute("stroke-width", "4");
       svg.appendChild(frame);
       
-      const totalText = document.createElementNS(svgNS, "text");
-      totalText.setAttribute("x", "400");
-      totalText.setAttribute("y", (y + h + 45).toString());
-      totalText.setAttribute("text-anchor", "middle");
-      totalText.setAttribute("font-family", "'JetBrains Mono', monospace");
-      totalText.setAttribute("font-size", "24");
-      totalText.setAttribute("font-weight", "700");
-      totalText.setAttribute("fill", INK);
-      totalText.textContent = `Total: ${q.total}`;
-      svg.appendChild(totalText);
+      if (settings.showLabels) {
+        const totalText = document.createElementNS(svgNS, "text");
+        totalText.setAttribute("x", "400");
+        totalText.setAttribute("y", (y + h + 45).toString());
+        totalText.setAttribute("text-anchor", "middle");
+        totalText.setAttribute("font-family", "'JetBrains Mono', monospace");
+        totalText.setAttribute("font-size", "24");
+        totalText.setAttribute("font-weight", "700");
+        totalText.setAttribute("fill", INK);
+        totalText.textContent = `Total: ${q.total}`;
+        svg.appendChild(totalText);
+      }
       
     } else if (isDifferentParts && q) {
       const y = (500 - h) / 2;
@@ -508,8 +530,9 @@ function createFractionSVG(type, q, mode) {
       frame.setAttribute("stroke-width", "4");
       svg.appendChild(frame);
       
-      // Add fraction labels on each bar segment
-      addBarSegmentLabels(svg, x, y, totalW, h, q.sectors, INK);
+      if (settings.showLabels) {
+        addBarSegmentLabels(svg, x, y, totalW, h, q.sectors, INK);
+      }
       
     } else {
       const y = (500 - h) / 2;
@@ -525,7 +548,7 @@ function createFractionSVG(type, q, mode) {
       frame.setAttribute("stroke-width", "4");
       svg.appendChild(frame);
       
-      if (isTimeMode) {
+      if (isTimeMode && settings.showLabels) {
         const fraction = q.active / q.denominator;
         let displayText = formatTimeDisplay(fraction, q.active, q.denominator);
         
@@ -791,15 +814,6 @@ function formatTimeDisplay(fraction, active, denominator) {
   if (fraction === 0.25) return '¼ hour';
   if (fraction === 0.75) return '¾ hour';
   return `${active}/${denominator} hour`;
-}
-
-function refreshSVG() {
-  if (!currentQ) return;
-  const wrap = document.getElementById('polypad-wrap');
-  const oldSvg = wrap.querySelector('svg');
-  if (oldSvg) oldSvg.remove();
-  const svg = createFractionSVG(settings.type, currentQ, currentQ.mode || settings.mode);
-  wrap.appendChild(svg);
 }
 
 // ─────────────────────────────────────────────────────────
@@ -1095,6 +1109,8 @@ function loadQuestion(q) {
   const m = MODES[modeForDisplay] || MODES.fractions;
   const isTimeMode = modeForDisplay === 'time';
   const isCompare = modeForDisplay === 'compare';
+  const isRandomTotal = modeForDisplay === 'random-total';
+  const isDifferentParts = modeForDisplay === 'different-parts';
 
   loader.classList.remove('hidden');
   loaderTxt.textContent = 'Rendering shape…';
@@ -1115,6 +1131,17 @@ function loadQuestion(q) {
   }
   if (ticksCheckbox) {
     ticksCheckbox.checked = settings.showTickMarks;
+  }
+  
+  // Show/hide labels checkbox - show for modes that have labels
+  const labelsContainer = document.getElementById('labels-checkbox-container');
+  const labelsCheckbox = document.getElementById('show-labels-modal');
+  if (labelsContainer) {
+    const hasLabels = isTimeMode || isCompare || isRandomTotal || isDifferentParts;
+    labelsContainer.style.display = hasLabels ? 'flex' : 'none';
+  }
+  if (labelsCheckbox) {
+    labelsCheckbox.checked = settings.showLabels;
   }
   
   // Switch keypad for compare mode

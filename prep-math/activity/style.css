@@ -422,10 +422,24 @@ body {
   white-space: nowrap;
 }
 
+/* Labels checkbox in modal */
+#labels-checkbox-container {
+  display: flex;
+}
+
+#labels-checkbox-container .checkbox-text {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+
 .modal-header-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
