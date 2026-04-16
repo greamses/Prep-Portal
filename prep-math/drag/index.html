@@ -416,24 +416,7 @@
         <div class="loader-bar"></div>
     </div>
     
-    <nav class="site-nav">
-        <a href="index.html" class="nav-logo">
-            <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
-            <div class="logo-brand">
-                <span class="brand-top">Prep</span>
-                <span class="brand-bottom">Portal</span>
-            </div>
-        </a>
-        <ul class="nav-links" id="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="waec.html">WAEC</a></li>
-            <li><a href="jamb.html">JAMB</a></li>
-            <li><a href="algebra-practice.html" class="active">Algebra</a></li>
-        </ul>
-        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
-            <span></span><span></span><span></span>
-        </button>
-    </nav>
+    <nav class="site-nav"></nav>
     
     <div class="ticker" aria-hidden="true">
         <div class="ticker-track" id="ticker-track"></div>
@@ -677,21 +660,15 @@
         Open Canvas
     </button>
     
+    <script type="module" src="../nav/nav.js"></script>
     <script type="module" src="../theory-page/js/keys.js"></script>
     <script type="module" src="./script.js"></script>
-    
+
     <script>
-        // Dynamic insertion of class options — only Primary 1-6 active for now
         (function() {
-            // This runs before the full script.js loads, setting up the dropdown structure.
-            // The rest of the logic (JSS/SSS coming soon) is handled via the 'coming-soon' class and disabled attribute.
-            // If script.js later wants to enable more, it can manipulate the DOM.
-            
-            // Ensure the panel has the correct structure with coming-soon markers
+
             const panel = document.getElementById('cdd-panel');
             if (panel) {
-                // Panel already has the correct HTML structure from the static markup above.
-                // We just need to make sure any JS that reads options respects the 'disabled' attribute.
                 console.log('[Algebra Lab] Class dropdown initialized — Primary 1-6 active, JSS/SSS coming soon.');
             }
         })();

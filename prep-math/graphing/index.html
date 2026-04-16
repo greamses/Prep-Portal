@@ -52,24 +52,7 @@
         <div class="loader-bar"></div>
     </div>
     
-    <nav class="site-nav">
-        <a href="index.html" class="nav-logo">
-            <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
-            <div class="logo-brand">
-                <span class="brand-top">Prep</span>
-                <span class="brand-bottom">Portal</span>
-            </div>
-        </a>
-        <ul class="nav-links" id="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="waec.html">WAEC</a></li>
-            <li><a href="jamb.html">JAMB</a></li>
-            <li><a href="algebra-practice.html" class="active">Algebra</a></li>
-        </ul>
-        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
-            <span></span><span></span><span></span>
-        </button>
-    </nav>
+    <nav class="site-nav"></nav>
     
     <div class="ticker" aria-hidden="true">
         <div class="ticker-track" id="ticker-track"></div>
@@ -163,12 +146,12 @@
             
             <div class="gp-input-row">
                 <div class="gp-icon-plus">+</div>
-<div class="gp-math-display" id="gp-math-display" tabindex="0">
-    <span class="gp-math-placeholder" id="gp-math-placeholder"></span>
-    <span id="gp-math-before"></span>
-    <span class="gp-cursor-blink" id="gp-cursor"></span>
-    <span id="gp-math-after"></span>
-</div>
+                <div class="gp-math-display" id="gp-math-display" tabindex="0">
+                    <span class="gp-math-placeholder" id="gp-math-placeholder"></span>
+                    <span id="gp-math-before"></span>
+                    <span class="gp-cursor-blink" id="gp-cursor"></span>
+                    <span id="gp-math-after"></span>
+                </div>
             </div>
             
             <div class="gp-keyboard-tabs" id="gp-keyboard-tabs"></div>
@@ -177,8 +160,10 @@
         </div>
     </div>
     
-<!-- Change the script tag at the bottom of your HTML -->
-<script type="module" src="./main.js"></script>
+    <!-- Change the script tag at the bottom of your HTML -->
+    <script type="module" src="../nav/nav.js"></script>
+    <script type="module" src="./main.js"></script>
+    
 </body>
 
 </html>

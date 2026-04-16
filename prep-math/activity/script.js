@@ -26,6 +26,12 @@ const MODES = {
     hint: 'Type as a decimal — e.g. 0.75',
     modalQ: 'What decimal does the shape show?',
   },
+  mixed: {
+    label: 'Answer',
+    placeholder: 'Type your answer',
+    hint: 'Answer in the format shown',
+    modalQ: 'What value does the shape show?',
+  },
 };
 
 // ─────────────────────────────────────────────────────────
@@ -89,6 +95,28 @@ document.querySelectorAll('.pp-dropdown-list').forEach(list => {
     if (dd.id === 'dd-type') settings.type = value;
   });
 });
+
+// ─────────────────────────────────────────────────────────
+// KEYPAD FUNCTIONS
+// ─────────────────────────────────────────────────────────
+function toggleKeypad() {
+  const container = document.getElementById('numpad-container');
+  const btn = document.getElementById('keypad-toggle');
+  container.classList.toggle('hidden');
+  btn.classList.toggle('active');
+}
+
+function numpadInput(char) {
+  const input = document.getElementById('answer-input');
+  input.value += char;
+  input.focus();
+}
+
+function numpadBackspace() {
+  const input = document.getElementById('answer-input');
+  input.value = input.value.slice(0, -1);
+  input.focus();
+}
 
 // ─────────────────────────────────────────────────────────
 // COLOR UTILITIES — One random color per render
@@ -222,22 +250,19 @@ function createFractionSVG(type, active, denominator) {
 // QUESTION GENERATION
 // ─────────────────────────────────────────────────────────
 const MIXED_DENOMINATORS = [2, 3, 4, 5, 6, 8, 10];
+const ALL_MODES = ['fractions', 'percents', 'degrees', 'decimals'];
 
 function generateQuestion() {
   let denom = settings.parts;
+  let mode = settings.mode;
   
-  if (denom === 'mixed') {
+  // Mixed Practice: randomize BOTH denominator AND mode
+  if (settings.mode === 'mixed') {
     denom = MIXED_DENOMINATORS[Math.floor(Math.random() * MIXED_DENOMINATORS.length)];
+    mode = ALL_MODES[Math.floor(Math.random() * ALL_MODES.length)];
   }
   
   const active = Math.floor(Math.random() * (denom - 1)) + 1;
-  
-  // Randomly change mode if in mixed practice
-  let mode = settings.mode;
-  if (settings.mode === 'mixed') {
-    const modes = ['fractions', 'percents', 'degrees', 'decimals'];
-    mode = modes[Math.floor(Math.random() * modes.length)];
-  }
   
   return { active, denominator: denom, mode };
 }
@@ -251,6 +276,7 @@ function getCorrectAnswer(active, denominator, mode) {
     }
     case 'degrees': return Math.round((active / denominator) * 360).toString();
     case 'decimals': return parseFloat((active / denominator).toFixed(4)).toString();
+    default: return `${active}/${denominator}`;
   }
 }
 
@@ -292,7 +318,7 @@ function loadQuestion(q) {
   const fb = document.getElementById('feedback-box');
   const input = document.getElementById('answer-input');
   const modeForDisplay = q.mode || settings.mode;
-  const m = MODES[modeForDisplay];
+  const m = MODES[modeForDisplay] || MODES.fractions;
 
   loader.classList.remove('hidden');
   loaderTxt.textContent = 'Rendering shape…';
