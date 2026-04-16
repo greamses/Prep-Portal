@@ -1,0 +1,200 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Prep Portal 2026 | Fraction Master: Mixed Numbers</title>
+  <meta name="theme-color" content="#000000">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="../../../main.css">
+  <link rel="stylesheet" href="../../../theory-page/style.css">
+  <!-- External JS (separate file) -->
+  <script src="../../../utils/loader/loader.js"></script>
+</head>
+
+<body>
+  <div id="loader">
+    <div class="loader-word"><span>Fractions</span></div>
+    <div class="loader-bar"></div>
+  </div>
+  
+  <nav class="site-nav">
+    <div class="nav-logo">
+      <span class="brand-top">Prep Portal</span>
+      <span class="brand-bottom">2026 · Fraction Master</span>
+    </div>
+  </nav>
+  
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track" id="ticker-track"></div>
+  </div>
+  
+  <header class="pg-header">
+    <div class="ph-left">
+      <p class="pg-eyebrow">PrepBot · Mathematics</p>
+      <h1 class="pg-title">FRACTION<br><em>MASTER</em></h1>
+      <p class="pg-subtitle">Mixed Numbers & Improper Fractions</p>
+    </div>
+    <div class="ph-right">
+      <p>Master mixed numbers and improper fractions. Each correct answer generates the next question — no limit.</p>
+      <div class="ph-stats">
+        <div class="ph-stat"><strong id="stat-streak">0</strong><span>Streak</span></div>
+        <div class="ph-stat"><strong id="stat-total">0</strong><span>Solved</span></div>
+      </div>
+    </div>
+  </header>
+  
+  <section class="settings-panel">
+    <div class="settings-body">
+      <p class="settings-desc">
+        Choose a mode and how many wholes to display. Wholes are shown as complete blocks, with the fraction part stacked on the side.
+      </p>
+      
+      <div class="settings-grid">
+        <div class="pp-dropdown" id="dd-mode">
+          <span class="pp-dropdown-label">Mode</span>
+          <div class="pp-dropdown-header" onclick="toggleDropdown('dd-mode')">
+            <span class="dd-selected">Mixed Number</span>
+            <svg viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="pp-dropdown-list">
+            <div class="pp-dropdown-item selected" data-value="mixed">Mixed Number</div>
+            <div class="pp-dropdown-item" data-value="improper">Improper Fraction</div>
+            <div class="pp-dropdown-item" data-value="percents">Percent</div>
+            <div class="pp-dropdown-item" data-value="decimals">Decimal</div>
+            <div class="pp-dropdown-item" data-value="mixed-practice">Mixed Practice</div>
+          </div>
+        </div>
+        
+        <div class="pp-dropdown" id="dd-wholes">
+          <span class="pp-dropdown-label">Wholes</span>
+          <div class="pp-dropdown-header" onclick="toggleDropdown('dd-wholes')">
+            <span class="dd-selected">One Whole</span>
+            <svg viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="pp-dropdown-list">
+            <div class="pp-dropdown-item selected" data-value="1">One Whole</div>
+            <div class="pp-dropdown-item" data-value="2">Two Wholes</div>
+            <div class="pp-dropdown-item" data-value="3">Three Wholes</div>
+          </div>
+        </div>
+        
+        <div class="pp-dropdown" id="dd-type">
+          <span class="pp-dropdown-label">Shape</span>
+          <div class="pp-dropdown-header" onclick="toggleDropdown('dd-type')">
+            <span class="dd-selected">Circles</span>
+            <svg viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="pp-dropdown-list">
+            <div class="pp-dropdown-item selected" data-value="circle">Circles</div>
+            <div class="pp-dropdown-item" data-value="bar">Bars</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="settings-checkboxes">
+        <label class="checkbox-label"><input type="checkbox" id="hide-lines" /><span>Hide split lines</span></label>
+        <label class="checkbox-label"><input type="checkbox" id="hide-unshaded" /><span>Hide unshaded</span></label>
+      </div>
+      
+      <button class="btn-start" onclick="startSession()">
+        <svg viewBox="0 0 24 24">
+          <polygon points="5 3 19 12 5 21 5 3" />
+        </svg>
+        Start Session
+      </button>
+    </div>
+  </section>
+  
+  <div id="polypad-modal" class="gp-modal-overlay">
+    <div class="modal-header">
+      <button class="btn" onclick="closeModal()">
+        <svg viewBox="0 0 24 24">
+          <path d="M18 6L6 18" />
+          <path d="M6 6l12 12" />
+        </svg>
+      </button>
+      <span class="modal-title" id="modal-title">What mixed number does the shape show?</span>
+      <div class="modal-header-right">
+        <span class="modal-streak" id="modal-streak">0 in a row</span>
+      </div>
+    </div>
+    
+    <div id="polypad-wrap">
+      <div id="pp-loader">
+        <div class="pp-spinner"></div>
+        <div class="pp-loader-text">Rendering shape…</div>
+      </div>
+      <div id="correct-flash"></div>
+    </div>
+    
+    <div class="gp-bottom-sheet">
+      <div class="gp-feedback-box" id="feedback-box">Study the shape and type your answer below.</div>
+      <div class="answer-row">
+        <span class="answer-label" id="answer-label">Answer</span>
+        <div class="answer-input-wrapper">
+          <div class="answer-input-container">
+            <div id="answer-input" class="answer-input-editable" contenteditable="true"></div>
+          </div>
+          <button class="keypad-btn" id="keypad-toggle" onclick="toggleKeypad()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="7" width="4" height="4" rx="1" />
+              <rect x="10" y="7" width="4" height="4" rx="1" />
+              <rect x="17" y="7" width="4" height="4" rx="1" />
+              <rect x="3" y="14" width="4" height="4" rx="1" />
+              <rect x="10" y="14" width="4" height="4" rx="1" />
+              <rect x="17" y="14" width="4" height="4" rx="1" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="numpad-container hidden" id="numpad-container">
+        <div class="numpad" id="standard-numpad">
+          <button class="numpad-btn" onclick="numpadInput('1')">1</button>
+          <button class="numpad-btn" onclick="numpadInput('2')">2</button>
+          <button class="numpad-btn" onclick="numpadInput('3')">3</button>
+          <button class="numpad-btn action" onclick="numpadInput('/')">/</button>
+          <button class="numpad-btn" onclick="numpadInput('4')">4</button>
+          <button class="numpad-btn" onclick="numpadInput('5')">5</button>
+          <button class="numpad-btn" onclick="numpadInput('6')">6</button>
+          <button class="numpad-btn action" onclick="numpadInput('%')">%</button>
+          <button class="numpad-btn" onclick="numpadInput('7')">7</button>
+          <button class="numpad-btn" onclick="numpadInput('8')">8</button>
+          <button class="numpad-btn" onclick="numpadInput('9')">9</button>
+          <button class="numpad-btn action" onclick="numpadInput(' ')" style="font-size:20px">␣</button>
+          <button class="numpad-btn action" onclick="numpadBackspace()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 8L5 12L9 16" />
+              <path d="M5 12H19" />
+            </svg>
+          </button>
+          <button class="numpad-btn" onclick="numpadInput('0')">0</button>
+          <button class="numpad-btn" onclick="numpadInput('.')">.</button>
+          <button class="numpad-btn enter" onclick="checkAnswer()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M9 10L5 14L9 18" />
+              <path d="M5 14H15C17.2091 14 19 12.2091 19 10V6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="format-hint" id="format-hint">Type as whole numerator/denominator — e.g., 1 1/2</div>
+    </div>
+  </div>
+  
+  <script src="script.js"></script>
+  <script type="module" src="../nav/nav.js"></script>
+</body>
+
+</html>
