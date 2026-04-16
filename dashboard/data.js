@@ -28,7 +28,7 @@ const siteData = {
         { text: "About", href: "#about" },
         { text: "Blogs", href: "../blogs/science/biology/animal/blog/blog.html" },
         { text: "Authentication", href: "../utils/auth/auth.html" },
-        { text: "Logout", href: "./login.html", id: "nav-logout", class: "nav-cta logout-nav-item" }  // Added logout
+        { text: "Logout", href: "./login.html", id: "nav-logout", class: "nav-cta logout-nav-item" } // Added logout
     ],
     ctaButton: { text: "Start Revising", href: "#exams" },
     
@@ -62,158 +62,151 @@ const siteData = {
     
     // Exam Categories - The 3 main folders
     examCategories: [
+    {
+        id: "national",
+        title: "National Exams",
+        description: "Standardized assessments for national curricula and transition examinations.",
+        badge: "/Exams/National/",
+        items: [
         {
-            id: "national",
-            title: "National Exams",
-            description: "Standardized assessments for national curricula and transition examinations.",
-            badge: "/Exams/National/",
-            items: [
-                {
-                    name: "WAEC",
-                    link: "../exam-archive/national/exams/index.html",
-                    live: true,
-                    status: "Live"
-                },
-                {
-                    name: "NECO",
-                    link: "../exam-archive/national/exams/index.html",
-                    live: false,
-                    status: "Live"
-                },
-                {
-                    name: "JAMB",
-                    link: "../exam-archive/national/exams/index.html",
-                    live: false,
-                    status: "Live"
-                },
-                {
-                    name: "Common Entrance",
-                    link: "../exam-archive/national/exams/index.html",
-                    live: false,
-                    status: "Coming Soon"
-                }
-            ]
+            name: "WAEC",
+            link: "../exam-archive/national/exams/index.html",
+            live: true,
+            status: "Live"
         },
         {
-            id: "international",
-            title: "International Exams",
-            description: "Globally recognized qualifications and international benchmark assessments.",
-            badge: "/Exams/International/",
-            items: [
-                {
-                    name: "Cambridge Exam",
-                    link: "./Cambridge/index.html",
-                    live: false,
-                    status: "Live"
-                },
-                {
-                    name: "International Baccalaureate",
-                    link: "#",
-                    live: false,
-                    status: "Coming Soon"
-                },
-                {
-                    name: "SAT Prep",
-                    link: "#",
-                    live: false,
-                    status: "Coming Soon"
-                }
-            ]
+            name: "NECO",
+            link: "../exam-archive/national/exams/index.html",
+            live: false,
+            status: "Live"
         },
         {
-            id: "competition",
-            title: "Competition Exams",
-            description: "Elite-level scholarship and academic competition preparation materials.",
-            badge: "/Exams/Competition/",
-            items: [
-                {
-                    name: "Scholastic Prep",
-                    link: "../exam-archive/competitions/index.html",
-                    live: true,
-                    status: "Live"
-                },
-                {
-                    name: "TULIP Questions",
-                    link: "#",
-                    live: false,
-                    status: "Coming Soon"
-                },
-                {
-                    name: "Math Olympiad",
-                    link: "#",
-                    live: false,
-                    status: "Coming Soon"
-                }
-            ]
-        }
-    ],
+            name: "JAMB",
+            link: "../exam-archive/national/exams/index.html",
+            live: false,
+            status: "Live"
+        },
+        {
+            name: "Common Entrance",
+            link: "../exam-archive/national/exams/index.html",
+            live: false,
+            status: "Coming Soon"
+        }]
+    },
+    {
+        id: "international",
+        title: "International Exams",
+        description: "Globally recognized qualifications and international benchmark assessments.",
+        badge: "/Exams/International/",
+        items: [
+        {
+            name: "Cambridge Exam",
+            link: "./Cambridge/index.html",
+            live: false,
+            status: "Live"
+        },
+        {
+            name: "International Baccalaureate",
+            link: "#",
+            live: false,
+            status: "Coming Soon"
+        },
+        {
+            name: "SAT Prep",
+            link: "#",
+            live: false,
+            status: "Coming Soon"
+        }]
+    },
+    {
+        id: "competition",
+        title: "Competition Exams",
+        description: "Elite-level scholarship and academic competition preparation materials.",
+        badge: "/Exams/Competition/",
+        items: [
+        {
+            name: "Scholastic Prep",
+            link: "../exam-archive/competitions/index.html",
+            live: true,
+            status: "Live"
+        },
+        {
+            name: "TULIP Questions",
+            link: "#",
+            live: false,
+            status: "Coming Soon"
+        },
+        {
+            name: "Math Olympiad",
+            link: "#",
+            live: false,
+            status: "Coming Soon"
+        }]
+    }],
     
     // Subject Cards
     subjects: [
-        {
-            name: "English & Writing",
-            description: "Essay · Letter Writing · Comprehension · Summary · Speech · Report",
-            link: "../writing/index.html",
-            color: "blue",
-            badge: "/Writing/",
-            cta: "Explore"
-        },
-        {
-            name: "Mathematics",
-            description: "Arithmetic · Algebra · Geometry · Calculus · Statistics",
-            link: "../prep-math/drag/index.html",
-            color: "yellow",
-            badge: "/Math/",
-            cta: "Explore"
-        },
-        {
-            name: "Science",
-            description: "Biology · Chemistry · Physics · Integrated Science",
-            link: "../blogs/science/life/blog/blog.html",
-            color: "green",
-            badge: "/Science/",
-            cta: "Explore"
-        },
-        {
-            name: "Social Studies",
-            description: "History · Geography · Government · Civic Education",
-            link: "../theory-page/index.html",
-            color: "amber",
-            badge: "/Social-Studies/",
-            cta: "Explore"
-        }
-    ],
+    // {
+    //     name: "English & Writing",
+    //     description: "Essay · Letter Writing · Comprehension · Summary · Speech · Report",
+    //     link: "../writing/index.html",
+    //     color: "blue",
+    //     badge: "/Writing/",
+    //     cta: "Explore"
+    // },
+    {
+        name: "Mathematics",
+        description: "Arithmetic · Algebra · Geometry · Calculus · Statistics",
+        link: "../prep-math/drag/index.html",
+        color: "yellow",
+        badge: "/Math/",
+        cta: "Explore"
+    },
+    {
+        name: "Science",
+        description: "Biology · Chemistry · Physics · Integrated Science",
+        link: "../blogs/science/life/blog/blog.html",
+        color: "green",
+        badge: "/Science/",
+        cta: "Explore"
+    },
+    {
+        name: "Social Studies",
+        description: "History · Geography · Government · Civic Education",
+        link: "../theory-page/index.html",
+        color: "amber",
+        badge: "/Social-Studies/",
+        cta: "Explore"
+    }],
     
     // Drill Cards
     drills: [
-        {
-            name: "Theory Drill Hub",
-            description: "Subject-Specific Drills · Worked Examples · Step-by-Step Solutions · Exam-Style Questions",
-            link: "../theory-page/index.html",
-            color: "red",
-            badge: "/Theory-Page/",
-            cta: "Start Drilling"
-        }
-    ],
+    {
+        name: "Theory Drill Hub",
+        description: "Subject-Specific Drills · Worked Examples · Step-by-Step Solutions · Exam-Style Questions",
+        link: "../theory-page/index.html",
+        color: "red",
+        badge: "/Theory-Page/",
+        cta: "Start Drilling"
+    }],
     
     // Info Strip (About section)
     infoStrip: [
-        {
-            label: "What is Prep Portal?",
-            title: "Built for Exam Season",
-            description: "A structured study resource covering national and international exam boards — from Common Entrance to WAEC, all in one place."
-        },
-        {
-            label: "How to use it",
-            title: "Click. Practice. Review.",
-            description: "Each exam opens a full interactive paper. Answer questions, check your score, and review worked solutions immediately."
-        },
-        {
-            label: "Coming soon",
-            title: "More Sets Dropping",
-            description: "Grade 4 Spring, TULIP Questions, and Scholastic Prep are in active development. Check back each term for new releases."
-        }
-    ],
+    {
+        label: "What is Prep Portal?",
+        title: "Built for Exam Season",
+        description: "A structured study resource covering national and international exam boards — from Common Entrance to WAEC, all in one place."
+    },
+    {
+        label: "How to use it",
+        title: "Click. Practice. Review.",
+        description: "Each exam opens a full interactive paper. Answer questions, check your score, and review worked solutions immediately."
+    },
+    {
+        label: "Coming soon",
+        title: "More Sets Dropping",
+        description: "Grade 4 Spring, TULIP Questions, and Scholastic Prep are in active development. Check back each term for new releases."
+    }],
     
     // CTA Band
     ctaBand: {
@@ -227,39 +220,38 @@ const siteData = {
         description: "A structured archive of past papers and prep kits for students preparing for high-stakes examinations in 2026.",
         copyright: "&copy; 2026 Prep Portal. All rights reserved.",
         sections: [
-            {
-                title: "Exams",
-                links: [
-                    { text: "National Exams", href: "#exams" },
-                    { text: "International Exams", href: "#exams" },
-                    { text: "Competition Exams", href: "#exams" }
-                ]
-            },
-            {
-                title: "Subjects",
-                links: [
-                    { text: "English & Writing", href: "./Writing/index.html" },
-                    { text: "Mathematics", href: "./Math/index.html" },
-                    { text: "Science", href: "./Science/index.html" },
-                    { text: "Social Studies", href: "./Social-Studies/index.html" }
-                ]
-            },
-            {
-                title: "Theory",
-                links: [
-                    { text: "Theory Drill", href: "./Theory-Page/index.html" }
-                ]
-            },
-            {
-                title: "Info",
-                links: [
-                    { text: "About", href: "#about" },
-                    { text: "Study Guides", href: "#" },
-                    { text: "Contact", href: "#" },
-                    { text: "Privacy", href: "#" }
-                ]
-            }
-        ],
+        {
+            title: "Exams",
+            links: [
+                { text: "National Exams", href: "#exams" },
+                { text: "International Exams", href: "#exams" },
+                { text: "Competition Exams", href: "#exams" }
+            ]
+        },
+        {
+            title: "Subjects",
+            links: [
+                { text: "English & Writing", href: "./Writing/index.html" },
+                { text: "Mathematics", href: "./Math/index.html" },
+                { text: "Science", href: "./Science/index.html" },
+                { text: "Social Studies", href: "./Social-Studies/index.html" }
+            ]
+        },
+        {
+            title: "Theory",
+            links: [
+                { text: "Theory Drill", href: "./Theory-Page/index.html" }
+            ]
+        },
+        {
+            title: "Info",
+            links: [
+                { text: "About", href: "#about" },
+                { text: "Study Guides", href: "#" },
+                { text: "Contact", href: "#" },
+                { text: "Privacy", href: "#" }
+            ]
+        }],
         bottomLinks: [
             { text: "Terms", href: "#" },
             { text: "Privacy", href: "#" },
