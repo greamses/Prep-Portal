@@ -169,7 +169,7 @@ const siteData = {
         {
             name: "Science",
             description: "Biology · Chemistry · Physics · Integrated Science",
-            link: "./Science/index.html",
+            link: "../blogs/science/life/blog/blog.html",
             color: "green",
             badge: "/Science/",
             cta: "Explore"
@@ -177,7 +177,7 @@ const siteData = {
         {
             name: "Social Studies",
             description: "History · Geography · Government · Civic Education",
-            link: "./Social-Studies/index.html",
+            link: "../theory-page/index.html",
             color: "amber",
             badge: "/Social-Studies/",
             cta: "Explore"
