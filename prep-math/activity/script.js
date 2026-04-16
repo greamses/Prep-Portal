@@ -42,7 +42,13 @@ let totalSolved = 0;
 let currentQ = null;
 let isLoading = false;
 
-const settings = { mode: 'fractions', parts: 2, type: 'fraction-circle' };
+const settings = { 
+  mode: 'fractions', 
+  parts: 2, 
+  type: 'fraction-circle',
+  hideLines: false,
+  hideUnshaded: false
+};
 
 // ─────────────────────────────────────────────────────────
 // TICKER
@@ -53,12 +59,14 @@ const settings = { mode: 'fractions', parts: 2, type: 'fraction-circle' };
     'Prep Portal 2026', 'Circles · Bars', 'Endless Practice',
   ];
   const track = document.getElementById('ticker-track');
-  [...words, ...words].forEach(t => {
-    const s = document.createElement('span');
-    s.className = 'ticker-item';
-    s.textContent = t;
-    track.appendChild(s);
-  });
+  if (track) {
+    [...words, ...words].forEach(t => {
+      const s = document.createElement('span');
+      s.className = 'ticker-item';
+      s.textContent = t;
+      track.appendChild(s);
+    });
+  }
 })();
 
 // ─────────────────────────────────────────────────────────
@@ -97,6 +105,17 @@ document.querySelectorAll('.pp-dropdown-list').forEach(list => {
 });
 
 // ─────────────────────────────────────────────────────────
+// CHECKBOX LISTENERS
+// ─────────────────────────────────────────────────────────
+document.getElementById('hide-lines')?.addEventListener('change', (e) => {
+  settings.hideLines = e.target.checked;
+});
+
+document.getElementById('hide-unshaded')?.addEventListener('change', (e) => {
+  settings.hideUnshaded = e.target.checked;
+});
+
+// ─────────────────────────────────────────────────────────
 // KEYPAD FUNCTIONS
 // ─────────────────────────────────────────────────────────
 function toggleKeypad() {
@@ -110,7 +129,6 @@ function numpadInput(char) {
   const input = document.getElementById('answer-input');
   input.focus();
   
-  // Insert character at cursor position
   const selection = window.getSelection();
   if (selection.rangeCount === 0) {
     input.textContent += char;
@@ -118,15 +136,11 @@ function numpadInput(char) {
   }
   
   const range = selection.getRangeAt(0);
-  
-  // Delete any selected content first
   range.deleteContents();
   
-  // Create text node with the character
   const textNode = document.createTextNode(char);
   range.insertNode(textNode);
   
-  // Move cursor after inserted character
   range.setStartAfter(textNode);
   range.setEndAfter(textNode);
   selection.removeAllRanges();
@@ -143,24 +157,18 @@ function numpadBackspace() {
   const range = selection.getRangeAt(0);
   
   if (!range.collapsed) {
-    // Delete selected content
     range.deleteContents();
   } else {
-    // Delete character before cursor
     const container = range.startContainer;
     const offset = range.startOffset;
     
     if (container.nodeType === Node.TEXT_NODE) {
       if (offset > 0) {
-        // Delete character before cursor within text node
         const text = container.textContent;
         container.textContent = text.slice(0, offset - 1) + text.slice(offset);
-        
-        // Move cursor back
         range.setStart(container, offset - 1);
         range.setEnd(container, offset - 1);
       } else if (container.previousSibling) {
-        // At start of text node, delete previous node
         const prev = container.previousSibling;
         prev.remove();
       }
@@ -178,9 +186,8 @@ function numpadBackspace() {
 }
 
 // ─────────────────────────────────────────────────────────
-// COLOR UTILITIES — One random color per render
+// COLOR UTILITIES — Darker colors
 // ─────────────────────────────────────────────────────────
-/* Darker color palette for fractions */
 const MUTED_COLORS = [
   '#1a3a5c', '#1b4a3d', '#5c3a1a', '#3d1e3d', '#1e4a4a',
   '#6b3a1a', '#2a1e1e', '#1a4a3a', '#4a2e1a', '#1a2e4a',
@@ -201,15 +208,15 @@ function generateRandomColorSet() {
   
   return {
     shadedColor: randomColor,
-    unshaded: isPastel ? '#FAFAF5' : '#F0EDE8',
-    ink: isPastel ? '#3A3A3A' : '#1A1A1A',
+    unshaded: isPastel ? '#e8e4dc' : '#e0d8cc',
+    ink: '#1a1a1a',
   };
 }
 
 let currentColorSet = generateRandomColorSet();
 
 // ─────────────────────────────────────────────────────────
-// SVG CANVAS RENDERER — All shaded parts use same color
+// SVG CANVAS RENDERER — Updated with hide options
 // ─────────────────────────────────────────────────────────
 function createFractionSVG(type, active, denominator) {
   const svgNS = "http://www.w3.org/2000/svg";
@@ -217,7 +224,7 @@ function createFractionSVG(type, active, denominator) {
   
   const INK = currentColorSet.ink;
   const SHADED = currentColorSet.shadedColor;
-  const UNSHADED = currentColorSet.unshaded;
+  const UNSHADED = settings.hideUnshaded ? 'transparent' : currentColorSet.unshaded;
   
   if (type === 'fraction-circle') {
     svg.setAttribute("viewBox", "0 0 800 800");
@@ -259,10 +266,27 @@ function createFractionSVG(type, active, denominator) {
       const path = document.createElementNS(svgNS, "path");
       path.setAttribute("d", pathData.trim());
       path.setAttribute("fill", isShaded ? SHADED : UNSHADED);
-      path.setAttribute("stroke", INK);
-      path.setAttribute("stroke-width", "4");
-      path.setAttribute("stroke-linejoin", "round");
+      
+      // Only draw stroke if lines are not hidden
+      if (!settings.hideLines) {
+        path.setAttribute("stroke", INK);
+        path.setAttribute("stroke-width", "4");
+        path.setAttribute("stroke-linejoin", "round");
+      }
+      
       svg.appendChild(path);
+    }
+    
+    // If hiding unshaded parts, add a subtle outline around the whole shape
+    if (settings.hideUnshaded) {
+      const outlineCircle = document.createElementNS(svgNS, "circle");
+      outlineCircle.setAttribute("cx", cx);
+      outlineCircle.setAttribute("cy", cy);
+      outlineCircle.setAttribute("r", r);
+      outlineCircle.setAttribute("fill", "none");
+      outlineCircle.setAttribute("stroke", INK);
+      outlineCircle.setAttribute("stroke-width", "4");
+      svg.appendChild(outlineCircle);
     }
     
   } else { // fraction-bar
@@ -281,8 +305,13 @@ function createFractionSVG(type, active, denominator) {
       rect.setAttribute("width", partW.toFixed(1));
       rect.setAttribute("height", h);
       rect.setAttribute("fill", isShaded ? SHADED : UNSHADED);
-      rect.setAttribute("stroke", INK);
-      rect.setAttribute("stroke-width", "4");
+      
+      // Only draw stroke if lines are not hidden
+      if (!settings.hideLines) {
+        rect.setAttribute("stroke", INK);
+        rect.setAttribute("stroke-width", "4");
+      }
+      
       rect.setAttribute("rx", "12");
       svg.appendChild(rect);
     }
@@ -340,11 +369,100 @@ function getCorrectAnswer(active, denominator, mode) {
   }
 }
 
+// ─────────────────────────────────────────────────────────
+// FRACTION UTILITIES
+// ─────────────────────────────────────────────────────────
+function gcd(a, b) {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
+function parseFraction(frac) {
+  // Handle mixed numbers like "1 1/2"
+  if (frac.includes(' ')) {
+    const parts = frac.split(' ');
+    const whole = parseInt(parts[0], 10);
+    const fractionParts = parts[1].split('/');
+    const num = parseInt(fractionParts[0], 10);
+    const den = parseInt(fractionParts[1], 10);
+    if (!isNaN(whole) && !isNaN(num) && !isNaN(den) && den !== 0) {
+      return { numerator: whole * den + num, denominator: den };
+    }
+    return null;
+  }
+  
+  // Handle simple fractions
+  const parts = frac.split('/');
+  if (parts.length === 2) {
+    const num = parseInt(parts[0], 10);
+    const den = parseInt(parts[1], 10);
+    if (!isNaN(num) && !isNaN(den) && den !== 0) {
+      return { numerator: num, denominator: den };
+    }
+    return null;
+  }
+  
+  // Handle whole numbers
+  const whole = parseInt(frac, 10);
+  if (!isNaN(whole)) {
+    return { numerator: whole, denominator: 1 };
+  }
+  
+  return null;
+}
+
+function areFractionsEquivalent(frac1, frac2) {
+  const f1 = parseFraction(frac1);
+  const f2 = parseFraction(frac2);
+  
+  if (!f1 || !f2) return false;
+  
+  // Cross multiply to check equivalence
+  return f1.numerator * f2.denominator === f2.numerator * f1.denominator;
+}
+
+function simplifyFraction(frac) {
+  const parsed = parseFraction(frac);
+  if (!parsed) return frac;
+  
+  let { numerator, denominator } = parsed;
+  let whole = 0;
+  
+  if (numerator >= denominator) {
+    whole = Math.floor(numerator / denominator);
+    numerator = numerator % denominator;
+  }
+  
+  if (numerator > 0) {
+    const divisor = gcd(numerator, denominator);
+    numerator /= divisor;
+    denominator /= divisor;
+  }
+  
+  if (whole > 0 && numerator > 0) {
+    return `${whole} ${numerator}/${denominator}`;
+  } else if (whole > 0) {
+    return whole.toString();
+  } else if (numerator > 0) {
+    return `${numerator}/${denominator}`;
+  } else {
+    return '0';
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// ANSWER CHECKING
+// ─────────────────────────────────────────────────────────
 function isCorrect(raw, correctVal, mode) {
   const clean = raw.replace(/[°%\s]/g, '').toLowerCase();
   const target = correctVal.replace(/[°%\s]/g, '').toLowerCase();
   
-  if (mode === 'fractions') return clean === target;
+  if (mode === 'fractions') {
+    // Check if exact match first
+    if (clean === target) return true;
+    
+    // Check for equivalent fractions
+    return areFractionsEquivalent(clean, target);
+  }
   
   const userNum = parseFloat(clean);
   const targNum = parseFloat(target);
@@ -358,12 +476,73 @@ function displayAnswer(val, mode) {
   switch (mode) {
     case 'percents': return val + '%';
     case 'degrees': return val + '°';
+    case 'fractions': return simplifyFraction(val);
     default: return val;
   }
 }
 
+function checkAnswer() {
+  if (!currentQ || isLoading) return;
+  
+  const input = document.getElementById('answer-input');
+  const raw = input.textContent.trim();
+  const fb = document.getElementById('feedback-box');
+  const mode = currentQ.mode || settings.mode;
+  
+  if (!raw) {
+    fb.className = 'gp-feedback-box fb-error';
+    fb.textContent = 'Type your answer first.';
+    return;
+  }
+  
+  const correct = getCorrectAnswer(currentQ.active, currentQ.denominator, mode);
+  
+  if (isCorrect(raw, correct, mode)) {
+    streak++;
+    totalSolved++;
+    syncStats();
+    
+    fb.className = 'gp-feedback-box fb-success';
+    
+    // Special message for equivalent fractions
+    const cleanRaw = raw.replace(/[°%\s]/g, '').toLowerCase();
+    if (mode === 'fractions' && cleanRaw !== correct && areFractionsEquivalent(cleanRaw, correct)) {
+      const simplified = simplifyFraction(correct);
+      fb.textContent = `✓ Correct! ${raw} is equivalent to ${simplified}. Next question…`;
+    } else {
+      fb.textContent = `✓ Correct! The answer is ${displayAnswer(correct, mode)}. Next question…`;
+    }
+    
+    const flash = document.getElementById('correct-flash');
+    flash.classList.add('show');
+    setTimeout(() => flash.classList.remove('show'), 300);
+    
+    setTimeout(() => loadQuestion(generateQuestion()), 850);
+  } else {
+    streak = 0;
+    syncStats();
+    fb.className = 'gp-feedback-box fb-error';
+    
+    // More helpful error message for fractions
+    if (mode === 'fractions') {
+      const simplified = simplifyFraction(correct);
+      fb.textContent = `✗ Not quite. Try an equivalent fraction to ${simplified}.`;
+    } else {
+      fb.textContent = '✗ Not quite — count the shaded sections vs total sections carefully.';
+    }
+    
+    // Focus and select all text
+    input.focus();
+    const range = document.createRange();
+    range.selectNodeContents(input);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
+
 // ─────────────────────────────────────────────────────────
-// LOAD QUESTION (now pure SVG)
+// LOAD QUESTION
 // ─────────────────────────────────────────────────────────
 function loadQuestion(q) {
   if (isLoading) return;
@@ -423,54 +602,6 @@ function closeModal() {
   const wrap = document.getElementById('polypad-wrap');
   const oldSvg = wrap.querySelector('svg');
   if (oldSvg) oldSvg.remove();
-}
-
-// ─────────────────────────────────────────────────────────
-// ANSWER CHECKING
-// ─────────────────────────────────────────────────────────
-function checkAnswer() {
-  if (!currentQ || isLoading) return;
-  
-  const input = document.getElementById('answer-input');
-  const raw = input.textContent.trim();
-  const fb = document.getElementById('feedback-box');
-  const mode = currentQ.mode || settings.mode;
-  
-  if (!raw) {
-    fb.className = 'gp-feedback-box fb-error';
-    fb.textContent = 'Type your answer first.';
-    return;
-  }
-  
-  const correct = getCorrectAnswer(currentQ.active, currentQ.denominator, mode);
-  
-  if (isCorrect(raw, correct, mode)) {
-    streak++;
-    totalSolved++;
-    syncStats();
-    
-    fb.className = 'gp-feedback-box fb-success';
-    fb.textContent = `✓ Correct! The answer is ${displayAnswer(correct, mode)}. Next question…`;
-    
-    const flash = document.getElementById('correct-flash');
-    flash.classList.add('show');
-    setTimeout(() => flash.classList.remove('show'), 300);
-    
-    setTimeout(() => loadQuestion(generateQuestion()), 850);
-  } else {
-    streak = 0;
-    syncStats();
-    fb.className = 'gp-feedback-box fb-error';
-    fb.textContent = '✗ Not quite — count the shaded sections vs total sections carefully.';
-    
-    // Focus and select all text
-    input.focus();
-    const range = document.createRange();
-    range.selectNodeContents(input);
-    const selection = window.getSelection();
-    selection.removeAllRanges();
-    selection.addRange(range);
-  }
 }
 
 function syncStats() {
