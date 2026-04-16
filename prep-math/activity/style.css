@@ -809,7 +809,7 @@ body {
 .numpad-btn.enter {
   background: var(--green);
   color: white;
-  grid-column: span 2;
+  grid-column: span 1;
 }
 
 .numpad-btn.enter:hover {
@@ -825,7 +825,11 @@ body {
 
 /* Compare Keypad */
 .numpad-compare {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.compare-enter {
+  grid-column: span 1;
 }
 
 .compare-btn {

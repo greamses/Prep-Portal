@@ -167,14 +167,7 @@
         <span class="answer-label" id="answer-label">Answer</span>
         <div class="answer-input-wrapper">
           <div class="answer-input-container">
-            <div 
-              id="answer-input" 
-              class="answer-input-editable" 
-              contenteditable="true"
-              role="textbox"
-              aria-multiline="false"
-              inputmode="none"
-            ></div>
+            <div id="answer-input" class="answer-input-editable" contenteditable="true" role="textbox" aria-multiline="false" inputmode="none"></div>
           </div>
           <button class="keypad-btn" id="keypad-toggle" onclick="toggleKeypad()" title="Toggle keypad">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
@@ -225,11 +218,18 @@
         </div>
         
         <!-- Compare Mode Keypad (4 buttons) -->
+        <!-- Compare Mode Keypad (5 buttons now) -->
         <div class="numpad numpad-compare hidden" id="compare-numpad">
           <button class="numpad-btn compare-btn" onclick="numpadInput('<')">&lt;</button>
           <button class="numpad-btn compare-btn" onclick="numpadInput('>')">&gt;</button>
           <button class="numpad-btn compare-btn" onclick="numpadInput('=')">=</button>
-          <button class="numpad-btn enter compare-enter" onclick="checkAnswer()">
+          <button class="numpad-btn compare-btn action" onclick="numpadBackspace()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 8L5 12L9 16" />
+              <path d="M5 12H19" />
+            </svg>
+          </button>
+          <button class="numpad-btn compare-enter" onclick="checkAnswer()">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M9 10L5 14L9 18" />
               <path d="M5 14H15C17.2091 14 19 12.2091 19 10V6" />
