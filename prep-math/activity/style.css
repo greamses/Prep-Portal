@@ -112,8 +112,13 @@ body {
 }
 
 @keyframes ticker-scroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 /* PAGE HEADER */
@@ -537,7 +542,7 @@ body {
   max-width: 100%;
   max-height: 100%;
   box-shadow: 0 0 0 12px #fff,
-              0 0 0 14px var(--ink);
+    0 0 0 14px var(--ink);
 }
 
 /* Loader */
@@ -568,7 +573,9 @@ body {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .pp-loader-text {
@@ -1127,11 +1134,51 @@ button,
   }
 }
 
+/* Game Navigation Button */
+.game-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 18px;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--surface-2);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.game-nav-btn:hover {
+  background: var(--ink);
+  color: var(--bg);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+}
+
+.game-nav-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.game-nav-btn svg {
+  flex-shrink: 0;
+}
+
 /* ANIMATIONS */
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+  
   50% {
     transform: scale(1.05);
   }

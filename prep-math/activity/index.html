@@ -43,6 +43,16 @@
         <div class="ph-stat"><strong id="stat-streak">0</strong><span>Streak</span></div>
         <div class="ph-stat"><strong id="stat-total">0</strong><span>Solved</span></div>
       </div>
+      <!-- Game button -->
+      <a href="./game/game.html" class="game-nav-btn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+          <rect x="3" y="3" width="8" height="8" rx="1" />
+          <rect x="13" y="3" width="8" height="8" rx="1" />
+          <rect x="3" y="13" width="8" height="8" rx="1" />
+          <rect x="13" y="13" width="8" height="8" rx="1" />
+        </svg>
+        Slider Game
+      </a>
     </div>
   </header>
   
@@ -136,28 +146,28 @@
   
   <!-- Modal -->
   <div id="polypad-modal" class="gp-modal-overlay">
-  <div class="modal-header">
-    <button class="btn" title="Exit" onclick="closeModal()">
-      <svg viewBox="0 0 24 24">
-        <path d="M18 6L6 18" />
-        <path d="M6 6l12 12" />
-      </svg>
-    </button>
-    <span class="modal-title" id="modal-title">What fraction does the shape show?</span>
-    <div class="modal-header-right">
-      <label class="checkbox-label modal-checkbox" id="ticks-checkbox-container" style="display: none;">
-        <input type="checkbox" id="show-ticks-modal" />
-        <span class="checkbox-text">Ticks</span>
-      </label>
-      <label class="checkbox-label modal-checkbox" id="labels-checkbox-container">
-        <input type="checkbox" id="show-labels-modal" checked />
-        <span class="checkbox-text">Labels</span>
-      </label>
-      <span class="modal-streak" id="modal-streak">0 in a row</span>
+    <div class="modal-header">
+      <button class="btn" title="Exit" onclick="closeModal()">
+        <svg viewBox="0 0 24 24">
+          <path d="M18 6L6 18" />
+          <path d="M6 6l12 12" />
+        </svg>
+      </button>
+      <span class="modal-title" id="modal-title">What fraction does the shape show?</span>
+      <div class="modal-header-right">
+        <label class="checkbox-label modal-checkbox" id="ticks-checkbox-container" style="display: none;">
+          <input type="checkbox" id="show-ticks-modal" />
+          <span class="checkbox-text">Ticks</span>
+        </label>
+        <label class="checkbox-label modal-checkbox" id="labels-checkbox-container">
+          <input type="checkbox" id="show-labels-modal" checked />
+          <span class="checkbox-text">Labels</span>
+        </label>
+        <span class="modal-streak" id="modal-streak">0 in a row</span>
+      </div>
     </div>
-  </div>
-  
-
+    
+    
     <div id="polypad-wrap">
       <div id="pp-loader">
         <div class="pp-spinner"></div>
