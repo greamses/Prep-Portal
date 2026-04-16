@@ -13,7 +13,6 @@
   <link rel="stylesheet" href="../../main.css">
   <link rel="stylesheet" href="../../theory-page/style.css">
   <script src="../../utils/loader/loader.js"></script>
-  
 </head>
 
 <body>
@@ -27,12 +26,12 @@
   
   <nav class="site-nav"></nav>
   
-  <!-- ── Ticker ────────────────────────────────────────────── -->
+  <!-- Ticker -->
   <div class="ticker" aria-hidden="true">
     <div class="ticker-track" id="ticker-track"></div>
   </div>
   
-  <!-- ── Page Header ──────────────────────────────────────── -->
+  <!-- Page Header -->
   <header class="pg-header">
     <div class="ph-left">
       <p class="pg-eyebrow">PrepBot · Mathematics</p>
@@ -47,7 +46,7 @@
     </div>
   </header>
   
-  <!-- ── Settings Panel ───────────────────────────────────── -->
+  <!-- Settings Panel -->
   <section class="settings-panel">
     <div class="settings-body">
       <p class="settings-desc">
@@ -69,6 +68,7 @@
             <div class="pp-dropdown-item" data-value="percents">Percents</div>
             <div class="pp-dropdown-item" data-value="degrees">Degrees</div>
             <div class="pp-dropdown-item" data-value="decimals">Decimals</div>
+            <div class="pp-dropdown-item" data-value="time">Time</div>
             <div class="pp-dropdown-item" data-value="mixed">Mixed Practice</div>
           </div>
         </div>
@@ -87,7 +87,10 @@
             <div class="pp-dropdown-item" data-value="3">Thirds</div>
             <div class="pp-dropdown-item" data-value="4">Fourths</div>
             <div class="pp-dropdown-item" data-value="5">Fifths</div>
+            <div class="pp-dropdown-item" data-value="6">Sixths</div>
             <div class="pp-dropdown-item" data-value="8">Eighths</div>
+            <div class="pp-dropdown-item" data-value="10">Tenths</div>
+            <div class="pp-dropdown-item" data-value="12">Twelfths</div>
           </div>
         </div>
         
@@ -105,18 +108,18 @@
             <div class="pp-dropdown-item" data-value="fraction-bar">Bars</div>
           </div>
         </div>
-        
-        <!-- Add after the Type dropdown in settings-grid -->
-        <div class="settings-checkboxes">
-          <label class="checkbox-label">
-            <input type="checkbox" id="hide-lines" />
-            <span class="checkbox-text">Hide split lines</span>
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" id="hide-unshaded" />
-            <span class="checkbox-text">Hide unshaded parts</span>
-          </label>
-        </div>
+      </div>
+      
+      <!-- Checkboxes -->
+      <div class="settings-checkboxes">
+        <label class="checkbox-label">
+          <input type="checkbox" id="hide-lines" />
+          <span class="checkbox-text">Hide split lines</span>
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" id="hide-unshaded" />
+          <span class="checkbox-text">Hide unshaded parts</span>
+        </label>
       </div>
       
       <button class="btn-start" onclick="startSession()">
@@ -128,8 +131,7 @@
     </div>
   </section>
   
-  
-  <!-- ── Modal ────────────────────────────────────────────── -->
+  <!-- Modal -->
   <div id="polypad-modal" class="gp-modal-overlay">
     <div class="modal-header">
       <button class="btn" title="Exit" onclick="closeModal()">
@@ -139,7 +141,13 @@
         </svg>
       </button>
       <span class="modal-title" id="modal-title">What fraction does the shape show?</span>
-      <span class="modal-streak" id="modal-streak">0 in a row</span>
+      <div class="modal-header-right">
+        <label class="checkbox-label modal-checkbox" id="ticks-checkbox-container" style="display: none;">
+          <input type="checkbox" id="show-ticks-modal" />
+          <span class="checkbox-text">Ticks</span>
+        </label>
+        <span class="modal-streak" id="modal-streak">0 in a row</span>
+      </div>
     </div>
     
     <div id="polypad-wrap">
@@ -150,7 +158,6 @@
       <div id="correct-flash"></div>
     </div>
     
-    <!-- Replace the answer-row section in the modal -->
     <div class="gp-bottom-sheet">
       <div class="gp-feedback-box" id="feedback-box">Study the shape and type your answer below.</div>
       <div class="answer-row">
@@ -173,9 +180,8 @@
       </div>
       
       <!-- Number Keypad -->
-      
       <div class="numpad-container hidden" id="numpad-container">
-        <div class="numpad numpad-5col">
+        <div class="numpad">
           <button class="numpad-btn" onclick="numpadInput('1')">1</button>
           <button class="numpad-btn" onclick="numpadInput('2')">2</button>
           <button class="numpad-btn" onclick="numpadInput('3')">3</button>
@@ -189,8 +195,8 @@
           <button class="numpad-btn" onclick="numpadInput('7')">7</button>
           <button class="numpad-btn" onclick="numpadInput('8')">8</button>
           <button class="numpad-btn" onclick="numpadInput('9')">9</button>
-          
           <button class="numpad-btn action" onclick="numpadInput('°')">°</button>
+          
           <button class="numpad-btn action" onclick="numpadBackspace()">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M9 8L5 12L9 16" />
@@ -200,18 +206,11 @@
           <button class="numpad-btn" onclick="numpadInput('0')">0</button>
           <button class="numpad-btn" onclick="numpadInput('.')">.</button>
           
-          <button class="numpad-btn check" onclick="checkAnswer()">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            CHECK
-          </button>
           <button class="numpad-btn enter" onclick="checkAnswer()">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M9 10L5 14L9 18" />
               <path d="M5 14H15C17.2091 14 19 12.2091 19 10V6" />
             </svg>
-            ENTER
           </button>
         </div>
       </div>

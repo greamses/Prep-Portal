@@ -7,30 +7,42 @@ const MODES = {
     placeholder: 'e.g. 3/4',
     hint: 'Type as numerator/denominator — e.g. 3/4',
     modalQ: 'What fraction does the shape show?',
+    unit: '',
   },
   percents: {
     label: 'Percent',
     placeholder: 'e.g. 75%',
     hint: 'Type the percentage — e.g. 75 or 75%',
     modalQ: 'What percentage does the shape show?',
+    unit: '%',
   },
   degrees: {
     label: 'Degrees',
     placeholder: 'e.g. 270°',
     hint: 'Type the angle in degrees — e.g. 270 or 270°',
     modalQ: 'How many degrees does the shaded sector represent?',
+    unit: '°',
   },
   decimals: {
     label: 'Decimal',
     placeholder: 'e.g. 0.75',
     hint: 'Type as a decimal — e.g. 0.75',
     modalQ: 'What decimal does the shape show?',
+    unit: '',
+  },
+  time: {
+    label: 'Time',
+    placeholder: 'e.g. 45',
+    hint: 'Type minutes (e.g. 45)',
+    modalQ: 'How many minutes does the shaded part represent?',
+    unit: 'min',
   },
   mixed: {
     label: 'Answer',
     placeholder: 'Type your answer',
     hint: 'Answer in the format shown',
     modalQ: 'What value does the shape show?',
+    unit: '',
   },
 };
 
@@ -47,7 +59,8 @@ const settings = {
   parts: 2, 
   type: 'fraction-circle',
   hideLines: false,
-  hideUnshaded: false
+  hideUnshaded: false,
+  showTickMarks: false
 };
 
 // ─────────────────────────────────────────────────────────
@@ -113,6 +126,18 @@ document.getElementById('hide-lines')?.addEventListener('change', (e) => {
 
 document.getElementById('hide-unshaded')?.addEventListener('change', (e) => {
   settings.hideUnshaded = e.target.checked;
+});
+
+document.getElementById('show-ticks-modal')?.addEventListener('change', (e) => {
+  settings.showTickMarks = e.target.checked;
+  // Refresh current question if modal is open
+  if (currentQ && document.getElementById('polypad-modal').classList.contains('active')) {
+    const wrap = document.getElementById('polypad-wrap');
+    const oldSvg = wrap.querySelector('svg');
+    if (oldSvg) oldSvg.remove();
+    const svg = createFractionSVG(settings.type, currentQ.active, currentQ.denominator, currentQ.mode || settings.mode);
+    wrap.appendChild(svg);
+  }
 });
 
 // ─────────────────────────────────────────────────────────
@@ -186,7 +211,7 @@ function numpadBackspace() {
 }
 
 // ─────────────────────────────────────────────────────────
-// COLOR UTILITIES — Darker colors
+// COLOR UTILITIES
 // ─────────────────────────────────────────────────────────
 const MUTED_COLORS = [
   '#1a3a5c', '#1b4a3d', '#5c3a1a', '#3d1e3d', '#1e4a4a',
@@ -216,15 +241,16 @@ function generateRandomColorSet() {
 let currentColorSet = generateRandomColorSet();
 
 // ─────────────────────────────────────────────────────────
-// SVG CANVAS RENDERER — Updated with hide options
+// SVG CANVAS RENDERER
 // ─────────────────────────────────────────────────────────
-function createFractionSVG(type, active, denominator) {
+function createFractionSVG(type, active, denominator, mode) {
   const svgNS = "http://www.w3.org/2000/svg";
   const svg = document.createElementNS(svgNS, "svg");
   
   const INK = currentColorSet.ink;
   const SHADED = currentColorSet.shadedColor;
   const UNSHADED = settings.hideUnshaded ? 'transparent' : currentColorSet.unshaded;
+  const isTimeMode = mode === 'time';
   
   if (type === 'fraction-circle') {
     svg.setAttribute("viewBox", "0 0 800 800");
@@ -241,6 +267,31 @@ function createFractionSVG(type, active, denominator) {
     bgCircle.setAttribute("stroke", INK);
     bgCircle.setAttribute("stroke-width", "4");
     svg.appendChild(bgCircle);
+    
+    // Add tick marks only in time mode and if enabled
+    if (isTimeMode && settings.showTickMarks) {
+      for (let i = 0; i < 60; i++) {
+        const angle = (i * 6 - 90) * Math.PI / 180;
+        const isHourMark = i % 5 === 0;
+        const innerR = isHourMark ? r - 25 : r - 12;
+        const outerR = r;
+        
+        const x1 = cx + innerR * Math.cos(angle);
+        const y1 = cy + innerR * Math.sin(angle);
+        const x2 = cx + outerR * Math.cos(angle);
+        const y2 = cy + outerR * Math.sin(angle);
+        
+        const tick = document.createElementNS(svgNS, "line");
+        tick.setAttribute("x1", x1.toFixed(1));
+        tick.setAttribute("y1", y1.toFixed(1));
+        tick.setAttribute("x2", x2.toFixed(1));
+        tick.setAttribute("y2", y2.toFixed(1));
+        tick.setAttribute("stroke", INK);
+        tick.setAttribute("stroke-width", isHourMark ? "3" : "1.5");
+        tick.setAttribute("stroke-linecap", "square");
+        svg.appendChild(tick);
+      }
+    }
     
     const sectorAngle = 360 / denominator;
     
@@ -267,7 +318,6 @@ function createFractionSVG(type, active, denominator) {
       path.setAttribute("d", pathData.trim());
       path.setAttribute("fill", isShaded ? SHADED : UNSHADED);
       
-      // Only draw stroke if lines are not hidden
       if (!settings.hideLines) {
         path.setAttribute("stroke", INK);
         path.setAttribute("stroke-width", "4");
@@ -277,7 +327,6 @@ function createFractionSVG(type, active, denominator) {
       svg.appendChild(path);
     }
     
-    // If hiding unshaded parts, add a subtle outline around the whole shape
     if (settings.hideUnshaded) {
       const outlineCircle = document.createElementNS(svgNS, "circle");
       outlineCircle.setAttribute("cx", cx);
@@ -287,6 +336,47 @@ function createFractionSVG(type, active, denominator) {
       outlineCircle.setAttribute("stroke", INK);
       outlineCircle.setAttribute("stroke-width", "4");
       svg.appendChild(outlineCircle);
+    }
+    
+    // Add center box only in time mode
+    if (isTimeMode) {
+      const centerBox = document.createElementNS(svgNS, "rect");
+      centerBox.setAttribute("x", (cx - 90).toString());
+      centerBox.setAttribute("y", (cy - 40).toString());
+      centerBox.setAttribute("width", "180");
+      centerBox.setAttribute("height", "80");
+      centerBox.setAttribute("fill", "#1a1a1a");
+      centerBox.setAttribute("stroke", INK);
+      centerBox.setAttribute("stroke-width", "3");
+      svg.appendChild(centerBox);
+      
+      const centerText = document.createElementNS(svgNS, "text");
+      centerText.setAttribute("x", cx.toString());
+      centerText.setAttribute("y", (cy + 8).toString());
+      centerText.setAttribute("text-anchor", "middle");
+      centerText.setAttribute("dominant-baseline", "middle");
+      centerText.setAttribute("font-family", "'JetBrains Mono', monospace");
+      centerText.setAttribute("font-size", "32");
+      centerText.setAttribute("font-weight", "700");
+      centerText.setAttribute("fill", "#ffffff");
+      
+      const fraction = active / denominator;
+      let displayText = '';
+      
+      if (fraction === 1) {
+        displayText = '1 hour';
+      } else if (fraction === 0.5) {
+        displayText = '½ hour';
+      } else if (fraction === 0.25) {
+        displayText = '¼ hour';
+      } else if (fraction === 0.75) {
+        displayText = '¾ hour';
+      } else {
+        displayText = `${active}/${denominator} hour`;
+      }
+      
+      centerText.textContent = displayText;
+      svg.appendChild(centerText);
     }
     
   } else { // fraction-bar
@@ -306,13 +396,11 @@ function createFractionSVG(type, active, denominator) {
       rect.setAttribute("height", h);
       rect.setAttribute("fill", isShaded ? SHADED : UNSHADED);
       
-      // Only draw stroke if lines are not hidden
       if (!settings.hideLines) {
         rect.setAttribute("stroke", INK);
         rect.setAttribute("stroke-width", "4");
       }
       
-      rect.setAttribute("rx", "12");
       svg.appendChild(rect);
     }
     
@@ -325,8 +413,36 @@ function createFractionSVG(type, active, denominator) {
     frame.setAttribute("fill", "none");
     frame.setAttribute("stroke", INK);
     frame.setAttribute("stroke-width", "4");
-    frame.setAttribute("rx", "16");
     svg.appendChild(frame);
+    
+    // Add value text for time mode in bar
+    if (isTimeMode) {
+      const fraction = active / denominator;
+      let displayText = '';
+      
+      if (fraction === 1) {
+        displayText = '1 hour';
+      } else if (fraction === 0.5) {
+        displayText = '½ hour';
+      } else if (fraction === 0.25) {
+        displayText = '¼ hour';
+      } else if (fraction === 0.75) {
+        displayText = '¾ hour';
+      } else {
+        displayText = `${active}/${denominator} hour`;
+      }
+      
+      const textElement = document.createElementNS(svgNS, "text");
+      textElement.setAttribute("x", "400");
+      textElement.setAttribute("y", (y + h + 50).toString());
+      textElement.setAttribute("text-anchor", "middle");
+      textElement.setAttribute("font-family", "'JetBrains Mono', monospace");
+      textElement.setAttribute("font-size", "28");
+      textElement.setAttribute("font-weight", "700");
+      textElement.setAttribute("fill", INK);
+      textElement.textContent = displayText;
+      svg.appendChild(textElement);
+    }
   }
   
   svg.setAttribute("width", "100%");
@@ -338,14 +454,13 @@ function createFractionSVG(type, active, denominator) {
 // ─────────────────────────────────────────────────────────
 // QUESTION GENERATION
 // ─────────────────────────────────────────────────────────
-const MIXED_DENOMINATORS = [2, 3, 4, 5, 6, 8, 10];
-const ALL_MODES = ['fractions', 'percents', 'degrees', 'decimals'];
+const MIXED_DENOMINATORS = [2, 3, 4, 5, 6, 8, 10, 12];
+const ALL_MODES = ['fractions', 'percents', 'degrees', 'decimals', 'time'];
 
 function generateQuestion() {
   let denom = settings.parts;
   let mode = settings.mode;
   
-  // Mixed Practice: randomize BOTH denominator AND mode
   if (settings.mode === 'mixed') {
     denom = MIXED_DENOMINATORS[Math.floor(Math.random() * MIXED_DENOMINATORS.length)];
     mode = ALL_MODES[Math.floor(Math.random() * ALL_MODES.length)];
@@ -357,15 +472,23 @@ function generateQuestion() {
 }
 
 function getCorrectAnswer(active, denominator, mode) {
+  const fraction = active / denominator;
+  
   switch (mode) {
-    case 'fractions': return `${active}/${denominator}`;
+    case 'fractions': 
+      return `${active}/${denominator}`;
     case 'percents': {
-      const pct = (active / denominator) * 100;
+      const pct = fraction * 100;
       return Number.isInteger(pct) ? pct.toString() : (Math.round(pct * 10) / 10).toString();
     }
-    case 'degrees': return Math.round((active / denominator) * 360).toString();
-    case 'decimals': return parseFloat((active / denominator).toFixed(4)).toString();
-    default: return `${active}/${denominator}`;
+    case 'degrees': 
+      return Math.round(fraction * 360).toString();
+    case 'decimals': 
+      return parseFloat(fraction.toFixed(4)).toString();
+    case 'time': 
+      return Math.round(fraction * 60).toString();
+    default: 
+      return `${active}/${denominator}`;
   }
 }
 
@@ -377,7 +500,6 @@ function gcd(a, b) {
 }
 
 function parseFraction(frac) {
-  // Handle mixed numbers like "1 1/2"
   if (frac.includes(' ')) {
     const parts = frac.split(' ');
     const whole = parseInt(parts[0], 10);
@@ -390,7 +512,6 @@ function parseFraction(frac) {
     return null;
   }
   
-  // Handle simple fractions
   const parts = frac.split('/');
   if (parts.length === 2) {
     const num = parseInt(parts[0], 10);
@@ -401,7 +522,6 @@ function parseFraction(frac) {
     return null;
   }
   
-  // Handle whole numbers
   const whole = parseInt(frac, 10);
   if (!isNaN(whole)) {
     return { numerator: whole, denominator: 1 };
@@ -416,7 +536,6 @@ function areFractionsEquivalent(frac1, frac2) {
   
   if (!f1 || !f2) return false;
   
-  // Cross multiply to check equivalence
   return f1.numerator * f2.denominator === f2.numerator * f1.denominator;
 }
 
@@ -457,10 +576,7 @@ function isCorrect(raw, correctVal, mode) {
   const target = correctVal.replace(/[°%\s]/g, '').toLowerCase();
   
   if (mode === 'fractions') {
-    // Check if exact match first
     if (clean === target) return true;
-    
-    // Check for equivalent fractions
     return areFractionsEquivalent(clean, target);
   }
   
@@ -477,6 +593,7 @@ function displayAnswer(val, mode) {
     case 'percents': return val + '%';
     case 'degrees': return val + '°';
     case 'fractions': return simplifyFraction(val);
+    case 'time': return val + ' minutes';
     default: return val;
   }
 }
@@ -504,7 +621,6 @@ function checkAnswer() {
     
     fb.className = 'gp-feedback-box fb-success';
     
-    // Special message for equivalent fractions
     const cleanRaw = raw.replace(/[°%\s]/g, '').toLowerCase();
     if (mode === 'fractions' && cleanRaw !== correct && areFractionsEquivalent(cleanRaw, correct)) {
       const simplified = simplifyFraction(correct);
@@ -523,7 +639,6 @@ function checkAnswer() {
     syncStats();
     fb.className = 'gp-feedback-box fb-error';
     
-    // More helpful error message for fractions
     if (mode === 'fractions') {
       const simplified = simplifyFraction(correct);
       fb.textContent = `✗ Not quite. Try an equivalent fraction to ${simplified}.`;
@@ -531,7 +646,6 @@ function checkAnswer() {
       fb.textContent = '✗ Not quite — count the shaded sections vs total sections carefully.';
     }
     
-    // Focus and select all text
     input.focus();
     const range = document.createRange();
     range.selectNodeContents(input);
@@ -549,7 +663,6 @@ function loadQuestion(q) {
   isLoading = true;
   currentQ = q;
   
-  // Generate new random color for this question
   currentColorSet = generateRandomColorSet();
 
   const loader = document.getElementById('pp-loader');
@@ -558,6 +671,7 @@ function loadQuestion(q) {
   const input = document.getElementById('answer-input');
   const modeForDisplay = q.mode || settings.mode;
   const m = MODES[modeForDisplay] || MODES.fractions;
+  const isTimeMode = modeForDisplay === 'time';
 
   loader.classList.remove('hidden');
   loaderTxt.textContent = 'Rendering shape…';
@@ -569,13 +683,24 @@ function loadQuestion(q) {
   document.getElementById('modal-title').textContent = m.modalQ;
   document.getElementById('format-hint').textContent = m.hint;
   document.getElementById('answer-label').textContent = m.label;
+  
+  // Show/hide ticks checkbox based on mode
+  const ticksContainer = document.getElementById('ticks-checkbox-container');
+  if (ticksContainer) {
+    ticksContainer.style.display = isTimeMode ? 'flex' : 'none';
+  }
+  
+  // Reset tick marks checkbox state for time mode
+  const ticksCheckbox = document.getElementById('show-ticks-modal');
+  if (ticksCheckbox) {
+    ticksCheckbox.checked = settings.showTickMarks;
+  }
 
-  // Render SVG instantly
   const wrap = document.getElementById('polypad-wrap');
   const oldSvg = wrap.querySelector('svg');
   if (oldSvg) oldSvg.remove();
 
-  const svg = createFractionSVG(settings.type, q.active, q.denominator);
+  const svg = createFractionSVG(settings.type, q.active, q.denominator, modeForDisplay);
   wrap.appendChild(svg);
 
   setTimeout(() => {
@@ -623,7 +748,6 @@ answerInput.addEventListener('keydown', e => {
   }
 });
 
-// Prevent paste of formatted content
 answerInput.addEventListener('paste', e => {
   e.preventDefault();
   const text = e.clipboardData.getData('text/plain');
@@ -646,12 +770,10 @@ answerInput.addEventListener('paste', e => {
   selection.addRange(range);
 });
 
-// Prevent drag and drop
 answerInput.addEventListener('drop', e => {
   e.preventDefault();
 });
 
-// Prevent new lines from other inputs
 answerInput.addEventListener('beforeinput', e => {
   if (e.inputType === 'insertParagraph' || e.inputType === 'insertLineBreak') {
     e.preventDefault();
