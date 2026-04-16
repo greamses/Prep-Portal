@@ -153,7 +153,7 @@ const siteData = {
         {
             name: "English & Writing",
             description: "Essay · Letter Writing · Comprehension · Summary · Speech · Report",
-            link: "./writing/index.html",
+            link: "../writing/index.html",
             color: "blue",
             badge: "/Writing/",
             cta: "Explore"
