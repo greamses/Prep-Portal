@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Theory Practice</title>
   
-    <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
+  <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
   <meta name="theme-color" content="#000000">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&family=Caveat:wght@400;500;700&display=swap" rel="stylesheet">
@@ -16,6 +16,8 @@
   <script type="text/javascript" charset="utf-8">
   
   </script>
+  
+  <script type="module" src="../utils/loader/loader.js"></script>
 </head>
 
 <body>
@@ -27,31 +29,11 @@
       <div class="logo-cluster"></div> <!-- JS will inject the 3 images here -->
     </div>
     <div class="loader-word"><span>Prepwrite</span></div>
-    <!--     <div class="loader-word"><span>Portal.</span></div> -->
     <div class="loader-bar"></div>
   </div>
   
   <!-- NAVIGATION -->
-  <nav class="site-nav">
-    <a href="/" class="nav-logo">
-      <!-- Icon -->
-      <img src="../logo/logo-light.svg" alt="PrepPortal logo" />
-      
-      <!-- Stacked Text Branding -->
-      <div class="logo-brand">
-        <span class="brand-top">Prep</span>
-        <span class="brand-bottom">Portal</span>
-      </div>
-      
-      <div class="nav-right">
-        <a class="nav-link active" href="#">Theory</a>
-      </div>
-    </a>
-    
-    <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
-    
-    <script src="../utils/loader/loader.js"></script>
-  </nav>
+  <nav class="site-nav"></nav>
   
   <!-- TICKER -->
   <div class="ticker">
@@ -225,34 +207,33 @@
   </section>
   
   <!-- API Key Section -->
-<section class="setup-section" id="apikey-section">
-  <div class="setup-eyebrow">API Keys</div>
-  <h2>Gemini API Key</h2>
-  <div class="setup-box">
-    <div class="setup-card">
-      <div class="setup-card-hd">
-        <div class="step-badge"></div>
-        <div>
-          <div class="setup-card-title">Gemini API Key</div>
-          <div class="setup-card-sub">Get your key from <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a> (free)</div>
+  <section class="setup-section" id="apikey-section">
+    <div class="setup-eyebrow">API Keys</div>
+    <h2>Gemini API Key</h2>
+    <div class="setup-box">
+      <div class="setup-card">
+        <div class="setup-card-hd">
+          <div class="step-badge"></div>
+          <div>
+            <div class="setup-card-title">Gemini API Key</div>
+            <div class="setup-card-sub">Get your key from <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a> (free)</div>
+          </div>
+        </div>
+        <div class="apikey-row">
+          <input id="apikey-input" class="apikey-input" type="password" placeholder="Paste your Gemini API key…" autocomplete="off" spellcheck="false">
+          <button id="apikey-toggle" class="apikey-toggle" type="button">Show</button>
+        </div>
+        <div class="apikey-status-row">
+          <span class="apikey-dot" id="apikey-dot"></span>
+          <span class="apikey-status-text" id="apikey-status-text">Paste your key, then click Verify</span>
+          <span class="done-badge" id="done-key">✓</span>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <button id="apikey-verify-btn" class="apikey-verify-btn" type="button" disabled>Verify →</button>
         </div>
       </div>
-      <div class="apikey-row">
-        <input id="apikey-input" class="apikey-input" type="password"
-          placeholder="Paste your Gemini API key…" autocomplete="off" spellcheck="false">
-        <button id="apikey-toggle" class="apikey-toggle" type="button">Show</button>
-      </div>
-      <div class="apikey-status-row">
-        <span class="apikey-dot" id="apikey-dot"></span>
-        <span class="apikey-status-text" id="apikey-status-text">Paste your key, then click Verify</span>
-        <span class="done-badge" id="done-key">✓</span>
-      </div>
-      <div style="display:flex;gap:10px;margin-top:10px">
-        <button id="apikey-verify-btn" class="apikey-verify-btn" type="button" disabled>Verify →</button>
-      </div>
     </div>
-  </div>
-</section>
+  </section>
   
   <!-- MODAL -->
   <div class="modal-bd" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
@@ -321,7 +302,7 @@
   <script type="module" src="../utils/theory-analyser/theory-analyser.js"></script>
   <script type="module" src="../utils/prepbot/prepbot.js"></script>
   <script type="module" src="./main.js"></script>
-  
+  <script type="module" src="./nav/nav.js"></script>
 </body>
 
 </html>

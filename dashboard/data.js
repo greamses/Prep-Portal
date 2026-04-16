@@ -165,7 +165,7 @@ const siteData = {
     {
         name: "Science",
         description: "Biology · Chemistry · Physics · Integrated Science",
-        link: "../blogs/science/life/blog/blog.html",
+        link: "../blogs/science/biology/life/blog/blog.html",
         color: "green",
         badge: "/Science/",
         cta: "Explore"
