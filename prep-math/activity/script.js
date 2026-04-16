@@ -398,7 +398,10 @@ function createFractionSVG(type, q, mode) {
       const cy = 400;
       const r = 280;
       
-      drawDifferentPartsCircleVarying(svg, cx, cy, r, q.sectors, INK, UNSHADED);
+      // Build color map for same-sized sectors
+      const colorMap = buildColorMap(q.sectors);
+      
+      drawDifferentPartsCircleVarying(svg, cx, cy, r, q.sectors, colorMap, INK, UNSHADED);
       
       const outlineCircle = document.createElementNS(svgNS, "circle");
       outlineCircle.setAttribute("cx", cx);
@@ -518,7 +521,11 @@ function createFractionSVG(type, q, mode) {
       
     } else if (isDifferentParts && q) {
       const y = (500 - h) / 2;
-      drawDifferentPartsBarVarying(svg, x, y, totalW, h, q.sectors, INK, UNSHADED);
+      
+      // Build color map for same-sized sectors
+      const colorMap = buildColorMap(q.sectors);
+      
+      drawDifferentPartsBarVarying(svg, x, y, totalW, h, q.sectors, colorMap, INK, UNSHADED);
       
       const frame = document.createElementNS(svgNS, "rect");
       frame.setAttribute("x", x - 10);
@@ -572,6 +579,32 @@ function createFractionSVG(type, q, mode) {
   return svg;
 }
 
+// Build color map where same size = same color
+function buildColorMap(sectors) {
+  const sizeMap = new Map();
+  const colorMap = new Map();
+  let colorIndex = 0;
+  
+  sectors.forEach(sector => {
+    const key = sector.size;
+    if (!sizeMap.has(key)) {
+      sizeMap.set(key, DIFFERENT_PARTS_COLORS[colorIndex % DIFFERENT_PARTS_COLORS.length]);
+      colorIndex++;
+    }
+    colorMap.set(sector, sizeMap.get(key));
+  });
+  
+  return colorMap;
+}
+
+// Convert fraction to lowest terms string
+function toLowestTerms(numerator, denominator) {
+  const divisor = gcd(numerator, denominator);
+  const num = numerator / divisor;
+  const den = denominator / divisor;
+  return `${num}/${den}`;
+}
+
 function addCenterLabel(svg, cx, cy, text, INK, isDarkBg = false) {
   const svgNS = "http://www.w3.org/2000/svg";
   
@@ -619,7 +652,7 @@ function addSectorLabels(svg, cx, cy, r, sectors, INK) {
     text.setAttribute("font-size", "18");
     text.setAttribute("font-weight", "700");
     text.setAttribute("fill", sector.shaded ? "#ffffff" : INK);
-    text.textContent = `${sector.size}/${sector.total}`;
+    text.textContent = toLowestTerms(sector.size, sector.total);
     svg.appendChild(text);
     
     currentAngle += sectorAngle;
@@ -643,7 +676,7 @@ function addBarSegmentLabels(svg, x, y, totalW, h, sectors, INK) {
     text.setAttribute("font-size", "14");
     text.setAttribute("font-weight", "700");
     text.setAttribute("fill", sector.shaded ? "#ffffff" : INK);
-    text.textContent = `${sector.size}/${sector.total}`;
+    text.textContent = toLowestTerms(sector.size, sector.total);
     svg.appendChild(text);
     
     currentX += width;
@@ -687,11 +720,11 @@ function drawCircle(svg, cx, cy, r, active, denominator, INK, SHADED, UNSHADED) 
   }
 }
 
-function drawDifferentPartsCircleVarying(svg, cx, cy, r, sectors, INK, UNSHADED) {
+function drawDifferentPartsCircleVarying(svg, cx, cy, r, sectors, colorMap, INK, UNSHADED) {
   const svgNS = "http://www.w3.org/2000/svg";
   let currentAngle = -90;
   
-  sectors.forEach((sector, idx) => {
+  sectors.forEach((sector) => {
     const sectorAngle = (sector.size / sector.total) * 360;
     const start = currentAngle * Math.PI / 180;
     const end = (currentAngle + sectorAngle) * Math.PI / 180;
@@ -714,8 +747,7 @@ function drawDifferentPartsCircleVarying(svg, cx, cy, r, sectors, INK, UNSHADED)
     path.setAttribute("d", pathData.trim());
     
     if (sector.shaded) {
-      const colorIndex = idx % DIFFERENT_PARTS_COLORS.length;
-      path.setAttribute("fill", DIFFERENT_PARTS_COLORS[colorIndex]);
+      path.setAttribute("fill", colorMap.get(sector));
     } else {
       path.setAttribute("fill", UNSHADED);
     }
@@ -754,11 +786,11 @@ function drawBar(svg, x, y, totalW, h, active, denominator, INK, SHADED, UNSHADE
   }
 }
 
-function drawDifferentPartsBarVarying(svg, x, y, totalW, h, sectors, INK, UNSHADED) {
+function drawDifferentPartsBarVarying(svg, x, y, totalW, h, sectors, colorMap, INK, UNSHADED) {
   const svgNS = "http://www.w3.org/2000/svg";
   let currentX = x;
   
-  sectors.forEach((sector, idx) => {
+  sectors.forEach((sector) => {
     const width = (sector.size / sector.total) * totalW;
     const rect = document.createElementNS(svgNS, "rect");
     rect.setAttribute("x", currentX.toFixed(1));
@@ -767,8 +799,7 @@ function drawDifferentPartsBarVarying(svg, x, y, totalW, h, sectors, INK, UNSHAD
     rect.setAttribute("height", h);
     
     if (sector.shaded) {
-      const colorIndex = idx % DIFFERENT_PARTS_COLORS.length;
-      rect.setAttribute("fill", DIFFERENT_PARTS_COLORS[colorIndex]);
+      rect.setAttribute("fill", colorMap.get(sector));
     } else {
       rect.setAttribute("fill", UNSHADED);
     }
@@ -838,11 +869,12 @@ function generateQuestion() {
   }
   
   if (mode === 'different-parts') {
-    const numSectors = Math.floor(Math.random() * 4) + 3;
+    const numSectors = Math.floor(Math.random() * 4) + 3; // 3-6 sectors
     const sectors = [];
     let total = 0;
     
-    const denominators = [12, 16, 20, 24, 30, 36];
+    // Max denominator is 12
+    const denominators = [8, 10, 12];
     const targetTotal = denominators[Math.floor(Math.random() * denominators.length)];
     
     for (let i = 0; i < numSectors; i++) {
@@ -1133,7 +1165,7 @@ function loadQuestion(q) {
     ticksCheckbox.checked = settings.showTickMarks;
   }
   
-  // Show/hide labels checkbox - show for modes that have labels
+  // Show/hide labels checkbox
   const labelsContainer = document.getElementById('labels-checkbox-container');
   const labelsCheckbox = document.getElementById('show-labels-modal');
   if (labelsContainer) {
@@ -1211,7 +1243,6 @@ answerInput.addEventListener('keydown', e => {
   }
 });
 
-// Click on input triggers keypad
 answerInput.addEventListener('click', () => {
   const container = document.getElementById('numpad-container');
   if (container.classList.contains('hidden')) {
@@ -1258,5 +1289,4 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Initialize parts dropdown state on page load
 updatePartsDropdownState();
