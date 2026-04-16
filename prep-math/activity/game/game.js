@@ -100,6 +100,7 @@ let gameState = {
   solved: 0,
   gameActive: false,
   isGenerating: false,
+  winTimeout: null,
 };
 
 let sliderGrid, gameFeedback, modalMoves, movesStat, solvedStat;
@@ -145,41 +146,48 @@ function generateUniqueFractions(count) {
   const fractions = [];
   const used = new Set();
   const denominators = [2, 3, 4, 5, 6, 8, 9, 10, 12];
-  let denomIndex = Math.floor(Math.random() * denominators.length); // Random start for variety
   
-  while (fractions.length < count) {
-    const den = denominators[denomIndex % denominators.length];
+  // Shuffle denominators for variety
+  const shuffledDenoms = [...denominators].sort(() => Math.random() - 0.5);
+  
+  for (const den of shuffledDenoms) {
+    if (fractions.length >= count) break;
     for (let num = 1; num < den; num++) {
+      if (fractions.length >= count) break;
       const value = num / den;
       const key = value.toFixed(4);
       if (value >= 0.1 && value <= 0.9 && !used.has(key)) {
         used.add(key);
         fractions.push(value);
-        if (fractions.length >= count) break;
-      }
-    }
-    denomIndex++;
-    
-    if (denomIndex > denominators.length * 2 && fractions.length < count) {
-      const base = 0.1 + (fractions.length * 0.8 / count);
-      const value = Math.min(0.9, base + 0.01);
-      const key = value.toFixed(4);
-      if (!used.has(key)) {
-        used.add(key);
-        fractions.push(value);
       }
     }
   }
+  
+  // Fallback: generate using variations if needed
+  while (fractions.length < count) {
+    const base = 0.1 + (fractions.length * 0.8 / count);
+    const value = Math.min(0.9, base + (Math.random() * 0.05));
+    const key = value.toFixed(4);
+    if (!used.has(key)) {
+      used.add(key);
+      fractions.push(value);
+    }
+  }
+  
   return fractions;
 }
 
 // ---------- GAME INITIALIZATION ----------
 function openGameModal() {
+  // Clear any existing timeout
+  if (gameState.winTimeout) {
+    clearTimeout(gameState.winTimeout);
+    gameState.winTimeout = null;
+  }
+  
   gameState.moves = 0;
   gameState.gameActive = true;
   gameState.isGenerating = false;
-  
-  updateStats();
   
   sliderGrid = document.getElementById('slider-grid');
   gameFeedback = document.getElementById('game-feedback');
@@ -196,6 +204,8 @@ function openGameModal() {
     showValuesModal.checked = settings.showValues;
   }
   
+  updateStats();
+  
   // Generate first puzzle
   generateNewPuzzle();
   
@@ -205,76 +215,82 @@ function openGameModal() {
   document.getElementById('game-modal').classList.add('active');
   document.body.style.overflow = 'hidden';
   
-  renderGrid();
-  
+  // Remove existing listeners to prevent duplicates
   if (showValuesModal) {
+    showValuesModal.replaceWith(showValuesModal.cloneNode(true));
+    showValuesModal = document.getElementById('show-values-modal');
     showValuesModal.addEventListener('change', (e) => {
       settings.showValues = e.target.checked;
       if (showValuesCheck) showValuesCheck.checked = e.target.checked;
-      renderGrid();
+      if (gameState.gameActive && !gameState.isGenerating) renderGrid();
     });
   }
   
   if (showSplitLinesCheck) {
+    showSplitLinesCheck.replaceWith(showSplitLinesCheck.cloneNode(true));
+    showSplitLinesCheck = document.getElementById('show-split-lines');
     showSplitLinesCheck.addEventListener('change', (e) => {
       settings.showSplitLines = e.target.checked;
-      renderGrid();
+      if (gameState.gameActive && !gameState.isGenerating) renderGrid();
     });
   }
   
   gameFeedback.className = 'gp-feedback-box';
-  gameFeedback.textContent = `Arrange tiles in ${settings.arrange} order. Click tiles next to the empty space to slide.`;
+  gameFeedback.textContent = `Arrange tiles in ${settings.arrange} order. Click tiles next to empty space.`;
 }
 
 function generateNewPuzzle() {
-  generateTileValues();
-  sliderGrid.setAttribute('data-size', settings.gridSize);
+  if (!gameState.gameActive) return;
   
-  const totalTiles = settings.gridSize * settings.gridSize;
-  gameState.positions = gameState.tiles.map((_, i) => i);
-  gameState.emptyIndex = totalTiles - 1;
-  gameState.positions[gameState.emptyIndex] = -1;
+  gameState.isGenerating = true;
   
-  if (settings.arrange === 'descending') {
-    const nonEmpty = gameState.positions.filter(idx => idx !== -1);
-    nonEmpty.reverse();
-    let idx = 0;
-    for (let i = 0; i < gameState.positions.length; i++) {
-      if (gameState.positions[i] !== -1) {
-        gameState.positions[i] = nonEmpty[idx++];
-      }
-    }
-  }
-  
-  // Reset moves for new puzzle
-  gameState.moves = 0;
-  gameState.isGenerating = false;
-  
-  // Shuffle the new puzzle
-  shuffleTiles(true);
-}
-
-function closeGameModal() {
-  document.getElementById('game-modal').classList.remove('active');
-  document.body.style.overflow = '';
-  gameState.gameActive = false;
-}
-
-function generateTileValues() {
+  // Generate new tile values
   const totalTiles = settings.gridSize * settings.gridSize;
   const tileCount = totalTiles - 1;
   let values = generateUniqueFractions(tileCount);
   values.sort((a, b) => a - b);
   gameState.tiles = values;
+  
+  // Set grid size attribute
+  if (sliderGrid) {
+    sliderGrid.setAttribute('data-size', settings.gridSize);
+  }
+  
+  // Initialize positions (solved state)
+  gameState.positions = gameState.tiles.map((_, i) => i);
+  gameState.emptyIndex = totalTiles - 1;
+  gameState.positions[gameState.emptyIndex] = -1;
+  
+  // Apply arrangement order
+  if (settings.arrange === 'descending') {
+    const nonEmpty = gameState.positions.filter(idx => idx !== -1);
+    nonEmpty.sort((a, b) => gameState.tiles[b] - gameState.tiles[a]);
+    let idx = 0;
+    for (let i = 0; i < gameState.positions.length; i++) {
+      if (gameState.positions[i] !== -1) {
+        gameState.positions[i] = gameState.tiles.indexOf(nonEmpty[idx++]);
+      }
+    }
+  }
+  
+  // Shuffle the puzzle
+  performShuffle();
+  
+  gameState.moves = 0;
+  gameState.isGenerating = false;
+  
+  updateStats();
+  renderGrid();
 }
 
-function shuffleTiles(skipFeedback = false) {
-  if (!gameState.gameActive) return;
-  
+function performShuffle() {
   const gridSize = settings.gridSize;
   let emptyPos = gameState.emptyIndex;
   
-  for (let i = 0; i < 200; i++) {
+  // Ensure we have valid positions
+  if (!gameState.positions || gameState.positions.length === 0) return;
+  
+  for (let i = 0; i < 150; i++) {
     const emptyRow = Math.floor(emptyPos / gridSize);
     const emptyCol = emptyPos % gridSize;
     
@@ -284,25 +300,46 @@ function shuffleTiles(skipFeedback = false) {
     if (emptyCol > 0) neighbors.push(emptyPos - 1);
     if (emptyCol < gridSize - 1) neighbors.push(emptyPos + 1);
     
+    if (neighbors.length === 0) continue;
+    
     const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
     
+    // Swap
     gameState.positions[emptyPos] = gameState.positions[randomNeighbor];
     gameState.positions[randomNeighbor] = -1;
     emptyPos = randomNeighbor;
   }
   
   gameState.emptyIndex = emptyPos;
+}
+
+function closeGameModal() {
+  // Clear timeout
+  if (gameState.winTimeout) {
+    clearTimeout(gameState.winTimeout);
+    gameState.winTimeout = null;
+  }
+  
+  document.getElementById('game-modal').classList.remove('active');
+  document.body.style.overflow = '';
+  gameState.gameActive = false;
+  gameState.isGenerating = false;
+}
+
+function shuffleTiles() {
+  if (!gameState.gameActive || gameState.isGenerating) return;
+  
+  performShuffle();
   gameState.moves = 0;
   updateStats();
   renderGrid();
   
-  if (!skipFeedback) {
-    gameFeedback.textContent = `Tiles shuffled. Arrange in ${settings.arrange} order.`;
-  }
+  gameFeedback.className = 'gp-feedback-box';
+  gameFeedback.textContent = `Tiles shuffled. Arrange in ${settings.arrange} order.`;
 }
 
 function resetGame() {
-  if (!gameState.gameActive) return;
+  if (!gameState.gameActive || gameState.isGenerating) return;
   
   const totalCells = settings.gridSize * settings.gridSize;
   
@@ -312,11 +349,11 @@ function resetGame() {
   
   if (settings.arrange === 'descending') {
     const nonEmpty = gameState.positions.filter(idx => idx !== -1);
-    nonEmpty.reverse();
+    nonEmpty.sort((a, b) => gameState.tiles[b] - gameState.tiles[a]);
     let idx = 0;
     for (let i = 0; i < gameState.positions.length; i++) {
       if (gameState.positions[i] !== -1) {
-        gameState.positions[i] = nonEmpty[idx++];
+        gameState.positions[i] = gameState.tiles.indexOf(nonEmpty[idx++]);
       }
     }
   }
@@ -325,6 +362,7 @@ function resetGame() {
   updateStats();
   renderGrid();
   
+  gameFeedback.className = 'gp-feedback-box';
   gameFeedback.textContent = `Game reset. Arrange tiles in ${settings.arrange} order.`;
 }
 
@@ -341,7 +379,8 @@ function getTileColor(value) {
 }
 
 function renderGrid() {
-  if (!gameState.gameActive || !sliderGrid) return;
+  if (!gameState.gameActive || !sliderGrid || gameState.isGenerating) return;
+  if (!gameState.positions || gameState.positions.length === 0) return;
   
   const mode = MODES[settings.mode];
   let html = '';
@@ -354,6 +393,8 @@ function renderGrid() {
       html += `<div class="slider-tile empty" data-index="${i}"></div>`;
     } else {
       const value = gameState.tiles[tileIndex];
+      if (value === undefined) continue;
+      
       const displayValue = mode.format(value);
       const fillColor = getTileColor(value);
       const fraction = decimalToFraction(value);
@@ -381,7 +422,9 @@ function renderGrid() {
   }
   
   sliderGrid.innerHTML = html;
-  modalMoves.textContent = `${gameState.moves} ${gameState.moves === 1 ? 'move' : 'moves'}`;
+  if (modalMoves) {
+    modalMoves.textContent = `${gameState.moves} ${gameState.moves === 1 ? 'move' : 'moves'}`;
+  }
   checkWinCondition();
 }
 
@@ -443,9 +486,12 @@ function renderCircleSVG(value, fillColor, denominator) {
 // ---------- GAMEPLAY ----------
 function handleTileClick(index) {
   if (!gameState.gameActive || gameState.isGenerating) return;
+  if (!gameState.positions) return;
   
   const gridSize = settings.gridSize;
   const emptyPos = gameState.emptyIndex;
+  
+  if (emptyPos === undefined || emptyPos === -1) return;
   
   const clickedRow = Math.floor(index / gridSize);
   const clickedCol = index % gridSize;
@@ -455,6 +501,7 @@ function handleTileClick(index) {
   const isAdjacent = (Math.abs(clickedRow - emptyRow) + Math.abs(clickedCol - emptyCol)) === 1;
   
   if (isAdjacent && gameState.positions[index] !== -1) {
+    // Swap with empty space
     gameState.positions[emptyPos] = gameState.positions[index];
     gameState.positions[index] = -1;
     gameState.emptyIndex = index;
@@ -474,10 +521,13 @@ function handleTileClick(index) {
 }
 
 function checkWinCondition() {
-  if (gameState.isGenerating) return;
+  if (!gameState.gameActive || gameState.isGenerating) return;
+  if (!gameState.positions || gameState.tiles.length === 0) return;
   
   const nonEmptyPositions = gameState.positions.filter(idx => idx !== -1);
   const tileValues = nonEmptyPositions.map(idx => gameState.tiles[idx]);
+  
+  if (tileValues.length === 0) return;
   
   let isSorted = true;
   for (let i = 1; i < tileValues.length; i++) {
@@ -497,15 +547,22 @@ function checkWinCondition() {
     updateStats();
     
     gameFeedback.className = 'gp-feedback-box success';
-    gameFeedback.textContent = `Puzzle ${gameState.solved} solved in ${gameState.moves} moves! Generating next puzzle...`;
+    gameFeedback.textContent = `Puzzle ${gameState.solved} solved in ${gameState.moves} moves! Next puzzle...`;
     
-    // Generate new puzzle after a short delay
-    setTimeout(() => {
-      generateNewPuzzle();
-      gameFeedback.className = 'gp-feedback-box';
-      gameFeedback.textContent = `Puzzle ${gameState.solved + 1}: Arrange tiles in ${settings.arrange} order.`;
-      updateStats();
-    }, 1000);
+    // Clear any existing timeout
+    if (gameState.winTimeout) {
+      clearTimeout(gameState.winTimeout);
+    }
+    
+    // Generate new puzzle after delay
+    gameState.winTimeout = setTimeout(() => {
+      if (gameState.gameActive) {
+        generateNewPuzzle();
+        gameFeedback.className = 'gp-feedback-box';
+        gameFeedback.textContent = `Puzzle ${gameState.solved + 1}: Arrange tiles in ${settings.arrange} order.`;
+        gameState.winTimeout = null;
+      }
+    }, 800);
   }
 }
 
@@ -513,21 +570,16 @@ function checkWinCondition() {
 function updateStats() {
   if (movesStat) movesStat.textContent = gameState.moves;
   if (solvedStat) solvedStat.textContent = gameState.solved;
-  if (modalMoves) modalMoves.textContent = `${gameState.moves} ${gameState.moves === 1 ? 'move' : 'moves'}`;
-}
-
-// ---------- RESIZE HANDLER ----------
-window.addEventListener('resize', () => {
-  if (gameState.gameActive && sliderGrid) {
-    // Grid sizing handled by CSS
+  if (modalMoves) {
+    modalMoves.textContent = `${gameState.moves} ${gameState.moves === 1 ? 'move' : 'moves'}`;
   }
-});
+}
 
 // ---------- EXPOSE TO GLOBAL ----------
 window.toggleDropdown = toggleDropdown;
 window.openGameModal = openGameModal;
 window.closeGameModal = closeGameModal;
-window.shuffleTiles = () => shuffleTiles(false);
+window.shuffleTiles = shuffleTiles;
 window.resetGame = resetGame;
 window.handleTileClick = handleTileClick;
 
