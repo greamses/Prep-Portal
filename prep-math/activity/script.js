@@ -108,30 +108,90 @@ function toggleKeypad() {
 
 function numpadInput(char) {
   const input = document.getElementById('answer-input');
-  input.value += char;
   input.focus();
+  
+  // Insert character at cursor position
+  const selection = window.getSelection();
+  if (selection.rangeCount === 0) {
+    input.textContent += char;
+    return;
+  }
+  
+  const range = selection.getRangeAt(0);
+  
+  // Delete any selected content first
+  range.deleteContents();
+  
+  // Create text node with the character
+  const textNode = document.createTextNode(char);
+  range.insertNode(textNode);
+  
+  // Move cursor after inserted character
+  range.setStartAfter(textNode);
+  range.setEndAfter(textNode);
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
 
 function numpadBackspace() {
   const input = document.getElementById('answer-input');
-  input.value = input.value.slice(0, -1);
   input.focus();
+  
+  const selection = window.getSelection();
+  if (selection.rangeCount === 0) return;
+  
+  const range = selection.getRangeAt(0);
+  
+  if (!range.collapsed) {
+    // Delete selected content
+    range.deleteContents();
+  } else {
+    // Delete character before cursor
+    const container = range.startContainer;
+    const offset = range.startOffset;
+    
+    if (container.nodeType === Node.TEXT_NODE) {
+      if (offset > 0) {
+        // Delete character before cursor within text node
+        const text = container.textContent;
+        container.textContent = text.slice(0, offset - 1) + text.slice(offset);
+        
+        // Move cursor back
+        range.setStart(container, offset - 1);
+        range.setEnd(container, offset - 1);
+      } else if (container.previousSibling) {
+        // At start of text node, delete previous node
+        const prev = container.previousSibling;
+        prev.remove();
+      }
+    } else if (container.nodeType === Node.ELEMENT_NODE) {
+      const children = Array.from(container.childNodes);
+      const childAtIndex = children[offset - 1];
+      if (childAtIndex) {
+        childAtIndex.remove();
+      }
+    }
+  }
+  
+  selection.removeAllRanges();
+  selection.addRange(range);
 }
 
 // ─────────────────────────────────────────────────────────
 // COLOR UTILITIES — One random color per render
 // ─────────────────────────────────────────────────────────
+/* Darker color palette for fractions */
 const MUTED_COLORS = [
-  '#2E5A88', '#3D6B5D', '#8B5E3C', '#6B4C6B', '#4A6E6D',
-  '#9B6B43', '#5C4E4E', '#3A6B5C', '#7C5C4A', '#4A5B6B',
-  '#6B5B4D', '#3D5C5C', '#5A4E6B', '#4E6B5A', '#886644',
-  '#4A6B8A', '#6B5A4E', '#3A5C6B', '#7C6B5A', '#5C5A6B',
+  '#1a3a5c', '#1b4a3d', '#5c3a1a', '#3d1e3d', '#1e4a4a',
+  '#6b3a1a', '#2a1e1e', '#1a4a3a', '#4a2e1a', '#1a2e4a',
+  '#3d2e1a', '#1a3a3a', '#2e1e3d', '#1e3d2e', '#4a2e0d',
+  '#1a3a5c', '#3d2a1a', '#1a2e4a', '#4a2e1a', '#2a1e3d',
 ];
 
 const PASTEL_COLORS = [
-  '#A8C4E0', '#A8E0C4', '#E0C4A8', '#C4A8E0', '#E0A8C4',
-  '#A8E0E0', '#E0E0A8', '#C4E0A8', '#E0A8A8', '#A8A8E0',
-  '#B8D4A8', '#D4A8B8', '#A8B8D4', '#D4D4A8', '#B8A8D4',
+  '#6b8db5', '#6bb58d', '#b58d6b', '#8d6bb5', '#b56b8d',
+  '#6bb5b5', '#b5b56b', '#8db56b', '#b56b6b', '#6b6bb5',
+  '#7da36b', '#a36b7d', '#6b7da3', '#a3a36b', '#7d6ba3',
 ];
 
 function generateRandomColorSet() {
@@ -324,11 +384,11 @@ function loadQuestion(q) {
   loaderTxt.textContent = 'Rendering shape…';
   fb.className = 'gp-feedback-box';
   fb.textContent = 'Study the shape and type your answer below.';
-  input.value = '';
+  input.textContent = '';
+  input.setAttribute('data-placeholder', m.placeholder);
 
   document.getElementById('modal-title').textContent = m.modalQ;
   document.getElementById('format-hint').textContent = m.hint;
-  document.getElementById('answer-input').placeholder = m.placeholder;
   document.getElementById('answer-label').textContent = m.label;
 
   // Render SVG instantly
@@ -371,7 +431,8 @@ function closeModal() {
 function checkAnswer() {
   if (!currentQ || isLoading) return;
   
-  const raw = document.getElementById('answer-input').value.trim();
+  const input = document.getElementById('answer-input');
+  const raw = input.textContent.trim();
   const fb = document.getElementById('feedback-box');
   const mode = currentQ.mode || settings.mode;
   
@@ -401,7 +462,14 @@ function checkAnswer() {
     syncStats();
     fb.className = 'gp-feedback-box fb-error';
     fb.textContent = '✗ Not quite — count the shaded sections vs total sections carefully.';
-    document.getElementById('answer-input').select();
+    
+    // Focus and select all text
+    input.focus();
+    const range = document.createRange();
+    range.selectNodeContents(input);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
   }
 }
 
@@ -413,10 +481,50 @@ function syncStats() {
 }
 
 // ─────────────────────────────────────────────────────────
-// KEYBOARD
+// KEYBOARD EVENT HANDLERS
 // ─────────────────────────────────────────────────────────
-document.getElementById('answer-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') checkAnswer();
+const answerInput = document.getElementById('answer-input');
+
+answerInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    checkAnswer();
+  }
+});
+
+// Prevent paste of formatted content
+answerInput.addEventListener('paste', e => {
+  e.preventDefault();
+  const text = e.clipboardData.getData('text/plain');
+  
+  const selection = window.getSelection();
+  if (selection.rangeCount === 0) {
+    answerInput.textContent += text;
+    return;
+  }
+  
+  const range = selection.getRangeAt(0);
+  range.deleteContents();
+  
+  const textNode = document.createTextNode(text);
+  range.insertNode(textNode);
+  
+  range.setStartAfter(textNode);
+  range.setEndAfter(textNode);
+  selection.removeAllRanges();
+  selection.addRange(range);
+});
+
+// Prevent drag and drop
+answerInput.addEventListener('drop', e => {
+  e.preventDefault();
+});
+
+// Prevent new lines from other inputs
+answerInput.addEventListener('beforeinput', e => {
+  if (e.inputType === 'insertParagraph' || e.inputType === 'insertLineBreak') {
+    e.preventDefault();
+  }
 });
 
 document.addEventListener('keydown', e => {
