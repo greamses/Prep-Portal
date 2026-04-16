@@ -60,7 +60,7 @@ const settings = {
   type: 'fraction-circle',
   hideLines: false,
   hideUnshaded: false,
-  showTickMarks: false
+  showTickMarks: true
 };
 
 // ─────────────────────────────────────────────────────────
@@ -130,13 +130,17 @@ document.getElementById('hide-unshaded')?.addEventListener('change', (e) => {
 
 document.getElementById('show-ticks-modal')?.addEventListener('change', (e) => {
   settings.showTickMarks = e.target.checked;
-  // Refresh current question if modal is open
+  console.log('Tick marks toggled:', settings.showTickMarks);
+  // Refresh current question if modal is open and in time mode
   if (currentQ && document.getElementById('polypad-modal').classList.contains('active')) {
-    const wrap = document.getElementById('polypad-wrap');
-    const oldSvg = wrap.querySelector('svg');
-    if (oldSvg) oldSvg.remove();
-    const svg = createFractionSVG(settings.type, currentQ.active, currentQ.denominator, currentQ.mode || settings.mode);
-    wrap.appendChild(svg);
+    const modeForDisplay = currentQ.mode || settings.mode;
+    if (modeForDisplay === 'time') {
+      const wrap = document.getElementById('polypad-wrap');
+      const oldSvg = wrap.querySelector('svg');
+      if (oldSvg) oldSvg.remove();
+      const svg = createFractionSVG(settings.type, currentQ.active, currentQ.denominator, modeForDisplay);
+      wrap.appendChild(svg);
+    }
   }
 });
 
@@ -252,49 +256,17 @@ function createFractionSVG(type, active, denominator, mode) {
   const UNSHADED = settings.hideUnshaded ? 'transparent' : currentColorSet.unshaded;
   const isTimeMode = mode === 'time';
   
+  console.log('Creating SVG - Time mode:', isTimeMode, 'Show ticks:', settings.showTickMarks);
+  
   if (type === 'fraction-circle') {
     svg.setAttribute("viewBox", "0 0 800 800");
     const cx = 400;
     const cy = 400;
     const r = 280;
     
-    // Background circle
-    const bgCircle = document.createElementNS(svgNS, "circle");
-    bgCircle.setAttribute("cx", cx);
-    bgCircle.setAttribute("cy", cy);
-    bgCircle.setAttribute("r", r);
-    bgCircle.setAttribute("fill", "none");
-    bgCircle.setAttribute("stroke", INK);
-    bgCircle.setAttribute("stroke-width", "4");
-    svg.appendChild(bgCircle);
-    
-    // Add tick marks only in time mode and if enabled
-    if (isTimeMode && settings.showTickMarks) {
-      for (let i = 0; i < 60; i++) {
-        const angle = (i * 6 - 90) * Math.PI / 180;
-        const isHourMark = i % 5 === 0;
-        const innerR = isHourMark ? r - 25 : r - 12;
-        const outerR = r;
-        
-        const x1 = cx + innerR * Math.cos(angle);
-        const y1 = cy + innerR * Math.sin(angle);
-        const x2 = cx + outerR * Math.cos(angle);
-        const y2 = cy + outerR * Math.sin(angle);
-        
-        const tick = document.createElementNS(svgNS, "line");
-        tick.setAttribute("x1", x1.toFixed(1));
-        tick.setAttribute("y1", y1.toFixed(1));
-        tick.setAttribute("x2", x2.toFixed(1));
-        tick.setAttribute("y2", y2.toFixed(1));
-        tick.setAttribute("stroke", INK);
-        tick.setAttribute("stroke-width", isHourMark ? "3" : "1.5");
-        tick.setAttribute("stroke-linecap", "square");
-        svg.appendChild(tick);
-      }
-    }
-    
     const sectorAngle = 360 / denominator;
     
+    // Draw sectors FIRST (so they're behind ticks)
     for (let i = 0; i < denominator; i++) {
       const start = (i * sectorAngle - 90) * Math.PI / 180;
       const end = ((i + 1) * sectorAngle - 90) * Math.PI / 180;
@@ -318,6 +290,7 @@ function createFractionSVG(type, active, denominator, mode) {
       path.setAttribute("d", pathData.trim());
       path.setAttribute("fill", isShaded ? SHADED : UNSHADED);
       
+      // Only add stroke if NOT hiding lines
       if (!settings.hideLines) {
         path.setAttribute("stroke", INK);
         path.setAttribute("stroke-width", "4");
@@ -327,16 +300,43 @@ function createFractionSVG(type, active, denominator, mode) {
       svg.appendChild(path);
     }
     
-    if (settings.hideUnshaded) {
-      const outlineCircle = document.createElementNS(svgNS, "circle");
-      outlineCircle.setAttribute("cx", cx);
-      outlineCircle.setAttribute("cy", cy);
-      outlineCircle.setAttribute("r", r);
-      outlineCircle.setAttribute("fill", "none");
-      outlineCircle.setAttribute("stroke", INK);
-      outlineCircle.setAttribute("stroke-width", "4");
-      svg.appendChild(outlineCircle);
+    // Draw tick marks ON TOP of sectors (only in time mode and if enabled)
+    if (isTimeMode && settings.showTickMarks) {
+      console.log('Drawing tick marks...');
+      for (let i = 0; i < 60; i++) {
+        const angle = (i * 6 - 90) * Math.PI / 180;
+        const isHourMark = i % 5 === 0;
+        const innerR = isHourMark ? r - 25 : r - 12;
+        const outerR = r;
+        
+        const x1 = cx + innerR * Math.cos(angle);
+        const y1 = cy + innerR * Math.sin(angle);
+        const x2 = cx + outerR * Math.cos(angle);
+        const y2 = cy + outerR * Math.sin(angle);
+        
+        const tick = document.createElementNS(svgNS, "line");
+        tick.setAttribute("x1", x1.toFixed(1));
+        tick.setAttribute("y1", y1.toFixed(1));
+        tick.setAttribute("x2", x2.toFixed(1));
+        tick.setAttribute("y2", y2.toFixed(1));
+        tick.setAttribute("stroke", INK);
+        tick.setAttribute("stroke-width", isHourMark ? "3" : "1.5");
+        tick.setAttribute("stroke-linecap", "square");
+        svg.appendChild(tick);
+      }
     }
+    
+    // Draw outline circle LAST (on top of everything)
+    // If hideUnshaded is true, draw outline to show shape boundary
+    // If hideUnshaded is false, draw outline as well for consistency
+    const outlineCircle = document.createElementNS(svgNS, "circle");
+    outlineCircle.setAttribute("cx", cx);
+    outlineCircle.setAttribute("cy", cy);
+    outlineCircle.setAttribute("r", r);
+    outlineCircle.setAttribute("fill", "none");
+    outlineCircle.setAttribute("stroke", INK);
+    outlineCircle.setAttribute("stroke-width", "4");
+    svg.appendChild(outlineCircle);
     
     // Add center box only in time mode
     if (isTimeMode) {
@@ -686,12 +686,13 @@ function loadQuestion(q) {
   
   // Show/hide ticks checkbox based on mode
   const ticksContainer = document.getElementById('ticks-checkbox-container');
+  const ticksCheckbox = document.getElementById('show-ticks-modal');
+  
   if (ticksContainer) {
     ticksContainer.style.display = isTimeMode ? 'flex' : 'none';
   }
   
-  // Reset tick marks checkbox state for time mode
-  const ticksCheckbox = document.getElementById('show-ticks-modal');
+  // Set tick marks checkbox state for time mode
   if (ticksCheckbox) {
     ticksCheckbox.checked = settings.showTickMarks;
   }

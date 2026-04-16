@@ -112,13 +112,8 @@ body {
 }
 
 @keyframes ticker-scroll {
-  from {
-    transform: translateX(0);
-  }
-  
-  to {
-    transform: translateX(-50%);
-  }
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 /* PAGE HEADER */
@@ -285,7 +280,7 @@ body {
 }
 
 .pp-dropdown.open .pp-dropdown-list {
-  max-height: 300px;
+  max-height: 350px;
   overflow-y: auto;
   opacity: 1;
   pointer-events: all;
@@ -528,7 +523,7 @@ body {
   max-width: 100%;
   max-height: 100%;
   box-shadow: 0 0 0 12px #fff,
-    0 0 0 14px var(--ink);
+              0 0 0 14px var(--ink);
 }
 
 /* Loader */
@@ -559,9 +554,7 @@ body {
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .pp-loader-text {
@@ -587,7 +580,7 @@ body {
   opacity: 1;
 }
 
-/* Bottom sheet - fixed to bottom */
+/* Bottom sheet */
 .gp-bottom-sheet {
   flex-shrink: 0;
   display: flex;
@@ -727,7 +720,7 @@ body {
   transform: scale(1.1);
 }
 
-/* Number Keypad Container - fixed to bottom */
+/* Number Keypad Container */
 .numpad-container {
   margin: 0 20px 20px;
   transition: all 0.3s ease;
@@ -744,6 +737,10 @@ body {
   gap: 10px;
   max-width: 400px;
   margin: 0 auto;
+}
+
+.numpad.hidden {
+  display: none;
 }
 
 .numpad-btn {
@@ -808,10 +805,11 @@ body {
   transform: scale(1.15);
 }
 
-/* Enter Button - no text, only icon */
+/* Enter Button */
 .numpad-btn.enter {
   background: var(--green);
   color: white;
+  grid-column: span 2;
 }
 
 .numpad-btn.enter:hover {
@@ -823,6 +821,36 @@ body {
   stroke-width: 2.5;
   width: 24px;
   height: 24px;
+}
+
+/* Compare Keypad */
+.numpad-compare {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.compare-btn {
+  font-size: 36px;
+  font-weight: 700;
+  background: var(--surface-2);
+}
+
+.compare-btn:hover {
+  background: var(--yellow);
+}
+
+.compare-enter {
+  background: var(--green);
+  color: white;
+}
+
+.compare-enter:hover {
+  background: #009444;
+}
+
+.compare-enter svg {
+  stroke: white;
+  width: 28px;
+  height: 28px;
 }
 
 /* Special character buttons */
@@ -898,6 +926,10 @@ button,
     padding: 16px 4px;
     font-size: 24px;
   }
+  
+  .compare-btn {
+    font-size: 32px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -943,6 +975,10 @@ button,
   
   .numpad-btn.action {
     font-size: 20px;
+  }
+  
+  .compare-btn {
+    font-size: 30px;
   }
   
   .answer-input-editable {
@@ -1001,9 +1037,18 @@ button,
     font-size: 18px;
   }
   
+  .compare-btn {
+    font-size: 28px;
+  }
+  
   .numpad-btn.enter svg {
     width: 22px;
     height: 22px;
+  }
+  
+  .compare-enter svg {
+    width: 24px;
+    height: 24px;
   }
   
   .keypad-btn {
@@ -1049,25 +1094,32 @@ button,
     font-size: 16px;
   }
   
+  .compare-btn {
+    font-size: 24px;
+  }
+  
   .numpad-btn.enter svg {
     width: 20px;
     height: 20px;
+  }
+  
+  .compare-enter svg {
+    width: 22px;
+    height: 22px;
   }
 }
 
 /* ANIMATIONS */
 @keyframes pulse {
-
-  0%,
-  100% {
+  0%, 100% {
     transform: scale(1);
   }
-  
   50% {
     transform: scale(1.05);
   }
 }
 
-.numpad-btn.enter:active {
+.numpad-btn.enter:active,
+.compare-enter:active {
   animation: pulse 0.3s ease;
 }

@@ -69,6 +69,9 @@
             <div class="pp-dropdown-item" data-value="degrees">Degrees</div>
             <div class="pp-dropdown-item" data-value="decimals">Decimals</div>
             <div class="pp-dropdown-item" data-value="time">Time</div>
+            <div class="pp-dropdown-item" data-value="random-total">Random Total</div>
+            <div class="pp-dropdown-item" data-value="different-parts">Different Parts</div>
+            <div class="pp-dropdown-item" data-value="compare">Compare</div>
             <div class="pp-dropdown-item" data-value="mixed">Mixed Practice</div>
           </div>
         </div>
@@ -164,7 +167,14 @@
         <span class="answer-label" id="answer-label">Answer</span>
         <div class="answer-input-wrapper">
           <div class="answer-input-container">
-            <div id="answer-input" class="answer-input-editable" contenteditable="true" role="textbox" aria-multiline="false" inputmode="none"></div>
+            <div 
+              id="answer-input" 
+              class="answer-input-editable" 
+              contenteditable="true"
+              role="textbox"
+              aria-multiline="false"
+              inputmode="none"
+            ></div>
           </div>
           <button class="keypad-btn" id="keypad-toggle" onclick="toggleKeypad()" title="Toggle keypad">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
@@ -179,9 +189,9 @@
         </div>
       </div>
       
-      <!-- Number Keypad -->
+      <!-- Standard Number Keypad -->
       <div class="numpad-container hidden" id="numpad-container">
-        <div class="numpad">
+        <div class="numpad" id="standard-numpad">
           <button class="numpad-btn" onclick="numpadInput('1')">1</button>
           <button class="numpad-btn" onclick="numpadInput('2')">2</button>
           <button class="numpad-btn" onclick="numpadInput('3')">3</button>
@@ -208,6 +218,19 @@
           
           <button class="numpad-btn enter" onclick="checkAnswer()">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M9 10L5 14L9 18" />
+              <path d="M5 14H15C17.2091 14 19 12.2091 19 10V6" />
+            </svg>
+          </button>
+        </div>
+        
+        <!-- Compare Mode Keypad (4 buttons) -->
+        <div class="numpad numpad-compare hidden" id="compare-numpad">
+          <button class="numpad-btn compare-btn" onclick="numpadInput('<')">&lt;</button>
+          <button class="numpad-btn compare-btn" onclick="numpadInput('>')">&gt;</button>
+          <button class="numpad-btn compare-btn" onclick="numpadInput('=')">=</button>
+          <button class="numpad-btn enter compare-enter" onclick="checkAnswer()">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M9 10L5 14L9 18" />
               <path d="M5 14H15C17.2091 14 19 12.2091 19 10V6" />
             </svg>
