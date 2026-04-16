@@ -85,7 +85,8 @@ const settings = {
   hideLines: false,
   hideUnshaded: false,
   showTickMarks: true,
-  showLabels: true
+  showLabels: true,
+  sameSplitCompare: false
 };
 
 // ─────────────────────────────────────────────────────────
@@ -163,10 +164,16 @@ function updatePartsDropdownState() {
 // ─────────────────────────────────────────────────────────
 document.getElementById('hide-lines')?.addEventListener('change', (e) => {
   settings.hideLines = e.target.checked;
+  if (currentQ && document.getElementById('polypad-modal').classList.contains('active')) {
+    refreshSVG();
+  }
 });
 
 document.getElementById('hide-unshaded')?.addEventListener('change', (e) => {
   settings.hideUnshaded = e.target.checked;
+  if (currentQ && document.getElementById('polypad-modal').classList.contains('active')) {
+    refreshSVG();
+  }
 });
 
 document.getElementById('show-ticks-modal')?.addEventListener('change', (e) => {
@@ -186,30 +193,18 @@ document.getElementById('show-labels-modal')?.addEventListener('change', (e) => 
   }
 });
 
+document.getElementById('same-split-toggle')?.addEventListener('change', (e) => {
+  settings.sameSplitCompare = e.target.checked;
+  if (currentQ && currentQ.mode === 'compare' && document.getElementById('polypad-modal').classList.contains('active')) {
+    refreshSVG();
+  }
+});
+
 function updateCheckboxesState() {
-  const mode = currentQ?.mode || settings.mode;
-  const hideLinesCheckbox = document.getElementById('hide-lines');
-  const hideUnshadedCheckbox = document.getElementById('hide-unshaded');
   const checkboxContainer = document.querySelector('.settings-checkboxes');
-  
-  if (mode === 'different-parts') {
-    if (hideLinesCheckbox) {
-      hideLinesCheckbox.checked = false;
-      settings.hideLines = false;
-    }
-    if (hideUnshadedCheckbox) {
-      hideUnshadedCheckbox.checked = false;
-      settings.hideUnshaded = false;
-    }
-    if (checkboxContainer) {
-      checkboxContainer.style.opacity = '0.5';
-      checkboxContainer.style.pointerEvents = 'none';
-    }
-  } else {
-    if (checkboxContainer) {
-      checkboxContainer.style.opacity = '1';
-      checkboxContainer.style.pointerEvents = 'auto';
-    }
+  if (checkboxContainer) {
+    checkboxContainer.style.opacity = '1';
+    checkboxContainer.style.pointerEvents = 'auto';
   }
 }
 
@@ -296,21 +291,21 @@ function numpadBackspace() {
 // COLOR UTILITIES
 // ─────────────────────────────────────────────────────────
 const MUTED_COLORS = [
-  '#1a3a5c', '#1b4a3d', '#5c3a1a', '#3d1e3d', '#1e4a4a',
-  '#6b3a1a', '#2a1e1e', '#1a4a3a', '#4a2e1a', '#1a2e4a',
-  '#3d2e1a', '#1a3a3a', '#2e1e3d', '#1e3d2e', '#4a2e0d',
+  '#7b9cae', '#8fbc94', '#d9b48b', '#c9a0c9', '#8fcbcb',
+  '#e3b58a', '#b7a9a9', '#94c9b4', '#c9ae8a', '#8faec9',
+  '#b7ae8f', '#8fbfbf', '#aa94c9', '#94c9aa', '#dbb778',
 ];
 
 const PASTEL_COLORS = [
-  '#6b8db5', '#6bb58d', '#b58d6b', '#8d6bb5', '#b56b8d',
-  '#6bb5b5', '#b5b56b', '#8db56b', '#b56b6b', '#6b6bb5',
-  '#7da36b', '#a36b7d', '#6b7da3', '#a3a36b', '#7d6ba3',
+  '#a8c9e5', '#b8e0b8', '#f5d6b3', '#e0b8e0', '#b8e0e0',
+  '#f5c6b3', '#d4c4c4', '#b8e0cc', '#e0ccb8', '#b8cce0',
+  '#e0d4b8', '#b8d4d4', '#ccb8e0', '#b8e0d4', '#f5d4a8',
 ];
 
 const DIFFERENT_PARTS_COLORS = [
-  '#1a3a5c', '#8b5e3c', '#3d6b5d', '#6b4c6b', '#9b6b43',
-  '#4a6e6d', '#5c4e4e', '#3a6b5c', '#7c5c4a', '#4a5b6b',
-  '#6b5b4d', '#3d5c5c', '#5a4e6b', '#4e6b5a', '#886644',
+  '#8fb0c9', '#a8c9a3', '#e0b88a', '#d4a0d4', '#a0d4d4',
+  '#e8c49a', '#b0a0a0', '#9ed1bb', '#dcb89e', '#9eb5dc',
+  '#c7bc9e', '#9ebcbc', '#b9a3dc', '#a3dcb9', '#e6c48a',
 ];
 
 function generateRandomColorSet() {
@@ -326,6 +321,17 @@ function generateRandomColorSet() {
 }
 
 let currentColorSet = generateRandomColorSet();
+
+// ─────────────────────────────────────────────────────────
+// MATH UTILITIES
+// ─────────────────────────────────────────────────────────
+function gcd(a, b) {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
+function leastCommonMultiple(a, b) {
+  return (a * b) / gcd(a, b);
+}
 
 // ─────────────────────────────────────────────────────────
 // SVG CANVAS RENDERER
@@ -351,12 +357,38 @@ function createFractionSVG(type, q, mode) {
       const cy = 250;
       const r = 160;
       
-      drawCircle(svg, leftCx, cy, r, q.leftActive, q.leftDenom, INK, SHADED, UNSHADED);
-      drawCircle(svg, rightCx, cy, r, q.rightActive, q.rightDenom, INK, SHADED, UNSHADED);
+      let leftActive = q.leftActive;
+      let leftDenom = q.leftDenom;
+      let rightActive = q.rightActive;
+      let rightDenom = q.rightDenom;
+      let useLcmSplit = false;
+      
+      if (settings.sameSplitCompare && leftDenom !== rightDenom) {
+        useLcmSplit = true;
+        const lcm = leastCommonMultiple(leftDenom, rightDenom);
+        const leftMultiplier = lcm / leftDenom;
+        const rightMultiplier = lcm / rightDenom;
+        leftActive = q.leftActive * leftMultiplier;
+        leftDenom = lcm;
+        rightActive = q.rightActive * rightMultiplier;
+        rightDenom = lcm;
+      }
+      
+      if (useLcmSplit) {
+        drawCircle(svg, leftCx, cy, r, leftActive, leftDenom, INK, SHADED, UNSHADED);
+        drawCircle(svg, rightCx, cy, r, rightActive, rightDenom, INK, SHADED, UNSHADED);
+      } else {
+        drawCircle(svg, leftCx, cy, r, q.leftActive, q.leftDenom, INK, SHADED, UNSHADED);
+        drawCircle(svg, rightCx, cy, r, q.rightActive, q.rightDenom, INK, SHADED, UNSHADED);
+      }
       
       if (settings.showLabels) {
-        addCenterLabel(svg, leftCx, cy, `${q.leftActive}/${q.leftDenom}`, INK);
-        addCenterLabel(svg, rightCx, cy, `${q.rightActive}/${q.rightDenom}`, INK);
+        // Show scaled fractions if LCM split is active, otherwise show original
+        const leftLabelText = useLcmSplit ? `${leftActive}/${leftDenom}` : `${q.leftActive}/${q.leftDenom}`;
+        const rightLabelText = useLcmSplit ? `${rightActive}/${rightDenom}` : `${q.rightActive}/${q.rightDenom}`;
+        
+        addCenterLabel(svg, leftCx, cy, leftLabelText, INK);
+        addCenterLabel(svg, rightCx, cy, rightLabelText, INK);
       }
       
       const vsText = document.createElementNS(svgNS, "text");
@@ -398,7 +430,6 @@ function createFractionSVG(type, q, mode) {
       const cy = 400;
       const r = 280;
       
-      // Build color map for same-sized sectors
       const colorMap = buildColorMap(q.sectors);
       
       drawDifferentPartsCircleVarying(svg, cx, cy, r, q.sectors, colorMap, INK, UNSHADED);
@@ -454,8 +485,30 @@ function createFractionSVG(type, q, mode) {
       const leftY = 100;
       const rightY = 280;
       
-      drawBar(svg, x, leftY, totalW, h, q.leftActive, q.leftDenom, INK, SHADED, UNSHADED);
-      drawBar(svg, x, rightY, totalW, h, q.rightActive, q.rightDenom, INK, SHADED, UNSHADED);
+      let leftActive = q.leftActive;
+      let leftDenom = q.leftDenom;
+      let rightActive = q.rightActive;
+      let rightDenom = q.rightDenom;
+      let useLcmSplit = false;
+      
+      if (settings.sameSplitCompare && leftDenom !== rightDenom) {
+        useLcmSplit = true;
+        const lcm = leastCommonMultiple(leftDenom, rightDenom);
+        const leftMultiplier = lcm / leftDenom;
+        const rightMultiplier = lcm / rightDenom;
+        leftActive = q.leftActive * leftMultiplier;
+        leftDenom = lcm;
+        rightActive = q.rightActive * rightMultiplier;
+        rightDenom = lcm;
+      }
+      
+      if (useLcmSplit) {
+        drawBar(svg, x, leftY, totalW, h, leftActive, leftDenom, INK, SHADED, UNSHADED);
+        drawBar(svg, x, rightY, totalW, h, rightActive, rightDenom, INK, SHADED, UNSHADED);
+      } else {
+        drawBar(svg, x, leftY, totalW, h, q.leftActive, q.leftDenom, INK, SHADED, UNSHADED);
+        drawBar(svg, x, rightY, totalW, h, q.rightActive, q.rightDenom, INK, SHADED, UNSHADED);
+      }
       
       if (settings.showLabels) {
         const leftLabel = document.createElementNS(svgNS, "text");
@@ -466,7 +519,8 @@ function createFractionSVG(type, q, mode) {
         leftLabel.setAttribute("font-size", "22");
         leftLabel.setAttribute("font-weight", "700");
         leftLabel.setAttribute("fill", INK);
-        leftLabel.textContent = `${q.leftActive}/${q.leftDenom}`;
+        // Show scaled fractions if LCM split is active
+        leftLabel.textContent = useLcmSplit ? `${leftActive}/${leftDenom}` : `${q.leftActive}/${q.leftDenom}`;
         svg.appendChild(leftLabel);
         
         const rightLabel = document.createElementNS(svgNS, "text");
@@ -477,7 +531,8 @@ function createFractionSVG(type, q, mode) {
         rightLabel.setAttribute("font-size", "22");
         rightLabel.setAttribute("font-weight", "700");
         rightLabel.setAttribute("fill", INK);
-        rightLabel.textContent = `${q.rightActive}/${q.rightDenom}`;
+        // Show scaled fractions if LCM split is active
+        rightLabel.textContent = useLcmSplit ? `${rightActive}/${rightDenom}` : `${q.rightActive}/${q.rightDenom}`;
         svg.appendChild(rightLabel);
       }
       
@@ -522,7 +577,6 @@ function createFractionSVG(type, q, mode) {
     } else if (isDifferentParts && q) {
       const y = (500 - h) / 2;
       
-      // Build color map for same-sized sectors
       const colorMap = buildColorMap(q.sectors);
       
       drawDifferentPartsBarVarying(svg, x, y, totalW, h, q.sectors, colorMap, INK, UNSHADED);
@@ -869,11 +923,10 @@ function generateQuestion() {
   }
   
   if (mode === 'different-parts') {
-    const numSectors = Math.floor(Math.random() * 4) + 3; // 3-6 sectors
+    const numSectors = Math.floor(Math.random() * 4) + 3;
     const sectors = [];
     let total = 0;
     
-    // Max denominator is 12
     const denominators = [8, 10, 12];
     const targetTotal = denominators[Math.floor(Math.random() * denominators.length)];
     
@@ -886,12 +939,26 @@ function generateQuestion() {
       total += size;
     }
     
-    return { sectors, mode };
+    let requestedMode = mode;
+    if (settings.mode === 'mixed') {
+      const formatModes = ['fractions', 'percents', 'degrees', 'decimals', 'time'];
+      requestedMode = formatModes[Math.floor(Math.random() * formatModes.length)];
+    }
+    
+    return { sectors, mode, requestedMode };
   }
   
   if (mode === 'compare') {
-    const leftDenom = MIXED_DENOMINATORS[Math.floor(Math.random() * MIXED_DENOMINATORS.length)];
-    const rightDenom = MIXED_DENOMINATORS[Math.floor(Math.random() * MIXED_DENOMINATORS.length)];
+    let leftDenom, rightDenom;
+    
+    if (settings.sameSplitCompare) {
+      leftDenom = MIXED_DENOMINATORS[Math.floor(Math.random() * MIXED_DENOMINATORS.length)];
+      rightDenom = leftDenom;
+    } else {
+      leftDenom = MIXED_DENOMINATORS[Math.floor(Math.random() * MIXED_DENOMINATORS.length)];
+      rightDenom = MIXED_DENOMINATORS[Math.floor(Math.random() * MIXED_DENOMINATORS.length)];
+    }
+    
     const leftActive = Math.floor(Math.random() * (leftDenom - 1)) + 1;
     const rightActive = Math.floor(Math.random() * (rightDenom - 1)) + 1;
     return { leftActive, leftDenom, rightActive, rightDenom, mode };
@@ -921,7 +988,23 @@ function getCorrectAnswer(q, mode) {
   if (mode === 'different-parts') {
     const shadedTotal = q.sectors.filter(s => s.shaded).reduce((sum, s) => sum + s.size, 0);
     const total = q.sectors[0].total;
-    return `${shadedTotal}/${total}`;
+    const fraction = shadedTotal / total;
+    const requestedMode = q.requestedMode || 'fractions';
+    
+    switch (requestedMode) {
+      case 'percents': {
+        const pct = fraction * 100;
+        return Number.isInteger(pct) ? pct.toString() : (Math.round(pct * 10) / 10).toString();
+      }
+      case 'degrees': 
+        return Math.round(fraction * 360).toString();
+      case 'decimals': 
+        return parseFloat(fraction.toFixed(4)).toString();
+      case 'time': 
+        return Math.round(fraction * 60).toString();
+      default: 
+        return `${shadedTotal}/${total}`;
+    }
   }
   
   const active = q.active;
@@ -949,10 +1032,6 @@ function getCorrectAnswer(q, mode) {
 // ─────────────────────────────────────────────────────────
 // FRACTION UTILITIES
 // ─────────────────────────────────────────────────────────
-function gcd(a, b) {
-  return b === 0 ? a : gcd(b, a % b);
-}
-
 function parseFraction(frac) {
   if (frac.includes(' ')) {
     const parts = frac.split(' ');
@@ -1045,7 +1124,17 @@ function isCorrect(raw, correctVal, mode) {
   return Math.abs(userNum - targNum) <= tolerance;
 }
 
-function displayAnswer(val, mode) {
+function displayAnswer(val, mode, extraData = null) {
+  if (mode === 'different-parts' && extraData && extraData.requestedMode) {
+    switch (extraData.requestedMode) {
+      case 'percents': return val + '%';
+      case 'degrees': return val + '°';
+      case 'time': return val + ' minutes';
+      case 'decimals': return val;
+      default: return simplifyFraction(val);
+    }
+  }
+  
   switch (mode) {
     case 'percents': return val + '%';
     case 'degrees': return val + '°';
@@ -1086,7 +1175,7 @@ function checkAnswer() {
       const simplified = simplifyFraction(correct);
       fb.textContent = `✓ Correct! ${raw} is equivalent to ${simplified}. Next question…`;
     } else {
-      fb.textContent = `✓ Correct! The answer is ${displayAnswer(correct, mode)}. Next question…`;
+      fb.textContent = `✓ Correct! The answer is ${displayAnswer(correct, mode, currentQ)}. Next question…`;
     }
     
     const flash = document.getElementById('correct-flash');
@@ -1138,8 +1227,14 @@ function loadQuestion(q) {
   const fb = document.getElementById('feedback-box');
   const input = document.getElementById('answer-input');
   const modeForDisplay = q.mode || settings.mode;
-  const m = MODES[modeForDisplay] || MODES.fractions;
-  const isTimeMode = modeForDisplay === 'time';
+  
+  let uiMode = modeForDisplay;
+  if (modeForDisplay === 'different-parts' && q.requestedMode) {
+    uiMode = q.requestedMode;
+  }
+  
+  const m = MODES[uiMode] || MODES.fractions;
+  const isTimeMode = uiMode === 'time';
   const isCompare = modeForDisplay === 'compare';
   const isRandomTotal = modeForDisplay === 'random-total';
   const isDifferentParts = modeForDisplay === 'different-parts';
@@ -1155,7 +1250,15 @@ function loadQuestion(q) {
   document.getElementById('format-hint').textContent = m.hint;
   document.getElementById('answer-label').textContent = m.label;
   
-  // Show/hide ticks checkbox
+  const sameSplitContainer = document.getElementById('same-split-checkbox-container');
+  if (sameSplitContainer) {
+    sameSplitContainer.style.display = isCompare ? 'flex' : 'none';
+  }
+  const sameSplitToggle = document.getElementById('same-split-toggle');
+  if (sameSplitToggle) {
+    sameSplitToggle.checked = settings.sameSplitCompare;
+  }
+  
   const ticksContainer = document.getElementById('ticks-checkbox-container');
   const ticksCheckbox = document.getElementById('show-ticks-modal');
   if (ticksContainer) {
@@ -1165,7 +1268,6 @@ function loadQuestion(q) {
     ticksCheckbox.checked = settings.showTickMarks;
   }
   
-  // Show/hide labels checkbox
   const labelsContainer = document.getElementById('labels-checkbox-container');
   const labelsCheckbox = document.getElementById('show-labels-modal');
   if (labelsContainer) {
@@ -1176,7 +1278,6 @@ function loadQuestion(q) {
     labelsCheckbox.checked = settings.showLabels;
   }
   
-  // Switch keypad for compare mode
   const standardNumpad = document.getElementById('standard-numpad');
   const compareNumpad = document.getElementById('compare-numpad');
   if (standardNumpad && compareNumpad) {

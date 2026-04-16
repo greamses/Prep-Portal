@@ -155,6 +155,10 @@
       </button>
       <span class="modal-title" id="modal-title">What fraction does the shape show?</span>
       <div class="modal-header-right">
+        <label class="checkbox-label modal-checkbox" id="same-split-checkbox-container" style="display: none;">
+          <input type="checkbox" id="same-split-toggle" />
+          <span class="checkbox-text">Same split (LCM)</span>
+        </label>
         <label class="checkbox-label modal-checkbox" id="ticks-checkbox-container" style="display: none;">
           <input type="checkbox" id="show-ticks-modal" />
           <span class="checkbox-text">Ticks</span>
@@ -232,8 +236,7 @@
           </button>
         </div>
         
-        <!-- Compare Mode Keypad (4 buttons) -->
-        <!-- Compare Mode Keypad (5 buttons now) -->
+        <!-- Compare Mode Keypad -->
         <div class="numpad numpad-compare hidden" id="compare-numpad">
           <button class="numpad-btn compare-btn" onclick="numpadInput('<')">&lt;</button>
           <button class="numpad-btn compare-btn" onclick="numpadInput('>')">&gt;</button>
