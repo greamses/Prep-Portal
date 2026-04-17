@@ -44,7 +44,7 @@
         <div class="ph-stat"><strong id="stat-total">0</strong><span>Solved</span></div>
       </div>
       <!-- Game button -->
-      <a href="./game/game.html" class="game-nav-btn">
+      <a href="./slide/game.html" class="game-nav-btn">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
           <rect x="3" y="3" width="8" height="8" rx="1" />
           <rect x="13" y="3" width="8" height="8" rx="1" />
@@ -164,6 +164,10 @@
           <input type="checkbox" id="same-split-toggle" />
           <span class="checkbox-text">Same split (LCM)</span>
         </label>
+        <label class="checkbox-label modal-checkbox" id="like-fractions-checkbox-container" style="display: none;">
+          <input type="checkbox" id="like-fractions-toggle" />
+          <span class="checkbox-text">Like Fractions</span>
+        </label>
         <label class="checkbox-label modal-checkbox" id="ticks-checkbox-container" style="display: none;">
           <input type="checkbox" id="show-ticks-modal" />
           <span class="checkbox-text">Ticks</span>
@@ -265,7 +269,7 @@
     </div>
   </div>
   
-  <script src="./script.js"></script>
+  <script type="module" src="./script.js"></script>
   <script type="module" src="../nav/nav.js"></script>
 </body>
 
