@@ -889,3 +889,18 @@ button,
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
 }
+
+.tile-number {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #1a1a1a; /* Black/Dark Grey */
+    text-align: center;
+}
+
+.tile-label {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1a1a1a; /* Black/Dark Grey */
+    text-align: center;
+    margin-top: 4px;
+}
