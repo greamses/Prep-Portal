@@ -1,4 +1,4 @@
-// script.js - Slider Game Logic (Classic Sliding Puzzle - Continuous Play)
+// game.js - Slider Game Logic (Classic Sliding Puzzle - Continuous Play)
 
 // ---------- CONFIGURATION ----------
 const MODES = {
@@ -57,10 +57,11 @@ function decimalToFraction(decimal, tolerance = 0.0001) {
   if (decimal === 0) return { num: 0, den: 1 };
   if (decimal === 1) return { num: 1, den: 1 };
   
-  let bestNum = 1, bestDen = 1;
+  let bestNum = 1,
+    bestDen = 1;
   let bestError = Math.abs(decimal - bestNum / bestDen);
   
-  for (let den = 1; den <= 12; den++) {
+  for (let den = 2; den <= 16; den++) {
     const num = Math.round(decimal * den);
     const error = Math.abs(decimal - num / den);
     if (error < bestError) {
@@ -90,6 +91,7 @@ let settings = {
   arrange: 'ascending',
   showValues: true,
   showSplitLines: true,
+  fractionType: 'mixed',
 };
 
 let gameState = {
@@ -138,16 +140,34 @@ document.querySelectorAll('.pp-dropdown-list').forEach(list => {
     if (dd.id === 'dd-mode') settings.mode = value;
     if (dd.id === 'dd-type') settings.type = value;
     if (dd.id === 'dd-arrange') settings.arrange = value;
+    if (dd.id === 'dd-fraction-type') settings.fractionType = value;
   });
 });
 
-// ---------- UNIQUE FRACTION GENERATION ----------
+// ---------- FRACTION GENERATION ----------
 function generateUniqueFractions(count) {
+  switch (settings.fractionType) {
+    case 'like-denominators':
+      return generateLikeDenominators(count);
+    case 'like-numerators':
+      return generateLikeNumerators(count);
+    case 'unit-fractions':
+      return generateUnitFractions(count);
+    case 'incrementing-numerator':
+      return generateIncrementingNumerator(count);
+    case 'incrementing-denominator':
+      return generateIncrementingDenominator(count);
+    default:
+      return generateMixedFractions(count);
+  }
+}
+
+function generateMixedFractions(count) {
   const fractions = [];
   const used = new Set();
-  const denominators = [2, 3, 4, 5, 6, 8, 9, 10, 12];
   
-  // Shuffle denominators for variety
+  // Denominators from 2 to 16
+  const denominators = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
   const shuffledDenoms = [...denominators].sort(() => Math.random() - 0.5);
   
   for (const den of shuffledDenoms) {
@@ -156,7 +176,10 @@ function generateUniqueFractions(count) {
       if (fractions.length >= count) break;
       const value = num / den;
       const key = value.toFixed(4);
-      if (value >= 0.1 && value <= 0.9 && !used.has(key)) {
+      // Accept wider range for larger grids
+      const minVal = count <= 8 ? 0.1 : 0.05;
+      const maxVal = count <= 8 ? 0.9 : 0.95;
+      if (value >= minVal && value <= maxVal && !used.has(key)) {
         used.add(key);
         fractions.push(value);
       }
@@ -177,9 +200,140 @@ function generateUniqueFractions(count) {
   return fractions;
 }
 
+function generateLikeDenominators(count) {
+  const fractions = [];
+  const used = new Set();
+  
+  // All denominators from 2 to 16
+  const availableDenoms = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+  
+  // For larger grids, we may need multiple denominators
+  const denomsNeeded = Math.ceil(count / 8);
+  const selectedDenoms = [];
+  
+  // Select denominators that can provide enough unique fractions
+  for (let i = 0; i < denomsNeeded && i < availableDenoms.length; i++) {
+    const idx = Math.floor(i * availableDenoms.length / denomsNeeded);
+    selectedDenoms.push(availableDenoms[idx]);
+  }
+  
+  for (const den of selectedDenoms) {
+    if (fractions.length >= count) break;
+    for (let num = 1; num < den && fractions.length < count; num++) {
+      const value = num / den;
+      const key = value.toFixed(4);
+      const minVal = count <= 8 ? 0.1 : 0.05;
+      const maxVal = count <= 8 ? 0.9 : 0.95;
+      if (value >= minVal && value <= maxVal && !used.has(key)) {
+        used.add(key);
+        fractions.push(value);
+      }
+    }
+  }
+  
+  return fractions;
+}
+
+function generateLikeNumerators(count) {
+  const fractions = [];
+  const used = new Set();
+  
+  // Choose common numerator(s) based on count
+  const commonNums = count <= 8 ? [2, 3, 4] : [2, 3, 4, 5];
+  const denominators = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+  
+  for (const num of commonNums) {
+    if (fractions.length >= count) break;
+    const shuffledDenoms = [...denominators].sort(() => Math.random() - 0.5);
+    for (const den of shuffledDenoms) {
+      if (fractions.length >= count) break;
+      if (num < den) {
+        const value = num / den;
+        const key = value.toFixed(4);
+        const minVal = count <= 8 ? 0.1 : 0.05;
+        const maxVal = count <= 8 ? 0.9 : 0.95;
+        if (value >= minVal && value <= maxVal && !used.has(key)) {
+          used.add(key);
+          fractions.push(value);
+        }
+      }
+    }
+  }
+  
+  return fractions;
+}
+
+function generateUnitFractions(count) {
+  const fractions = [];
+  const used = new Set();
+  
+  const denominators = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+  const shuffledDenoms = [...denominators].sort(() => Math.random() - 0.5);
+  
+  for (const den of shuffledDenoms) {
+    if (fractions.length >= count) break;
+    const value = 1 / den;
+    const key = value.toFixed(4);
+    const minVal = count <= 8 ? 0.1 : 0.05;
+    const maxVal = count <= 8 ? 0.9 : 0.95;
+    if (value >= minVal && value <= maxVal && !used.has(key)) {
+      used.add(key);
+      fractions.push(value);
+    }
+  }
+  
+  return fractions;
+}
+
+function generateIncrementingNumerator(count) {
+  const fractions = [];
+  const used = new Set();
+  
+  // Choose denominator large enough to accommodate count
+  const availableDenoms = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+  const den = availableDenoms.find(d => d > count) || Math.max(count + 2, 16);
+  
+  for (let num = 1; num < den && fractions.length < count; num++) {
+    const value = num / den;
+    const key = value.toFixed(4);
+    const minVal = count <= 8 ? 0.1 : 0.05;
+    const maxVal = count <= 8 ? 0.9 : 0.95;
+    if (value >= minVal && value <= maxVal && !used.has(key)) {
+      used.add(key);
+      fractions.push(value);
+    }
+  }
+  
+  return fractions;
+}
+
+function generateIncrementingDenominator(count) {
+  const fractions = [];
+  const used = new Set();
+  
+  // Choose numerator small enough to work with many denominators
+  const num = count <= 8 ? 3 : 4;
+  const denominators = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+  
+  for (const den of denominators) {
+    if (fractions.length >= count) break;
+    if (num < den) {
+      const value = num / den;
+      const key = value.toFixed(4);
+      const minVal = count <= 8 ? 0.1 : 0.05;
+      const maxVal = count <= 8 ? 0.9 : 0.95;
+      if (value >= minVal && value <= maxVal && !used.has(key)) {
+        used.add(key);
+        fractions.push(value);
+      }
+    }
+  }
+  
+  return fractions;
+}
+
 // ---------- GAME INITIALIZATION ----------
 function openGameModal() {
-  // Clear any existing timeout
   if (gameState.winTimeout) {
     clearTimeout(gameState.winTimeout);
     gameState.winTimeout = null;
@@ -206,16 +360,14 @@ function openGameModal() {
   
   updateStats();
   
-  // Generate first puzzle
   generateNewPuzzle();
   
-  shuffleBtn.disabled = false;
-  resetBtn.disabled = false;
+  if (shuffleBtn) shuffleBtn.disabled = false;
+  if (resetBtn) resetBtn.disabled = false;
   
   document.getElementById('game-modal').classList.add('active');
   document.body.style.overflow = 'hidden';
   
-  // Remove existing listeners to prevent duplicates
   if (showValuesModal) {
     showValuesModal.replaceWith(showValuesModal.cloneNode(true));
     showValuesModal = document.getElementById('show-values-modal');
@@ -244,20 +396,32 @@ function generateNewPuzzle() {
   
   gameState.isGenerating = true;
   
-  // Generate new tile values
   const totalTiles = settings.gridSize * settings.gridSize;
   const tileCount = totalTiles - 1;
+  
   let values = generateUniqueFractions(tileCount);
+  
+  // Ensure we have exactly tileCount values
+  while (values.length < tileCount) {
+    const newVal = 0.1 + (values.length * 0.8 / tileCount);
+    values.push(newVal);
+  }
+  
+  // Take only needed count and sort
+  values = values.slice(0, tileCount);
   values.sort((a, b) => a - b);
   gameState.tiles = values;
   
-  // Set grid size attribute
   if (sliderGrid) {
     sliderGrid.setAttribute('data-size', settings.gridSize);
+    sliderGrid.style.gridTemplateColumns = `repeat(${settings.gridSize}, 1fr)`;
   }
   
   // Initialize positions (solved state)
-  gameState.positions = gameState.tiles.map((_, i) => i);
+  gameState.positions = new Array(totalTiles);
+  for (let i = 0; i < tileCount; i++) {
+    gameState.positions[i] = i;
+  }
   gameState.emptyIndex = totalTiles - 1;
   gameState.positions[gameState.emptyIndex] = -1;
   
@@ -268,7 +432,7 @@ function generateNewPuzzle() {
     let idx = 0;
     for (let i = 0; i < gameState.positions.length; i++) {
       if (gameState.positions[i] !== -1) {
-        gameState.positions[i] = gameState.tiles.indexOf(nonEmpty[idx++]);
+        gameState.positions[i] = nonEmpty[idx++];
       }
     }
   }
@@ -287,10 +451,12 @@ function performShuffle() {
   const gridSize = settings.gridSize;
   let emptyPos = gameState.emptyIndex;
   
-  // Ensure we have valid positions
   if (!gameState.positions || gameState.positions.length === 0) return;
   
-  for (let i = 0; i < 150; i++) {
+  // More shuffles for larger grids
+  const shuffleCount = gridSize === 2 ? 100 : (gridSize === 3 ? 150 : 200);
+  
+  for (let i = 0; i < shuffleCount; i++) {
     const emptyRow = Math.floor(emptyPos / gridSize);
     const emptyCol = emptyPos % gridSize;
     
@@ -314,7 +480,6 @@ function performShuffle() {
 }
 
 function closeGameModal() {
-  // Clear timeout
   if (gameState.winTimeout) {
     clearTimeout(gameState.winTimeout);
     gameState.winTimeout = null;
@@ -342,8 +507,12 @@ function resetGame() {
   if (!gameState.gameActive || gameState.isGenerating) return;
   
   const totalCells = settings.gridSize * settings.gridSize;
+  const tileCount = totalCells - 1;
   
-  gameState.positions = gameState.tiles.map((_, i) => i);
+  gameState.positions = new Array(totalCells);
+  for (let i = 0; i < tileCount; i++) {
+    gameState.positions[i] = i;
+  }
   gameState.emptyIndex = totalCells - 1;
   gameState.positions[gameState.emptyIndex] = -1;
   
@@ -353,7 +522,7 @@ function resetGame() {
     let idx = 0;
     for (let i = 0; i < gameState.positions.length; i++) {
       if (gameState.positions[i] !== -1) {
-        gameState.positions[i] = gameState.tiles.indexOf(nonEmpty[idx++]);
+        gameState.positions[i] = nonEmpty[idx++];
       }
     }
   }
@@ -549,12 +718,10 @@ function checkWinCondition() {
     gameFeedback.className = 'gp-feedback-box success';
     gameFeedback.textContent = `Puzzle ${gameState.solved} solved in ${gameState.moves} moves! Next puzzle...`;
     
-    // Clear any existing timeout
     if (gameState.winTimeout) {
       clearTimeout(gameState.winTimeout);
     }
     
-    // Generate new puzzle after delay
     gameState.winTimeout = setTimeout(() => {
       if (gameState.gameActive) {
         generateNewPuzzle();
@@ -618,4 +785,5 @@ document.addEventListener('DOMContentLoaded', () => {
   settings.arrange = 'ascending';
   settings.showValues = true;
   settings.showSplitLines = true;
+  settings.fractionType = 'mixed';
 });

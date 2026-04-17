@@ -125,6 +125,27 @@
         </div>
       </div>
       
+      <!-- Fraction Type Dropdown -->
+      <div class="settings-grid" style="margin-top: 0;">
+        <div class="pp-dropdown" id="dd-fraction-type">
+          <span class="pp-dropdown-label">Fraction Type</span>
+          <div class="pp-dropdown-header" onclick="toggleDropdown('dd-fraction-type')">
+            <span class="dd-selected">Mixed Fractions</span>
+            <svg viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+          <div class="pp-dropdown-list">
+            <div class="pp-dropdown-item selected" data-value="mixed">Mixed Fractions</div>
+            <div class="pp-dropdown-item" data-value="like-denominators">Like Denominators</div>
+            <div class="pp-dropdown-item" data-value="like-numerators">Like Numerators</div>
+            <div class="pp-dropdown-item" data-value="unit-fractions">Unit Fractions</div>
+            <div class="pp-dropdown-item" data-value="incrementing-numerator">Incrementing Numerator</div>
+            <div class="pp-dropdown-item" data-value="incrementing-denominator">Incrementing Denominator</div>
+          </div>
+        </div>
+      </div>
+      
       <!-- Additional checkboxes -->
       <div class="settings-checkboxes">
         <label class="checkbox-label">
@@ -192,5 +213,4 @@
   <!-- Navigation module (external) -->
   <script type="module" src="../nav/nav.js"></script>
 </body>
-
 </html>
