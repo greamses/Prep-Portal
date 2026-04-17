@@ -26,11 +26,36 @@ function decimalToFraction(decimal) {
   if (decimal === 0) return { num: 0, den: 1 };
   if (decimal === 1) return { num: 1, den: 1 };
   
+  // Handle common fractions exactly
+  const commonFractions = {
+    0.25: { num: 1, den: 4 },
+    0.33: { num: 1, den: 3 },
+    0.5: { num: 1, den: 2 },
+    0.67: { num: 2, den: 3 },
+    0.75: { num: 3, den: 4 },
+    0.2: { num: 1, den: 5 },
+    0.4: { num: 2, den: 5 },
+    0.6: { num: 3, den: 5 },
+    0.8: { num: 4, den: 5 },
+    0.125: { num: 1, den: 8 },
+    0.375: { num: 3, den: 8 },
+    0.625: { num: 5, den: 8 },
+    0.875: { num: 7, den: 8 },
+    0.167: { num: 1, den: 6 },
+    0.833: { num: 5, den: 6 }
+  };
+  
+  // Check for common fractions first (with tolerance)
+  const rounded = Math.round(decimal * 1000) / 1000;
+  if (commonFractions[rounded]) {
+    return commonFractions[rounded];
+  }
+  
   let bestNum = 1,
     bestDen = 1;
   let bestError = Math.abs(decimal - bestNum / bestDen);
   
-  for (let den = 1; den <= 12; den++) {
+  for (let den = 1; den <= 16; den++) {
     const num = Math.round(decimal * den);
     const error = Math.abs(decimal - num / den);
     if (error < bestError) {
@@ -51,7 +76,11 @@ function formatValue(val, type) {
   }
   if (type === "percent") return `${Math.round(val * 100)}%`;
   if (type === "degrees") return `${Math.round(val * 360)}°`;
-  if (type === "decimal") return val.toFixed(2);
+  if (type === "decimal") {
+    // Remove trailing zeros for cleaner display
+    const str = val.toFixed(3);
+    return parseFloat(str).toString();
+  }
   return val.toFixed(2);
 }
 
@@ -112,18 +141,15 @@ document.querySelectorAll('.pp-dropdown-list').forEach(list => {
 
 // ---------- CARD GENERATION ----------
 function generateUniqueValues(count) {
-  const values = [];
-  const used = new Set();
+  // Use fraction-friendly values for cleaner displays
+  const commonValues = [
+    0.1, 0.125, 0.2, 0.25, 0.3, 0.33, 0.375, 0.4, 
+    0.5, 0.6, 0.625, 0.66, 0.7, 0.75, 0.8, 0.875, 0.9
+  ];
   
-  while (values.length < count) {
-    let val = 0.1 + Math.random() * 0.8;
-    val = parseFloat(val.toFixed(3));
-    if (!used.has(val)) {
-      used.add(val);
-      values.push(val);
-    }
-  }
-  return values;
+  // Shuffle and take first 'count' values
+  const shuffled = [...commonValues].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
 }
 
 function createCards() {
