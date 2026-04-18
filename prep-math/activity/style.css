@@ -1188,3 +1188,12 @@ button,
 .compare-enter:active {
   animation: pulse 0.3s ease;
 }
+
+/* Game Navigation Links Group */
+.ph-right .game-nav-btn {
+  margin-right: 12px; /* Add spacing between the two game buttons */
+}
+
+.ph-right .game-nav-btn:last-of-type {
+  margin-right: 0;
+}
