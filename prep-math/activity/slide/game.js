@@ -176,7 +176,6 @@ function generateMixedFractions(count) {
       if (fractions.length >= count) break;
       const value = num / den;
       const key = value.toFixed(4);
-      // Accept wider range for larger grids
       const minVal = count <= 8 ? 0.1 : 0.05;
       const maxVal = count <= 8 ? 0.9 : 0.95;
       if (value >= minVal && value <= maxVal && !used.has(key)) {
@@ -202,84 +201,103 @@ function generateMixedFractions(count) {
 
 function generateLikeDenominators(count) {
   const fractions = [];
-  const used = new Set();
   
-  // All denominators from 2 to 16
-  const availableDenoms = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+  // Choose a denominator that can provide enough unique fractions
+  // For count tiles, we need a denominator > count
+  let denominator;
+  if (count <= 2) denominator = 3;
+  else if (count <= 3) denominator = 4;
+  else if (count <= 4) denominator = 5;
+  else if (count <= 5) denominator = 6;
+  else if (count <= 6) denominator = 7;
+  else if (count <= 7) denominator = 8;
+  else if (count <= 8) denominator = 9;
+  else if (count <= 9) denominator = 10;
+  else if (count <= 10) denominator = 11;
+  else if (count <= 11) denominator = 12;
+  else if (count <= 12) denominator = 13;
+  else if (count <= 13) denominator = 14;
+  else if (count <= 14) denominator = 15;
+  else denominator = 16;
   
-  // For larger grids, we may need multiple denominators
-  const denomsNeeded = Math.ceil(count / 8);
-  const selectedDenoms = [];
-  
-  // Select denominators that can provide enough unique fractions
-  for (let i = 0; i < denomsNeeded && i < availableDenoms.length; i++) {
-    const idx = Math.floor(i * availableDenoms.length / denomsNeeded);
-    selectedDenoms.push(availableDenoms[idx]);
+  // All numerators from 1 to denominator-1
+  for (let num = 1; num < denominator && fractions.length < count; num++) {
+    const value = num / denominator;
+    // Avoid extremes for better gameplay
+    if (value >= 0.1 && value <= 0.9) {
+      fractions.push(value);
+    }
   }
   
-  for (const den of selectedDenoms) {
-    if (fractions.length >= count) break;
-    for (let num = 1; num < den && fractions.length < count; num++) {
-      const value = num / den;
-      const key = value.toFixed(4);
-      const minVal = count <= 8 ? 0.1 : 0.05;
-      const maxVal = count <= 8 ? 0.9 : 0.95;
-      if (value >= minVal && value <= maxVal && !used.has(key)) {
-        used.add(key);
+  // If we still need more, use another denominator
+  if (fractions.length < count) {
+    const secondDen = denominator + 1;
+    for (let num = 1; num < secondDen && fractions.length < count; num++) {
+      const value = num / secondDen;
+      if (value >= 0.1 && value <= 0.9) {
         fractions.push(value);
       }
     }
   }
   
-  return fractions;
+  return fractions.slice(0, count);
 }
 
 function generateLikeNumerators(count) {
   const fractions = [];
-  const used = new Set();
   
-  // Choose common numerator(s) based on count
-  const commonNums = count <= 8 ? [2, 3, 4] : [2, 3, 4, 5];
-  const denominators = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+  // Choose a small numerator (max 3 as specified)
+  let numerator;
+  if (count <= 3) numerator = 2;
+  else if (count <= 6) numerator = 2;
+  else numerator = 3;
   
-  for (const num of commonNums) {
+  // Denominators from numerator+1 to 16
+  const denominators = [];
+  for (let den = numerator + 1; den <= 16; den++) {
+    denominators.push(den);
+  }
+  
+  // Shuffle denominators for variety
+  const shuffledDenoms = [...denominators].sort(() => Math.random() - 0.5);
+  
+  for (const den of shuffledDenoms) {
     if (fractions.length >= count) break;
-    const shuffledDenoms = [...denominators].sort(() => Math.random() - 0.5);
-    for (const den of shuffledDenoms) {
-      if (fractions.length >= count) break;
-      if (num < den) {
-        const value = num / den;
+    const value = numerator / den;
+    // Avoid extremes
+    if (value >= 0.1 && value <= 0.9) {
+      fractions.push(value);
+    }
+  }
+  
+  // If we need more, try another numerator
+  if (fractions.length < count && numerator < 3) {
+    const secondNum = numerator + 1;
+    for (let den = secondNum + 1; den <= 16 && fractions.length < count; den++) {
+      const value = secondNum / den;
+      if (value >= 0.1 && value <= 0.9) {
+        // Check for duplicates
         const key = value.toFixed(4);
-        const minVal = count <= 8 ? 0.1 : 0.05;
-        const maxVal = count <= 8 ? 0.9 : 0.95;
-        if (value >= minVal && value <= maxVal && !used.has(key)) {
-          used.add(key);
+        if (!fractions.some(f => f.toFixed(4) === key)) {
           fractions.push(value);
         }
       }
     }
   }
   
-  return fractions;
+  return fractions.slice(0, count);
 }
 
 function generateUnitFractions(count) {
   const fractions = [];
-  const used = new Set();
   
+  // Unit fractions: 1/2, 1/3, 1/4, etc.
   const denominators = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-  const shuffledDenoms = [...denominators].sort(() => Math.random() - 0.5);
   
-  for (const den of shuffledDenoms) {
+  for (const den of denominators) {
     if (fractions.length >= count) break;
     const value = 1 / den;
-    const key = value.toFixed(4);
-    const minVal = count <= 8 ? 0.1 : 0.05;
-    const maxVal = count <= 8 ? 0.9 : 0.95;
-    if (value >= minVal && value <= maxVal && !used.has(key)) {
-      used.add(key);
-      fractions.push(value);
-    }
+    fractions.push(value);
   }
   
   return fractions;
@@ -287,49 +305,48 @@ function generateUnitFractions(count) {
 
 function generateIncrementingNumerator(count) {
   const fractions = [];
-  const used = new Set();
   
-  // Choose denominator large enough to accommodate count
-  const availableDenoms = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
-  const den = availableDenoms.find(d => d > count) || Math.max(count + 2, 16);
-  
-  for (let num = 1; num < den && fractions.length < count; num++) {
+  // Pattern: 1/2, 2/3, 3/4, 4/5, 5/6, 6/7, etc.
+  // numerator = denominator - 1
+  for (let den = 2; den <= 16 && fractions.length < count; den++) {
+    const num = den - 1;
     const value = num / den;
-    const key = value.toFixed(4);
-    const minVal = count <= 8 ? 0.1 : 0.05;
-    const maxVal = count <= 8 ? 0.9 : 0.95;
-    if (value >= minVal && value <= maxVal && !used.has(key)) {
-      used.add(key);
+    if (value >= 0.1 && value <= 0.9) {
       fractions.push(value);
     }
   }
   
-  return fractions;
+  // If we need more, continue with larger denominators
+  if (fractions.length < count) {
+    for (let den = 17; den <= 20 && fractions.length < count; den++) {
+      const num = den - 1;
+      const value = num / den;
+      fractions.push(value);
+    }
+  }
+  
+  return fractions.slice(0, count);
 }
 
 function generateIncrementingDenominator(count) {
   const fractions = [];
-  const used = new Set();
   
-  // Choose numerator small enough to work with many denominators
-  const num = count <= 8 ? 3 : 4;
-  const denominators = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+  // Pattern: 1/2, 1/3, 1/4, 1/5, etc. (unit fractions with increasing denominator)
+  // This is essentially the same as unit fractions
+  for (let den = 2; den <= 16 && fractions.length < count; den++) {
+    const value = 1 / den;
+    fractions.push(value);
+  }
   
-  for (const den of denominators) {
-    if (fractions.length >= count) break;
-    if (num < den) {
-      const value = num / den;
-      const key = value.toFixed(4);
-      const minVal = count <= 8 ? 0.1 : 0.05;
-      const maxVal = count <= 8 ? 0.9 : 0.95;
-      if (value >= minVal && value <= maxVal && !used.has(key)) {
-        used.add(key);
-        fractions.push(value);
-      }
+  // If we need more, continue with larger denominators
+  if (fractions.length < count) {
+    for (let den = 17; den <= 20 && fractions.length < count; den++) {
+      const value = 1 / den;
+      fractions.push(value);
     }
   }
   
-  return fractions;
+  return fractions.slice(0, count);
 }
 
 // ---------- GAME INITIALIZATION ----------
@@ -577,7 +594,7 @@ function renderGrid() {
       } else if (settings.type === 'circles') {
         html += renderCircleSVG(value, fillColor, fraction.den);
       } else {
-        html += `<div class="tile-number" style="color: ${fillColor}">${displayValue}</div>`;
+        html += `<div class="tile-number">${displayValue}</div>`;
       }
       
       html += '</div>';
