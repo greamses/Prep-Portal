@@ -20,7 +20,7 @@
     <div id="loader-wrapper">
       <div class="logo-cluster"></div>
     </div>
-    <div class="loader-word"><span>Sns N' Las</span></div>
+    <div class="loader-word"><span>Snakes N' Ladders</span></div>
     <div class="loader-bar"></div>
   </div>
   
@@ -68,7 +68,7 @@
             <div class="pp-dropdown-item" data-value="cpu">Computer (CPU)</div>
           </div>
         </div>
-        
+
         <!-- Player 1 Color -->
         <div class="pp-dropdown" id="dd-p1-color">
           <span class="pp-dropdown-label">Player 1</span>
@@ -121,7 +121,7 @@
       </div>
       
       <button class="btn-start" onclick="openGameModal()">
-        <svg viewBox="0 0 24 24" fill="currentColor">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="5 3 19 12 5 21 5 3" />
         </svg>
         Start Game
@@ -163,38 +163,24 @@
         <!-- Draggable 3D Dice -->
         <div class="snakes-dice-scene" id="diceScene">
           <div class="snakes-cube" id="cube">
-            <div class="snakes-face snakes-front">
-              <div class="snakes-dot snakes-d-center"></div>
-            </div>
+            <div class="snakes-face snakes-front"><div class="snakes-dot snakes-d-center"></div></div>
             <div class="snakes-face snakes-back">
-              <div class="snakes-dot snakes-d-tl"></div>
-              <div class="snakes-dot snakes-d-ml"></div>
-              <div class="snakes-dot snakes-d-bl"></div>
-              <div class="snakes-dot snakes-d-tr"></div>
-              <div class="snakes-dot snakes-d-mr"></div>
-              <div class="snakes-dot snakes-d-br"></div>
+              <div class="snakes-dot snakes-d-tl"></div><div class="snakes-dot snakes-d-ml"></div><div class="snakes-dot snakes-d-bl"></div>
+              <div class="snakes-dot snakes-d-tr"></div><div class="snakes-dot snakes-d-mr"></div><div class="snakes-dot snakes-d-br"></div>
             </div>
             <div class="snakes-face snakes-right">
-              <div class="snakes-dot snakes-d-tl"></div>
-              <div class="snakes-dot snakes-d-center"></div>
-              <div class="snakes-dot snakes-d-br"></div>
+              <div class="snakes-dot snakes-d-tl"></div><div class="snakes-dot snakes-d-center"></div><div class="snakes-dot snakes-d-br"></div>
             </div>
             <div class="snakes-face snakes-left">
-              <div class="snakes-dot snakes-d-tl"></div>
-              <div class="snakes-dot snakes-d-tr"></div>
-              <div class="snakes-dot snakes-d-bl"></div>
-              <div class="snakes-dot snakes-d-br"></div>
+              <div class="snakes-dot snakes-d-tl"></div><div class="snakes-dot snakes-d-tr"></div>
+              <div class="snakes-dot snakes-d-bl"></div><div class="snakes-dot snakes-d-br"></div>
             </div>
             <div class="snakes-face snakes-top">
-              <div class="snakes-dot snakes-d-tl"></div>
-              <div class="snakes-dot snakes-d-br"></div>
+              <div class="snakes-dot snakes-d-tl"></div><div class="snakes-dot snakes-d-br"></div>
             </div>
             <div class="snakes-face snakes-bottom">
-              <div class="snakes-dot snakes-d-tl"></div>
-              <div class="snakes-dot snakes-d-tr"></div>
-              <div class="snakes-dot snakes-d-center"></div>
-              <div class="snakes-dot snakes-d-bl"></div>
-              <div class="snakes-dot snakes-d-br"></div>
+              <div class="snakes-dot snakes-d-tl"></div><div class="snakes-dot snakes-d-tr"></div><div class="snakes-dot snakes-d-center"></div>
+              <div class="snakes-dot snakes-d-bl"></div><div class="snakes-dot snakes-d-br"></div>
             </div>
           </div>
         </div>
@@ -207,6 +193,12 @@
         
         <!-- Log Overlay -->
         <div class="snakes-log-overlay" id="logOverlay"></div>
+
+        <!-- Fraction Popup -->
+        <div class="snakes-frac-popup" id="fracPopup">
+          <div class="snakes-frac-popup-label">FRACTION CONVERSION</div>
+          <div class="snakes-frac-popup-eq" id="popupEq"></div>
+        </div>
       </div>
     </div>
     
@@ -221,18 +213,12 @@
     </div>
   </div>
   
-  <!-- Fraction Popup -->
-  <div class="snakes-frac-popup" id="fracPopup">
-    <div class="snakes-frac-popup-label">FRACTION CONVERSION</div>
-    <div class="snakes-frac-popup-eq" id="popupEq"></div>
-  </div>
-  
   <!-- Win Modal -->
   <div class="snakes-win-overlay" id="winOverlay">
     <div class="snakes-win-box">
       <div class="snakes-win-icon">🏆</div>
       <h2 id="winName">P1 WINS!</h2>
-      <p class="snakes-win-sub">Reached square 64 first!</p>
+      <p class="snakes-win-sub" id="winSub">Reached square 64 first!</p>
       <button class="btn-start" onclick="resetGame()" style="padding: 12px 28px;">PLAY AGAIN</button>
     </div>
   </div>
@@ -240,5 +226,4 @@
   <script src="./game.js"></script>
   <script type="module" src="../nav/nav.js"></script>
 </body>
-
 </html>

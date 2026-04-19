@@ -82,7 +82,7 @@ const SNAKES = { 54: 34, 44: 6, 62: 19, 48: 16 };
 const SNAKE_COLORS = { 54: '#c0392b', 44: '#27ae60', 62: '#8e44ad', 48: '#d35400' };
 const LADDERS = { 5: 26, 13: 34, 27: 46, 42: 63 };
 
-const PLAYER_COLORS = [
+const PLAYER_COLORS =[
     { name: 'Blue', value: '#0055ff' },
     { name: 'Red', value: '#ff2200' },
     { name: 'Green', value: '#00a550' },
@@ -91,7 +91,7 @@ const PLAYER_COLORS = [
     { name: 'Pink', value: '#e84393' }
 ];
 
-const LUCKY_CARDS = [
+const LUCKY_CARDS =[
     { title: "Lucky Strike!", desc: "Move forward 2 spaces.", action: (pi) => applyCardMove(pi, 2) },
     { title: "Speed Boost", desc: "Move forward 4 spaces.", action: (pi) => applyCardMove(pi, 4) },
     { title: "Sabotage!", desc: "Opponent moves back 2 spaces.", action: (pi) => applyCardMove(1 - pi, -2) },
@@ -111,9 +111,9 @@ const STATE = {
     GAME_OVER: 6
 };
 
-const offsets = [{ dx: -22, dy: -18 }, { dx: 22, dy: 18 }];
+const offsets =[{ dx: -22, dy: -18 }, { dx: 22, dy: 18 }];
 
-const players = [
+const players =[
     { pos: 1, color: '#0055ff', name: 'P1', drawX: 0, drawY: 0 },
     { pos: 1, color: '#ff2200', name: 'P2', drawX: 0, drawY: 0 }
 ];
@@ -286,7 +286,7 @@ function drawBoard() {
         }
     }
     
-    for (const [bot, top] of Object.entries(LADDERS)) drawLadder(parseInt(bot), parseInt(top));
+    for (const[bot, top] of Object.entries(LADDERS)) drawLadder(parseInt(bot), parseInt(top));
     for (const [head, tail] of Object.entries(SNAKES)) drawSnake(parseInt(head), parseInt(tail));
     drawPlayers();
 }
@@ -575,10 +575,10 @@ function animateCPUToken(pi, startSq, targetSq, callback) {
     let startY = start.y + offsets[pi].dy;
     let endX = end.x + offsets[pi].dx;
     let endY = end.y + offsets[pi].dy;
-    
+
     let startTime = null;
     const duration = 600;
-    
+
     function step(timestamp) {
         if (!startTime) startTime = timestamp;
         const progress = Math.min((timestamp - startTime) / duration, 1);
@@ -586,7 +586,7 @@ function animateCPUToken(pi, startSq, targetSq, callback) {
         p.drawX = startX + (endX - startX) * ease;
         p.drawY = startY + (endY - startY) * ease;
         drawBoard();
-        
+
         if (progress < 1) {
             requestAnimationFrame(step);
         } else {
@@ -654,12 +654,16 @@ function endTurn() {
     startTurn();
 }
 
-function triggerWin(pi) {
+function triggerWin(pi, reason = null) {
     gameState = STATE.GAME_OVER;
     gameActive = false;
     const p = players[pi];
     addLog(`${p.name} WON THE GAME!`, 'action');
     winName.textContent = `${p.name} WINS!`;
+    const subText = document.getElementById('winSub');
+    if (subText) {
+        subText.textContent = reason || "Reached square 64 first!";
+    }
     setTimeout(() => winOverlay.classList.add('show'), 800);
 }
 
@@ -671,10 +675,10 @@ function showFracQuestion(f, pi) {
     currentFracPlayer = pi;
     currentFracAttempts = 0;
     currentFracData = fracConvLabel(f);
-    
+
     const data = currentFracData;
     let html = '';
-    
+
     if (data.type === 'mixed') {
         html = `
             <div class="frac-q-row">
@@ -727,17 +731,17 @@ function showFracQuestion(f, pi) {
             <button class="btn-check-frac" onclick="submitFractionAnswer()">Check</button>
         `;
     }
-    
+
     popupEq.innerHTML = html;
     fracPopup.classList.add('show');
     numpad.classList.add('show');
-    
+
     const firstInput = popupEq.querySelector('.frac-input');
     if (firstInput) {
         firstInput.focus();
         activeInput = firstInput;
     }
-    
+
     if (vsCPU && pi === 1) {
         setTimeout(() => simulateCPUAnswer(data), 1500);
     }
@@ -766,26 +770,23 @@ function simulateCPUAnswer(data) {
 function submitFractionAnswer() {
     let isCorrect = false;
     const data = currentFracData;
-    
+
     const getVal = (id) => {
         const el = document.getElementById(id);
         return el && el.textContent.trim() !== '' ? parseInt(el.textContent.trim()) : 0;
     };
-    
+
     if (data.type === 'mixed') {
-        // Target is improper
         const tNum = data.improper.num;
         const tDen = data.improper.den;
         const uNum = getVal('ans-num');
         const uDen = getVal('ans-den');
         
-        // Evaluate equivalence: Cross multiplication ensures it's mathematically equivalent
         if (uDen !== 0 && (uNum * tDen === tNum * uDen)) {
             isCorrect = true;
         }
     } else if (data.type === 'improper') {
-        // Target is mixed
-        const tTotalNum = data.improper.num;
+        const tTotalNum = data.improper.num; 
         const tDen = data.improper.den;
         
         const uWhole = getVal('ans-w');
@@ -793,14 +794,13 @@ function submitFractionAnswer() {
         const uDen = getVal('ans-den');
         const uTotalNum = uWhole * uDen + uNum;
         
-        // Evaluate equivalence. Also enforce a proper fractional component (uNum < uDen)
         if (uDen !== 0 && uNum < uDen && (uTotalNum * tDen === tTotalNum * uDen)) {
             isCorrect = true;
         }
     } else {
         if (getVal('ans-w') === data.whole) isCorrect = true;
     }
-    
+
     if (isCorrect) {
         if (currentFracAttempts === 0) {
             showLuckyCard(currentFracPlayer);
@@ -811,10 +811,19 @@ function submitFractionAnswer() {
         }
     } else {
         currentFracAttempts++;
+        if (currentFracAttempts >= 5) {
+            fracPopup.classList.remove('show');
+            numpad.classList.remove('show');
+            addLog(`${players[currentFracPlayer].name} failed 5 times and was disqualified!`, 'error');
+            if (gameFeedback) gameFeedback.textContent = `${players[currentFracPlayer].name} disqualified!`;
+            triggerWin(1 - currentFracPlayer, "Opponent failed 5 fraction questions!");
+            return;
+        }
+        
         popupEq.classList.add('error-shake');
         setTimeout(() => popupEq.classList.remove('error-shake'), 400);
-        addLog('Incorrect fraction conversion. Try again!', 'error');
-        if (gameFeedback) gameFeedback.textContent = "Incorrect! Try again.";
+        addLog(`Incorrect! Attempt ${currentFracAttempts}/5. Try again.`, 'error');
+        if (gameFeedback) gameFeedback.textContent = `Incorrect! Attempt ${currentFracAttempts}/5. Try again.`;
     }
 }
 
@@ -843,11 +852,11 @@ document.addEventListener('focusin', e => {
 function showLuckyCard(pi) {
     fracPopup.classList.remove('show');
     numpad.classList.remove('show');
-    
+
     const card = LUCKY_CARDS[Math.floor(Math.random() * LUCKY_CARDS.length)];
     document.getElementById('lc-title').textContent = card.title;
     document.getElementById('lc-desc').textContent = card.desc;
-    
+
     luckyCardOverlay.classList.add('show');
     
     setTimeout(() => {
@@ -860,17 +869,42 @@ function applyCardMove(targetPi, amount) {
     let newPos = players[targetPi].pos + amount;
     if (newPos > 64) newPos = 64;
     if (newPos < 1) newPos = 1;
-    
+
     addLog(`Lucky Card Effect! ${players[targetPi].name} moves ${amount > 0 ? 'forward' : 'back'} ${Math.abs(amount)} squares!`, 'action');
-    
+
     animateCPUToken(targetPi, players[targetPi].pos, newPos, () => {
         players[targetPi].pos = newPos;
-        if (newPos === 64) {
-            triggerWin(targetPi);
+        
+        if (newPos in SNAKES) {
+            let tail = SNAKES[newPos];
+            addLog(`Lucky card put ${players[targetPi].name} on a snake!`, 'snake');
+            setTimeout(() => {
+                animateCPUToken(targetPi, newPos, tail, () => {
+                    players[targetPi].pos = tail;
+                    finalizeCardMove(targetPi, tail);
+                });
+            }, 600);
+        } else if (newPos in LADDERS) {
+            let top = LADDERS[newPos];
+            addLog(`Lucky card put ${players[targetPi].name} on a ladder!`, 'ladder');
+            setTimeout(() => {
+                animateCPUToken(targetPi, newPos, top, () => {
+                    players[targetPi].pos = top;
+                    finalizeCardMove(targetPi, top);
+                });
+            }, 600);
         } else {
-            endTurn();
+            finalizeCardMove(targetPi, newPos);
         }
     });
+}
+
+function finalizeCardMove(pi, sq) {
+    if (sq === 64) {
+        triggerWin(pi);
+    } else {
+        endTurn();
+    }
 }
 
 // =====================================================================
@@ -895,7 +929,7 @@ function injectDynamicUI() {
     } else {
         numpad = document.getElementById('snakes-numpad');
     }
-    
+
     if (!document.getElementById('lucky-card-overlay')) {
         luckyCardOverlay = document.createElement('div');
         luckyCardOverlay.id = 'lucky-card-overlay';
@@ -923,7 +957,7 @@ function setupNumpadDrag() {
         numpadDragState.startY = e.clientY - rect.top;
         e.preventDefault();
     });
-    
+
     window.addEventListener('pointermove', (e) => {
         if (!numpadDragState.isDragging) return;
         numpad.style.left = (e.clientX - numpadDragState.startX) + 'px';
@@ -931,11 +965,11 @@ function setupNumpadDrag() {
         numpad.style.right = 'auto';
         numpad.style.bottom = 'auto';
     });
-    
+
     window.addEventListener('pointerup', () => {
         numpadDragState.isDragging = false;
     });
-    
+
     numpad.addEventListener('pointerdown', e => {
         if (e.target.tagName === 'BUTTON') {
             e.preventDefault();
@@ -964,9 +998,9 @@ function setupDiceDrag() {
         lastTapTime = now;
         
         const rect = diceScene.getBoundingClientRect();
-        diceDragState = {
-            isDragging: true,
-            startX: e.clientX,
+        diceDragState = { 
+            isDragging: true, 
+            startX: e.clientX, 
             startY: e.clientY,
             origX: e.clientX,
             origY: e.clientY
@@ -999,13 +1033,13 @@ function setupDiceDrag() {
         if (!diceDragState.isDragging) return;
         diceScene.classList.remove('dragging');
         diceDragState.isDragging = false;
-        
+
         const dist = Math.hypot(e.clientX - diceDragState.origX, e.clientY - diceDragState.origY);
         if (dist > 15 && gameState === STATE.WAITING_ROLL) {
             executeRoll();
         }
     });
-    
+
     diceSetupDone = true;
 }
 
@@ -1023,7 +1057,7 @@ function setupEventListeners() {
             }
         }
     });
-    
+
     window.addEventListener('pointermove', e => {
         if (dragState.isDragging && gameActive) {
             const pt = getCanvasPoint(e);
@@ -1032,7 +1066,7 @@ function setupEventListeners() {
             drawBoard();
         }
     });
-    
+
     window.addEventListener('pointerup', e => {
         if (dragState.isDragging && gameActive) {
             const pi = dragState.pi;
@@ -1067,7 +1101,7 @@ function toggleFullscreen() {
     if (!gameWrapper) gameWrapper = document.getElementById('gameWrapper');
     if (!gameWrapper) return;
     
-    if (!document.fullscreenElement && !document.webkitFullscreenElement &&
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && 
         !document.mozFullScreenElement && !document.msFullscreenElement) {
         
         if (gameWrapper.requestFullscreen) {
@@ -1105,10 +1139,10 @@ function updateFullscreenClass() {
     if (!gameWrapper) gameWrapper = document.getElementById('gameWrapper');
     if (!gameWrapper) return;
     
-    const isFullscreen = document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement;
+    const isFullscreen = document.fullscreenElement || 
+                         document.webkitFullscreenElement || 
+                         document.mozFullScreenElement ||
+                         document.msFullscreenElement;
     
     if (isFullscreen) {
         gameWrapper.classList.add('fullscreen-mode');
@@ -1227,7 +1261,7 @@ function initColorDropdowns() {
 function resetGame() {
     players[0].name = "P1";
     players[1].name = vsCPU ? "CPU" : "P2";
-    
+
     players.forEach((p, i) => {
         p.pos = 1;
         const c = squareCenter(1);
@@ -1310,8 +1344,7 @@ function closeGameModal() {
 document.addEventListener('DOMContentLoaded', () => {
     const track = document.getElementById('ticker-track');
     if (track) {
-        const words = ['Snakes', 'Ladders', 'Fractions', 'Prep Portal', 'Drag Dice', 'Climb Up', 'Slide Down'];
-        [...words, ...words].forEach(t => {
+        const words =['Snakes', 'Ladders', 'Fractions', 'Prep Portal', 'Drag Dice', 'Climb Up', 'Slide Down'];[...words, ...words].forEach(t => {
             const s = document.createElement('span');
             s.className = 'ticker-item';
             s.textContent = t;
