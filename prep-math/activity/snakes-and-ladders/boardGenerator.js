@@ -5,7 +5,7 @@ function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function generateRandomBoard(difficulty = 'standard') {
+function generateRandomBoard(difficulty = 'standard') {
   let snakeCount, ladderCount;
   
   switch (difficulty) {
@@ -91,7 +91,7 @@ export function generateRandomBoard(difficulty = 'standard') {
   return { snakes, snakeColors, ladders, fractions };
 }
 
-// Attach to window so it can be called seamlessly without module bundling
+// Attach to window so it can be called seamlessly by game.js
 if (typeof window !== 'undefined') {
   window.generateRandomBoard = generateRandomBoard;
 }
