@@ -707,31 +707,32 @@ import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase
   }
   
   /* ── 11. SEND MESSAGE ── */
-  async function sendMessage(text) {
-    if (!isKeySet()) {
-      initializePrepBot(); // Try to reload key
-      return;
-    }
-    
-    text = text || input.value.trim();
-    if (!text || isBusy) return;
-    
-    lastUserMessage = text;
-    input.value = '';
-    isBusy = true;
-    sendBtn.classList.add('loading');
-    suggBox.innerHTML = '';
-    
-    await appendMessage('user', text);
-    showTyping();
-    
-    const ctx = getPageContext();
-    
-    let stepByStepContext = "";
-    if (ctx.solutions) stepByStepContext = `\n\nCOMPLETE STEP-BY-STEP SOLUTION:\n${ctx.solutions}\n\n`;
-    if (ctx.explanation) stepByStepContext += `DETAILED EXPLANATION:\n${ctx.explanation}\n\n`;
-    
-    const systemPrompt = `You are ${BOT_NAME}, an expert study assistant specializing in step-by-step teaching.
+  /* ── 11. SEND MESSAGE ── */
+async function sendMessage(text) {
+  if (!isKeySet()) {
+    initializePrepBot(); // Try to reload key
+    return;
+  }
+  
+  text = text || input.value.trim();
+  if (!text || isBusy) return;
+  
+  lastUserMessage = text;
+  input.value = '';
+  isBusy = true;
+  sendBtn.classList.add('loading');
+  suggBox.innerHTML = '';
+  
+  await appendMessage('user', text);
+  showTyping();
+  
+  const ctx = getPageContext();
+  
+  let stepByStepContext = "";
+  if (ctx.solutions) stepByStepContext = `\n\nCOMPLETE STEP-BY-STEP SOLUTION:\n${ctx.solutions}\n\n`;
+  if (ctx.explanation) stepByStepContext += `DETAILED EXPLANATION:\n${ctx.explanation}\n\n`;
+  
+  const systemPrompt = `You are ${BOT_NAME}, an expert study assistant specializing in step-by-step teaching.
 
 CONTEXT: ${ctx.content}
 ${stepByStepContext}
@@ -749,45 +750,112 @@ STRICT RULES:
 10. At the very end of EVERY response, on a new line, append exactly this format:
 [SUGGESTIONS: "short follow-up prompt 1", "short follow-up prompt 2"]
 The two suggestions must be short (2-5 words), relevant to what you just explained, and phrased as things the student would naturally ask next. Do not number them. Do not add anything after this line.`;
+  
+  try {
+    // Array of CORS proxies to try (in order of preference)
+    const corsProxies = [
+      'https://corsproxy.io/?',
+      'https://api.allorigins.win/raw?url=',
+      'https://cors-anywhere.herokuapp.com/'
+    ];
     
-    try {
-  // 🚨 FIX: Added corsproxy.io to bypass the browser's CORS block
-  const targetUrl = encodeURIComponent(GROQ_URL);
-  
-  const res = await fetch('https://corsproxy.io/?' + targetUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${GROQ_KEY}`
-    },
-    body: JSON.stringify({
-      model: "llama-3.1-8b-instant",
-      messages: [{ role: "system", content: systemPrompt }, ...history, { role: "user", content: text }],
-      temperature: 0.3,
-      max_tokens: 2000
-    })
-  });
-  
-  const data = await res.json();
-  hideTyping();
-  let reply = data.choices?.[0]?.message?.content || "Connection error. Please try again.";
-  
-  const { cleanReply, chips } = parseSuggestions(reply);
-  
-  lastBotReply = cleanReply;
-  history.push({ role: 'user', content: text }, { role: 'assistant', content: cleanReply });
-  if (history.length > 10) history = history.slice(-10);
-  await appendMessage('bot', cleanReply);
-  
-  renderSuggestionChips(chips);
-} catch (err) {
-  hideTyping();
-  await appendMessage('bot', "Connection error. Please check your internet connection.");
-  console.error("PrepBot API Error:", err);
-} 
+    let res = null;
+    let data = null;
+    let success = false;
+    
+    // Try each proxy until one works
+    for (const proxy of corsProxies) {
+      try {
+        console.log(`Trying proxy: ${proxy}`);
+        const targetUrl = encodeURIComponent(GROQ_URL);
+        res = await fetch(proxy + targetUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${GROQ_KEY}`
+          },
+          body: JSON.stringify({
+            model: "llama-3.1-8b-instant",
+            messages: [{ role: "system", content: systemPrompt }, ...history, { role: "user", content: text }],
+            temperature: 0.3,
+            max_tokens: 2000
+          })
+        });
+        
+        if (res.ok) {
+          data = await res.json();
+          success = true;
+          console.log(`Success with proxy: ${proxy}`);
+          break;
+        }
+      } catch (proxyErr) {
+        console.warn(`Proxy ${proxy} failed:`, proxyErr);
+        continue;
+      }
+    }
+    
+    // If all proxies fail, try direct connection as last resort
+    if (!success) {
+      console.log('All proxies failed, trying direct connection...');
+      res = await fetch(GROQ_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_KEY}`
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "system", content: systemPrompt }, ...history, { role: "user", content: text }],
+          temperature: 0.3,
+          max_tokens: 2000
+        })
+      });
+      data = await res.json();
+    }
+    
+    hideTyping();
+    
+    if (!data || !data.choices || !data.choices[0]) {
+      throw new Error('Invalid response from API');
+    }
+    
+    let reply = data.choices[0]?.message?.content || "Connection error. Please try again.";
+    
+    const { cleanReply, chips } = parseSuggestions(reply);
+    
+    lastBotReply = cleanReply;
+    history.push({ role: 'user', content: text }, { role: 'assistant', content: cleanReply });
+    if (history.length > 10) history = history.slice(-10);
+    await appendMessage('bot', cleanReply);
+    
+    renderSuggestionChips(chips);
+    
+  } catch (err) {
+    hideTyping();
+    console.error("PrepBot API Error:", err);
+    
+    // Show user-friendly error message
+    let errorMessage = "Connection error. ";
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+      errorMessage += "Unable to connect to AI service. This might be due to CORS restrictions. ";
+      errorMessage += "Try using a CORS unblocker extension or contact support.";
+    } else if (err.message.includes('401')) {
+      errorMessage += "Invalid API key. Please check your Groq API key in settings.";
+    } else if (err.message.includes('429')) {
+      errorMessage += "Rate limit exceeded. Please wait a moment and try again.";
+    } else {
+      errorMessage += "Please check your internet connection and try again.";
+    }
+    
+    await appendMessage('bot', errorMessage);
+    
+    // Add retry button suggestion
+    renderSuggestionChips(['Try Again', 'Check Connection']);
+  } finally {
     isBusy = false;
     sendBtn.classList.remove('loading');
   }
+}
   
   /* ── 12. AI-GENERATED SUGGESTION CHIPS ── */
   function parseSuggestions(raw) {
