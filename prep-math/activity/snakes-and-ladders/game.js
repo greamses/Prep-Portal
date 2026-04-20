@@ -1,7 +1,7 @@
 // game.js - Snakes N' Ladders Game Logic
 
 // =====================================================================
-// BOARD & DATA CONSTANTS (Now flexible via Generator)
+// BOARD & DATA CONSTANTS (Flexible via Generator)
 // =====================================================================
 const BOARD_SIZE = 1024;
 const CELL = BOARD_SIZE / 8;
@@ -17,7 +17,7 @@ let SNAKES = {};
 let SNAKE_COLORS = {};
 let LADDERS = {};
 
-const PLAYER_COLORS = [
+const PLAYER_COLORS =[
     { name: 'Blue', value: '#0055ff' },
     { name: 'Red', value: '#ff2200' },
     { name: 'Green', value: '#00a550' },
@@ -26,7 +26,7 @@ const PLAYER_COLORS = [
     { name: 'Pink', value: '#e84393' }
 ];
 
-const LUCKY_CARDS = [
+const LUCKY_CARDS =[
     { title: "Lucky Strike!", desc: "Move forward 2 spaces.", type: 'self', amount: 2, action: (pi) => applyCardMove(pi, 2) },
     { title: "Speed Boost", desc: "Move forward 4 spaces.", type: 'self', amount: 4, action: (pi) => applyCardMove(pi, 4) },
     { title: "Sabotage!", desc: "Opponent moves back 2 spaces.", type: 'opponent', amount: -2, action: (pi) => applyCardMove(1 - pi, -2) },
@@ -46,9 +46,9 @@ const STATE = {
     GAME_OVER: 6
 };
 
-const offsets = [{ dx: -22, dy: -18 }, { dx: 22, dy: 18 }];
+const offsets =[{ dx: -22, dy: -18 }, { dx: 22, dy: 18 }];
 
-const players = [
+const players =[
     { pos: 1, color: '#0055ff', name: 'P1', drawX: 0, drawY: 0 },
     { pos: 1, color: '#ff2200', name: 'P2', drawX: 0, drawY: 0 }
 ];
@@ -162,7 +162,7 @@ function drawStackedFrac(num, den, cx, cy, size) {
 }
 
 function drawCellFraction(f, cx, cy) {
-    if (f.d === 'W') return;
+    if (!f || f.d === 'W') return;
     const SIZE = 22;
     ctx.fillStyle = '#1a1a1a';
     
@@ -531,10 +531,10 @@ function animateCPUToken(pi, startSq, targetSq, callback) {
     let startY = start.y + offsets[pi].dy;
     let endX = end.x + offsets[pi].dx;
     let endY = end.y + offsets[pi].dy;
-    
+
     let startTime = null;
     const duration = 600;
-    
+
     function step(timestamp) {
         if (!startTime) startTime = timestamp;
         const progress = Math.min((timestamp - startTime) / duration, 1);
@@ -542,7 +542,7 @@ function animateCPUToken(pi, startSq, targetSq, callback) {
         p.drawX = startX + (endX - startX) * ease;
         p.drawY = startY + (endY - startY) * ease;
         drawBoard();
-        
+
         if (progress < 1) {
             requestAnimationFrame(step);
         } else {
@@ -631,10 +631,10 @@ function showFracQuestion(f, pi) {
     currentFracPlayer = pi;
     currentFracAttempts = 0;
     currentFracData = fracConvLabel(f);
-    
+
     const data = currentFracData;
     let html = '';
-    
+
     if (data.type === 'mixed') {
         html = `
             <div class="frac-q-row">
@@ -687,17 +687,17 @@ function showFracQuestion(f, pi) {
             <button class="btn-check-frac" onclick="submitFractionAnswer()">Check</button>
         `;
     }
-    
+
     popupEq.innerHTML = html;
     fracPopup.classList.add('show');
     numpad.classList.add('show');
-    
+
     const firstInput = popupEq.querySelector('.frac-input');
     if (firstInput) {
         firstInput.focus();
         activeInput = firstInput;
     }
-    
+
     if (vsCPU && pi === 1) {
         setTimeout(() => simulateCPUAnswer(data), 1500);
     }
@@ -740,7 +740,7 @@ function submitFractionAnswer() {
         const el = document.getElementById(id);
         return el && el.textContent.trim() !== '' ? parseInt(el.textContent.trim()) : 0;
     };
-    
+
     if (data.type === 'mixed') {
         originalIsReducible = (getGcd(data.improper.num, data.improper.den) > 1);
         const tNum = data.improper.num;
@@ -754,7 +754,7 @@ function submitFractionAnswer() {
         }
     } else if (data.type === 'improper') {
         originalIsReducible = (getGcd(data.improper.num, data.improper.den) > 1);
-        const tTotalNum = data.improper.num;
+        const tTotalNum = data.improper.num; 
         const tDen = data.improper.den;
         
         const uWhole = getVal('ans-w');
@@ -771,12 +771,12 @@ function submitFractionAnswer() {
             isCorrect = true;
         }
     }
-    
+
     if (isCorrect) {
         if (currentFracAttempts === 0) {
             if (originalIsReducible && answeredInLowestTerms) {
                 // Perfect hit + Lowest terms guarantee bonus card
-                showLuckyCard(currentFracPlayer, true);
+                showLuckyCard(currentFracPlayer, true); 
             } else if (originalIsReducible && !answeredInLowestTerms) {
                 // Correct, but missed the reduction bonus
                 addLog(`${players[currentFracPlayer].name} didn't reduce to lowest terms. No bonus card!`, 'info');
@@ -843,11 +843,11 @@ document.addEventListener('focusin', e => {
 function showLuckyCard(pi, isBonus = false) {
     fracPopup.classList.remove('show');
     numpad.classList.remove('show');
-    
+
     const card = LUCKY_CARDS[Math.floor(Math.random() * LUCKY_CARDS.length)];
     document.getElementById('lc-title').textContent = isBonus ? `Bonus: ${card.title}` : card.title;
     document.getElementById('lc-desc').textContent = card.desc;
-    
+
     luckyCardOverlay.classList.add('show');
     
     const btnUse = document.getElementById('btn-use-card');
@@ -869,10 +869,10 @@ function showLuckyCard(pi, isBonus = false) {
         addLog(`${players[pi].name} discarded the card.`, 'info');
         endTurn();
     };
-    
+
     newUse.addEventListener('click', handleUse);
     newDiscard.addEventListener('click', handleDiscard);
-    
+
     // CPU Artificial Intelligence
     if (vsCPU && pi === 1) {
         newUse.style.display = 'none';
@@ -891,7 +891,7 @@ function showLuckyCard(pi, isBonus = false) {
                 if (target < 1) target = 1;
                 if (LADDERS[target]) useIt = false; // Don't willingly put human on a ladder
             }
-            
+
             if (useIt) {
                 addLog(`CPU used the card!`, 'action');
                 handleUse();
@@ -910,9 +910,9 @@ function applyCardMove(targetPi, amount) {
     let newPos = players[targetPi].pos + amount;
     if (newPos > 64) newPos = 64;
     if (newPos < 1) newPos = 1;
-    
+
     addLog(`Lucky Card Effect! ${players[targetPi].name} moves ${amount > 0 ? 'forward' : 'back'} ${Math.abs(amount)} squares!`, 'action');
-    
+
     animateCPUToken(targetPi, players[targetPi].pos, newPos, () => {
         players[targetPi].pos = newPos;
         
@@ -970,7 +970,7 @@ function injectDynamicUI() {
     } else {
         numpad = document.getElementById('snakes-numpad');
     }
-    
+
     if (!document.getElementById('lucky-card-overlay')) {
         luckyCardOverlay = document.createElement('div');
         luckyCardOverlay.id = 'lucky-card-overlay';
@@ -990,7 +990,7 @@ function injectDynamicUI() {
     } else {
         luckyCardOverlay = document.getElementById('lucky-card-overlay');
         if (!document.getElementById('btn-use-card')) {
-            luckyCardOverlay.querySelector('.lc-box').innerHTML += `
+             luckyCardOverlay.querySelector('.lc-box').innerHTML += `
                 <div class="lc-actions" style="margin-top: 24px; display: flex; gap: 12px; justify-content: center;">
                     <button class="btn-check-frac" id="btn-use-card" style="margin-top: 0;">USE</button>
                     <button class="btn-secondary" id="btn-discard-card">DISCARD</button>
@@ -1010,7 +1010,7 @@ function setupNumpadDrag() {
         numpadDragState.startY = e.clientY - rect.top;
         e.preventDefault();
     });
-    
+
     window.addEventListener('pointermove', (e) => {
         if (!numpadDragState.isDragging) return;
         numpad.style.left = (e.clientX - numpadDragState.startX) + 'px';
@@ -1018,11 +1018,11 @@ function setupNumpadDrag() {
         numpad.style.right = 'auto';
         numpad.style.bottom = 'auto';
     });
-    
+
     window.addEventListener('pointerup', () => {
         numpadDragState.isDragging = false;
     });
-    
+
     numpad.addEventListener('pointerdown', e => {
         if (e.target.tagName === 'BUTTON') {
             e.preventDefault();
@@ -1051,9 +1051,9 @@ function setupDiceDrag() {
         lastTapTime = now;
         
         const rect = diceScene.getBoundingClientRect();
-        diceDragState = {
-            isDragging: true,
-            startX: e.clientX,
+        diceDragState = { 
+            isDragging: true, 
+            startX: e.clientX, 
             startY: e.clientY,
             origX: e.clientX,
             origY: e.clientY
@@ -1086,13 +1086,13 @@ function setupDiceDrag() {
         if (!diceDragState.isDragging) return;
         diceScene.classList.remove('dragging');
         diceDragState.isDragging = false;
-        
+
         const dist = Math.hypot(e.clientX - diceDragState.origX, e.clientY - diceDragState.origY);
         if (dist > 15 && gameState === STATE.WAITING_ROLL) {
             executeRoll();
         }
     });
-    
+
     diceSetupDone = true;
 }
 
@@ -1110,7 +1110,7 @@ function setupEventListeners() {
             }
         }
     });
-    
+
     window.addEventListener('pointermove', e => {
         if (dragState.isDragging && gameActive) {
             const pt = getCanvasPoint(e);
@@ -1119,7 +1119,7 @@ function setupEventListeners() {
             drawBoard();
         }
     });
-    
+
     window.addEventListener('pointerup', e => {
         if (dragState.isDragging && gameActive) {
             const pi = dragState.pi;
@@ -1154,7 +1154,7 @@ function toggleFullscreen() {
     if (!gameWrapper) gameWrapper = document.getElementById('gameWrapper');
     if (!gameWrapper) return;
     
-    if (!document.fullscreenElement && !document.webkitFullscreenElement &&
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && 
         !document.mozFullScreenElement && !document.msFullscreenElement) {
         
         if (gameWrapper.requestFullscreen) {
@@ -1192,10 +1192,10 @@ function updateFullscreenClass() {
     if (!gameWrapper) gameWrapper = document.getElementById('gameWrapper');
     if (!gameWrapper) return;
     
-    const isFullscreen = document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement;
+    const isFullscreen = document.fullscreenElement || 
+                         document.webkitFullscreenElement || 
+                         document.mozFullScreenElement ||
+                         document.msFullscreenElement;
     
     if (isFullscreen) {
         gameWrapper.classList.add('fullscreen-mode');
@@ -1317,7 +1317,7 @@ function initColorDropdowns() {
 function resetGame() {
     players[0].name = "P1";
     players[1].name = vsCPU ? "CPU" : "P2";
-    
+
     players.forEach((p, i) => {
         p.pos = 1;
         const c = squareCenter(1);
@@ -1332,15 +1332,17 @@ function resetGame() {
         const selected = diffDropdown.querySelector('.selected');
         if (selected) diffVal = selected.dataset.value;
     }
-    
+
     if (typeof window.generateRandomBoard === 'function') {
         const boardData = window.generateRandomBoard(diffVal);
         SNAKES = boardData.snakes;
         SNAKE_COLORS = boardData.snakeColors;
         LADDERS = boardData.ladders;
         FRAC = boardData.fractions;
+    } else {
+        console.warn("boardGenerator not found. Make sure boardGenerator.js is loaded without the export keyword!");
     }
-    
+
     turn = 0;
     logOverlay.innerHTML = '';
     logOverlay.classList.remove('active');
@@ -1416,8 +1418,7 @@ function closeGameModal() {
 document.addEventListener('DOMContentLoaded', () => {
     const track = document.getElementById('ticker-track');
     if (track) {
-        const words = ['Snakes', 'Ladders', 'Fractions', 'Prep Portal', 'Drag Dice', 'Climb Up', 'Slide Down'];
-        [...words, ...words].forEach(t => {
+        const words =['Snakes', 'Ladders', 'Fractions', 'Prep Portal', 'Drag Dice', 'Climb Up', 'Slide Down'];[...words, ...words].forEach(t => {
             const s = document.createElement('span');
             s.className = 'ticker-item';
             s.textContent = t;
