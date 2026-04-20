@@ -9,7 +9,7 @@ const CELL = BOARD_SIZE / 8;
 let canvas, ctx;
 let gameModal, gameFeedback, turnHud, dtHint, fracPopup, popupEq, winOverlay, winName, cube, logOverlay, modalTurn;
 let gameWrapper, diceScene, fullscreenBtn, fullscreenBtnEnter;
-let numpad, luckyCardOverlay;
+let numpad, luckyCardOverlay, bonusCardOverlay;
 
 // These defaults will be overwritten by `boardGenerator.js` on Game Start
 let FRAC = {};
@@ -26,11 +26,23 @@ const PLAYER_COLORS =[
     { name: 'Pink', value: '#e84393' }
 ];
 
-const LUCKY_CARDS =[
-    { title: "Lucky Strike!", desc: "Move forward 2 spaces.", type: 'self', amount: 2, action: (pi) => applyCardMove(pi, 2) },
-    { title: "Speed Boost", desc: "Move forward 4 spaces.", type: 'self', amount: 4, action: (pi) => applyCardMove(pi, 4) },
-    { title: "Sabotage!", desc: "Opponent moves back 2 spaces.", type: 'opponent', amount: -2, action: (pi) => applyCardMove(1 - pi, -2) },
+// STANDARD cards from normal conversion
+const STANDARD_CARDS =[
+    { title: "Lucky Strike", desc: "Move forward 2 spaces.", type: 'self', amount: 2, action: (pi) => applyCardMove(pi, 2) },
+    { title: "Minor Boost", desc: "Move forward 3 spaces.", type: 'self', amount: 3, action: (pi) => applyCardMove(pi, 3) },
+    { title: "Sabotage", desc: "Opponent moves back 2 spaces.", type: 'opponent', amount: -2, action: (pi) => applyCardMove(1 - pi, -2) },
     { title: "Tripwire", desc: "Opponent moves back 3 spaces.", type: 'opponent', amount: -3, action: (pi) => applyCardMove(1 - pi, -3) }
+];
+
+// BONUS Pool for reducing to lowest terms
+const BONUS_HUGE_WINS =[
+    { title: "MEGA BOOST!", desc: "Move forward 8 spaces.", type: 'self', amount: 8, action: (pi) => applyCardMove(pi, 8) },
+    { title: "SUPER LEAP!", desc: "Move forward 6 spaces.", type: 'self', amount: 6, action: (pi) => applyCardMove(pi, 6) }
+];
+const BONUS_SMALL_WINS =[
+    { title: "Tiny Step", desc: "Move forward 1 space.", type: 'self', amount: 1, action: (pi) => applyCardMove(pi, 1) },
+    { title: "Small Jump", desc: "Move forward 2 spaces.", type: 'self', amount: 2, action: (pi) => applyCardMove(pi, 2) },
+    { title: "Minor Snag", desc: "Opponent moves back 1.", type: 'opponent', amount: -1, action: (pi) => applyCardMove(1 - pi, -1) }
 ];
 
 // =====================================================================
@@ -54,6 +66,7 @@ const players =[
 ];
 
 let vsCPU = false;
+let cpuIntel = 'advanced'; // 'basic' or 'advanced'
 let autoMove = false;
 let turn = 0;
 let gameState = STATE.WAITING_ROLL;
@@ -71,6 +84,7 @@ let diceSetupDone = false;
 let currentFracPlayer = 0;
 let currentFracAttempts = 0;
 let currentFracData = null;
+let isProcessingAnswer = false;
 
 // =====================================================================
 // COORDINATE HELPERS
@@ -628,6 +642,7 @@ function triggerWin(pi, reason = null) {
 // =====================================================================
 function showFracQuestion(f, pi) {
     gameState = STATE.WAITING_FRAC_ANSWER;
+    isProcessingAnswer = false;
     currentFracPlayer = pi;
     currentFracAttempts = 0;
     currentFracData = fracConvLabel(f);
@@ -646,9 +661,9 @@ function showFracQuestion(f, pi) {
                 </div>
                 <span class="frac-eq">=</span>
                 <div class="frac-col">
-                    <div class="frac-input" id="ans-num" contenteditable="true" inputmode="none"></div>
+                    <div class="frac-input" id="ans-num"></div>
                     <div class="frac-line"></div>
-                    <div class="frac-input" id="ans-den" contenteditable="true" inputmode="none"></div>
+                    <div class="frac-input" id="ans-den"></div>
                 </div>
             </div>
             <button class="btn-check-frac" onclick="submitFractionAnswer()">Check</button>
@@ -663,11 +678,11 @@ function showFracQuestion(f, pi) {
                 </div>
                 <span class="frac-eq">=</span>
                 <div class="frac-q-row">
-                    <div class="frac-input ans-whole" id="ans-w" contenteditable="true" inputmode="none"></div>
+                    <div class="frac-input ans-whole" id="ans-w"></div>
                     <div class="frac-col">
-                        <div class="frac-input" id="ans-num" contenteditable="true" inputmode="none"></div>
+                        <div class="frac-input" id="ans-num"></div>
                         <div class="frac-line"></div>
-                        <div class="frac-input" id="ans-den" contenteditable="true" inputmode="none"></div>
+                        <div class="frac-input" id="ans-den"></div>
                     </div>
                 </div>
             </div>
@@ -682,7 +697,7 @@ function showFracQuestion(f, pi) {
                     <span class="frac-lg">${data.den}</span>
                 </div>
                 <span class="frac-eq">=</span>
-                <div class="frac-input ans-whole" id="ans-w" contenteditable="true" inputmode="none"></div>
+                <div class="frac-input ans-whole" id="ans-w"></div>
             </div>
             <button class="btn-check-frac" onclick="submitFractionAnswer()">Check</button>
         `;
@@ -692,9 +707,11 @@ function showFracQuestion(f, pi) {
     fracPopup.classList.add('show');
     numpad.classList.add('show');
 
+    // Remove active states and set focus specifically via class to avoid inputmode issues
+    document.querySelectorAll('.frac-input').forEach(i => i.classList.remove('active-focus'));
     const firstInput = popupEq.querySelector('.frac-input');
     if (firstInput) {
-        firstInput.focus();
+        firstInput.classList.add('active-focus');
         activeInput = firstInput;
     }
 
@@ -710,7 +727,6 @@ function simulateCPUAnswer(data) {
     };
     
     if (data.type === 'mixed') {
-        // CPU automatically gives the answer in lowest terms if possible to earn bonus!
         let tNum = data.improper.num;
         let tDen = data.improper.den;
         let g = getGcd(tNum, tDen);
@@ -731,6 +747,9 @@ function simulateCPUAnswer(data) {
 }
 
 function submitFractionAnswer() {
+    if (isProcessingAnswer) return; 
+    isProcessingAnswer = true;
+    
     let isCorrect = false;
     let originalIsReducible = false;
     let answeredInLowestTerms = false;
@@ -776,24 +795,15 @@ function submitFractionAnswer() {
         if (currentFracAttempts === 0) {
             if (originalIsReducible && answeredInLowestTerms) {
                 // Perfect hit + Lowest terms guarantee bonus card
-                showLuckyCard(currentFracPlayer, true); 
+                showBonusFlipCards(currentFracPlayer); 
             } else if (originalIsReducible && !answeredInLowestTerms) {
                 // Correct, but missed the reduction bonus
-                addLog(`${players[currentFracPlayer].name} didn't reduce to lowest terms. No bonus card!`, 'info');
+                addLog(`${players[currentFracPlayer].name} didn't reduce to lowest terms. No bonus wish cards!`, 'info');
                 if (gameFeedback) gameFeedback.textContent = "Correct! But not lowest terms, so no bonus.";
-                fracPopup.classList.remove('show');
-                numpad.classList.remove('show');
-                endTurn();
+                showStandardCard(currentFracPlayer);
             } else {
-                // Give standard Lucky Card 25% of the time randomly on normal fractions
-                if (Math.random() < 0.25) {
-                    showLuckyCard(currentFracPlayer, false);
-                } else {
-                    addLog(`${players[currentFracPlayer].name} answered correctly!`, 'info');
-                    fracPopup.classList.remove('show');
-                    numpad.classList.remove('show');
-                    endTurn();
-                }
+                // Normal fraction conversion standard card
+                showStandardCard(currentFracPlayer);
             }
         } else {
             fracPopup.classList.remove('show');
@@ -812,11 +822,54 @@ function submitFractionAnswer() {
         }
         
         popupEq.classList.add('error-shake');
-        setTimeout(() => popupEq.classList.remove('error-shake'), 400);
+        setTimeout(() => {
+            popupEq.classList.remove('error-shake');
+            isProcessingAnswer = false; 
+        }, 400);
         addLog(`Incorrect! Attempt ${currentFracAttempts}/5. Try again.`, 'error');
         if (gameFeedback) gameFeedback.textContent = `Incorrect! Attempt ${currentFracAttempts}/5. Try again.`;
     }
 }
+
+// =====================================================================
+// INPUT MANAGEMENT (CUSTOM FOCUS AND KEYBOARD)
+// =====================================================================
+document.addEventListener('pointerdown', e => {
+    if (e.target.classList.contains('frac-input')) {
+        document.querySelectorAll('.frac-input').forEach(i => i.classList.remove('active-focus'));
+        e.target.classList.add('active-focus');
+        activeInput = e.target;
+    }
+});
+
+window.addEventListener('keydown', e => {
+    if (!fracPopup || !fracPopup.classList.contains('show')) return;
+    if (!activeInput) return;
+    
+    if (e.key >= '0' && e.key <= '9') {
+        e.preventDefault();
+        onNumpadClick(e.key);
+    } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        activeInput.textContent = activeInput.textContent.slice(0, -1);
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        submitFractionAnswer();
+    } else if (e.key.toLowerCase() === 'c' || e.key === 'Escape') {
+        e.preventDefault();
+        onNumpadClick('C');
+    } else if (e.key === 'Tab') {
+        e.preventDefault();
+        const inputs = Array.from(popupEq.querySelectorAll('.frac-input'));
+        const idx = inputs.indexOf(activeInput);
+        if (idx >= 0) {
+            let nextIdx = e.shiftKey ? (idx - 1 + inputs.length) % inputs.length : (idx + 1) % inputs.length;
+            inputs.forEach(i => i.classList.remove('active-focus'));
+            activeInput = inputs[nextIdx];
+            activeInput.classList.add('active-focus');
+        }
+    }
+});
 
 function onNumpadClick(key) {
     if (!activeInput) return;
@@ -831,21 +884,57 @@ function onNumpadClick(key) {
     }
 }
 
-document.addEventListener('focusin', e => {
-    if (e.target.classList.contains('frac-input')) {
-        activeInput = e.target;
+// =====================================================================
+// CARD LOGIC: EVALUATION TACTICS (Used by AI)
+// =====================================================================
+function evaluateCardTactics(card, pi, level) {
+    if (level === 'basic') {
+        return true; 
     }
-});
+    
+    // Advanced Board Analysis
+    let score = 0;
+    if (card.type === 'self') {
+        let target = players[pi].pos + card.amount;
+        if (target > 64) target = 64;
+        score += card.amount * 2; 
+        
+        if (SNAKES[target]) {
+            let tail = SNAKES[target];
+            score -= (target - tail) * 2; 
+        }
+        if (LADDERS[target]) {
+            let top = LADDERS[target];
+            score += (top - target) * 2; 
+        }
+    } else if (card.type === 'opponent') {
+        let oppi = 1 - pi;
+        let target = players[oppi].pos + card.amount;
+        if (target < 1) target = 1;
+        score += Math.abs(card.amount) * 2; 
+        
+        if (LADDERS[target]) {
+            let top = LADDERS[target];
+            score -= (top - target) * 3; 
+        }
+        if (SNAKES[target]) {
+            let tail = SNAKES[target];
+            score += (target - tail) * 2; 
+        }
+    }
+    return score >= 0;
+}
 
 // =====================================================================
-// LUCKY CARDS LOGIC (With CPU Evaluation)
+// STANDARD CARDS (From normal fraction conversion)
 // =====================================================================
-function showLuckyCard(pi, isBonus = false) {
+function showStandardCard(pi) {
+    let actionTaken = false; 
     fracPopup.classList.remove('show');
     numpad.classList.remove('show');
 
-    const card = LUCKY_CARDS[Math.floor(Math.random() * LUCKY_CARDS.length)];
-    document.getElementById('lc-title').textContent = isBonus ? `Bonus: ${card.title}` : card.title;
+    const card = STANDARD_CARDS[Math.floor(Math.random() * STANDARD_CARDS.length)];
+    document.getElementById('lc-title').textContent = card.title;
     document.getElementById('lc-desc').textContent = card.desc;
 
     luckyCardOverlay.classList.add('show');
@@ -853,18 +942,21 @@ function showLuckyCard(pi, isBonus = false) {
     const btnUse = document.getElementById('btn-use-card');
     const btnDiscard = document.getElementById('btn-discard-card');
     
-    // Clear old event listeners seamlessly
     const newUse = btnUse.cloneNode(true);
     const newDiscard = btnDiscard.cloneNode(true);
     btnUse.parentNode.replaceChild(newUse, btnUse);
     btnDiscard.parentNode.replaceChild(newDiscard, btnDiscard);
     
     const handleUse = () => {
+        if (actionTaken) return;
+        actionTaken = true;
         luckyCardOverlay.classList.remove('show');
         card.action(pi);
     };
     
     const handleDiscard = () => {
+        if (actionTaken) return;
+        actionTaken = true;
         luckyCardOverlay.classList.remove('show');
         addLog(`${players[pi].name} discarded the card.`, 'info');
         endTurn();
@@ -873,52 +965,168 @@ function showLuckyCard(pi, isBonus = false) {
     newUse.addEventListener('click', handleUse);
     newDiscard.addEventListener('click', handleDiscard);
 
-    // CPU Artificial Intelligence
     if (vsCPU && pi === 1) {
         newUse.style.display = 'none';
         newDiscard.style.display = 'none';
         
         setTimeout(() => {
-            let useIt = true;
-            
-            // Strategic Check
-            if (card.type === 'self') {
-                let target = players[1].pos + card.amount;
-                if (target > 64) target = 64;
-                if (SNAKES[target]) useIt = false; // Don't willingly step on a snake
-            } else if (card.type === 'opponent') {
-                let target = players[0].pos + card.amount;
-                if (target < 1) target = 1;
-                if (LADDERS[target]) useIt = false; // Don't willingly put human on a ladder
-            }
-
+            let useIt = evaluateCardTactics(card, pi, cpuIntel);
             if (useIt) {
-                addLog(`CPU used the card!`, 'action');
+                addLog(`CPU analyzed board. Card used.`, 'action');
                 handleUse();
             } else {
-                addLog(`CPU strategically discarded the card to avoid bad placement.`, 'info');
+                addLog(`CPU evaluated penalty! Card discarded.`, 'info');
                 handleDiscard();
             }
-        }, 2200);
+        }, 2500);
     } else {
         newUse.style.display = 'block';
         newDiscard.style.display = 'block';
     }
 }
 
+// =====================================================================
+// BONUS WISH CARDS (From reducing to lowest terms)
+// =====================================================================
+function showBonusFlipCards(pi) {
+    fracPopup.classList.remove('show');
+    numpad.classList.remove('show');
+    
+    // Select 1 huge win, 2 small wins
+    let huge = BONUS_HUGE_WINS[Math.floor(Math.random() * BONUS_HUGE_WINS.length)];
+    let small1 = BONUS_SMALL_WINS[Math.floor(Math.random() * BONUS_SMALL_WINS.length)];
+    let small2 = BONUS_SMALL_WINS[Math.floor(Math.random() * BONUS_SMALL_WINS.length)];
+    
+    let pool =[huge, small1, small2];
+    for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+       [pool[i], pool[j]] =[pool[j], pool[i]];
+    }
+    
+    const container = document.getElementById('bc-cards-container');
+    container.innerHTML = '';
+    
+    let hasPicked = false;
+    let chosenCardObj = null;
+    
+    pool.forEach((card, index) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'bc-card';
+        cardEl.dataset.index = index;
+        cardEl.innerHTML = `
+            <div class="bc-card-inner">
+                <div class="bc-face bc-front">✨</div>
+                <div class="bc-face bc-back">
+                    <strong class="bc-card-title">${card.title}</strong>
+                    <span class="bc-card-desc">${card.desc}</span>
+                </div>
+            </div>
+        `;
+        
+        cardEl.addEventListener('click', () => {
+            if (hasPicked || (vsCPU && pi === 1)) return;
+            hasPicked = true;
+            chosenCardObj = card;
+            
+            cardEl.classList.add('flipped');
+            showBonusActions(pi, cardEl, pool, index, card);
+        });
+        
+        container.appendChild(cardEl);
+    });
+
+    document.getElementById('bc-actions').style.display = 'none';
+    bonusCardOverlay.classList.add('show');
+    addLog(`${players[pi].name} earned Bonus Wish Cards! Pick one to reveal.`, 'info');
+
+    if (vsCPU && pi === 1) {
+        setTimeout(() => {
+            const cpuChoiceIdx = Math.floor(Math.random() * 3);
+            const cpuCardEl = container.children[cpuChoiceIdx];
+            hasPicked = true;
+            chosenCardObj = pool[cpuChoiceIdx];
+            
+            cpuCardEl.classList.add('flipped');
+            
+            setTimeout(() => {
+                let useIt = evaluateCardTactics(chosenCardObj, pi, cpuIntel);
+                
+                // Reveal missed cards immediately
+                Array.from(container.children).forEach((el, i) => {
+                    if (i !== cpuChoiceIdx) el.classList.add('flipped');
+                });
+                
+                setTimeout(() => {
+                    bonusCardOverlay.classList.remove('show');
+                    if (useIt) {
+                        addLog(`CPU used the revealed bonus card!`, 'action');
+                        chosenCardObj.action(pi);
+                    } else {
+                        addLog(`CPU discarded the revealed bonus to avoid penalties.`, 'info');
+                        endTurn();
+                    }
+                }, 2500);
+
+            }, 1500);
+            
+        }, 1200);
+    }
+}
+
+function showBonusActions(pi, flippedEl, pool, chosenIndex, chosenCardObj) {
+    const actionContainer = document.getElementById('bc-actions');
+    const btnUse = document.getElementById('btn-use-bonus');
+    const btnDiscard = document.getElementById('btn-discard-bonus');
+    
+    const newUse = btnUse.cloneNode(true);
+    const newDiscard = btnDiscard.cloneNode(true);
+    btnUse.parentNode.replaceChild(newUse, btnUse);
+    btnDiscard.parentNode.replaceChild(newDiscard, btnDiscard);
+    
+    actionContainer.style.display = 'flex';
+    
+    let resolved = false;
+
+    const executeResolution = (used) => {
+        if (resolved) return;
+        resolved = true;
+        actionContainer.style.display = 'none';
+        
+        // Reveal what they missed
+        const container = document.getElementById('bc-cards-container');
+        Array.from(container.children).forEach((el, i) => {
+            if (i !== chosenIndex) el.classList.add('flipped');
+        });
+        
+        setTimeout(() => {
+            bonusCardOverlay.classList.remove('show');
+            if (used) {
+                chosenCardObj.action(pi);
+            } else {
+                addLog(`${players[pi].name} discarded the bonus card.`, 'info');
+                endTurn();
+            }
+        }, 2500);
+    };
+
+    newUse.addEventListener('click', () => executeResolution(true));
+    newDiscard.addEventListener('click', () => executeResolution(false));
+}
+
+
 function applyCardMove(targetPi, amount) {
     let newPos = players[targetPi].pos + amount;
     if (newPos > 64) newPos = 64;
     if (newPos < 1) newPos = 1;
 
-    addLog(`Lucky Card Effect! ${players[targetPi].name} moves ${amount > 0 ? 'forward' : 'back'} ${Math.abs(amount)} squares!`, 'action');
+    addLog(`Card Effect! ${players[targetPi].name} moves ${amount > 0 ? 'forward' : 'back'} ${Math.abs(amount)} squares!`, 'action');
 
     animateCPUToken(targetPi, players[targetPi].pos, newPos, () => {
         players[targetPi].pos = newPos;
         
         if (newPos in SNAKES) {
             let tail = SNAKES[newPos];
-            addLog(`Lucky card put ${players[targetPi].name} on a snake!`, 'snake');
+            addLog(`Card put ${players[targetPi].name} on a snake!`, 'snake');
             setTimeout(() => {
                 animateCPUToken(targetPi, newPos, tail, () => {
                     players[targetPi].pos = tail;
@@ -927,7 +1135,7 @@ function applyCardMove(targetPi, amount) {
             }, 600);
         } else if (newPos in LADDERS) {
             let top = LADDERS[newPos];
-            addLog(`Lucky card put ${players[targetPi].name} on a ladder!`, 'ladder');
+            addLog(`Card put ${players[targetPi].name} on a ladder!`, 'ladder');
             setTimeout(() => {
                 animateCPUToken(targetPi, newPos, top, () => {
                     players[targetPi].pos = top;
@@ -977,7 +1185,7 @@ function injectDynamicUI() {
         luckyCardOverlay.className = 'snakes-lucky-overlay';
         luckyCardOverlay.innerHTML = `
             <div class="lc-box">
-                <div class="lc-icon">✨</div>
+                <div class="lc-icon">🎟️</div>
                 <h3 id="lc-title">Lucky Strike!</h3>
                 <p id="lc-desc">Move forward 2 spaces.</p>
                 <div class="lc-actions" style="margin-top: 24px; display: flex; gap: 12px; justify-content: center;">
@@ -989,14 +1197,28 @@ function injectDynamicUI() {
         document.body.appendChild(luckyCardOverlay);
     } else {
         luckyCardOverlay = document.getElementById('lucky-card-overlay');
-        if (!document.getElementById('btn-use-card')) {
-             luckyCardOverlay.querySelector('.lc-box').innerHTML += `
-                <div class="lc-actions" style="margin-top: 24px; display: flex; gap: 12px; justify-content: center;">
-                    <button class="btn-check-frac" id="btn-use-card" style="margin-top: 0;">USE</button>
-                    <button class="btn-secondary" id="btn-discard-card">DISCARD</button>
+    }
+
+    if (!document.getElementById('bonus-card-overlay')) {
+        bonusCardOverlay = document.createElement('div');
+        bonusCardOverlay.id = 'bonus-card-overlay';
+        bonusCardOverlay.className = 'snakes-lucky-overlay';
+        bonusCardOverlay.innerHTML = `
+            <div class="lc-box" style="max-width: 400px;">
+                <h3 style="color: #ff2200;">BONUS EARNED!</h3>
+                <p style="font-size: 13px;">You reduced to lowest terms! Pick 1 Wish Card.</p>
+                <div class="bc-cards" id="bc-cards-container">
+                    <!-- Cards injected via JS -->
                 </div>
-             `;
-        }
+                <div class="lc-actions" id="bc-actions" style="margin-top: 16px; display: none; gap: 12px; justify-content: center;">
+                    <button class="btn-check-frac" id="btn-use-bonus" style="margin-top: 0;">USE REVEALED</button>
+                    <button class="btn-secondary" id="btn-discard-bonus">DISCARD</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(bonusCardOverlay);
+    } else {
+        bonusCardOverlay = document.getElementById('bonus-card-overlay');
     }
 }
 
@@ -1239,6 +1461,9 @@ document.addEventListener('click', (e) => {
     
     if (dd.id === 'dd-opponent') {
         vsCPU = (value === 'cpu');
+        headerSpan.textContent = item.textContent.trim();
+    } else if (dd.id === 'dd-cpu-intel') {
+        cpuIntel = value;
         headerSpan.textContent = item.textContent.trim();
     } else if (dd.id === 'dd-movement') {
         autoMove = (value === 'auto');
