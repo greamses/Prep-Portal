@@ -82,7 +82,7 @@ const SNAKES = { 54: 34, 44: 6, 62: 19, 48: 16 };
 const SNAKE_COLORS = { 54: '#c0392b', 44: '#27ae60', 62: '#8e44ad', 48: '#d35400' };
 const LADDERS = { 5: 26, 13: 34, 27: 46, 42: 63 };
 
-const PLAYER_COLORS =[
+const PLAYER_COLORS = [
     { name: 'Blue', value: '#0055ff' },
     { name: 'Red', value: '#ff2200' },
     { name: 'Green', value: '#00a550' },
@@ -91,11 +91,21 @@ const PLAYER_COLORS =[
     { name: 'Pink', value: '#e84393' }
 ];
 
-const LUCKY_CARDS =[
+// Regular lucky cards (drawn when answering fraction correctly on first attempt)
+const LUCKY_CARDS = [
     { title: "Lucky Strike!", desc: "Move forward 2 spaces.", action: (pi) => applyCardMove(pi, 2) },
     { title: "Speed Boost", desc: "Move forward 4 spaces.", action: (pi) => applyCardMove(pi, 4) },
     { title: "Sabotage!", desc: "Opponent moves back 2 spaces.", action: (pi) => applyCardMove(1 - pi, -2) },
     { title: "Tripwire", desc: "Opponent moves back 3 spaces.", action: (pi) => applyCardMove(1 - pi, -3) }
+];
+
+// Bonus cards (drawn when reducing fraction to lowest terms)
+const BONUS_CARDS = [
+    { title: "Reduction Genius!", desc: "Move forward 3 spaces AND opponent moves back 1.", action: (pi) => { applyCardMove(pi, 3);
+            setTimeout(() => applyCardMove(1 - pi, -1), 300); } },
+    { title: "Lowest Terms Master", desc: "Move forward 6 spaces.", action: (pi) => applyCardMove(pi, 6) },
+    { title: "Simplify & Soar", desc: "Climb the nearest ladder ahead.", action: (pi) => applyClosestLadder(pi) },
+    { title: "Fraction Fury", desc: "Opponent slides down the nearest snake.", action: (pi) => applyNearestSnake(1 - pi) }
 ];
 
 // =====================================================================
@@ -108,14 +118,15 @@ const STATE = {
     WAITING_DRAG_SNAKELADDER: 3,
     WAITING_FRAC_ANSWER: 4,
     CPU_THINKING: 5,
-    GAME_OVER: 6
+    GAME_OVER: 6,
+    WAITING_CARD_CHOICE: 7 // New state for card choice
 };
 
-const offsets =[{ dx: -22, dy: -18 }, { dx: 22, dy: 18 }];
+const offsets = [{ dx: -22, dy: -18 }, { dx: 22, dy: 18 }];
 
-const players =[
-    { pos: 1, color: '#0055ff', name: 'P1', drawX: 0, drawY: 0 },
-    { pos: 1, color: '#ff2200', name: 'P2', drawX: 0, drawY: 0 }
+const players = [
+    { pos: 1, color: '#0055ff', name: 'P1', drawX: 0, drawY: 0, autoMove: false }, // Added autoMove flag
+    { pos: 1, color: '#ff2200', name: 'P2', drawX: 0, drawY: 0, autoMove: false }
 ];
 
 let vsCPU = false;
@@ -135,6 +146,8 @@ let diceSetupDone = false;
 let currentFracPlayer = 0;
 let currentFracAttempts = 0;
 let currentFracData = null;
+let pendingCard = null; // Store card before player choice
+let pendingCardPlayer = null;
 
 // =====================================================================
 // COORDINATE HELPERS
@@ -184,17 +197,35 @@ function getSquareFromPoint(x, y) {
 // =====================================================================
 // FRACTION HELPERS
 // =====================================================================
+function gcd(a, b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+    while (b !== 0) {
+        let t = b;
+        b = a % b;
+        a = t;
+    }
+    return a;
+}
+
+function reduceFraction(num, den) {
+    const divisor = gcd(num, den);
+    return { num: num / divisor, den: den / divisor };
+}
+
 function fracConvLabel(f) {
     if (f.d === 'M') {
         const top = f.w * f.dn + f.n;
-        return { type: 'mixed', whole: f.w, num: f.n, den: f.dn, improper: { num: top, den: f.dn } };
+        const reduced = reduceFraction(top, f.dn);
+        return { type: 'mixed', whole: f.w, num: f.n, den: f.dn, improper: { num: top, den: f.dn }, reduced };
     }
     const w = Math.floor(f.n / f.dn);
     const r = f.n % f.dn;
+    const reduced = reduceFraction(f.n, f.dn);
     if (r === 0) {
-        return { type: 'whole', whole: w, num: f.n, den: f.dn };
+        return { type: 'whole', whole: w, num: f.n, den: f.dn, reduced };
     }
-    return { type: 'improper', whole: w, num: r, den: f.dn, improper: { num: f.n, den: f.dn } };
+    return { type: 'improper', whole: w, num: r, den: f.dn, improper: { num: f.n, den: f.dn }, reduced };
 }
 
 function drawStackedFrac(num, den, cx, cy, size) {
@@ -286,7 +317,7 @@ function drawBoard() {
         }
     }
     
-    for (const[bot, top] of Object.entries(LADDERS)) drawLadder(parseInt(bot), parseInt(top));
+    for (const [bot, top] of Object.entries(LADDERS)) drawLadder(parseInt(bot), parseInt(top));
     for (const [head, tail] of Object.entries(SNAKES)) drawSnake(parseInt(head), parseInt(tail));
     drawPlayers();
 }
@@ -504,6 +535,12 @@ function startTurn() {
         addLog(`${players[1].name} is thinking...`, 'info');
         if (gameFeedback) gameFeedback.textContent = `${players[1].name} is taking their turn...`;
         setTimeout(executeRoll, 1200);
+    } else if (players[turn].autoMove) {
+        // Auto-move mode for human player: CPU moves the token but player still rolls
+        gameState = STATE.CPU_THINKING;
+        addLog(`${players[turn].name} has auto-move enabled. Rolling dice...`, 'info');
+        if (gameFeedback) gameFeedback.textContent = `${players[turn].name} rolls automatically...`;
+        setTimeout(executeRoll, 800);
     } else {
         gameState = STATE.WAITING_ROLL;
         addLog(`${players[turn].name}'s turn. Drag dice or double-tap to roll.`, 'info');
@@ -545,11 +582,11 @@ function executeRoll() {
             return;
         }
         
-        if (vsCPU && turn === 1) {
-            addLog(`${players[1].name} rolled a ${currentRoll}!`, 'action');
-            animateCPUToken(1, players[1].pos, target, () => {
-                players[1].pos = target;
-                checkSquareLogic(1, target);
+        if ((vsCPU && turn === 1) || players[turn].autoMove) {
+            addLog(`${players[turn].name} rolled a ${currentRoll}!`, 'action');
+            animateToken(turn, players[turn].pos, target, () => {
+                players[turn].pos = target;
+                checkSquareLogic(turn, target);
             });
         } else {
             expectedSquare = target;
@@ -567,7 +604,7 @@ function snapToken(pi, targetSq) {
     drawBoard();
 }
 
-function animateCPUToken(pi, startSq, targetSq, callback) {
+function animateToken(pi, startSq, targetSq, callback) {
     const start = squareCenter(startSq);
     const end = squareCenter(targetSq);
     const p = players[pi];
@@ -575,10 +612,10 @@ function animateCPUToken(pi, startSq, targetSq, callback) {
     let startY = start.y + offsets[pi].dy;
     let endX = end.x + offsets[pi].dx;
     let endY = end.y + offsets[pi].dy;
-
+    
     let startTime = null;
     const duration = 600;
-
+    
     function step(timestamp) {
         if (!startTime) startTime = timestamp;
         const progress = Math.min((timestamp - startTime) / duration, 1);
@@ -586,7 +623,7 @@ function animateCPUToken(pi, startSq, targetSq, callback) {
         p.drawX = startX + (endX - startX) * ease;
         p.drawY = startY + (endY - startY) * ease;
         drawBoard();
-
+        
         if (progress < 1) {
             requestAnimationFrame(step);
         } else {
@@ -599,10 +636,10 @@ function animateCPUToken(pi, startSq, targetSq, callback) {
 function checkSquareLogic(pi, sq) {
     if (sq in SNAKES) {
         let tail = SNAKES[sq];
-        if (vsCPU && pi === 1) {
+        if ((vsCPU && pi === 1) || players[pi].autoMove) {
             addLog(`OH NO! A snake!`, 'snake');
             setTimeout(() => {
-                animateCPUToken(pi, sq, tail, () => {
+                animateToken(pi, sq, tail, () => {
                     players[pi].pos = tail;
                     checkFraction(pi, tail);
                 });
@@ -615,10 +652,10 @@ function checkSquareLogic(pi, sq) {
         }
     } else if (sq in LADDERS) {
         let top = LADDERS[sq];
-        if (vsCPU && pi === 1) {
+        if ((vsCPU && pi === 1) || players[pi].autoMove) {
             addLog(`YAY! A ladder!`, 'ladder');
             setTimeout(() => {
-                animateCPUToken(pi, sq, top, () => {
+                animateToken(pi, sq, top, () => {
                     players[pi].pos = top;
                     checkFraction(pi, top);
                 });
@@ -675,10 +712,10 @@ function showFracQuestion(f, pi) {
     currentFracPlayer = pi;
     currentFracAttempts = 0;
     currentFracData = fracConvLabel(f);
-
+    
     const data = currentFracData;
     let html = '';
-
+    
     if (data.type === 'mixed') {
         html = `
             <div class="frac-q-row">
@@ -731,18 +768,18 @@ function showFracQuestion(f, pi) {
             <button class="btn-check-frac" onclick="submitFractionAnswer()">Check</button>
         `;
     }
-
+    
     popupEq.innerHTML = html;
     fracPopup.classList.add('show');
     numpad.classList.add('show');
-
+    
     const firstInput = popupEq.querySelector('.frac-input');
     if (firstInput) {
         firstInput.focus();
         activeInput = firstInput;
     }
-
-    if (vsCPU && pi === 1) {
+    
+    if ((vsCPU && pi === 1) || players[pi].autoMove) {
         setTimeout(() => simulateCPUAnswer(data), 1500);
     }
 }
@@ -769,13 +806,14 @@ function simulateCPUAnswer(data) {
 
 function submitFractionAnswer() {
     let isCorrect = false;
+    let isReduced = false;
     const data = currentFracData;
-
+    
     const getVal = (id) => {
         const el = document.getElementById(id);
         return el && el.textContent.trim() !== '' ? parseInt(el.textContent.trim()) : 0;
     };
-
+    
     if (data.type === 'mixed') {
         const tNum = data.improper.num;
         const tDen = data.improper.den;
@@ -784,9 +822,12 @@ function submitFractionAnswer() {
         
         if (uDen !== 0 && (uNum * tDen === tNum * uDen)) {
             isCorrect = true;
+            // Check if reduced
+            const reduced = reduceFraction(uNum, uDen);
+            isReduced = (reduced.num === uNum && reduced.den === uDen);
         }
     } else if (data.type === 'improper') {
-        const tTotalNum = data.improper.num; 
+        const tTotalNum = data.improper.num;
         const tDen = data.improper.den;
         
         const uWhole = getVal('ans-w');
@@ -796,14 +837,21 @@ function submitFractionAnswer() {
         
         if (uDen !== 0 && uNum < uDen && (uTotalNum * tDen === tTotalNum * uDen)) {
             isCorrect = true;
+            // Check if the fractional part is reduced
+            const reduced = reduceFraction(uNum, uDen);
+            isReduced = (reduced.num === uNum && reduced.den === uDen);
         }
     } else {
-        if (getVal('ans-w') === data.whole) isCorrect = true;
+        if (getVal('ans-w') === data.whole) {
+            isCorrect = true;
+            isReduced = true; // Whole numbers are always reduced
+        }
     }
-
+    
     if (isCorrect) {
         if (currentFracAttempts === 0) {
-            showLuckyCard(currentFracPlayer);
+            // First attempt - show card choice (regular card + bonus if reduced)
+            showCardChoice(currentFracPlayer, isReduced);
         } else {
             fracPopup.classList.remove('show');
             numpad.classList.remove('show');
@@ -827,68 +875,148 @@ function submitFractionAnswer() {
     }
 }
 
-function onNumpadClick(key) {
-    if (!activeInput) return;
-    if (key === 'C') {
-        activeInput.textContent = '';
-    } else if (key === 'OK') {
-        submitFractionAnswer();
-    } else {
-        if (activeInput.textContent.length < 3) {
-            activeInput.textContent += key;
+// =====================================================================
+// CARD CHOICE SYSTEM
+// =====================================================================
+function showCardChoice(pi, earnedBonus) {
+    fracPopup.classList.remove('show');
+    numpad.classList.remove('show');
+    
+    // Determine available cards
+    let regularCard = LUCKY_CARDS[Math.floor(Math.random() * LUCKY_CARDS.length)];
+    let cards = [{ card: regularCard, type: 'regular', title: regularCard.title }];
+    
+    if (earnedBonus) {
+        let bonusCard = BONUS_CARDS[Math.floor(Math.random() * BONUS_CARDS.length)];
+        cards.push({ card: bonusCard, type: 'bonus', title: bonusCard.title + " (BONUS!)" });
+    }
+    
+    // Create card choice overlay
+    let choiceOverlay = document.createElement('div');
+    choiceOverlay.id = 'card-choice-overlay';
+    choiceOverlay.className = 'snakes-card-choice-overlay';
+    
+    let cardsHtml = cards.map(c => `
+        <div class="card-choice-item" data-type="${c.type}" data-title="${c.card.title}">
+            <div class="card-choice-icon">${c.type === 'bonus' ? '⭐' : '🎴'}</div>
+            <div class="card-choice-title">${c.card.title}</div>
+            <div class="card-choice-desc">${c.card.desc}</div>
+            <button class="card-choice-use">Use Card</button>
+            ${c.type === 'regular' ? '<button class="card-choice-discard">Discard</button>' : ''}
+        </div>
+    `).join('');
+    
+    choiceOverlay.innerHTML = `
+        <div class="card-choice-container">
+            <div class="card-choice-header">🎲 Choose Your Fate! 🎲</div>
+            <div class="card-choice-cards">
+                ${cardsHtml}
+            </div>
+            <div class="card-choice-footer">${earnedBonus ? "✨ You reduced to lowest terms! Bonus card unlocked! ✨" : "Select a card to use or discard it."}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(choiceOverlay);
+    setTimeout(() => choiceOverlay.classList.add('show'), 10);
+    
+    // Add event listeners
+    choiceOverlay.querySelectorAll('.card-choice-use').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const item = btn.closest('.card-choice-item');
+            const type = item.dataset.type;
+            const cardData = cards.find(c => c.type === type).card;
+            choiceOverlay.remove();
+            cardData.action(pi);
+        });
+    });
+    
+    choiceOverlay.querySelectorAll('.card-choice-discard').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            addLog(`${players[pi].name} discarded the card. No effect.`, 'info');
+            if (gameFeedback) gameFeedback.textContent = `Card discarded. Continuing turn.`;
+            choiceOverlay.remove();
+            endTurn();
+        });
+    });
+}
+
+// =====================================================================
+// BONUS CARD ACTIONS
+// =====================================================================
+function applyClosestLadder(pi) {
+    let currentPos = players[pi].pos;
+    let closestLadder = null;
+    let closestDist = Infinity;
+    
+    for (let [bottom, top] of Object.entries(LADDERS)) {
+        bottom = parseInt(bottom);
+        if (bottom > currentPos && (bottom - currentPos) < closestDist) {
+            closestDist = bottom - currentPos;
+            closestLadder = { bottom, top };
         }
+    }
+    
+    if (closestLadder) {
+        addLog(`${players[pi].name} climbs the ladder at ${closestLadder.bottom}!`, 'ladder');
+        animateToken(pi, currentPos, closestLadder.top, () => {
+            players[pi].pos = closestLadder.top;
+            endTurn();
+        });
+    } else {
+        addLog(`No ladder ahead! Moving forward 2 spaces instead.`, 'info');
+        applyCardMove(pi, 2);
     }
 }
 
-document.addEventListener('focusin', e => {
-    if (e.target.classList.contains('frac-input')) {
-        activeInput = e.target;
-    }
-});
-
-// =====================================================================
-// LUCKY CARDS LOGIC
-// =====================================================================
-function showLuckyCard(pi) {
-    fracPopup.classList.remove('show');
-    numpad.classList.remove('show');
-
-    const card = LUCKY_CARDS[Math.floor(Math.random() * LUCKY_CARDS.length)];
-    document.getElementById('lc-title').textContent = card.title;
-    document.getElementById('lc-desc').textContent = card.desc;
-
-    luckyCardOverlay.classList.add('show');
+function applyNearestSnake(pi) {
+    let currentPos = players[pi].pos;
+    let nearestSnake = null;
+    let nearestDist = Infinity;
     
-    setTimeout(() => {
-        luckyCardOverlay.classList.remove('show');
-        card.action(pi);
-    }, 2800);
+    for (let [head, tail] of Object.entries(SNAKES)) {
+        head = parseInt(head);
+        if (head > currentPos && (head - currentPos) < nearestDist) {
+            nearestDist = head - currentPos;
+            nearestSnake = { head, tail };
+        }
+    }
+    
+    if (nearestSnake) {
+        addLog(`${players[pi].name} slides down the snake at ${nearestSnake.head}!`, 'snake');
+        animateToken(pi, currentPos, nearestSnake.tail, () => {
+            players[pi].pos = nearestSnake.tail;
+            endTurn();
+        });
+    } else {
+        addLog(`No snake ahead! Moving back 2 spaces instead.`, 'info');
+        applyCardMove(pi, -2);
+    }
 }
 
 function applyCardMove(targetPi, amount) {
     let newPos = players[targetPi].pos + amount;
     if (newPos > 64) newPos = 64;
     if (newPos < 1) newPos = 1;
-
-    addLog(`Lucky Card Effect! ${players[targetPi].name} moves ${amount > 0 ? 'forward' : 'back'} ${Math.abs(amount)} squares!`, 'action');
-
-    animateCPUToken(targetPi, players[targetPi].pos, newPos, () => {
+    
+    addLog(`Card Effect! ${players[targetPi].name} moves ${amount > 0 ? 'forward' : 'back'} ${Math.abs(amount)} squares!`, 'action');
+    
+    animateToken(targetPi, players[targetPi].pos, newPos, () => {
         players[targetPi].pos = newPos;
         
         if (newPos in SNAKES) {
             let tail = SNAKES[newPos];
-            addLog(`Lucky card put ${players[targetPi].name} on a snake!`, 'snake');
+            addLog(`Card put ${players[targetPi].name} on a snake!`, 'snake');
             setTimeout(() => {
-                animateCPUToken(targetPi, newPos, tail, () => {
+                animateToken(targetPi, newPos, tail, () => {
                     players[targetPi].pos = tail;
                     finalizeCardMove(targetPi, tail);
                 });
             }, 600);
         } else if (newPos in LADDERS) {
             let top = LADDERS[newPos];
-            addLog(`Lucky card put ${players[targetPi].name} on a ladder!`, 'ladder');
+            addLog(`Card put ${players[targetPi].name} on a ladder!`, 'ladder');
             setTimeout(() => {
-                animateCPUToken(targetPi, newPos, top, () => {
+                animateToken(targetPi, newPos, top, () => {
                     players[targetPi].pos = top;
                     finalizeCardMove(targetPi, top);
                 });
@@ -929,7 +1057,7 @@ function injectDynamicUI() {
     } else {
         numpad = document.getElementById('snakes-numpad');
     }
-
+    
     if (!document.getElementById('lucky-card-overlay')) {
         luckyCardOverlay = document.createElement('div');
         luckyCardOverlay.id = 'lucky-card-overlay';
@@ -957,7 +1085,7 @@ function setupNumpadDrag() {
         numpadDragState.startY = e.clientY - rect.top;
         e.preventDefault();
     });
-
+    
     window.addEventListener('pointermove', (e) => {
         if (!numpadDragState.isDragging) return;
         numpad.style.left = (e.clientX - numpadDragState.startX) + 'px';
@@ -965,11 +1093,11 @@ function setupNumpadDrag() {
         numpad.style.right = 'auto';
         numpad.style.bottom = 'auto';
     });
-
+    
     window.addEventListener('pointerup', () => {
         numpadDragState.isDragging = false;
     });
-
+    
     numpad.addEventListener('pointerdown', e => {
         if (e.target.tagName === 'BUTTON') {
             e.preventDefault();
@@ -998,9 +1126,9 @@ function setupDiceDrag() {
         lastTapTime = now;
         
         const rect = diceScene.getBoundingClientRect();
-        diceDragState = { 
-            isDragging: true, 
-            startX: e.clientX, 
+        diceDragState = {
+            isDragging: true,
+            startX: e.clientX,
             startY: e.clientY,
             origX: e.clientX,
             origY: e.clientY
@@ -1033,13 +1161,13 @@ function setupDiceDrag() {
         if (!diceDragState.isDragging) return;
         diceScene.classList.remove('dragging');
         diceDragState.isDragging = false;
-
+        
         const dist = Math.hypot(e.clientX - diceDragState.origX, e.clientY - diceDragState.origY);
         if (dist > 15 && gameState === STATE.WAITING_ROLL) {
             executeRoll();
         }
     });
-
+    
     diceSetupDone = true;
 }
 
@@ -1057,7 +1185,7 @@ function setupEventListeners() {
             }
         }
     });
-
+    
     window.addEventListener('pointermove', e => {
         if (dragState.isDragging && gameActive) {
             const pt = getCanvasPoint(e);
@@ -1066,7 +1194,7 @@ function setupEventListeners() {
             drawBoard();
         }
     });
-
+    
     window.addEventListener('pointerup', e => {
         if (dragState.isDragging && gameActive) {
             const pi = dragState.pi;
@@ -1101,7 +1229,7 @@ function toggleFullscreen() {
     if (!gameWrapper) gameWrapper = document.getElementById('gameWrapper');
     if (!gameWrapper) return;
     
-    if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+    if (!document.fullscreenElement && !document.webkitFullscreenElement &&
         !document.mozFullScreenElement && !document.msFullscreenElement) {
         
         if (gameWrapper.requestFullscreen) {
@@ -1139,10 +1267,10 @@ function updateFullscreenClass() {
     if (!gameWrapper) gameWrapper = document.getElementById('gameWrapper');
     if (!gameWrapper) return;
     
-    const isFullscreen = document.fullscreenElement || 
-                         document.webkitFullscreenElement || 
-                         document.mozFullScreenElement ||
-                         document.msFullscreenElement;
+    const isFullscreen = document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement;
     
     if (isFullscreen) {
         gameWrapper.classList.add('fullscreen-mode');
@@ -1187,6 +1315,12 @@ document.addEventListener('click', (e) => {
     if (dd.id === 'dd-opponent') {
         vsCPU = (value === 'cpu');
         headerSpan.textContent = item.textContent.trim();
+    } else if (dd.id === 'dd-p1-auto') {
+        players[0].autoMove = (value === 'auto');
+        headerSpan.textContent = item.textContent.trim();
+    } else if (dd.id === 'dd-p2-auto') {
+        players[1].autoMove = (value === 'auto');
+        headerSpan.textContent = item.textContent.trim();
     } else {
         const color = PLAYER_COLORS.find(c => c.value === value);
         if (color) {
@@ -1210,6 +1344,8 @@ document.addEventListener('click', (e) => {
 function initColorDropdowns() {
     const p1Dropdown = document.getElementById('dd-p1-color');
     const p2Dropdown = document.getElementById('dd-p2-color');
+    const p1AutoDropdown = document.getElementById('dd-p1-auto');
+    const p2AutoDropdown = document.getElementById('dd-p2-auto');
     
     if (p1Dropdown) {
         const list = p1Dropdown.querySelector('.pp-dropdown-list');
@@ -1256,12 +1392,47 @@ function initColorDropdowns() {
             </span>
         `;
     }
+    
+    // Auto-move dropdowns
+    if (p1AutoDropdown) {
+        const list = p1AutoDropdown.querySelector('.pp-dropdown-list');
+        list.innerHTML = '';
+        const autoOptions = [
+            { value: 'manual', label: 'Manual Move' },
+            { value: 'auto', label: 'Auto Move (CPU moves token)' }
+        ];
+        autoOptions.forEach(opt => {
+            const item = document.createElement('div');
+            item.className = 'pp-dropdown-item' + (players[0].autoMove === (opt.value === 'auto') ? ' selected' : '');
+            item.dataset.value = opt.value;
+            item.textContent = opt.label;
+            list.appendChild(item);
+        });
+        p1AutoDropdown.querySelector('.dd-selected').textContent = players[0].autoMove ? 'Auto Move (CPU moves token)' : 'Manual Move';
+    }
+    
+    if (p2AutoDropdown) {
+        const list = p2AutoDropdown.querySelector('.pp-dropdown-list');
+        list.innerHTML = '';
+        const autoOptions = [
+            { value: 'manual', label: 'Manual Move' },
+            { value: 'auto', label: 'Auto Move (CPU moves token)' }
+        ];
+        autoOptions.forEach(opt => {
+            const item = document.createElement('div');
+            item.className = 'pp-dropdown-item' + (players[1].autoMove === (opt.value === 'auto') ? ' selected' : '');
+            item.dataset.value = opt.value;
+            item.textContent = opt.label;
+            list.appendChild(item);
+        });
+        p2AutoDropdown.querySelector('.dd-selected').textContent = players[1].autoMove ? 'Auto Move (CPU moves token)' : 'Manual Move';
+    }
 }
 
 function resetGame() {
     players[0].name = "P1";
     players[1].name = vsCPU ? "CPU" : "P2";
-
+    
     players.forEach((p, i) => {
         p.pos = 1;
         const c = squareCenter(1);
@@ -1276,6 +1447,10 @@ function resetGame() {
     winOverlay.classList.remove('show');
     if (fracPopup) fracPopup.classList.remove('show');
     if (numpad) numpad.classList.remove('show');
+    
+    // Remove any lingering card choice overlay
+    const existingChoice = document.getElementById('card-choice-overlay');
+    if (existingChoice) existingChoice.remove();
     
     gameActive = true;
     gameState = STATE.WAITING_ROLL;
@@ -1344,7 +1519,8 @@ function closeGameModal() {
 document.addEventListener('DOMContentLoaded', () => {
     const track = document.getElementById('ticker-track');
     if (track) {
-        const words =['Snakes', 'Ladders', 'Fractions', 'Prep Portal', 'Drag Dice', 'Climb Up', 'Slide Down'];[...words, ...words].forEach(t => {
+        const words = ['Snakes', 'Ladders', 'Fractions', 'Prep Portal', 'Drag Dice', 'Climb Up', 'Slide Down'];
+        [...words, ...words].forEach(t => {
             const s = document.createElement('span');
             s.className = 'ticker-item';
             s.textContent = t;
