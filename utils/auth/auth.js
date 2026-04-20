@@ -9,7 +9,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 // Gemini models (as provided)
-const GEMINI_MODELS = [
+const GEMINI_MODELS =[
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent',
   'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent',
   'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent',
@@ -48,7 +48,7 @@ async function verifyGemini(key) {
   for (const modelUrl of GEMINI_MODELS) {
     try {
       const url = `${modelUrl}?key=${key}`;
-      const body = JSON.stringify({ contents: [{ parts: [{ text: "Hi" }] }] });
+      const body = JSON.stringify({ contents:[{ parts: [{ text: "Hi" }] }] });
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -214,7 +214,7 @@ function broadcastKeys() {
   console.log('Keys broadcasted:', window.PrepPortalKeys);
 }
 
-// VERIFY SINGLE KEY
+// VERIFY SINGLE KEY & AUTO-SAVE
 async function verifySingle(id) {
   const input = elements[`input-${id}`];
   if (!input) return;
@@ -230,12 +230,26 @@ async function verifySingle(id) {
   setFeedback(id, 'info', 'Sending test request…');
   
   try {
+    // 1. Verify the key works
     await verifiers[id](key);
     verified[id] = true;
     loaded[id] = key;
-    setCardStatus(id, 'ok', 'Verified');
-    setFeedback(id, 'ok', 'Key is valid and active.');
-    showStatus('success', `${id.charAt(0).toUpperCase() + id.slice(1)} key verified.`);
+    
+    // 2. Auto-save to Firestore immediately
+    await saveKeysToFirestore({ [id]: key });
+    
+    // 3. Update the UI
+    setCardStatus(id, 'stored', 'Saved');
+    setFeedback(id, 'ok', 'Key is valid and automatically saved.');
+    showStatus('success', `${id.charAt(0).toUpperCase() + id.slice(1)} key verified & saved.`);
+    
+    broadcastKeys();
+    
+    // Auto-enter bypass mode if all 3 keys are now verified
+    if (KEYS.every(k => verified[k])) {
+      enterBypassMode();
+    }
+    
   } catch (err) {
     verified[id] = false;
     setCardStatus(id, 'fail', 'Invalid');
@@ -247,7 +261,7 @@ async function verifySingle(id) {
   }
 }
 
-// VERIFY ALL & SAVE
+// VERIFY ALL & SAVE (Kept as a manual fallback)
 async function verifyAndSaveAll() {
   if (!elements['save-all-btn']) return;
   
@@ -281,6 +295,7 @@ async function verifyAndSaveAll() {
   try {
     elements['save-all-btn'].innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin .6s linear infinite"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Saving…`;
     
+    // (We also re-save them collectively here just as a failsafe)
     await saveKeysToFirestore({
       gemini: verified.gemini ? loaded.gemini : undefined,
       groq: verified.groq ? loaded.groq : undefined,
@@ -381,6 +396,9 @@ async function pasteKey(id) {
     if (inp && text.trim()) {
       inp.value = text.trim();
       updateProgress();
+      
+      // Auto trigger verification and save
+      verifySingle(id);
     }
   } catch (e) {
     console.log('Clipboard paste failed:', e);
@@ -407,7 +425,7 @@ function toggleInfo() {
 
 // INITIALIZATION
 function initDOMCache() {
-  const ids = [
+  const ids =[
     'progress-bar', 'save-all-btn', 'cta-note', 'status-bar',
     'bypass-banner', 'info-toggle', 'info-body'
   ];
@@ -427,24 +445,33 @@ function initDOMCache() {
   console.log('DOM cache initialized');
 }
 
+// EVENT LISTENERS
 function initEventListeners() {
   KEYS.forEach(id => {
     const input = elements[`input-${id}`];
     if (input) {
       input.addEventListener('input', updateProgress);
+      
+      // Auto trigger verification and save when user modifies the input and clicks away
+      input.addEventListener('change', () => {
+        const val = input.value.trim();
+        if(val && val !== '•'.repeat(32)) {
+          verifySingle(id);
+        }
+      });
     }
   });
 }
 
 function injectTicker() {
-  const items = [
+  const items =[
     'Gemini API', 'Groq', 'YouTube Data v3', 'Secure Storage',
     'Firebase', 'Instant Unlock', 'PrepBot', 'Theory Analyser',
     'Essay Grader', 'Algebra Lab', 'Video Resources', 'WAEC Prep'
   ];
   const track = document.getElementById('ticker-track');
   if (!track) return;
-  const doubled = [...items, ...items];
+  const doubled =[...items, ...items];
   track.innerHTML = doubled.map(i =>
     `<span class="ticker-item">${i}<span class="ticker-dot"></span></span>`
   ).join('');
