@@ -26,12 +26,10 @@
   
   <nav class="site-nav"></nav>
   
-  <!-- Ticker -->
   <div class="ticker" aria-hidden="true">
     <div class="ticker-track" id="ticker-track"></div>
   </div>
   
-  <!-- Page Header -->
   <header class="pg-header">
     <div class="ph-left">
       <p class="pg-eyebrow">PrepBot · Mathematics</p>
@@ -46,7 +44,6 @@
     </div>
   </header>
   
-  <!-- Settings Panel -->
   <section class="settings-panel">
     <div class="settings-body">
       <p class="settings-desc">
@@ -54,7 +51,6 @@
       </p>
       
       <div class="settings-grid">
-        <!-- Opponent Type -->
         <div class="pp-dropdown" id="dd-opponent">
           <span class="pp-dropdown-label">Opponent</span>
           <div class="pp-dropdown-header" onclick="toggleDropdown('dd-opponent')">
@@ -69,7 +65,6 @@
           </div>
         </div>
         
-        <!-- Movement Mode -->
         <div class="pp-dropdown" id="dd-movement">
           <span class="pp-dropdown-label">Movement Mode</span>
           <div class="pp-dropdown-header" onclick="toggleDropdown('dd-movement')">
@@ -84,7 +79,6 @@
           </div>
         </div>
         
-        <!-- Player 1 Color -->
         <div class="pp-dropdown" id="dd-p1-color">
           <span class="pp-dropdown-label">Player 1</span>
           <div class="pp-dropdown-header" onclick="toggleDropdown('dd-p1-color')">
@@ -101,7 +95,6 @@
           </div>
         </div>
         
-        <!-- Player 2 Color -->
         <div class="pp-dropdown" id="dd-p2-color">
           <span class="pp-dropdown-label">Player 2 / CPU</span>
           <div class="pp-dropdown-header" onclick="toggleDropdown('dd-p2-color')">
@@ -118,7 +111,6 @@
           </div>
         </div>
         
-        <!-- Difficulty -->
         <div class="pp-dropdown" id="dd-difficulty">
           <span class="pp-dropdown-label">Snake Density</span>
           <div class="pp-dropdown-header" onclick="toggleDropdown('dd-difficulty')">
@@ -144,7 +136,6 @@
     </div>
   </section>
   
-  <!-- GAME MODAL -->
   <div id="game-modal" class="gp-modal-overlay">
     <div class="modal-header">
       <button class="btn" title="Exit" onclick="closeGameModal()">
@@ -169,13 +160,10 @@
       </div>
     </div>
     
-    <!-- Game Canvas Area -->
     <div id="polypad-wrap" style="padding: 0; background: #faf8f5;">
       <div class="snakes-game-wrapper" id="gameWrapper">
-        <!-- Turn HUD -->
         <div class="snakes-turn-hud" id="turnHud">P1'S TURN</div>
         
-        <!-- Draggable 3D Dice -->
         <div class="snakes-dice-scene" id="diceScene">
           <div class="snakes-cube" id="cube">
             <div class="snakes-face snakes-front">
@@ -214,16 +202,12 @@
           </div>
         </div>
         
-        <!-- Game Canvas -->
         <canvas id="boardCanvas" class="snakes-canvas"></canvas>
         
-        <!-- Double Tap Hint -->
         <div class="snakes-dt-hint" id="dtHint">DRAG DICE TO ROLL</div>
         
-        <!-- Log Overlay -->
         <div class="snakes-log-overlay" id="logOverlay"></div>
         
-        <!-- Fraction Popup -->
         <div class="snakes-frac-popup" id="fracPopup">
           <div class="snakes-frac-popup-label">FRACTION CONVERSION</div>
           <div class="snakes-frac-popup-eq" id="popupEq"></div>
@@ -231,7 +215,6 @@
       </div>
     </div>
     
-    <!-- Game Footer -->
     <div class="gp-bottom-sheet">
       <div class="gp-feedback-box" id="game-feedback">
         Drag the dice to roll!
@@ -242,7 +225,6 @@
     </div>
   </div>
   
-  <!-- Win Modal -->
   <div class="snakes-win-overlay" id="winOverlay">
     <div class="snakes-win-box">
       <div class="snakes-win-icon">🏆</div>
@@ -252,6 +234,8 @@
     </div>
   </div>
   
+  <!-- MUST LOAD GENERATOR BEFORE GAME.JS -->
+  <script src="./boardGenerator.js"></script>
   <script src="./game.js"></script>
   <script type="module" src="../nav/nav.js"></script>
 </body>

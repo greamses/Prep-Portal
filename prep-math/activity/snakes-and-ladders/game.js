@@ -1,7 +1,7 @@
 // game.js - Snakes N' Ladders Game Logic
 
 // =====================================================================
-// BOARD & DATA CONSTANTS
+// BOARD & DATA CONSTANTS (Now flexible via Generator)
 // =====================================================================
 const BOARD_SIZE = 1024;
 const CELL = BOARD_SIZE / 8;
@@ -11,78 +11,13 @@ let gameModal, gameFeedback, turnHud, dtHint, fracPopup, popupEq, winOverlay, wi
 let gameWrapper, diceScene, fullscreenBtn, fullscreenBtnEnter;
 let numpad, luckyCardOverlay;
 
-const FRAC = {
-    1: { d: 'M', w: 9, n: 1, dn: 9 },
-    2: { d: 'I', n: 15, dn: 4 },
-    3: { d: 'M', w: 3, n: 8, dn: 9 },
-    4: { d: 'I', n: 17, dn: 6 },
-    5: { d: 'M', w: 8, n: 3, dn: 4 },
-    6: { d: 'I', n: 13, dn: 2 },
-    7: { d: 'M', w: 7, n: 7, dn: 9 },
-    8: { d: 'I', n: 19, dn: 5 },
-    9: { d: 'M', w: 7, n: 1, dn: 3 },
-    10: { d: 'I', n: 24, dn: 6 },
-    11: { d: 'M', w: 3, n: 2, dn: 5 },
-    12: { d: 'I', n: 26, dn: 5 },
-    13: { d: 'M', w: 4, n: 2, dn: 7 },
-    14: { d: 'I', n: 33, dn: 7 },
-    15: { d: 'M', w: 7, n: 5, dn: 8 },
-    16: { d: 'I', n: 7, dn: 2 },
-    17: { d: 'M', w: 1, n: 3, dn: 10 },
-    18: { d: 'I', n: 13, dn: 2 },
-    19: { d: 'M', w: 6, n: 4, dn: 7 },
-    20: { d: 'I', n: 19, dn: 4 },
-    21: { d: 'M', w: 3, n: 4, dn: 9 },
-    22: { d: 'I', n: 73, dn: 8 },
-    23: { d: 'M', w: 7, n: 5, dn: 8 },
-    24: { d: 'I', n: 26, dn: 4 },
-    25: { d: 'M', w: 4, n: 2, dn: 9 },
-    26: { d: 'I', n: 53, dn: 9 },
-    27: { d: 'M', w: 4, n: 2, dn: 9 },
-    28: { d: 'I', n: 56, dn: 9 },
-    29: { d: 'M', w: 6, n: 2, dn: 8 },
-    30: { d: 'I', n: 50, dn: 6 },
-    31: { d: 'M', w: 5, n: 1, dn: 7 },
-    32: { d: 'I', n: 49, dn: 9 },
-    33: { d: 'M', w: 5, n: 6, dn: 8 },
-    34: { d: 'I', n: 44, dn: 8 },
-    35: { d: 'M', w: 3, n: 3, dn: 8 },
-    36: { d: 'I', n: 56, dn: 9 },
-    37: { d: 'M', w: 11, n: 5, dn: 9 },
-    38: { d: 'I', n: 15, dn: 6 },
-    39: { d: 'M', w: 2, n: 7, dn: 10 },
-    40: { d: 'I', n: 34, dn: 9 },
-    41: { d: 'M', w: 2, n: 5, dn: 5 },
-    42: { d: 'I', n: 15, dn: 4 },
-    43: { d: 'M', w: 1, n: 3, dn: 10 },
-    44: { d: 'I', n: 26, dn: 4 },
-    45: { d: 'M', w: 3, n: 4, dn: 6 },
-    46: { d: 'I', n: 19, dn: 4 },
-    47: { d: 'M', w: 19, n: 4, dn: 9 },
-    48: { d: 'I', n: 26, dn: 5 },
-    49: { d: 'M', w: 4, n: 3, dn: 8 },
-    50: { d: 'I', n: 33, dn: 7 },
-    51: { d: 'M', w: 5, n: 3, dn: 5 },
-    52: { d: 'I', n: 26, dn: 3 },
-    53: { d: 'M', w: 33, n: 7, dn: 1 },
-    54: { d: 'I', n: 21, dn: 4 },
-    55: { d: 'M', w: 4, n: 1, dn: 6 },
-    56: { d: 'I', n: 73, dn: 8 },
-    57: { d: 'M', w: 4, n: 3, dn: 5 },
-    58: { d: 'I', n: 19, dn: 6 },
-    59: { d: 'M', w: 3, n: 2, dn: 6 },
-    60: { d: 'I', n: 21, dn: 6 },
-    61: { d: 'M', w: 4, n: 1, dn: 8 },
-    62: { d: 'I', n: 5, dn: 3 },
-    63: { d: 'M', w: 3, n: 4, dn: 8 },
-    64: { d: 'W' },
-};
+// These defaults will be overwritten by `boardGenerator.js` on Game Start
+let FRAC = {};
+let SNAKES = {};
+let SNAKE_COLORS = {};
+let LADDERS = {};
 
-const SNAKES = { 54: 34, 44: 6, 62: 19, 48: 16 };
-const SNAKE_COLORS = { 54: '#c0392b', 44: '#27ae60', 62: '#8e44ad', 48: '#d35400' };
-const LADDERS = { 5: 26, 13: 34, 27: 46, 42: 63 };
-
-const PLAYER_COLORS =[
+const PLAYER_COLORS = [
     { name: 'Blue', value: '#0055ff' },
     { name: 'Red', value: '#ff2200' },
     { name: 'Green', value: '#00a550' },
@@ -91,11 +26,11 @@ const PLAYER_COLORS =[
     { name: 'Pink', value: '#e84393' }
 ];
 
-const LUCKY_CARDS =[
-    { title: "Lucky Strike!", desc: "Move forward 2 spaces.", action: (pi) => applyCardMove(pi, 2) },
-    { title: "Speed Boost", desc: "Move forward 4 spaces.", action: (pi) => applyCardMove(pi, 4) },
-    { title: "Sabotage!", desc: "Opponent moves back 2 spaces.", action: (pi) => applyCardMove(1 - pi, -2) },
-    { title: "Tripwire", desc: "Opponent moves back 3 spaces.", action: (pi) => applyCardMove(1 - pi, -3) }
+const LUCKY_CARDS = [
+    { title: "Lucky Strike!", desc: "Move forward 2 spaces.", type: 'self', amount: 2, action: (pi) => applyCardMove(pi, 2) },
+    { title: "Speed Boost", desc: "Move forward 4 spaces.", type: 'self', amount: 4, action: (pi) => applyCardMove(pi, 4) },
+    { title: "Sabotage!", desc: "Opponent moves back 2 spaces.", type: 'opponent', amount: -2, action: (pi) => applyCardMove(1 - pi, -2) },
+    { title: "Tripwire", desc: "Opponent moves back 3 spaces.", type: 'opponent', amount: -3, action: (pi) => applyCardMove(1 - pi, -3) }
 ];
 
 // =====================================================================
@@ -111,9 +46,9 @@ const STATE = {
     GAME_OVER: 6
 };
 
-const offsets =[{ dx: -22, dy: -18 }, { dx: 22, dy: 18 }];
+const offsets = [{ dx: -22, dy: -18 }, { dx: 22, dy: 18 }];
 
-const players =[
+const players = [
     { pos: 1, color: '#0055ff', name: 'P1', drawX: 0, drawY: 0 },
     { pos: 1, color: '#ff2200', name: 'P2', drawX: 0, drawY: 0 }
 ];
@@ -298,8 +233,8 @@ function drawBoard() {
         }
     }
     
-    for (const[bot, top] of Object.entries(LADDERS)) drawLadder(parseInt(bot), parseInt(top));
-    for (const[head, tail] of Object.entries(SNAKES)) drawSnake(parseInt(head), parseInt(tail));
+    for (const [bot, top] of Object.entries(LADDERS)) drawLadder(parseInt(bot), parseInt(top));
+    for (const [head, tail] of Object.entries(SNAKES)) drawSnake(parseInt(head), parseInt(tail));
     drawPlayers();
 }
 
@@ -596,10 +531,10 @@ function animateCPUToken(pi, startSq, targetSq, callback) {
     let startY = start.y + offsets[pi].dy;
     let endX = end.x + offsets[pi].dx;
     let endY = end.y + offsets[pi].dy;
-
+    
     let startTime = null;
     const duration = 600;
-
+    
     function step(timestamp) {
         if (!startTime) startTime = timestamp;
         const progress = Math.min((timestamp - startTime) / duration, 1);
@@ -607,7 +542,7 @@ function animateCPUToken(pi, startSq, targetSq, callback) {
         p.drawX = startX + (endX - startX) * ease;
         p.drawY = startY + (endY - startY) * ease;
         drawBoard();
-
+        
         if (progress < 1) {
             requestAnimationFrame(step);
         } else {
@@ -696,10 +631,10 @@ function showFracQuestion(f, pi) {
     currentFracPlayer = pi;
     currentFracAttempts = 0;
     currentFracData = fracConvLabel(f);
-
+    
     const data = currentFracData;
     let html = '';
-
+    
     if (data.type === 'mixed') {
         html = `
             <div class="frac-q-row">
@@ -752,17 +687,17 @@ function showFracQuestion(f, pi) {
             <button class="btn-check-frac" onclick="submitFractionAnswer()">Check</button>
         `;
     }
-
+    
     popupEq.innerHTML = html;
     fracPopup.classList.add('show');
     numpad.classList.add('show');
-
+    
     const firstInput = popupEq.querySelector('.frac-input');
     if (firstInput) {
         firstInput.focus();
         activeInput = firstInput;
     }
-
+    
     if (vsCPU && pi === 1) {
         setTimeout(() => simulateCPUAnswer(data), 1500);
     }
@@ -775,12 +710,19 @@ function simulateCPUAnswer(data) {
     };
     
     if (data.type === 'mixed') {
-        setVal('ans-num', data.improper.num);
-        setVal('ans-den', data.improper.den);
+        // CPU automatically gives the answer in lowest terms if possible to earn bonus!
+        let tNum = data.improper.num;
+        let tDen = data.improper.den;
+        let g = getGcd(tNum, tDen);
+        setVal('ans-num', tNum / g);
+        setVal('ans-den', tDen / g);
     } else if (data.type === 'improper') {
+        let tNum = data.num;
+        let tDen = data.den;
+        let g = getGcd(tNum, tDen);
         setVal('ans-w', data.whole);
-        setVal('ans-num', data.num);
-        setVal('ans-den', data.den);
+        setVal('ans-num', tNum / g);
+        setVal('ans-den', tDen / g);
     } else {
         setVal('ans-w', data.whole);
     }
@@ -798,7 +740,7 @@ function submitFractionAnswer() {
         const el = document.getElementById(id);
         return el && el.textContent.trim() !== '' ? parseInt(el.textContent.trim()) : 0;
     };
-
+    
     if (data.type === 'mixed') {
         originalIsReducible = (getGcd(data.improper.num, data.improper.den) > 1);
         const tNum = data.improper.num;
@@ -812,7 +754,7 @@ function submitFractionAnswer() {
         }
     } else if (data.type === 'improper') {
         originalIsReducible = (getGcd(data.improper.num, data.improper.den) > 1);
-        const tTotalNum = data.improper.num; 
+        const tTotalNum = data.improper.num;
         const tDen = data.improper.den;
         
         const uWhole = getVal('ans-w');
@@ -829,12 +771,12 @@ function submitFractionAnswer() {
             isCorrect = true;
         }
     }
-
+    
     if (isCorrect) {
         if (currentFracAttempts === 0) {
             if (originalIsReducible && answeredInLowestTerms) {
-                // Perfect hit + Lowest terms
-                showLuckyCard(currentFracPlayer, true); 
+                // Perfect hit + Lowest terms guarantee bonus card
+                showLuckyCard(currentFracPlayer, true);
             } else if (originalIsReducible && !answeredInLowestTerms) {
                 // Correct, but missed the reduction bonus
                 addLog(`${players[currentFracPlayer].name} didn't reduce to lowest terms. No bonus card!`, 'info');
@@ -896,22 +838,22 @@ document.addEventListener('focusin', e => {
 });
 
 // =====================================================================
-// LUCKY CARDS LOGIC
+// LUCKY CARDS LOGIC (With CPU Evaluation)
 // =====================================================================
 function showLuckyCard(pi, isBonus = false) {
     fracPopup.classList.remove('show');
     numpad.classList.remove('show');
-
+    
     const card = LUCKY_CARDS[Math.floor(Math.random() * LUCKY_CARDS.length)];
     document.getElementById('lc-title').textContent = isBonus ? `Bonus: ${card.title}` : card.title;
     document.getElementById('lc-desc').textContent = card.desc;
-
+    
     luckyCardOverlay.classList.add('show');
     
     const btnUse = document.getElementById('btn-use-card');
     const btnDiscard = document.getElementById('btn-discard-card');
     
-    // Clear old event listeners cleanly
+    // Clear old event listeners seamlessly
     const newUse = btnUse.cloneNode(true);
     const newDiscard = btnDiscard.cloneNode(true);
     btnUse.parentNode.replaceChild(newUse, btnUse);
@@ -927,15 +869,37 @@ function showLuckyCard(pi, isBonus = false) {
         addLog(`${players[pi].name} discarded the card.`, 'info');
         endTurn();
     };
-
+    
     newUse.addEventListener('click', handleUse);
     newDiscard.addEventListener('click', handleDiscard);
-
-    // CPU Logic simply uses the card after a short delay
+    
+    // CPU Artificial Intelligence
     if (vsCPU && pi === 1) {
         newUse.style.display = 'none';
         newDiscard.style.display = 'none';
-        setTimeout(handleUse, 2000);
+        
+        setTimeout(() => {
+            let useIt = true;
+            
+            // Strategic Check
+            if (card.type === 'self') {
+                let target = players[1].pos + card.amount;
+                if (target > 64) target = 64;
+                if (SNAKES[target]) useIt = false; // Don't willingly step on a snake
+            } else if (card.type === 'opponent') {
+                let target = players[0].pos + card.amount;
+                if (target < 1) target = 1;
+                if (LADDERS[target]) useIt = false; // Don't willingly put human on a ladder
+            }
+            
+            if (useIt) {
+                addLog(`CPU used the card!`, 'action');
+                handleUse();
+            } else {
+                addLog(`CPU strategically discarded the card to avoid bad placement.`, 'info');
+                handleDiscard();
+            }
+        }, 2200);
     } else {
         newUse.style.display = 'block';
         newDiscard.style.display = 'block';
@@ -946,9 +910,9 @@ function applyCardMove(targetPi, amount) {
     let newPos = players[targetPi].pos + amount;
     if (newPos > 64) newPos = 64;
     if (newPos < 1) newPos = 1;
-
+    
     addLog(`Lucky Card Effect! ${players[targetPi].name} moves ${amount > 0 ? 'forward' : 'back'} ${Math.abs(amount)} squares!`, 'action');
-
+    
     animateCPUToken(targetPi, players[targetPi].pos, newPos, () => {
         players[targetPi].pos = newPos;
         
@@ -1006,7 +970,7 @@ function injectDynamicUI() {
     } else {
         numpad = document.getElementById('snakes-numpad');
     }
-
+    
     if (!document.getElementById('lucky-card-overlay')) {
         luckyCardOverlay = document.createElement('div');
         luckyCardOverlay.id = 'lucky-card-overlay';
@@ -1026,7 +990,7 @@ function injectDynamicUI() {
     } else {
         luckyCardOverlay = document.getElementById('lucky-card-overlay');
         if (!document.getElementById('btn-use-card')) {
-             luckyCardOverlay.querySelector('.lc-box').innerHTML += `
+            luckyCardOverlay.querySelector('.lc-box').innerHTML += `
                 <div class="lc-actions" style="margin-top: 24px; display: flex; gap: 12px; justify-content: center;">
                     <button class="btn-check-frac" id="btn-use-card" style="margin-top: 0;">USE</button>
                     <button class="btn-secondary" id="btn-discard-card">DISCARD</button>
@@ -1046,7 +1010,7 @@ function setupNumpadDrag() {
         numpadDragState.startY = e.clientY - rect.top;
         e.preventDefault();
     });
-
+    
     window.addEventListener('pointermove', (e) => {
         if (!numpadDragState.isDragging) return;
         numpad.style.left = (e.clientX - numpadDragState.startX) + 'px';
@@ -1054,11 +1018,11 @@ function setupNumpadDrag() {
         numpad.style.right = 'auto';
         numpad.style.bottom = 'auto';
     });
-
+    
     window.addEventListener('pointerup', () => {
         numpadDragState.isDragging = false;
     });
-
+    
     numpad.addEventListener('pointerdown', e => {
         if (e.target.tagName === 'BUTTON') {
             e.preventDefault();
@@ -1087,9 +1051,9 @@ function setupDiceDrag() {
         lastTapTime = now;
         
         const rect = diceScene.getBoundingClientRect();
-        diceDragState = { 
-            isDragging: true, 
-            startX: e.clientX, 
+        diceDragState = {
+            isDragging: true,
+            startX: e.clientX,
             startY: e.clientY,
             origX: e.clientX,
             origY: e.clientY
@@ -1122,13 +1086,13 @@ function setupDiceDrag() {
         if (!diceDragState.isDragging) return;
         diceScene.classList.remove('dragging');
         diceDragState.isDragging = false;
-
+        
         const dist = Math.hypot(e.clientX - diceDragState.origX, e.clientY - diceDragState.origY);
         if (dist > 15 && gameState === STATE.WAITING_ROLL) {
             executeRoll();
         }
     });
-
+    
     diceSetupDone = true;
 }
 
@@ -1146,7 +1110,7 @@ function setupEventListeners() {
             }
         }
     });
-
+    
     window.addEventListener('pointermove', e => {
         if (dragState.isDragging && gameActive) {
             const pt = getCanvasPoint(e);
@@ -1155,7 +1119,7 @@ function setupEventListeners() {
             drawBoard();
         }
     });
-
+    
     window.addEventListener('pointerup', e => {
         if (dragState.isDragging && gameActive) {
             const pi = dragState.pi;
@@ -1190,7 +1154,7 @@ function toggleFullscreen() {
     if (!gameWrapper) gameWrapper = document.getElementById('gameWrapper');
     if (!gameWrapper) return;
     
-    if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+    if (!document.fullscreenElement && !document.webkitFullscreenElement &&
         !document.mozFullScreenElement && !document.msFullscreenElement) {
         
         if (gameWrapper.requestFullscreen) {
@@ -1228,10 +1192,10 @@ function updateFullscreenClass() {
     if (!gameWrapper) gameWrapper = document.getElementById('gameWrapper');
     if (!gameWrapper) return;
     
-    const isFullscreen = document.fullscreenElement || 
-                         document.webkitFullscreenElement || 
-                         document.mozFullScreenElement ||
-                         document.msFullscreenElement;
+    const isFullscreen = document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement;
     
     if (isFullscreen) {
         gameWrapper.classList.add('fullscreen-mode');
@@ -1291,7 +1255,7 @@ document.addEventListener('click', (e) => {
             if (dd.id === 'dd-p1-color') players[0].color = value;
             if (dd.id === 'dd-p2-color') players[1].color = value;
             if (gameActive) drawBoard();
-        } else {
+        } else if (dd.id === 'dd-difficulty') {
             headerSpan.textContent = item.textContent.trim();
         }
     }
@@ -1353,13 +1317,29 @@ function initColorDropdowns() {
 function resetGame() {
     players[0].name = "P1";
     players[1].name = vsCPU ? "CPU" : "P2";
-
+    
     players.forEach((p, i) => {
         p.pos = 1;
         const c = squareCenter(1);
         p.drawX = c.x + offsets[i].dx;
         p.drawY = c.y + offsets[i].dy;
     });
+    
+    // Attempt to Generate Fresh Random Board Map 
+    const diffDropdown = document.getElementById('dd-difficulty');
+    let diffVal = 'standard';
+    if (diffDropdown) {
+        const selected = diffDropdown.querySelector('.selected');
+        if (selected) diffVal = selected.dataset.value;
+    }
+    
+    if (typeof window.generateRandomBoard === 'function') {
+        const boardData = window.generateRandomBoard(diffVal);
+        SNAKES = boardData.snakes;
+        SNAKE_COLORS = boardData.snakeColors;
+        LADDERS = boardData.ladders;
+        FRAC = boardData.fractions;
+    }
     
     turn = 0;
     logOverlay.innerHTML = '';
@@ -1436,7 +1416,8 @@ function closeGameModal() {
 document.addEventListener('DOMContentLoaded', () => {
     const track = document.getElementById('ticker-track');
     if (track) {
-        const words =['Snakes', 'Ladders', 'Fractions', 'Prep Portal', 'Drag Dice', 'Climb Up', 'Slide Down'];[...words, ...words].forEach(t => {
+        const words = ['Snakes', 'Ladders', 'Fractions', 'Prep Portal', 'Drag Dice', 'Climb Up', 'Slide Down'];
+        [...words, ...words].forEach(t => {
             const s = document.createElement('span');
             s.className = 'ticker-item';
             s.textContent = t;
