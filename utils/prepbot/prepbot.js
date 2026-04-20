@@ -706,11 +706,10 @@ import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase
     pill.innerHTML = `Question ${currentIdx + 1} of ${total}`;
   }
   
-  /* ── 11. SEND MESSAGE ── */
-  /* ── 11. SEND MESSAGE ── */
+/* ── 11. SEND MESSAGE ── */
 async function sendMessage(text) {
   if (!isKeySet()) {
-    initializePrepBot(); // Try to reload key
+    initializePrepBot();
     return;
   }
   
@@ -751,23 +750,24 @@ STRICT RULES:
 [SUGGESTIONS: "short follow-up prompt 1", "short follow-up prompt 2"]
 The two suggestions must be short (2-5 words), relevant to what you just explained, and phrased as things the student would naturally ask next. Do not number them. Do not add anything after this line.`;
   
+  // CORS PROXIES - try each until one works
+  const corsProxies = [
+    'https://corsproxy.io/?',
+    'https://api.allorigins.win/raw?url=',
+    'https://cors-anywhere.herokuapp.com/'
+  ];
+  
+  let res = null;
+  let data = null;
+  let success = false;
+  
   try {
-    // Array of CORS proxies to try (in order of preference)
-    const corsProxies = [
-      'https://corsproxy.io/?',
-      'https://api.allorigins.win/raw?url=',
-      'https://cors-anywhere.herokuapp.com/'
-    ];
-    
-    let res = null;
-    let data = null;
-    let success = false;
-    
-    // Try each proxy until one works
+    // Try each proxy
     for (const proxy of corsProxies) {
       try {
         console.log(`Trying proxy: ${proxy}`);
         const targetUrl = encodeURIComponent(GROQ_URL);
+        
         res = await fetch(proxy + targetUrl, {
           method: 'POST',
           headers: {
@@ -785,16 +785,15 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
         if (res.ok) {
           data = await res.json();
           success = true;
-          console.log(`Success with proxy: ${proxy}`);
           break;
         }
       } catch (proxyErr) {
-        console.warn(`Proxy ${proxy} failed:`, proxyErr);
+        console.warn(`Proxy ${proxy} failed:`, proxyErr.message);
         continue;
       }
     }
     
-    // If all proxies fail, try direct connection as last resort
+    // If all proxies fail, try direct connection
     if (!success) {
       console.log('All proxies failed, trying direct connection...');
       res = await fetch(GROQ_URL, {
@@ -834,23 +833,16 @@ The two suggestions must be short (2-5 words), relevant to what you just explain
     hideTyping();
     console.error("PrepBot API Error:", err);
     
-    // Show user-friendly error message
     let errorMessage = "Connection error. ";
     if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-      errorMessage += "Unable to connect to AI service. This might be due to CORS restrictions. ";
-      errorMessage += "Try using a CORS unblocker extension or contact support.";
-    } else if (err.message.includes('401')) {
-      errorMessage += "Invalid API key. Please check your Groq API key in settings.";
-    } else if (err.message.includes('429')) {
-      errorMessage += "Rate limit exceeded. Please wait a moment and try again.";
+      errorMessage += "CORS restriction detected. Try using a CORS unblocker extension.";
     } else {
-      errorMessage += "Please check your internet connection and try again.";
+      errorMessage += "Please check your connection and try again.";
     }
     
     await appendMessage('bot', errorMessage);
+    renderSuggestionChips(['Try Again', 'Check Settings']);
     
-    // Add retry button suggestion
-    renderSuggestionChips(['Try Again', 'Check Connection']);
   } finally {
     isBusy = false;
     sendBtn.classList.remove('loading');
