@@ -2,10 +2,9 @@
 // Bug fix 1: initColorDropdowns() is called at DOMContentLoaded (not just openGameModal).
 // Bug fix 2: fullscreen buttons use getElementById so they never rely on stale module vars.
 
-import { PLAYER_COLORS }                      from './constants.js';
-import { state }                               from './state.js';
-import { drawBoard }                           from './renderer.js';
-import { setActivePlugin, getAllPlugins }       from './mathPlugins.js';
+import { PLAYER_COLORS } from './constants.js';
+import { state }          from './state.js';
+import { drawBoard }      from './renderer.js';
 
 // ─── Log ──────────────────────────────────────────────────────────────────────
 
@@ -247,28 +246,8 @@ function _setupNumpadDrag() {
 
 export function wireUI({ openGameModal, closeGameModal, resetGame }) {
   // ── Colour dropdowns need items BEFORE the modal opens ──────────────────
+  // BUG FIX: call here, not just inside openGameModal.
   initColorDropdowns();
-
-  // ── Math-concept dropdown — populate from plugin registry ───────────────
-  const conceptDD = document.getElementById('dd-math-concept');
-  if (conceptDD) {
-    const list = conceptDD.querySelector('.pp-dropdown-list');
-    if (list) {
-      list.innerHTML = '';
-      getAllPlugins().forEach(plugin => {
-        const item = document.createElement('div');
-        item.className    = 'pp-dropdown-item' + (plugin.id === state.mathConcept ? ' selected' : '');
-        item.dataset.value= plugin.id;
-        item.textContent  = plugin.label;
-        list.appendChild(item);
-      });
-      const hdr = conceptDD.querySelector('.dd-selected');
-      if (hdr) {
-        const active = getAllPlugins().find(p => p.id === state.mathConcept);
-        if (active) hdr.textContent = active.label;
-      }
-    }
-  }
 
   // ── Close dropdowns on outside click ────────────────────────────────────
   document.addEventListener('click', e => {
@@ -299,11 +278,6 @@ export function wireUI({ openGameModal, closeGameModal, resetGame }) {
       case 'dd-cpu-intel':  state.cpuIntel = val;           span.textContent = item.textContent.trim(); break;
       case 'dd-movement':   state.autoMove = val === 'auto';span.textContent = item.textContent.trim(); break;
       case 'dd-difficulty':                                  span.textContent = item.textContent.trim(); break;
-      case 'dd-math-concept':
-        state.mathConcept = val;
-        setActivePlugin(val);
-        span.textContent = item.textContent.trim();
-        break;
       case 'dd-p1-color':
       case 'dd-p2-color': {
         const c = PLAYER_COLORS.find(c => c.value === val);

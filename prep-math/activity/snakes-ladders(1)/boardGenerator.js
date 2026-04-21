@@ -10,12 +10,7 @@ function gcd(a, b) {
   return a;
 }
 
-/**
- * @param {string} difficulty — 'easy' | 'standard' | 'hard'
- * @param {object|null} questionPlugin — a QuestionPlugin from mathPlugins.js
- *   If null, falls back to inline fraction generation (safe default).
- */
-export function generateRandomBoard(difficulty = 'standard', questionPlugin = null) {
+export function generateRandomBoard(difficulty = 'standard') {
   let snakeCount, ladderCount;
   switch (difficulty) {
     case 'easy':  snakeCount = 2; ladderCount = 5; break;
@@ -44,27 +39,17 @@ export function generateRandomBoard(difficulty = 'standard', questionPlugin = nu
     }
   }
 
-  // ── Question generation — delegated to active plugin ──────────────────────
   const fractions = { 64: { d: 'W' } };
-
-  if (questionPlugin && typeof questionPlugin.generate === 'function') {
-    // Plugin-driven: any math concept
-    for (let sq = 2; sq <= 63; sq++) {
-      fractions[sq] = questionPlugin.generate(sq);
-    }
-  } else {
-    // Legacy inline fallback (fractions) — kept so boardGenerator can run standalone
-    for (let sq = 2; sq <= 63; sq++) {
-      if (Math.random() > 0.5) {
-        const dn = randomInt(3, 10);
-        fractions[sq] = { d: 'M', w: randomInt(1, 8), n: randomInt(1, dn - 1), dn };
-      } else {
-        const dn = randomInt(2, 9);
-        let n, guard = 0;
-        do { n = randomInt(dn + 1, dn * 3); guard++; } while (n % dn === 0 && guard < 40);
-        if (n % dn === 0) n++;
-        fractions[sq] = { d: 'I', n, dn };
-      }
+  for (let sq = 2; sq <= 63; sq++) {
+    if (Math.random() > 0.5) {
+      const dn = randomInt(3, 10);
+      fractions[sq] = { d: 'M', w: randomInt(1, 8), n: randomInt(1, dn - 1), dn };
+    } else {
+      const dn = randomInt(2, 9);
+      let n, guard = 0;
+      do { n = randomInt(dn + 1, dn * 3); guard++; } while (n % dn === 0 && guard < 40);
+      if (n % dn === 0) n++;
+      fractions[sq] = { d: 'I', n, dn };
     }
   }
 

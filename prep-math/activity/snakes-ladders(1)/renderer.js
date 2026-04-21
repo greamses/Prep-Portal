@@ -1,9 +1,8 @@
 // renderer.js — Canvas drawing + coordinate helpers + token animation
 // No game-flow logic here; safe to import from any module.
 
-import { CELL, OFFSETS }  from './constants.js';
-import { state }           from './state.js';
-import { getActivePlugin } from './mathPlugins.js';
+import { CELL, OFFSETS } from './constants.js';
+import { state }          from './state.js';
 
 // ─── Coordinate helpers ────────────────────────────────────────────────────────
 
@@ -92,7 +91,6 @@ export function drawCellFraction(f, cx, cy) {
   ctx.fillStyle = '#1a1a1a';
 
   if (f.d === 'M') {
-    // Mixed number: whole part + stacked fraction
     ctx.font = `bold ${SIZE + 6}px 'JetBrains Mono', monospace`;
     const wStr = String(f.w);
     const ww   = ctx.measureText(wStr).width;
@@ -104,49 +102,8 @@ export function drawCellFraction(f, cx, cy) {
     ctx.fillText(wStr, sx, cy + 1);
     ctx.textBaseline = 'alphabetic';
     drawStackedFrac(f.n, f.dn, sx + ww + 6 + fw / 2, cy, SIZE);
-
-  } else if (f.d === 'I') {
-    // Improper fraction: stacked n/dn
+  } else {
     drawStackedFrac(f.n, f.dn, cx, cy, SIZE);
-
-  } else {
-    // Non-fraction plugin question — ask the active plugin for a compact cell label.
-    // Plugin returns { line1, line2? } or null (skip rendering).
-    const label = getActivePlugin().cellText?.(f);
-    if (!label) return;
-    _drawCellLabel(ctx, label, cx, cy);
-  }
-}
-
-/**
- * Renders a 1- or 2-line text label centred in a board cell.
- * Automatically shrinks font if the text is too wide for the cell.
- */
-function _drawCellLabel(ctx, { line1, line2 }, cx, cy) {
-  const FONT     = `bold 14px 'JetBrains Mono', monospace`;
-  const MAX_W    = CELL - 16;   // leave 8px gutter each side
-  ctx.textAlign  = 'center';
-  ctx.fillStyle  = '#1a1a1a';
-
-  // Measure and auto-shrink if needed
-  let fontSize = 14;
-  ctx.font = `bold ${fontSize}px 'JetBrains Mono', monospace`;
-  const longest = line2
-    ? Math.max(ctx.measureText(line1).width, ctx.measureText(line2).width)
-    : ctx.measureText(line1).width;
-  if (longest > MAX_W) {
-    fontSize = Math.max(9, Math.floor(fontSize * MAX_W / longest));
-    ctx.font = `bold ${fontSize}px 'JetBrains Mono', monospace`;
-  }
-
-  const lineH = fontSize + 3;
-  if (line2) {
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(line1, cx, cy - 2);
-    ctx.fillText(line2, cx, cy + lineH);
-  } else {
-    ctx.textBaseline = 'middle';
-    ctx.fillText(line1, cx, cy + lineH / 4);
   }
 }
 

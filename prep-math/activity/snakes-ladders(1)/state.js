@@ -21,13 +21,9 @@ export const state = {
   ],
 
   // ── Game settings ─────────────────────────────────────────────────────
-  vsCPU:       false,
-  cpuIntel:    'advanced',
-  autoMove:    false,
-  mathConcept: 'fractions',   // active question plugin id
-
-  // ── Legendary AI scratch-pad ──────────────────────────────────────────
-  _legendaryReason: '',
+  vsCPU:    false,
+  cpuIntel: 'advanced',
+  autoMove: false,
 
   // ── Round state ───────────────────────────────────────────────────────
   turn:           0,

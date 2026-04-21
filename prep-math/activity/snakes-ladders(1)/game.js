@@ -13,11 +13,7 @@ import {
   injectDynamicUI, wireUI, updateFullscreenUI,
 } from './ui.js';
 import { registerCardCallbacks, showStandardCard, showBonusFlipCards } from './cards.js';
-import {
-  registerQuestionCallbacks, showQuestion, submitAnswer, onNumpadClick,
-} from './questionEngine.js';
-import { getActivePlugin, setActivePlugin } from './mathPlugins.js';
-import { recordRoll, resetProfiles }        from './ai.js';
+import { registerFracCallbacks, showFracQuestion, submitFractionAnswer, onNumpadClick } from './fracPopup.js';
 
 // ─── One-time setup guards ────────────────────────────────────────────────────
 // Prevent document-level listeners from stacking on successive modal opens.
@@ -28,7 +24,7 @@ let _tokenDragWired   = false;
 // ─── Register cross-module callbacks ─────────────────────────────────────────
 
 registerCardCallbacks({ endTurn, triggerWin, addLog });
-registerQuestionCallbacks({ endTurn, triggerWin, showStandardCard, showBonusFlipCards, addLog });
+registerFracCallbacks({ endTurn, triggerWin, showStandardCard, showBonusFlipCards, addLog });
 
 // ─── Game flow ────────────────────────────────────────────────────────────────
 
@@ -67,8 +63,6 @@ export function executeRoll() {
 
   setTimeout(() => {
     if (!s.gameActive) return;
-    // Record roll for AI adaptive profiling + dice prediction
-    recordRoll(s.turn, s.currentRoll);
     const target = s.players[s.turn].pos + s.currentRoll;
 
     if (target > 64) {
@@ -127,7 +121,7 @@ export function checkSquareLogic(pi, sq) {
 
 export function checkFraction(pi, sq) {
   const f = state.FRAC[sq];
-  if (f && f.d !== 'W') showQuestion(f, pi);
+  if (f && f.d !== 'W') showFracQuestion(f, pi);
   else if (sq === 64)   triggerWin(pi);
   else                  endTurn();
 }
@@ -260,7 +254,7 @@ function setupFracInputEvents() {
   // Check button delegation — fracPopup is set in openGameModal
   document.addEventListener('click', e => {
     if (e.target.classList.contains('btn-check-frac') && s.fracPopup?.contains(e.target))
-      submitAnswer();
+      submitFractionAnswer();
   });
 
   // Numpad button delegation
@@ -274,7 +268,7 @@ function setupFracInputEvents() {
     if (!s.fracPopup?.classList.contains('show') || !s.activeInput) return;
     if (e.key >= '0' && e.key <= '9')              { e.preventDefault(); onNumpadClick(e.key); }
     else if (e.key === 'Backspace')                { e.preventDefault(); s.activeInput.textContent = s.activeInput.textContent.slice(0,-1); }
-    else if (e.key === 'Enter')                    { e.preventDefault(); submitAnswer(); }
+    else if (e.key === 'Enter')                    { e.preventDefault(); submitFractionAnswer(); }
     else if (e.key === 'Escape' || e.key.toLowerCase() === 'c') { e.preventDefault(); onNumpadClick('C'); }
     else if (e.key === 'Tab') {
       e.preventDefault();
@@ -304,18 +298,12 @@ export function resetGame() {
     p.drawY = c.y + OFFSETS[i].dy;
   });
 
-  // Reset AI adaptive profiles for a fresh game
-  resetProfiles();
-
   // Read difficulty
   const diffDD  = document.getElementById('dd-difficulty');
   const selItem = diffDD?.querySelector('.pp-dropdown-item.selected');
   const diff    = selItem?.dataset.value ?? 'standard';
 
-  // Sync active plugin from state (set by the math-concept dropdown)
-  setActivePlugin(s.mathConcept);
-
-  const board     = generateRandomBoard(diff, getActivePlugin());
+  const board     = generateRandomBoard(diff);
   s.SNAKES        = board.snakes;
   s.SNAKE_COLORS  = board.snakeColors;
   s.LADDERS       = board.ladders;

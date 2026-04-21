@@ -3,7 +3,7 @@
 // Game-flow functions (endTurn, triggerWin, addLog) are injected via registerCardCallbacks().
 
 import { state }               from './state.js';
-import { evaluateCardTactics, recordCardChoice } from './ai.js';
+import { evaluateCardTactics } from './ai.js';
 import { animateCPUToken }     from './renderer.js';
 
 // ─── Card definitions ──────────────────────────────────────────────────────────
@@ -98,13 +98,11 @@ export function showStandardCard(pi) {
   let done = false;
   const use = () => {
     if (done) return; done = true;
-    recordCardChoice(pi, true);
     luckyCardOverlay.classList.remove('show');
     _execCard(pi, card);
   };
   const discard = () => {
     if (done) return; done = true;
-    recordCardChoice(pi, false);
     luckyCardOverlay.classList.remove('show');
     _addLog(`${players[pi].name} discarded the card.`, 'info');
     _endTurn();
@@ -116,14 +114,8 @@ export function showStandardCard(pi) {
   if (vsCPU && pi === 1) {
     newUse.style.display = newDiscard.style.display = 'none';
     setTimeout(() => {
-      state._legendaryReason = '';
-      if (evaluateCardTactics(card, pi, cpuIntel)) {
-        const reason = state._legendaryReason ? ` [${state._legendaryReason}]` : '';
-        _addLog(`CPU used the card${reason}.`, 'action'); use();
-      } else {
-        const reason = state._legendaryReason ? ` [${state._legendaryReason}]` : '';
-        _addLog(`CPU discarded the card${reason}.`, 'info'); discard();
-      }
+      if (evaluateCardTactics(card, pi, cpuIntel)) { _addLog('CPU used the card.', 'action'); use(); }
+      else { _addLog('CPU discarded the card.', 'info'); discard(); }
     }, 2500);
   } else {
     newUse.style.display = newDiscard.style.display = '';
