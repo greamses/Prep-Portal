@@ -9,6 +9,41 @@ import { setActivePlugin, getAllPlugins }       from './mathPlugins.js';
 
 // ─── Log ──────────────────────────────────────────────────────────────────────
 
+// Speech synthesis state — module-level, never touches state.js
+let _speakerOn = false;
+let _voices    = [];
+
+// Pre-load voices (Chrome requires this)
+if ('speechSynthesis' in window) {
+  const loadVoices = () => { _voices = window.speechSynthesis.getVoices(); };
+  loadVoices();
+  window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+}
+
+/** Returns the best available English voice, or null for the system default. */
+function _pickVoice() {
+  return _voices.find(v => v.lang.startsWith('en') && v.localService)
+    ?? _voices.find(v => v.lang.startsWith('en'))
+    ?? null;
+}
+
+/** Toggle the log speaker on/off. */
+export function toggleSpeaker() {
+  _speakerOn = !_speakerOn;
+  const btn = document.getElementById('btn-speaker');
+  if (btn) {
+    btn.classList.toggle('active', _speakerOn);
+    btn.setAttribute('aria-pressed', String(_speakerOn));
+    btn.title = _speakerOn ? 'Speaker ON — click to mute' : 'Read log aloud';
+  }
+  if (!_speakerOn) stopSpeech();
+}
+
+/** Cancel any in-progress speech. Called on reset and modal close. */
+export function stopSpeech() {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+
 export function addLog(msg, type = 'info') {
   const s = state;
   if (!s.logActive) { s.logActive = true; s.logOverlay?.classList.add('active'); }
@@ -17,6 +52,18 @@ export function addLog(msg, type = 'info') {
   el.textContent= msg;
   s.logOverlay?.appendChild(el);
   if (s.logOverlay) s.logOverlay.scrollTop = s.logOverlay.scrollHeight;
+
+  // ── Log speaker ────────────────────────────────────────────────────────────
+  if (_speakerOn && 'speechSynthesis' in window) {
+    // Cancel previous utterance so the latest event always wins
+    window.speechSynthesis.cancel();
+    const utt  = new SpeechSynthesisUtterance(msg);
+    utt.rate   = 1.1;
+    utt.pitch  = 1;
+    const v    = _pickVoice();
+    if (v) utt.voice = v;
+    window.speechSynthesis.speak(utt);
+  }
 }
 
 // ─── HUD ──────────────────────────────────────────────────────────────────────
@@ -325,6 +372,7 @@ export function wireUI({ openGameModal, closeGameModal, resetGame }) {
   document.getElementById('btn-close-modal')      ?.addEventListener('click', closeGameModal);
   document.getElementById('reset-game-btn')       ?.addEventListener('click', resetGame);
   document.getElementById('btn-play-again')       ?.addEventListener('click', resetGame);
+  document.getElementById('btn-speaker')          ?.addEventListener('click', toggleSpeaker);
   // Fullscreen buttons: use getElementById in handler (stale-var safe)
   document.getElementById('fullscreen-btn')       ?.addEventListener('click', toggleFullscreen);
   document.getElementById('fullscreen-btn-enter') ?.addEventListener('click', toggleFullscreen);

@@ -243,7 +243,7 @@ const percentagesPlugin = {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PLUGIN 3 — Decimals (fractions ↔ hundredths / decimal ↔ fraction)
+// PLUGIN 3 — Decimals (fractions ↔ hundredths/decimals)
 // Types:
 //   frac_to_hund → "3/4 = __ hundredths"   → integer answer in [0,100] (ans-a)
 //   dec_to_frac  → "0.75 = __/__"           → two integer inputs (ans-n, ans-d)
@@ -284,11 +284,7 @@ const decimalsPlugin = {
       return { t: 'frac_to_hund', n, dn, ans: hund };
     } else {
       const g = gcd(hund, 100);
-      return {
-        t: 'dec_to_frac',
-        dec: hund / 100,
-        ans: { n: hund / g, dn: 100 / g }
-      };
+      return { t: 'dec_to_frac', dec: hund / 100, n: hund / g, dn: 100 / g, ans: { n: hund / g, dn: 100 / g } };
     }
   },
   
@@ -455,8 +451,6 @@ const timesTablesPlugin = {
   },
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// Plugin Registry
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const _REGISTRY = new Map([

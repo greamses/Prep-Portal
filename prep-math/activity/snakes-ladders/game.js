@@ -11,6 +11,7 @@ import {
 import {
   addLog, updateHUD, initColorDropdowns,
   injectDynamicUI, wireUI, updateFullscreenUI,
+  stopSpeech,
 } from './ui.js';
 import { registerCardCallbacks, showStandardCard, showBonusFlipCards } from './cards.js';
 import {
@@ -18,6 +19,7 @@ import {
 } from './questionEngine.js';
 import { getActivePlugin, setActivePlugin } from './mathPlugins.js';
 import { recordRoll, resetProfiles }        from './ai.js';
+import { showReaction, clearReactions }     from './reactions.js';
 
 // ─── One-time setup guards ────────────────────────────────────────────────────
 // Prevent document-level listeners from stacking on successive modal opens.
@@ -64,6 +66,7 @@ export function executeRoll() {
   s.gameState   = STATE.ROLLING;
   s.currentRoll = Math.floor(Math.random() * 6) + 1;
   roll3DDice(s.currentRoll);
+  showReaction(`roll_${s.currentRoll}`, s.turn);
 
   setTimeout(() => {
     if (!s.gameActive) return;
@@ -99,6 +102,7 @@ export function checkSquareLogic(pi, sq) {
   if (sq in s.SNAKES) {
     const tail = s.SNAKES[sq];
     addLog(`OH NO! ${s.players[pi].name} hit a snake!`, 'snake');
+    showReaction('snake', pi);
     if ((s.vsCPU && pi === 1) || s.autoMove) {
       setTimeout(() => animateCPUToken(pi, sq, tail, () => {
         s.players[pi].pos = tail; checkFraction(pi, tail);
@@ -110,6 +114,7 @@ export function checkSquareLogic(pi, sq) {
   } else if (sq in s.LADDERS) {
     const top = s.LADDERS[sq];
     addLog(`YAY! ${s.players[pi].name} found a ladder!`, 'ladder');
+    showReaction('ladder', pi);
     if ((s.vsCPU && pi === 1) || s.autoMove) {
       setTimeout(() => animateCPUToken(pi, sq, top, () => {
         s.players[pi].pos = top; checkFraction(pi, top);
@@ -142,6 +147,7 @@ export function triggerWin(pi, reason = null) {
   s.gameState  = STATE.GAME_OVER;
   s.gameActive = false;
   addLog(`${s.players[pi].name} WON THE GAME!`, 'action');
+  showReaction('win', pi);
   s.winName.textContent = `${s.players[pi].name} WINS!`;
   s.winName.style.color = s.players[pi].color;
   const sub = document.getElementById('winSub');
@@ -306,6 +312,8 @@ export function resetGame() {
 
   // Reset AI adaptive profiles for a fresh game
   resetProfiles();
+  clearReactions();
+  stopSpeech();
 
   // Read difficulty
   const diffDD  = document.getElementById('dd-difficulty');
@@ -385,6 +393,8 @@ export function openGameModal() {
 export function closeGameModal() {
   const s = state;
   s.gameActive = false;
+  clearReactions();
+  stopSpeech();
 
   if (document.fullscreenElement || document.webkitFullscreenElement)
     (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);

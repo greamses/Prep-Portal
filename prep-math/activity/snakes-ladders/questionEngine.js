@@ -2,9 +2,10 @@
 // Drop-in replacement for fracPopup.js.
 // game.js imports from here; fracPopup.js is left as dead code.
 
-import { state }          from './state.js';
+import { state }           from './state.js';
 import { getActivePlugin } from './mathPlugins.js';
 import { recordFracResult } from './ai.js';
+import { showReaction }    from './reactions.js';
 
 // ─── Callback slots (filled by game.js) ──────────────────────────────────────
 
@@ -72,8 +73,10 @@ export function submitAnswer() {
 
     if (s.currentFracAttempts === 0) {
       if (bonusEligible) {
+        showReaction('correct_bonus', s.currentFracPlayer);
         _showBonusCards(s.currentFracPlayer);
       } else {
+        showReaction('correct', s.currentFracPlayer);
         if (penaltyMessage) {
           _addLog(penaltyMessage, 'info');
           if (s.gameFeedback) s.gameFeedback.textContent = penaltyMessage;
@@ -81,16 +84,18 @@ export function submitAnswer() {
         _showStandardCard(s.currentFracPlayer);
       }
     } else {
-      // Correct but not on first attempt — no card
+      showReaction('correct', s.currentFracPlayer);
       s.fracPopup.classList.remove('show');
       s.numpad.classList.remove('show');
       _endTurn();
     }
   } else {
+    showReaction('wrong', s.currentFracPlayer);
     s.currentFracAttempts++;
 
     if (s.currentFracAttempts >= 5) {
       recordFracResult(s.currentFracPlayer, 5, false);
+      showReaction('disqualified', s.currentFracPlayer);
       s.fracPopup.classList.remove('show');
       s.numpad.classList.remove('show');
       _addLog(`${s.players[s.currentFracPlayer].name} failed 5 attempts — disqualified!`, 'error');

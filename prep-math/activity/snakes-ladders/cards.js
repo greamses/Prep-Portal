@@ -2,9 +2,10 @@
 // Depends on: state, ai, renderer (animateCPUToken).
 // Game-flow functions (endTurn, triggerWin, addLog) are injected via registerCardCallbacks().
 
-import { state }               from './state.js';
-import { evaluateCardTactics, recordCardChoice } from './ai.js';
-import { animateCPUToken }     from './renderer.js';
+import { state }                                    from './state.js';
+import { evaluateCardTactics, recordCardChoice }    from './ai.js';
+import { animateCPUToken }                          from './renderer.js';
+import { showReaction }                             from './reactions.js';
 
 // ─── Card definitions ──────────────────────────────────────────────────────────
 
@@ -117,12 +118,21 @@ export function showStandardCard(pi) {
     newUse.style.display = newDiscard.style.display = 'none';
     setTimeout(() => {
       state._legendaryReason = '';
-      if (evaluateCardTactics(card, pi, cpuIntel)) {
-        const reason = state._legendaryReason ? ` [${state._legendaryReason}]` : '';
-        _addLog(`CPU used the card${reason}.`, 'action'); use();
+      const willUse = evaluateCardTactics(card, pi, cpuIntel);
+      const reason  = state._legendaryReason;
+
+      // Show adaptive emoji reaction for Legendary level decisions
+      if (cpuIntel === 'legendary' && reason) {
+        const reactionType = reason.includes('blocking') ? 'cpu_block' : 'cpu_advance';
+        showReaction(reactionType, pi);
+      }
+
+      if (willUse) {
+        const logReason = reason ? ` [${reason}]` : '';
+        _addLog(`CPU used the card${logReason}.`, 'action'); use();
       } else {
-        const reason = state._legendaryReason ? ` [${state._legendaryReason}]` : '';
-        _addLog(`CPU discarded the card${reason}.`, 'info'); discard();
+        const logReason = reason ? ` [${reason}]` : '';
+        _addLog(`CPU discarded the card${logReason}.`, 'info'); discard();
       }
     }, 2500);
   } else {
