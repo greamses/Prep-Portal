@@ -1,25 +1,5 @@
-/* game.css - Snakes N' Ladders Styles */
+/* game.css — Snakes N' Ladders */
 
-:root {
-  --ink: #1a1a1a;
-  --bg: #f5f0e8;
-  --off: #ede7dd;
-  --yellow: #ffe500;
-  --blue: #0055ff;
-  --green: #00a550;
-  --red: #ff2200;
-  --muted: #777;
-  --ruled: rgba(0, 0, 0, 0.1);
-  --font-display: 'Unbounded', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --tw: 0.12em;
-  --surface-1: #ffffff;
-  --surface-2: #ede7dd;
-  --border: #1a1a1a;
-  --accent: #0055ff;
-  --shadow-sm: 3px 3px 0 var(--ink);
-  --shadow-md: 5px 5px 0 var(--ink);
-}
 
 *,
 *::before,
@@ -38,7 +18,7 @@ body {
   overflow-x: hidden;
 }
 
-/* NAV & TICKER */
+/* ─── Nav & Ticker ───────────────────────────────────────────────────────── */
 .site-nav {
   display: flex;
   align-items: center;
@@ -90,77 +70,188 @@ body {
   }
 }
 
-/* PAGE HEADER */
+/* ─── Page Header ────────────────────────────────────────────────────────── */
+/* game-header.css — Matches main template hero section */
+
+/* ════════════════════════════════════════
+        GAME PAGE HEADER (matches main hero)
+   ════════════════════════════════════════ */
+
+/* Page Header - mirrors .hero from main template */
 .pg-header {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 32px;
-  padding: 48px 28px 32px;
-  border-bottom: 2px solid var(--ink);
+  align-items: flex-end;
+  gap: var(--hero-gap, 60px);
+  padding: var(--section-padding-y, 60px) var(--padding-xs, 20px) var(--section-padding-bottom, 40px);
+  border-bottom: var(--border, 2px solid var(--ink));
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
 }
 
-.pg-eyebrow {
+/* Decorative year/number like main template hero::after */
+.pg-header::after {
+  content: 'SNL';
+  position: absolute;
+  right: clamp(18px, 4vw, 48px);
+  top: 50%;
+  transform: translateY(-50%);
   font-family: var(--font-display);
-  font-size: .6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--tw);
-  color: var(--muted);
-  margin-bottom: 10px;
+  font-weight: var(--weight-black, 900);
+  font-size: var(--text-hero-bg, 8rem);
+  color: rgba(0, 0, 0, 0.04);
+  line-height: var(--leading-none, 1);
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: var(--tracking-tight, -0.02em);
 }
 
+/* Left side */
+.ph-left {
+  flex: 0 0 auto;
+}
+
+/* Eyebrow - matches main template badge style */
+.pg-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs, 0.7rem);
+  font-weight: var(--weight-semibold, 600);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-terra, 0.15em);
+  color: var(--light-muted, #999);
+  margin-bottom: 16px;
+  display: inline-block;
+}
+
+/* Title - matches .hero-title exactly */
 .pg-title {
   font-family: var(--font-display);
-  font-weight: 900;
-  font-size: clamp(2rem, 6vw, 3.5rem);
-  line-height: 1.05;
-  letter-spacing: -.02em;
+  font-weight: var(--weight-black, 900);
+  font-size: var(--text-hero, clamp(3rem, 8vw, 5.5rem));
+  line-height: var(--leading-none, 1);
+  letter-spacing: var(--tracking-tight, -0.02em);
+  color: var(--ink);
 }
 
 .pg-title em {
   font-style: normal;
-  color: var(--blue);
+  color: var(--blue, #0055ff);
 }
 
+/* Right side - matches .hero-right */
 .ph-right {
-  max-width: 380px;
-  flex-shrink: 0;
+  flex: 1;
+  max-width: var(--hero-max-width, 480px);
 }
 
 .ph-right p {
-  font-size: .8rem;
-  line-height: 1.7;
-  color: var(--muted);
-  margin-bottom: 20px;
+  font-family: var(--font-mono);
+  font-size: var(--text-body, 1rem);
+  line-height: var(--leading-ultra-loose, 1.8);
+  color: var(--muted, #777);
+  margin-bottom: 36px;
 }
 
+/* Stats container - matches .hero-stats exactly */
 .ph-stats {
   display: flex;
-  gap: 24px;
+  width: fit-content;
+  border: var(--border, 2px solid var(--ink));
+  box-shadow: var(--shadow-lg, 8px 8px 0 rgba(0, 0, 0, 0.1));
 }
 
 .ph-stat {
+  padding: 16px 24px;
+  border-right: var(--border, 2px solid var(--ink));
   display: flex;
   flex-direction: column;
+  gap: 4px;
+}
+
+.ph-stat:last-child {
+  border-right: none;
 }
 
 .ph-stat strong {
   font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 900;
-  line-height: 1;
+  font-weight: var(--weight-black, 900);
+  font-size: var(--text-stat, 2rem);
+  line-height: var(--leading-none, 1);
+  color: var(--ink);
 }
 
 .ph-stat span {
-  font-size: .62rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs, 0.65rem);
+  font-weight: var(--weight-semibold, 600);
   text-transform: uppercase;
-  letter-spacing: .1em;
-  color: var(--muted);
-  margin-top: 4px;
+  letter-spacing: var(--tracking-ultra, 0.2em);
+  color: var(--light-muted, #999);
 }
 
-/* SETTINGS PANEL */
+/* Responsive - matches main template breakpoints */
+@media (max-width: 640px) {
+  .pg-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+  }
+  
+  .pg-header::after {
+    display: none;
+  }
+  
+  .ph-right {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .ph-stats {
+    flex-direction: column;
+    width: 100%;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  
+  .ph-stat {
+    border-right: none;
+    border-bottom: var(--border, 2px solid var(--ink));
+  }
+  
+  .ph-stat:last-child {
+    border-bottom: none;
+  }
+}
+/* Responsive */
+@media (max-width: 768px) {
+  .pg-header {
+    padding: 36px 20px 24px;
+    gap: 24px;
+    flex-direction: column;
+  }
+  
+  .pg-header::before {
+    font-size: 60px;
+    right: 16px;
+    bottom: 16px;
+  }
+  
+  .ph-right {
+    max-width: 100%;
+    padding: 16px 20px;
+  }
+  
+  .ph-stats {
+    gap: 16px;
+  }
+  
+  .ph-stat strong {
+    font-size: 1.5rem;
+  }
+}
+
+
+/* ─── Settings Panel ─────────────────────────────────────────────────────── */
 .settings-panel {
   padding: 40px 28px;
 }
@@ -184,6 +275,7 @@ body {
   margin-bottom: 32px;
 }
 
+/* ─── Dropdown ───────────────────────────────────────────────────────────── */
 .pp-dropdown {
   position: relative;
 }
@@ -211,7 +303,7 @@ body {
   background: var(--off);
   border: 2px solid var(--ink);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all .2s;
   user-select: none;
 }
 
@@ -226,6 +318,7 @@ body {
   width: 16px;
   height: 16px;
   transition: transform .2s;
+  flex-shrink: 0;
 }
 
 .pp-dropdown.open .pp-dropdown-header svg {
@@ -261,7 +354,7 @@ body {
   font-size: .75rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: all .12s;
   border-bottom: 1px solid var(--ruled);
 }
 
@@ -277,6 +370,19 @@ body {
   font-weight: 700;
 }
 
+.pp-dropdown-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.pp-dropdown-list::-webkit-scrollbar-track {
+  background: var(--surface-2);
+}
+
+.pp-dropdown-list::-webkit-scrollbar-thumb {
+  background: var(--ink);
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
 .btn-start {
   display: inline-flex;
   align-items: center;
@@ -290,7 +396,8 @@ body {
   border: 2.5px solid var(--ink);
   box-shadow: var(--shadow-md);
   cursor: pointer;
-  transition: all .2s ease;
+  transition: all .2s;
+  border-radius: 2px;
 }
 
 .btn-start:hover {
@@ -309,7 +416,28 @@ body {
   height: 16px;
 }
 
-/* MODAL OVERLAY */
+.btn-secondary {
+  padding: 10px 20px;
+  font-family: var(--font-display);
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--surface-2);
+  border: 2px solid var(--ink);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all .15s;
+  border-radius: 3px;
+}
+
+.btn-secondary:hover {
+  background: var(--ink);
+  color: var(--bg);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ─── Game Modal ─────────────────────────────────────────────────────────── */
 .gp-modal-overlay {
   position: fixed;
   inset: 0;
@@ -354,13 +482,16 @@ body {
   flex-shrink: 0;
 }
 
+/* Turn badge — dark bg so ANY token color pops as text */
 .modal-streak {
   font-family: var(--font-display);
   font-size: .6rem;
   font-weight: 700;
-  background: var(--yellow);
+  background: var(--ink);
+  color: var(--yellow);
   border: 2px solid var(--ink);
   padding: 3px 10px;
+  border-radius: 3px;
 }
 
 .modal-header .btn {
@@ -372,8 +503,10 @@ body {
   background: var(--yellow);
   border: 2.5px solid var(--ink);
   cursor: pointer;
-  transition: all .2s ease;
+  transition: all .2s;
   color: var(--ink);
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 .modal-header .btn svg {
@@ -389,7 +522,7 @@ body {
   box-shadow: var(--shadow-md);
 }
 
-/* POLYPAD & BOTTOM SHEET */
+/* ─── Board area ─────────────────────────────────────────────────────────── */
 #polypad-wrap {
   flex: 1;
   position: relative;
@@ -400,56 +533,6 @@ body {
   justify-content: center;
 }
 
-.gp-bottom-sheet {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  background: rgba(245, 240, 232, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-top: 2px solid var(--ink);
-}
-
-.gp-feedback-box {
-  padding: 10px 16px;
-  font-family: var(--font-mono);
-  font-size: .7rem;
-  font-weight: 600;
-  border-bottom: 1px solid var(--ruled);
-  min-height: 42px;
-  display: flex;
-  align-items: center;
-}
-
-.answer-row {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  justify-content: center;
-  gap: 20px;
-}
-
-.btn-secondary {
-  padding: 10px 20px;
-  font-family: var(--font-display);
-  font-size: .6rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  background: var(--surface-2);
-  border: 2px solid var(--ink);
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: all .15s ease;
-}
-
-.btn-secondary:hover {
-  background: var(--ink);
-  color: var(--bg);
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* SNAKES N LADDERS CANVAS */
 .snakes-game-wrapper {
   position: relative;
   width: 100%;
@@ -482,24 +565,26 @@ body {
   touch-action: none;
 }
 
+/* ─── Turn HUD — dark bg + token colour text ─────────────────────────────── */
 .snakes-turn-hud {
   position: absolute;
   top: 16px;
   left: 16px;
-  background: var(--blue);
-  color: white;
+  background: #1a1a1a;
+  color: var(--yellow);
+  border: 2px solid var(--yellow);
   padding: 8px 16px;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 11px;
-  border: 2px solid var(--ink);
   box-shadow: var(--shadow-sm);
   z-index: 10;
   pointer-events: none;
   text-transform: uppercase;
+  border-radius: 3px;
 }
 
-/* 3D DICE */
+/* ─── 3-D Dice ───────────────────────────────────────────────────────────── */
 .snakes-dice-scene {
   position: absolute;
   top: 16px;
@@ -512,10 +597,7 @@ body {
   touch-action: none;
 }
 
-.snakes-dice-scene:active {
-  cursor: grabbing;
-}
-
+.snakes-dice-scene:active,
 .snakes-dice-scene.dragging {
   cursor: grabbing;
   z-index: 30;
@@ -527,7 +609,7 @@ body {
   position: relative;
   transform-style: preserve-3d;
   transform: translateZ(-30px);
-  transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform .6s cubic-bezier(.25, .46, .45, .94);
   pointer-events: none;
 }
 
@@ -535,10 +617,10 @@ body {
   position: absolute;
   width: 60px;
   height: 60px;
-  background: linear-gradient(145deg, #ffffff 0%, #f0f0f0 100%);
+  background: linear-gradient(145deg, #fff 0%, #f0f0f0 100%);
   border: 1.5px solid var(--ink);
   border-radius: 10px;
-  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, .04);
 }
 
 .snakes-dot {
@@ -548,7 +630,7 @@ body {
   background: var(--ink);
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  box-shadow: inset 0 3px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 3px 4px rgba(0, 0, 0, .4);
 }
 
 .snakes-d-center {
@@ -610,13 +692,13 @@ body {
   transform: rotateX(-90deg) translateZ(30px);
 }
 
-/* LOG & ALERTS */
+/* ─── Log ────────────────────────────────────────────────────────────────── */
 .snakes-dt-hint {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(26, 26, 26, 0.9);
+  background: rgba(26, 26, 26, .9);
   color: white;
   padding: 12px 24px;
   border: 2px solid var(--yellow);
@@ -624,10 +706,11 @@ body {
   font-size: 12px;
   font-weight: 700;
   opacity: 0;
-  transition: 0.3s;
+  transition: .3s;
   z-index: 5;
   text-transform: uppercase;
   pointer-events: none;
+  border-radius: 4px;
 }
 
 .snakes-dt-hint.show {
@@ -641,7 +724,7 @@ body {
   width: 100%;
   height: 25%;
   max-height: 140px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, transparent 100%);
+  background: linear-gradient(to top, rgba(0, 0, 0, .45) 0%, transparent 100%);
   color: white;
   padding: 28px 16px 14px;
   display: flex;
@@ -651,7 +734,7 @@ body {
   z-index: 10;
   opacity: 0;
   pointer-events: none;
-  transition: 0.3s;
+  transition: .3s;
 }
 
 .snakes-log-overlay.active {
@@ -660,24 +743,12 @@ body {
 
 .snakes-log-entry {
   font-size: 11px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-  animation: fadeIn 0.3s;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .6);
+  animation: fadeIn .3s;
 }
 
 .snakes-log-entry.info {
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, .85);
 }
 
 .snakes-log-entry.action {
@@ -700,18 +771,30 @@ body {
   font-weight: 600;
 }
 
-/* FRACTION POPUP & INPUTS */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Fraction Popup ─────────────────────────────────────────────────────── */
 .snakes-frac-popup {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.9);
+  transform: translate(-50%, -50%) scale(.9);
   background: var(--ink);
   color: white;
   border: 2px solid var(--yellow);
   box-shadow: var(--shadow-md);
   padding: 24px 32px;
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
   z-index: 600;
   text-align: center;
   min-width: 320px;
@@ -731,14 +814,13 @@ body {
 .snakes-frac-popup-label {
   font-size: 10px;
   font-weight: 500;
-  opacity: 0.6;
-  letter-spacing: 0.15em;
+  opacity: .6;
+  letter-spacing: .15em;
   margin-bottom: 16px;
   font-family: var(--font-display);
   text-transform: uppercase;
 }
 
-/* Fraction Question Structure */
 .frac-q-row {
   display: flex;
   align-items: center;
@@ -759,6 +841,7 @@ body {
   height: 3px;
   background: var(--yellow);
   border-radius: 2px;
+  min-width: 28px;
 }
 
 .frac-lg {
@@ -779,12 +862,11 @@ body {
   color: var(--yellow);
 }
 
-/* ContentEditable Inputs */
 .frac-input {
   min-width: 38px;
   min-height: 38px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px dashed rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, .1);
+  border: 1px dashed rgba(255, 255, 255, .4);
   border-radius: 4px;
   color: white;
   font-family: var(--font-mono);
@@ -794,15 +876,22 @@ body {
   align-items: center;
   justify-content: center;
   outline: none;
-  caret-color: var(--yellow);
-  transition: 0.2s;
+  transition: .2s;
   padding: 0 6px;
+  cursor: pointer;
+  user-select: none;
 }
 
-.frac-input:focus {
-  border: 1px solid var(--yellow);
-  background: rgba(255, 229, 0, 0.15);
-  box-shadow: 0 0 6px rgba(255, 229, 0, 0.4);
+/* BUG FIX: active-focus rule was missing — this is what JS applies to the "selected" input */
+.frac-input.active-focus {
+  border: 2px solid var(--yellow);
+  background: rgba(255, 229, 0, .18);
+  box-shadow: 0 0 10px rgba(255, 229, 0, .45);
+}
+
+.frac-input:focus-visible {
+  border: 2px solid var(--yellow);
+  background: rgba(255, 229, 0, .15);
 }
 
 .frac-input.ans-whole {
@@ -821,9 +910,10 @@ body {
   font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
-  transition: 0.2s;
+  transition: .2s;
   font-size: 13px;
   letter-spacing: 1px;
+  border-radius: 3px;
 }
 
 .btn-check-frac:hover {
@@ -831,9 +921,8 @@ body {
   transform: scale(1.03);
 }
 
-/* Error Shake Animation */
 .error-shake {
-  animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
+  animation: shake .4s cubic-bezier(.36, .07, .19, .97) both;
 }
 
 .error-shake .frac-input {
@@ -865,15 +954,14 @@ body {
   }
 }
 
-/* DRAGGABLE VERY SMALL NUMPAD */
+/* ─── Numpad ─────────────────────────────────────────────────────────────── */
 .snakes-numpad {
   position: fixed;
   top: 60%;
   left: 20px;
   transform: translateY(-50%);
-  background: rgba(26, 26, 26, 0.85);
+  background: rgba(26, 26, 26, .88);
   backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   border: 1px solid var(--yellow);
   border-radius: 8px;
   padding: 6px;
@@ -881,8 +969,8 @@ body {
   z-index: 1000;
   display: none;
   opacity: 0;
-  transition: opacity 0.3s;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  transition: opacity .3s;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
   touch-action: none;
 }
 
@@ -900,7 +988,7 @@ body {
   cursor: grab;
   letter-spacing: 2px;
   user-select: none;
-  opacity: 0.8;
+  opacity: .8;
 }
 
 .np-header:active {
@@ -915,8 +1003,8 @@ body {
 }
 
 .np-grid button {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .15);
   color: white;
   font-family: var(--font-mono);
   font-size: 14px;
@@ -924,7 +1012,7 @@ body {
   padding: 8px 0;
   border-radius: 4px;
   cursor: pointer;
-  transition: 0.1s;
+  transition: .1s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -937,44 +1025,49 @@ body {
 }
 
 .np-grid button.np-util {
-  background: rgba(255, 107, 107, 0.15);
+  background: rgba(255, 107, 107, .15);
   color: #ff6b6b;
   font-size: 12px;
 }
 
 .np-grid button.np-ok {
-  background: rgba(107, 207, 127, 0.2);
+  background: rgba(107, 207, 127, .2);
   color: #6bcf7f;
   font-size: 11px;
   font-weight: bold;
 }
 
-/* LUCKY CARD OVERLAY */
+/* ─── Lucky / Bonus Card Overlay (matches main template's sharp aesthetic) ──── */
 .snakes-lucky-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   z-index: 800;
   display: none;
-  place-items: center;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
 
 .snakes-lucky-overlay.show {
-  display: grid;
+  display: flex;
 }
 
 .lc-box {
-  background: var(--surface-1);
-  border: 3px solid var(--ink);
-  box-shadow: var(--shadow-md);
-  padding: 32px 24px;
+  background: var(--bg, #f5f0e8);
+  border: var(--border-width, 2px) solid var(--ink, #1a1a1a);
+  box-shadow: var(--shadow-md, 5px 5px 0 var(--ink));
+  padding: 32px 28px;
   text-align: center;
-  max-width: 320px;
+  max-width: 360px;
   width: 90%;
-  animation: cardPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border-radius: 12px;
+  border-radius: 0;
+  animation: cardPopIn 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.lc-box--wide {
+  max-width: 480px;
 }
 
 .lc-icon {
@@ -985,26 +1078,56 @@ body {
 
 .lc-box h3 {
   font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 900;
-  color: var(--accent);
+  font-size: 1.25rem;
+  font-weight: var(--weight-black, 900);
+  color: var(--accent, #0055ff);
   margin-bottom: 12px;
   text-transform: uppercase;
+  letter-spacing: var(--tracking-wide, 0.05em);
 }
 
 .lc-box p {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--ink);
-  line-height: 1.4;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: var(--weight-semibold, 600);
+  color: var(--muted, #777);
+  line-height: 1.5;
+}
+
+.lc-actions {
+  margin-top: 28px;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.lc-actions .btn-check-frac {
+  margin-top: 0;
+}
+
+.bonus-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: var(--weight-black, 900);
+  color: var(--red, #ff2200);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  letter-spacing: var(--tracking-wide, 0.05em);
+}
+
+.bonus-sub {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--light-muted, #999);
+  margin-bottom: 4px;
 }
 
 @keyframes cardPopIn {
   0% {
-    transform: scale(0.6) translateY(40px);
+    transform: scale(0.85) translateY(30px);
     opacity: 0;
   }
-  
   100% {
     transform: scale(1) translateY(0);
     opacity: 1;
@@ -1012,22 +1135,101 @@ body {
 }
 
 @keyframes floatIcon {
-
-  0%,
-  100% {
+  0%, 100% {
     transform: translateY(0);
   }
-  
   50% {
     transform: translateY(-8px);
   }
 }
 
-/* WIN MODAL */
+/* ─── Bonus Flip Cards (sharp corners, no rounding) ───────────────────────── */
+.bc-cards {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.bc-card {
+  width: 100px;
+  height: 136px;
+  perspective: 600px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.1s var(--ease-default, ease);
+}
+
+.bc-card:hover:not(.flipped) {
+  transform: translate(-2px, -2px);
+}
+
+.bc-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.bc-card.flipped .bc-card-inner {
+  transform: rotateY(180deg);
+}
+
+.bc-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 0;
+  border: var(--border-width, 2px) solid var(--ink, #1a1a1a);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.bc-front {
+  background: var(--ink, #1a1a1a);
+  color: var(--yellow, #ffe500);
+  font-size: 40px;
+  box-shadow: var(--shadow-sm, 3px 3px 0 rgba(0, 0, 0, 0.1));
+}
+
+.bc-back {
+  background: var(--yellow, #ffe500);
+  color: var(--ink, #1a1a1a);
+  transform: rotateY(180deg);
+  box-shadow: var(--shadow-sm, 3px 3px 0 var(--ink));
+}
+
+.bc-card-title {
+  font-family: var(--font-display);
+  font-size: 0.55rem;
+  font-weight: var(--weight-black, 900);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 8px;
+  line-height: 1.3;
+  letter-spacing: var(--tracking-wider, 0.08em);
+}
+
+.bc-card-desc {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  line-height: 1.4;
+  color: var(--ink, #1a1a1a);
+  font-weight: var(--weight-semibold, 600);
+}
+
+/* ─── Win Overlay (sharp, brutalist) ──────────────────────────────────────── */
 .snakes-win-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(26, 26, 26, 0.9);
+  background: rgba(26, 26, 26, 0.92);
   display: none;
   place-items: center;
   z-index: 900;
@@ -1038,35 +1240,137 @@ body {
 }
 
 .snakes-win-box {
-  background: var(--yellow);
-  border: 3px solid var(--ink);
-  box-shadow: var(--shadow-md);
+  background: var(--yellow, #ffe500);
+  border: var(--border-width, 3px) solid var(--ink, #1a1a1a);
+  box-shadow: var(--shadow-md, 6px 6px 0 var(--ink));
   padding: 40px 52px;
   text-align: center;
-  max-width: 400px;
+  max-width: 420px;
   width: 90%;
+  border-radius: 0;
+  animation: cardPopIn 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
 .snakes-win-icon {
-  font-size: 56px;
-  margin-bottom: 12px;
+  font-size: 64px;
+  margin-bottom: 16px;
+  filter: drop-shadow(2px 2px 0 var(--ink));
 }
 
 .snakes-win-box h2 {
   font-family: var(--font-display);
-  font-weight: 900;
-  font-size: 28px;
-  margin-bottom: 8px;
+  font-weight: var(--weight-black, 900);
+  font-size: 2rem;
+  margin-bottom: 12px;
+  letter-spacing: var(--tracking-tight, -0.02em);
+  text-transform: uppercase;
+  color: var(--ink, #1a1a1a);
 }
 
 .snakes-win-sub {
-  font-size: 13px;
-  opacity: 0.7;
-  margin-bottom: 24px;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-bottom: 28px;
+  font-weight: var(--weight-semibold, 600);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider, 0.08em);
+  color: var(--ink, #1a1a1a);
 }
 
-/* Responsive Adjustments */
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .lc-box {
+    padding: 24px 20px;
+    max-width: 320px;
+  }
+  
+  .lc-box h3 {
+    font-size: 1rem;
+  }
+  
+  .lc-box p {
+    font-size: 0.7rem;
+  }
+  
+  .bc-card {
+    width: 80px;
+    height: 110px;
+  }
+  
+  .bc-card-title {
+    font-size: 0.5rem;
+  }
+  
+  .bc-card-desc {
+    font-size: 0.55rem;
+  }
+  
+  .snakes-win-box {
+    padding: 32px 40px;
+  }
+  
+  .snakes-win-box h2 {
+    font-size: 1.5rem;
+  }
+  
+  .snakes-win-icon {
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lc-box {
+    padding: 20px 16px;
+  }
+  
+  .lc-icon {
+    font-size: 44px;
+  }
+  
+  .lc-actions {
+    gap: 12px;
+  }
+  
+  .snakes-win-box {
+    padding: 28px 32px;
+  }
+  
+  .snakes-win-box h2 {
+    font-size: 1.25rem;
+  }
+}
+
+/* ─── Bottom Sheet ───────────────────────────────────────────────────────── */
+.gp-bottom-sheet {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: rgba(245, 240, 232, .85);
+  backdrop-filter: blur(8px);
+  border-top: 2px solid var(--ink);
+}
+
+.gp-feedback-box {
+  padding: 10px 16px;
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--ruled);
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+}
+
+.answer-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .pg-header {
     padding: 36px 20px 24px;
@@ -1160,6 +1464,11 @@ body {
     padding: 18px 20px;
     min-width: 300px;
   }
+  
+  .bc-card {
+    width: 80px;
+    height: 110px;
+  }
 }
 
 *:focus-visible {
@@ -1169,51 +1478,8 @@ body {
 
 button,
 .pp-dropdown-header,
-.np-grid button {
+.np-grid button,
+.bc-card {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
-}
-
-/* Scrollbar styling for dropdowns */
-.pp-dropdown-list::-webkit-scrollbar {
-  width: 8px;
-}
-
-.pp-dropdown-list::-webkit-scrollbar-track {
-  background: var(--surface-2);
-}
-
-.pp-dropdown-list::-webkit-scrollbar-thumb {
-  background: var(--ink);
-}
-
-
-/* LUCKY CARD OVERLAY */
-.snakes-lucky-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  z-index: 800;
-  display: none;
-  align-items: center; /* PERFECT CENTERING OVERRIDE */
-  justify-content: center;
-  flex-direction: column;
-}
-
-.snakes-lucky-overlay.show {
-  display: flex;
-}
-
-.lc-box {
-  background: var(--surface-1);
-  border: 3px solid var(--ink);
-  box-shadow: var(--shadow-md);
-  padding: 32px 24px;
-  text-align: center;
-  max-width: 320px;
-  width: 90%;
-  animation: cardPopIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border-radius: 12px;
 }
