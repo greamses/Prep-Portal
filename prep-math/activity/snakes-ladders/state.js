@@ -21,9 +21,9 @@ export const state = {
   ],
 
   // ── Game settings ─────────────────────────────────────────────────────
-  vsCPU:    true,
+  vsCPU:    false,
   cpuIntel: 'advanced',
-  autoMove: true,
+  autoMove: false,
 
   // ── Round state ───────────────────────────────────────────────────────
   turn:           0,
