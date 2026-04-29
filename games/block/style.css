@@ -1,0 +1,364 @@
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+/* ── Prep Portal design tokens ───────────────────────────── */
+:root {
+  --ink: #1a1a1a;
+  --yellow: #ffe600;
+  --blue: #0047ff;
+  --green: #00c04b;
+  --red: #e5000a;
+  --bg: #f5f0e8;
+  --white: #ffffff;
+  --border: 2.5px solid var(--ink);
+  --shadow: 4px 4px 0 var(--ink);
+  --shadow-lg: 6px 6px 0 var(--ink);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  height: 100vh;
+  padding: 10px;
+  overflow-x: hidden;
+}
+
+/* ── Game container ─────────────────────────────────────── */
+#game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  padding: 0 10px;
+}
+
+/* ── Score panel ────────────────────────────────────────── */
+#score {
+  font-size: clamp(22px, 3.5vw, 28px);
+  font-family: 'Unbounded', sans-serif;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--yellow);
+  padding: clamp(10px, 3vw, 14px) clamp(16px, 4vw, 28px);
+  border: var(--border);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+  width: fit-content;
+  max-width: 500px;
+}
+
+/* ── Info panel ─────────────────────────────────────────── */
+.info-panel {
+  text-align: center;
+  margin: 6px 0;
+  font-size: clamp(14px, 3.5vw, 20px);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--white);
+  padding: clamp(10px, 3vw, 14px) clamp(16px, 4vw, 24px);
+  border: var(--border);
+  box-shadow: var(--shadow);
+  width: 100%;
+  max-width: 500px;
+}
+
+/* ── Prime indicator ────────────────────────────────────── */
+#prime-indicator {
+  font-weight: 700;
+  margin-top: 6px;
+  padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
+  font-size: clamp(13px, 3vw, 18px);
+  font-family: 'Unbounded', sans-serif;
+  background: #d0c8bc;
+  border: var(--border);
+  box-shadow: var(--shadow);
+  color: #888;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+}
+
+#prime-indicator.prime {
+  color: var(--ink);
+  background: var(--green);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Game section ───────────────────────────────────────── */
+.game-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* ── Game board canvas ──────────────────────────────────── */
+#game-board {
+  width: 100%;
+  max-width: min(400px, 95vw);
+  height: 60vh;
+  aspect-ratio: 10/20;
+  border: var(--border);
+  background: var(--white);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Arrangements canvas ────────────────────────────────── */
+#arrangements-canvas {
+  width: 100%;
+  max-width: min(600px, 95vw);
+  height: auto;
+  aspect-ratio: 16/4;
+  border: var(--border);
+  background: var(--white);
+  box-shadow: var(--shadow);
+  margin-top: 10px;
+}
+
+/* ── Overlay controls ───────────────────────────────────── */
+.overlay-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── Direction pad overlay ──────────────────────────────── */
+.direction-overlay {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  justify-items: center;
+  align-items: center;
+  pointer-events: auto;
+  padding: 12px;
+  width: min(240px, 75%);
+}
+
+/* ── Memory controls overlay ────────────────────────────── */
+.memory-overlay {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: auto;
+  padding: 10px;
+}
+
+/* ── Direction buttons ──────────────────────────────────── */
+.direction-overlay button {
+  height: clamp(44px, 11vw, 64px);
+  width: clamp(44px, 11vw, 64px);
+  font-size: clamp(18px, 5vw, 26px);
+  font-weight: 700;
+  cursor: pointer;
+  border: var(--border);
+  background: var(--yellow);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.08s, box-shadow 0.08s;
+  pointer-events: auto;
+  font-family: 'JetBrains Mono', monospace;
+  border-radius: 0;
+  /* Neobrutalist: no border-radius */
+}
+
+/* ── Memory buttons ─────────────────────────────────────── */
+.memory-overlay button {
+  height: clamp(38px, 9vw, 54px);
+  width: clamp(48px, 11vw, 72px);
+  font-size: clamp(11px, 2.5vw, 14px);
+  font-weight: 700;
+  cursor: pointer;
+  border: var(--border);
+  background: var(--green);
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.08s, box-shadow 0.08s;
+  pointer-events: auto;
+  font-family: 'Unbounded', sans-serif;
+  letter-spacing: 0.3px;
+  border-radius: 0;
+}
+
+/* ── Button hover & active states ───────────────────────── */
+.direction-overlay button:hover,
+.memory-overlay button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.direction-overlay button:active,
+.memory-overlay button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+/* ── Rotate button accent ───────────────────────────────── */
+#rotate {
+  background: var(--blue);
+  color: var(--white);
+  border-color: var(--ink);
+}
+
+#rotate:hover {
+  background: #0036cc;
+}
+
+/* ── D-pad grid positions ───────────────────────────────── */
+#up {
+  grid-row: 1;
+  grid-column: 2;
+}
+
+#left {
+  grid-row: 2;
+  grid-column: 1;
+}
+
+#rotate {
+  grid-row: 2;
+  grid-column: 2;
+}
+
+#right {
+  grid-row: 2;
+  grid-column: 3;
+}
+
+#down {
+  grid-row: 3;
+  grid-column: 2;
+}
+
+/* ── Fallback controls ──────────────────────────────────── */
+.fallback-controls {
+  display: none;
+}
+
+/* ── Block styling ──────────────────────────────────────── */
+.glass-block {
+  position: relative;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+/* ── Utility ────────────────────────────────────────────── */
+.hide {
+  display: none;
+}
+
+/* ── Mobile ─────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  body {
+    padding: 5px;
+  }
+  
+  #game-container {
+    gap: 8px;
+  }
+  
+  .direction-overlay {
+    bottom: 10px;
+    padding: 10px;
+    gap: 5px;
+    width: min(210px, 82%);
+  }
+  
+  .memory-overlay {
+    top: 10px;
+    right: 8px;
+    padding: 8px;
+    gap: 5px;
+  }
+  
+  #game-board {
+    max-width: min(340px, 90vw);
+  }
+  
+  #arrangements-canvas {
+    max-width: min(480px, 90vw);
+  }
+}
+
+@media (max-width: 360px) {
+  .direction-overlay button {
+    height: 40px;
+    width: 40px;
+    font-size: 15px;
+  }
+  
+  .memory-overlay button {
+    height: 34px;
+    width: 44px;
+    font-size: 10px;
+  }
+}
+
+/* ── Landscape mobile ───────────────────────────────────── */
+@media (max-height: 600px) and (orientation: landscape) {
+  body {
+    padding: 5px;
+  }
+  
+  #game-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  #score,
+  .info-panel,
+  #prime-indicator {
+    max-width: 200px;
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  
+  #game-board {
+    max-width: min(240px, 42vh);
+  }
+  
+  #arrangements-canvas {
+    max-width: min(380px, 78vw);
+    margin-top: 4px;
+  }
+  
+  .direction-overlay {
+    bottom: 5px;
+    padding: 7px;
+  }
+  
+  .memory-overlay {
+    top: 5px;
+    right: 5px;
+    padding: 7px;
+  }
+}
