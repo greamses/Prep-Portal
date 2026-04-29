@@ -58,7 +58,7 @@ const CONFIG = {
     readyOffset: new THREE.Vector3(0, -0.32, -0.55)
   },
   TIMER: {
-    duration: 180,
+    duration: 60,
     autoStart: true
   }
 };
@@ -594,4 +594,4 @@ window.addEventListener("keydown", (e) => {
 console.log(`FPV Free Throw - Relaxed Mode ${isMobile ? '(Mobile)' : '(Desktop)'}`);
 requestAnimationFrame(animate);
 updateHUD();
-showMessage('Take your time...', 'ready', 2000);
+showMessage('Starting...', 'ready', 2000);

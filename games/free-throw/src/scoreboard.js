@@ -362,7 +362,7 @@ function addSupportStructure(group, poleTexture) {
  * PERF: reduced from 5 shadow layers to 2 — eliminates 3 full canvas redraws per call.
  */
 export function drawDigitalText(ctx, text, x, y, fontSize, color, glowColor) {
-  ctx.font = `bold ${fontSize}px 'Digital7', 'Digital-7', 'Courier New', monospace`;
+  ctx.font = `bold ${fontSize}px 'Orbitron', 'Obitron', 'Courier New', monospace`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
@@ -501,7 +501,7 @@ const timerText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
 function drawLabel(ctx, text, x, y, color) {
   ctx.save();
-  ctx.font = "bold 18px 'Digital7', 'Courier New', monospace";
+  ctx.font = "bold 18px 'Orbitron', 'Courier New', monospace";
   ctx.textAlign = 'center';
   ctx.fillStyle = color;
   ctx.shadowBlur = 8;
@@ -513,14 +513,14 @@ function drawLabel(ctx, text, x, y, color) {
 function drawStatBox(ctx, label, value, x, y, progress) {
   ctx.save();
 
-  ctx.font = "bold 14px 'Digital7', 'Courier New', monospace";
+  ctx.font = "bold 14px 'Orbitron', 'Courier New', monospace";
   ctx.fillStyle = '#888888';
   ctx.shadowBlur = 4;
   ctx.shadowColor = '#000000';
   ctx.textAlign = 'center';
   ctx.fillText(label, x, y - 25);
 
-  ctx.font = "38px 'Digital7', 'Courier New', monospace";
+  ctx.font = "38px 'Orbitron', 'Courier New', monospace";
   ctx.fillStyle = CONFIG.COLORS.ACCENT;
   ctx.shadowColor = '#ff8800';
   ctx.fillText(value, x, y);
