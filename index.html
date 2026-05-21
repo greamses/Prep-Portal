@@ -296,11 +296,9 @@
     <script src="/home/js/auth-modal.js" type="module"></script>
     <script>
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("/sw.js")
-            .then((reg) => console.log("Service worker registered:", reg.scope))
-            .catch((err) => console.warn("SW registration failed:", err));
+        // Listen for the new service worker taking control of the page
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          window.location.reload();
         });
       }
     </script>
