@@ -130,15 +130,11 @@ body {
 }
 
 .vis-container {
-  background: var(--paper);
-  border: var(--border);
-  border-radius: var(--radius-md);
   padding: clamp(16px, 3vw, 24px);
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 300px;
-  box-shadow: var(--shadow-md);
   position: relative;
 }
 
@@ -151,13 +147,14 @@ body {
   padding: clamp(1rem, 2vw, 1.5rem);
   background: var(--paper);
   border: var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
 }
 
 .control-item {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   flex: 1;
   min-width: 200px;
@@ -175,6 +172,7 @@ body {
 .control-item input[type="range"] {
   flex: 1;
   min-width: 100px;
+  max-width: 200px;
   height: 8px;
   -webkit-appearance: none;
   appearance: none;
@@ -192,7 +190,7 @@ body {
   height: 24px;
   background: var(--yellow);
   border: var(--border);
-  border-radius: 50%;
+  border-radius: 5px;
   cursor: pointer;
   box-shadow: 2px 2px 0 var(--ink);
   transition: transform 0.15s ease;
