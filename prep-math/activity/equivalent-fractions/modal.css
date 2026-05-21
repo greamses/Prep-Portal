@@ -1,0 +1,823 @@
+@import url("/utils/components/theme.css");
+
+/* ============================================================
+   fraction-visualizer.css
+   Prep Portal — Fraction Visualizer Page & Settings Modal
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-md);
+  background: var(--app-bg);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: var(--leading-relaxed);
+  overflow-x: hidden;
+}
+
+*:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Fraction Page Layout ────────────────────────────────────────────────── */
+
+.fraction-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+/* ─── Page Header ─────────────────────────────────────────────────────────── */
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(1rem, 3vw, 2rem);
+  padding-bottom: clamp(1rem, 2vw, 1.5rem);
+  border-bottom: var(--border);
+  position: relative;
+}
+
+.page-header h1 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+}
+
+/* Settings Gear Button */
+.settings-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 18px;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--paper);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  color: var(--ink);
+  white-space: nowrap;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-btn:hover {
+  transform: translate(-2px, -2px);
+  background: var(--card-hover);
+}
+
+.settings-btn:active {
+  transform: translate(2px, 2px);
+}
+
+.settings-btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* ─── Mode Badge ──────────────────────────────────────────────────────────── */
+
+.mode-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 20px;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: var(--yellow);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 var(--ink);
+  align-self: flex-start;
+  user-select: none;
+}
+
+/* ─── Visualization Area ──────────────────────────────────────────────────── */
+
+.vis-area {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(16px, 3vw, 32px);
+  min-height: 400px;
+}
+
+.vis-container {
+  background: var(--paper);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  padding: clamp(16px, 3vw, 24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+
+/* ─── Control Section ─────────────────────────────────────────────────────── */
+
+.control-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(16px, 3vw, 24px);
+  padding: clamp(1rem, 2vw, 1.5rem);
+  background: var(--paper);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.control-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 200px;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.control-item span:first-child {
+  min-width: 60px;
+}
+
+.control-item input[type="range"] {
+  flex: 1;
+  min-width: 100px;
+  height: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--off);
+  border: var(--border);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.control-item input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: var(--yellow);
+  border: var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: transform 0.15s ease;
+}
+
+.control-item input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.control-item input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.05);
+}
+
+#val-opacity {
+  min-width: 45px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+/* ─── Pie Chart Styles ────────────────────────────────────────────────────── */
+
+.pie-wrapper {
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 280px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.pie-wrapper svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.wholes-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.whole-circle {
+  width: clamp(28px, 5vw, 40px);
+  height: clamp(28px, 5vw, 40px);
+  border-radius: 50%;
+  border: 2.5px solid;
+  position: relative;
+}
+
+.whole-blue {
+  background: rgba(0, 85, 255, 0.15);
+  border-color: #0055ff;
+}
+
+.whole-green {
+  background: rgba(0, 165, 80, 0.15);
+  border-color: #00a550;
+}
+
+/* ─── Vis Placeholder ───────────────────────────────────────────────────── */
+
+.vis-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 200px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ═══════════════════════════════════════════
+   SETTINGS MODAL — Dashboard Window Style
+   ═══════════════════════════════════════════ */
+
+:root {
+  --settings-transition: 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Modal Overlay ──────────────────────── */
+.settings-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(10, 10, 10, 0.55);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 3vw, 32px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--settings-transition);
+}
+
+.settings-modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ─── Modal Content ──────────────────────── */
+.settings-modal-content {
+  background: var(--paper);
+  border: var(--border);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 88vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
+  transform: scale(0.94);
+  transition: transform var(--settings-transition);
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-modal-overlay.active .settings-modal-content {
+  transform: scale(1);
+}
+
+/* ─── Modal Header ───────────────────────── */
+.settings-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(10, 10, 10, 0.08);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+  border-radius: 12px 12px 0 0;
+  z-index: 2;
+}
+
+.settings-modal-dots {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.settings-modal-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid #0a0a0a;
+}
+
+.settings-modal-dots span:nth-child(1) {
+  background: #ff5f56;
+  border-color: #c73e3a;
+}
+
+.settings-modal-dots span:nth-child(2) {
+  background: #ffbd2e;
+  border-color: #c7951e;
+}
+
+.settings-modal-dots span:nth-child(3) {
+  background: #27c93f;
+  border-color: #1a8a2a;
+}
+
+.settings-modal-header h2 {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+}
+
+.settings-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-modal-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--ink);
+}
+
+.settings-modal-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── Modal Body Sections ────────────────── */
+.settings-section {
+  padding: clamp(16px, 3vw, 24px) clamp(14px, 2.5vw, 20px);
+  border-bottom: 1px solid rgba(10, 10, 10, 0.06);
+}
+
+.settings-section:last-of-type {
+  border-bottom: none;
+}
+
+.settings-section h3 {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+
+/* ─── Mode Selector Buttons ──────────────── */
+.mode-selector {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.mode-btn {
+  padding: 10px 16px;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--paper);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: var(--ink);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mode-btn:hover {
+  background: var(--card-hover);
+  color: var(--bg);
+  transform: translate(-2px, -2px);
+}
+
+.mode-btn:active {
+  transform: translate(2px, 2px);
+}
+
+.mode-btn.active {
+  background: var(--yellow);
+  font-weight: 800;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+/* ─── Side-by-side Sliders ─────────────────── */
+.frac-sliders-row {
+  display: flex;
+  gap: 16px;
+}
+
+.frac-slider-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.frac-slider-item label {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.frac-slider-item input[type="range"] {
+  width: 100%;
+  height: 8px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--off);
+  border: var(--border);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.frac-slider-item input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: var(--yellow);
+  border: var(--border);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: transform 0.15s ease;
+}
+
+.frac-slider-item input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.frac-slider-item input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.05);
+}
+
+.frac-slider-item .slider-purple::-webkit-slider-thumb {
+  background: #7c3aed !important;
+}
+
+.frac-slider-item .slider-green::-webkit-slider-thumb {
+  background: #059669 !important;
+}
+
+.frac-slider-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--ink);
+  text-align: center;
+  background: var(--bg);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  border: var(--border);
+}
+
+/* ─── Expression Preview ─────────────────── */
+.expression-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 20px;
+  background: var(--bg);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.expr-fraction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.expr-num,
+.expr-den {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--purple, #7c3aed);
+  line-height: 1;
+}
+
+.expr-line {
+  width: 50px;
+  height: 3px;
+  background: var(--ink);
+  border-radius: 2px;
+}
+
+.expr-op {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--green, #059669);
+}
+
+/* Scalar display - two numbers stacked WITHOUT dividing line */
+.expr-scalar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  background: rgba(5, 150, 105, 0.08);
+  border-radius: var(--radius-sm);
+  border: 1px dashed rgba(5, 150, 105, 0.3);
+}
+
+.scalar-top,
+.scalar-bot {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--green, #059669);
+  line-height: 1;
+}
+
+.expr-equals {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--muted);
+  min-width: 30px;
+  text-align: center;
+}
+
+/* ─── Scrollbar for modal ────────────────── */
+.settings-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-modal-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+}
+
+/* Lock body scroll when modal is open */
+body.settings-modal-open {
+  overflow: hidden;
+}
+
+/* ─── Responsive Styles ───────────────────────────────────────────────────── */
+
+@media (max-width: 700px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .page-header h1 {
+    font-size: clamp(1.8rem, 8vw, 2.5rem);
+  }
+
+  .settings-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 52px;
+    font-size: 0.9rem;
+  }
+
+  .vis-area {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .control-section {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .fraction-page {
+    padding: 1rem 0.75rem;
+    gap: 1rem;
+  }
+
+  .mode-selector {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .mode-btn {
+    font-size: 0.7rem;
+    padding: 8px 12px;
+  }
+
+  .frac-sliders-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .settings-modal-header {
+    padding: 12px 14px;
+  }
+
+  .settings-modal-header h2 {
+    font-size: 0.65rem;
+  }
+
+  .expr-num,
+  .expr-den {
+    font-size: 1.5rem;
+  }
+
+  .scalar-top,
+  .scalar-bot {
+    font-size: 1.2rem;
+  }
+
+  .expr-op {
+    font-size: 1.4rem;
+  }
+
+  .expr-equals {
+    font-size: 1.5rem;
+  }
+
+  .expression-preview {
+    gap: 8px;
+    padding: 16px 12px;
+  }
+
+  .expr-line {
+    width: 40px;
+  }
+}
+
+@media (max-width: 360px) {
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .mode-badge {
+    font-size: 0.7rem;
+    padding: 6px 14px;
+  }
+
+  .settings-modal-content {
+    border-radius: 8px;
+  }
+
+  .settings-modal-header {
+    border-radius: 8px 8px 0 0;
+  }
+
+  .expr-num,
+  .expr-den {
+    font-size: 1.3rem;
+  }
+
+  .scalar-top,
+  .scalar-bot {
+    font-size: 1.1rem;
+  }
+
+  .expr-op {
+    font-size: 1.2rem;
+  }
+
+  .expression-preview {
+    gap: 6px;
+    padding: 12px 8px;
+  }
+
+  .expr-line {
+    width: 35px;
+  }
+}
+
+/* Landscape adjustments */
+@media (max-width: 900px) and (orientation: landscape) {
+  .fraction-page {
+    gap: 1rem;
+  }
+
+  .vis-area {
+    grid-template-columns: 1fr 1fr;
+    min-height: 250px;
+  }
+
+  .pie-wrapper {
+    max-width: 200px;
+  }
+}
+
+/* ─── Animations ──────────────────────────────────────────────────────────── */
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.settings-modal-overlay.active {
+  animation: modalFadeIn 0.2s ease;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .settings-modal-overlay.active {
+    animation: none;
+  }
+
+  .settings-modal-content,
+  .settings-btn,
+  .mode-btn {
+    transition: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .settings-btn,
+  .settings-modal-overlay,
+  .control-section {
+    display: none !important;
+  }
+
+  .fraction-page {
+    padding: 0;
+  }
+
+  .vis-area {
+    page-break-inside: avoid;
+  }
+}
+
+.hidden {
+  display: none !important;
+}

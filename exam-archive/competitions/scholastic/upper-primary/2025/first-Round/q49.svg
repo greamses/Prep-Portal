@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 150" width="100%" height="100%">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="black" />
+    </marker>
+  </defs>
+  
+  <!-- Base line -->
+  <line x1="20" y1="120" x2="280" y2="120" stroke="black" stroke-width="1.5" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+  
+  <!-- Center point O -->
+  <circle cx="150" cy="120" r="2.5" fill="black" />
+  <text x="150" y="135" font-family="sans-serif" font-size="14" text-anchor="middle" fill="black">O</text>
+  
+  <!-- Ray 1 -->
+  <line x1="150" y1="120" x2="70" y2="40" stroke="black" stroke-width="1.5" marker-end="url(#arrow)" />
+  
+  <!-- Ray 2 -->
+  <line x1="150" y1="120" x2="250" y2="50" stroke="black" stroke-width="1.5" marker-end="url(#arrow)" />
+  
+  <!-- Angle Arcs and Texts -->
+  <!-- 60 degrees arc -->
+  <path d="M 120 120 A 30 30 0 0 1 128.7 98.7" fill="none" stroke="black" stroke-width="1" />
+  <text x="100" y="110" font-family="sans-serif" font-size="12" fill="black">60°</text>
+  
+  <!-- 5x degrees arc -->
+  <path d="M 128.7 98.7 A 30 30 0 0 1 174.5 102.8" fill="none" stroke="black" stroke-width="1" />
+  <text x="150" y="85" font-family="sans-serif" font-size="12" text-anchor="middle" fill="black">5x°</text>
+  
+  <!-- 3x degrees arc -->
+  <path d="M 174.5 102.8 A 30 30 0 0 1 180 120" fill="none" stroke="black" stroke-width="1" />
+  <text x="195" y="110" font-family="sans-serif" font-size="12" fill="black">3x°</text>
+  
+  <!-- A and B markers -->
+  <line x1="50" y1="115" x2="50" y2="125" stroke="black" stroke-width="1.5" />
+  <text x="50" y="140" font-family="sans-serif" font-size="12" text-anchor="middle" fill="black">A</text>
+  
+  <line x1="250" y1="115" x2="250" y2="125" stroke="black" stroke-width="1.5" />
+  <text x="250" y="140" font-family="sans-serif" font-size="12" text-anchor="middle" fill="black">B</text>
+</svg>

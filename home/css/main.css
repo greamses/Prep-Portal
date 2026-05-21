@@ -1,0 +1,639 @@
+@import url("./utils/components/theme.css");
+
+/* =========================================
+   HERO SECTION
+========================================= */
+.hero {
+  position: relative;
+  overflow: hidden;
+  min-height: fit-content;
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 1.5rem);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+}
+
+/* Grid Background */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.045) 1px, transparent 1px);
+  background-size: clamp(20px, 4vw, 34px) clamp(20px, 4vw, 34px);
+  pointer-events: none;
+}
+
+/* Soft Blob */
+.hero::after {
+  content: "";
+  position: absolute;
+  width: clamp(250px, 60vw, 650px);
+  height: clamp(250px, 60vw, 650px);
+  top: -30%;
+  right: -30%;
+  pointer-events: none;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.12) 0%,
+    transparent 70%
+  );
+}
+
+.hero-container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: clamp(1.5rem, 5vw, 3rem);
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================================
+   HERO CONTENT
+========================================= */
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(1rem, 3vw, 1.6rem);
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.35);
+  }
+}
+
+.hero-title {
+  margin: 0;
+  max-width: 620px;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 8vw, 4.3rem);
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.hero-description {
+  margin: 0;
+  max-width: 520px;
+  font-family: var(--font-mono);
+  font-size: clamp(0.9rem, 1.8vw, 1.02rem);
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* =========================================
+   ACTION BUTTONS  (no shadows, smooth sizing)
+========================================= */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.6rem, 2vw, 1rem);
+  padding-top: clamp(0.2rem, 1vw, 0.4rem);
+}
+
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  /* ensures padding + border stay inside the declared width */
+  box-sizing: border-box;
+  /* fluid height – compact on tiny screens */
+  min-height: clamp(40px, 10vw, 56px);
+  padding: 0 clamp(1rem, 3vw, 1.5rem);
+  border-radius: clamp(12px, 2vw, 18px);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: clamp(0.75rem, 2.5vw, 1rem);
+  font-weight: 800;
+  border: 3px solid var(--ink);
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease;
+  /* no shadows */
+}
+
+.hero-btn svg {
+  width: clamp(16px, 2.5vw, 20px);
+  height: clamp(16px, 2.5vw, 20px);
+}
+
+.hero-btn-primary {
+  background: var(--yellow);
+  border: 3px solid var(--ink);
+  color: var(--ink);
+}
+
+.hero-btn-primary:hover {
+  transform: translate(-2px, -2px);
+}
+
+.hero-btn-primary:active {
+  transform: translate(2px, 2px);
+}
+
+.hero-btn-secondary {
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  color: var(--ink);
+}
+
+.hero-btn-secondary:hover {
+  transform: translate(-2px, -2px);
+}
+
+.hero-btn-secondary:active {
+  transform: translate(2px, 2px);
+}
+
+/* =========================================
+   TRUST ITEMS
+========================================= */
+.hero-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.6rem, 2vw, 0.9rem);
+  padding-top: clamp(0.5rem, 2vw, 1rem);
+}
+
+.trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: clamp(0.6rem, 1.5vw, 0.85rem) clamp(0.8rem, 2vw, 1rem);
+  border: 2.5px solid var(--ink);
+  border-radius: clamp(12px, 2vw, 16px);
+  background: var(--paper);
+  box-shadow: clamp(2px, 0.6vw, 4px) clamp(2px, 0.6vw, 4px) 0 var(--ink);
+  font-family: var(--font-display);
+  font-size: clamp(0.78rem, 1.5vw, 0.88rem);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.trust-item svg {
+  width: clamp(16px, 2vw, 18px);
+  height: clamp(16px, 2vw, 18px);
+}
+
+/* =========================================
+   HERO VISUAL
+========================================= */
+.hero-visual {
+  position: relative;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================================
+   DASHBOARD WINDOW  (better mobile sizing)
+========================================= */
+.dashboard-window {
+  width: 100%;
+  /* restrict max width so it never takes over the whole screen */
+  max-width: clamp(280px, 85vw, 640px);
+  background: var(--paper);
+  border: clamp(2px, 0.5vw, 4px) solid var(--ink);
+  border-radius: clamp(20px, 4vw, 30px);
+  overflow: hidden;
+  box-shadow: clamp(4px, 1.5vw, 10px) clamp(4px, 1.5vw, 10px) 0 var(--ink);
+  /* keep a small rotation on all screens, no scaling by viewport width */
+  transform: rotate(-2deg);
+}
+
+/* Window Top */
+.window-top {
+  height: clamp(56px, 8vw, 72px);
+  padding: 0 clamp(1rem, 3vw, 1.4rem);
+  border-bottom: clamp(2px, 0.5vw, 4px) solid var(--ink);
+  background: var(--yellow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.window-dots {
+  display: flex;
+  gap: clamp(0.3rem, 1vw, 0.55rem);
+}
+
+.window-dots span {
+  width: clamp(10px, 2vw, 14px);
+  height: clamp(10px, 2vw, 14px);
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+}
+
+.window-dots span:nth-child(1) {
+  background: var(--red);
+}
+.window-dots span:nth-child(2) {
+  background: var(--green);
+}
+.window-dots span:nth-child(3) {
+  background: var(--blue);
+}
+
+.window-label {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(0.8rem, 1.5vw, 0.95rem);
+  color: var(--ink);
+}
+
+/* =========================================
+   WINDOW BODY
+========================================= */
+.window-body {
+  display: grid;
+  grid-template-columns: clamp(60px, 12vw, 90px) 1fr;
+  min-height: auto;
+}
+
+/* Sidebar */
+.dashboard-sidebar {
+  padding: clamp(0.8rem, 2vw, 1rem);
+  border-right: clamp(2px, 0.5vw, 4px) solid var(--ink);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.sidebar-logo {
+  width: clamp(40px, 8vw, 56px);
+  height: clamp(40px, 8vw, 56px);
+  border-radius: clamp(12px, 2vw, 16px);
+  background: var(--yellow);
+  border: 3px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-logo svg {
+  width: clamp(18px, 4vw, 24px);
+  height: clamp(18px, 4vw, 24px);
+}
+
+.sidebar-lines {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.6rem, 1.5vw, 1rem);
+}
+
+.sidebar-lines span {
+  width: 100%;
+  height: clamp(10px, 2vw, 14px);
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: var(--paper);
+}
+
+/* =========================================
+   DASHBOARD MAIN
+========================================= */
+.dashboard-main {
+  padding: clamp(0.8rem, 2vw, 1.4rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.6rem, 1.5vw, 1rem);
+  background: #fff;
+}
+
+/* Cards */
+.dashboard-card {
+  padding: clamp(0.6rem, 1.5vw, 1rem);
+  border: 3px solid var(--ink);
+  border-radius: clamp(14px, 2.5vw, 20px);
+  background: var(--paper);
+  box-shadow: clamp(3px, 0.8vw, 5px) clamp(3px, 0.8vw, 5px) 0 var(--ink);
+}
+
+.dashboard-card-lg {
+  background: var(--green);
+  color: #fff;
+}
+
+.card-heading {
+  font-family: var(--font-display);
+  font-size: clamp(0.85rem, 1.8vw, 1rem);
+  font-weight: 800;
+  margin-bottom: 0.8rem;
+}
+
+/* Progress */
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+}
+
+.progress-wrap span {
+  font-family: var(--font-display);
+  font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+  font-weight: 800;
+}
+
+.progress-bar {
+  flex: 1;
+  height: clamp(12px, 2.5vw, 16px);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 2px solid var(--ink);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.progress-fill {
+  width: 82%;
+  height: 100%;
+  background: #fff;
+}
+
+/* Mini Bars */
+.mini-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(0.3rem, 0.8vw, 0.5rem);
+  height: clamp(50px, 12vw, 80px);
+  padding-top: 0.8rem;
+}
+
+.mini-bars span {
+  flex: 1;
+  border-radius: 12px 12px 0 0;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid var(--ink);
+}
+
+.mini-bars span:nth-child(1) {
+  height: 40%;
+}
+.mini-bars span:nth-child(2) {
+  height: 65%;
+}
+.mini-bars span:nth-child(3) {
+  height: 55%;
+}
+.mini-bars span:nth-child(4) {
+  height: 90%;
+}
+.mini-bars span:nth-child(5) {
+  height: 75%;
+}
+
+/* Lower Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(0.6rem, 1.5vw, 1rem);
+}
+
+.dashboard-grid .dashboard-card {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.dashboard-grid strong {
+  font-family: var(--font-display);
+  font-size: clamp(0.8rem, 1.6vw, 0.95rem);
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+/* Icon Boxes */
+.icon-box {
+  width: clamp(40px, 8vw, 54px);
+  height: clamp(40px, 8vw, 54px);
+  border-radius: clamp(12px, 2vw, 16px);
+  border: 3px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-box svg {
+  width: clamp(18px, 4vw, 24px);
+  height: clamp(18px, 4vw, 24px);
+}
+
+.icon-yellow {
+  background: var(--yellow);
+}
+.icon-blue {
+  background: var(--blue);
+  color: #fff;
+}
+.icon-green {
+  background: var(--green);
+  color: #fff;
+}
+.icon-red {
+  background: var(--red);
+  color: #fff;
+}
+
+/* =========================================
+   FLOATING NOTE
+========================================= */
+.floating-note {
+  position: absolute;
+  left: clamp(-40px, -5vw, -20px);
+  bottom: clamp(20px, 8%, 60px);
+  width: clamp(160px, 22vw, 220px);
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: clamp(14px, 2.5vw, 20px);
+  overflow: hidden;
+  box-shadow: clamp(3px, 1vw, 7px) clamp(3px, 1vw, 7px) 0 var(--ink);
+  animation: float-card 4s ease-in-out infinite;
+}
+
+.note-top {
+  padding: clamp(0.6rem, 1.5vw, 0.85rem) clamp(0.8rem, 2vw, 1rem);
+  border-bottom: 3px solid var(--ink);
+  background: var(--yellow);
+  font-family: var(--font-display);
+  font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+  font-weight: 800;
+}
+
+.note-body {
+  padding: clamp(0.6rem, 1.5vw, 1rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.note-line {
+  height: 10px;
+  border-radius: 999px;
+  background: #e5e5e5;
+}
+
+.note-line.short {
+  width: 70%;
+}
+
+.note-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  background: var(--green);
+  border: 2px solid var(--ink);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(0.65rem, 1.3vw, 0.78rem);
+  font-weight: 700;
+}
+
+.note-success svg {
+  width: clamp(14px, 2.5vw, 16px);
+  height: clamp(14px, 2.5vw, 16px);
+}
+
+/* =========================================
+   FLOATING SCORE
+========================================= */
+.floating-score {
+  position: absolute;
+  top: clamp(10px, 5%, 40px);
+  right: clamp(-10px, -2vw, 0px);
+  width: clamp(68px, 12vw, 92px);
+  height: clamp(68px, 12vw, 92px);
+  border-radius: clamp(18px, 3vw, 24px);
+  background: var(--red);
+  border: 4px solid var(--ink);
+  box-shadow: clamp(3px, 1vw, 7px) clamp(3px, 1vw, 7px) 0 var(--ink);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  animation: float-card 5s ease-in-out infinite;
+}
+
+.floating-score svg {
+  width: clamp(16px, 3vw, 22px);
+  height: clamp(16px, 3vw, 22px);
+}
+
+.floating-score strong {
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  font-weight: 900;
+}
+
+/* =========================================
+   FLOAT ANIMATION
+========================================= */
+@keyframes float-card {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+@media (max-width: 1100px) {
+  .hero-container {
+    gap: clamp(1.5rem, 5vw, 3rem);
+  }
+  .hero-title {
+    font-size: clamp(2.3rem, 7vw, 3.8rem);
+  }
+}
+
+@media (max-width: 900px) {
+  .hero {
+    padding: clamp(2rem, 6vw, 3rem) clamp(1rem, 3vw, 2rem)
+      clamp(3rem, 8vw, 5rem);
+  }
+  .hero-container {
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 6vw, 4rem);
+  }
+  .hero-content {
+    align-items: center;
+    text-align: center;
+  }
+  .hero-description {
+    max-width: 100%;
+  }
+  .hero-actions,
+  .hero-trust {
+    justify-content: center;
+  }
+  .hero-visual {
+    min-height: 0;
+  }
+  .dashboard-window {
+    /* keep the rotation */
+    transform: rotate(-2deg);
+  }
+  .floating-note,
+  .floating-score {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-title {
+    font-size: clamp(2.2rem, 12vw, 3rem);
+  }
+
+  .hero-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .hero-btn {
+    width: 100%;
+    /* inherit the already‑fluid min‑height & font‑size – no overrides */
+  }
+
+  /* Make dashboard window smaller on very small screens */
+  .dashboard-window {
+    max-width: 85vw;
+    transform: rotate(-2deg) scale(0.75);
+  }
+
+  .window-body {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-sidebar {
+    display: none;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

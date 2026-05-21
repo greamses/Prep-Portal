@@ -1,0 +1,54 @@
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top Label -->
+  <text x="150" y="30" font-family="Arial" font-size="12" text-anchor="middle">NOT DRAWN TO SCALE</text>
+  
+  <!-- Base Horizontal Lines -->
+  <line x1="30" y1="80" x2="250" y2="80" stroke="black" stroke-width="2" />
+  <line x1="80" y1="220" x2="260" y2="220" stroke="black" stroke-width="2" />
+  
+  <!-- Connecting Slanted Lines -->
+  <line x1="60" y1="80" x2="110" y2="220" stroke="black" stroke-width="2" /> <!-- PS -->
+  <line x1="100" y1="80" x2="110" y2="220" stroke="black" stroke-width="2" /> <!-- QS -->
+  <line x1="180" y1="80" x2="230" y2="220" stroke="black" stroke-width="2" /> <!-- TR -->
+  <line x1="220" y1="80" x2="230" y2="220" stroke="black" stroke-width="2" /> <!-- UR -->
+  
+  <!-- The missing slant line from U to S -->
+  <line x1="220" y1="80" x2="110" y2="220" stroke="black" stroke-width="2" /> <!-- US -->
+  
+  <!-- Point Labels -->
+  <text x="50" y="70" font-family="Arial" font-size="18">P</text>
+  <text x="95" y="70" font-family="Arial" font-size="18">Q</text>
+  <text x="175" y="70" font-family="Arial" font-size="18">T</text>
+  <text x="215" y="70" font-family="Arial" font-size="18">U</text>
+  <text x="95" y="240" font-family="Arial" font-size="18">S</text>
+  <text x="235" y="240" font-family="Arial" font-size="18">R</text>
+  
+  <!-- Measurement Labels -->
+  <text x="35" y="155" font-family="Arial" font-size="14">10cm</text>
+  <text x="155" y="240" font-family="Arial" font-size="14">8cm</text>
+  <text x="240" y="155" font-family="Arial" font-size="14">15cm</text>
+  
+  <!-- Triple Arrows on Top Line -->
+  <polyline points="130,75 135,80 130,85" fill="none" stroke="black" stroke-width="1.5" />
+  <polyline points="135,75 140,80 135,85" fill="none" stroke="black" stroke-width="1.5" />
+  <polyline points="140,75 145,80 140,85" fill="none" stroke="black" stroke-width="1.5" />
+  
+  <!-- Triple Arrows on Bottom Line -->
+  <polyline points="160,215 165,220 160,225" fill="none" stroke="black" stroke-width="1.5" />
+  <polyline points="165,215 170,220 165,225" fill="none" stroke="black" stroke-width="1.5" />
+  <polyline points="170,215 175,220 170,225" fill="none" stroke="black" stroke-width="1.5" />
+  
+  <!-- Double Arrows on PS -->
+  <polyline points="75,145 82,152 89,145" fill="none" stroke="black" stroke-width="1.5" />
+  <polyline points="80,155 87,162 94,155" fill="none" stroke="black" stroke-width="1.5" />
+  
+  <!-- Double Arrows on TR -->
+  <polyline points="195,145 202,152 209,145" fill="none" stroke="black" stroke-width="1.5" />
+  <polyline points="200,155 207,162 214,155" fill="none" stroke="black" stroke-width="1.5" />
+  
+  <!-- Single Arrow on QS -->
+  <polyline points="98,145 105,152 112,145" fill="none" stroke="black" stroke-width="1.5" />
+  
+  <!-- Single Arrow on UR -->
+  <polyline points="218,145 225,152 232,145" fill="none" stroke="black" stroke-width="1.5" />
+</svg>

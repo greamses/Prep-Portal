@@ -1,0 +1,27 @@
+        <svg viewBox="0 0 100 100" width="100%" height="100%" style="max-width:120px;" xmlns="http://www.w3.org/2000/svg">
+          <!-- Builder (simplified silhouette) -->
+          <!-- Hard hat -->
+          <path d="M 40 40 C 40 25, 60 25, 60 40 Z" fill="#fbbf24" stroke="#333" stroke-width="1.5" />
+          <path d="M 35 40 L 65 40 L 65 43 L 35 43 Z" fill="#fbbf24" stroke="#333" stroke-width="1.5" />
+          <!-- Head -->
+          <circle cx="50" cy="48" r="7" fill="#fcd34d" stroke="#333" stroke-width="1.5" />
+          <!-- Body -->
+          <path d="M 40 55 C 40 55, 30 70, 30 90 L 70 90 C 70 70, 60 55, 60 55 Z" fill="#64748b" stroke="#333" stroke-width="1.5" />
+          
+          <!-- Brick Wall (Foreground) -->
+          <g fill="#d97757" stroke="#e2e8f0" stroke-width="1.5">
+            <!-- row 1 (bottom) -->
+            <rect x="10" y="80" width="25" height="12" />
+            <rect x="35" y="80" width="25" height="12" />
+            <rect x="60" y="80" width="25" height="12" />
+            <!-- row 2 -->
+            <rect x="0" y="68" width="20" height="12" />
+            <rect x="20" y="68" width="25" height="12" />
+            <rect x="45" y="68" width="25" height="12" />
+            <rect x="70" y="68" width="20" height="12" />
+            <!-- row 3 -->
+            <rect x="10" y="56" width="25" height="12" />
+            <rect x="35" y="56" width="25" height="12" />
+            <rect x="60" y="56" width="25" height="12" />
+          </g>
+        </svg>

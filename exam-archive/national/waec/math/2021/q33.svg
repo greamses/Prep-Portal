@@ -1,0 +1,32 @@
+<svg width="300" height="300" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top Label -->
+  <text x="150" y="30" font-family="Arial" font-size="12" text-anchor="middle">NOT DRAWN TO SCALE</text>
+  
+  <!-- Outer Circle -->
+  <circle cx="150" cy="150" r="100" fill="none" stroke="black" stroke-width="2" />
+  
+  <!-- Center Point O -->
+  <circle cx="150" cy="150" r="3" fill="black" />
+  <text x="155" y="145" font-family="Arial" font-size="16">O</text>
+  
+  <!-- Triangle PQR -->
+  <!-- Calculated to be on the circle visually matching the original -->
+  <polygon points="63,200 227,214 200,63" fill="none" stroke="black" stroke-width="2" />
+  
+  <!-- Radii OP and OQ -->
+  <line x1="150" y1="150" x2="63" y2="200" stroke="black" stroke-width="2" />
+  <line x1="150" y1="150" x2="227" y2="214" stroke="black" stroke-width="2" />
+  
+  <!-- Point Labels -->
+  <text x="45" y="215" font-family="Arial" font-size="18">P</text>
+  <text x="235" y="235" font-family="Arial" font-size="18">Q</text>
+  <text x="210" y="55" font-family="Arial" font-size="18">R</text>
+  
+  <!-- Angle OPQ (48°) -->
+  <path d="M 85 204 A 20 20 0 0 1 80 190" fill="none" stroke="black" stroke-width="1.5" />
+  <text x="85" y="195" font-family="Arial" font-size="14">48°</text>
+  
+  <!-- Angle PRQ (m) -->
+  <path d="M 188 84 A 25 25 0 0 0 204 88" fill="none" stroke="black" stroke-width="1.5" />
+  <text x="185" y="105" font-family="Arial" font-size="16" font-style="italic">m</text>
+</svg>

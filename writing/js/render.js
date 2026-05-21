@@ -1,0 +1,287 @@
+/* ═══════════════════════════════════════════════════════
+   PREPBOT — RENDER LAYER
+═══════════════════════════════════════════════════════ */
+
+import {
+  ERROR_TYPES, safe,
+  commentCounter, setCommentCounter, commentStore, resetCommentStore
+} from './config.js';
+import { attachAnnotationListeners, showComment } from './popover.js';
+import { makeAccordion } from './ui.js';
+
+// Module state
+let paragraphChunks = [];
+let currentParagraphIdx = 0;
+let paraNavShowAll = false;
+
+// DOM refs
+let elRubric = null;
+let elAnnotated = null;
+let elStamp = null;
+let elLoading = null;
+let elEditorSec = null;
+let elResultsSec = null;
+
+// ── Init ───────────────────────────────────────────────
+export function initRender(rubric, annotated, stamp, loading, editorSec, resultsSec) {
+  elRubric = rubric;
+  elAnnotated = annotated;
+  elStamp = stamp;
+  elLoading = loading;
+  elEditorSec = editorSec;
+  elResultsSec = resultsSec;
+}
+
+// ── Parse Annotated HTML ───────────────────────────────
+function parseAnnotatedHtml(raw) {
+  let html = raw
+    .replace(/\\n\\n/g, '\n\n')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+  
+  html = html.replace(
+    /<mark\s+type=['"]([^'"]+)['"]\s*(?:fix=['"]([^'"]*?)['"])?\s*(?:loss=['"]([^'"]*?)['"])?>([\s\S]*?)<\/mark>/gi,
+    (_, type, fix, loss, content) => {
+      const fixAttr = fix ? ` data-fix="${safe(fix)}"` : '';
+      const lossAttr = loss ? ` data-loss="${safe(loss)}"` : '';
+      const deduction = loss ? `<span class="deduction">${safe(loss)}</span>` : '';
+      const label = (ERROR_TYPES[type] || { name: type }).name;
+      return `<span class="doodle doodle-${safe(type)}"${fixAttr}${lossAttr} tabindex="0" role="button" aria-label="${label}: click for options">${content}${deduction}</span>`;
+    }
+  );
+  
+  html = html.replace(/<hl\s+cat=['"]([^'"]+)['"]>([\s\S]*?)<\/hl>/gi,
+    (_, cat, content) => `<span class="hl-${safe(cat)}">${content}</span>`);
+  
+  html = html.replace(/<good\s+reason=['"]([^'"]+)['"]>([\s\S]*?)<\/good>/gi,
+    (_, reason, content) => `<span class="hl-good" title="${safe(reason)}">${content}</span>`);
+  
+  html = html.replace(/<comment\s+text=['"]([^'"]+)['"]>([\s\S]*?)<\/comment>/gi,
+    (_, text) => {
+      const id = ++commentCounter;
+      setCommentCounter(commentCounter);
+      commentStore[id] = text;
+      return `<button class="margin-comment-marker" data-cid="${id}">${id}</button>`;
+    });
+  
+  html = html.replace(/<sub\s+opts=['"]([^'"]+)['"]>([^<]+)<\/sub>/gi,
+    (_, opts, word) => `<span class="sub-word" data-opts="${safe(opts)}" data-type="word">${word}</span>`);
+  
+  html = html.replace(/<sent\s+opts=['"]([^'"]+)['"]>([\s\S]*?)<\/sent>/gi,
+    (_, opts, sentence) => `<span class="sent-sub" data-opts="${safe(opts)}" data-type="sent">${sentence}</span>`);
+  
+  return html;
+}
+
+// ── Paragraph Navigation ───────────────────────────────
+function buildParagraphNav() {
+  document.getElementById('para-nav')?.remove();
+  if (paragraphChunks.length <= 1) return;
+  
+  const nav = document.createElement('div');
+  nav.id = 'para-nav';
+  nav.innerHTML = `
+    <button class="para-nav-btn" id="para-prev" ${currentParagraphIdx === 0 ? 'disabled' : ''}>← Prev</button>
+    <span id="para-nav-label">Paragraph ${currentParagraphIdx + 1} of ${paragraphChunks.length}</span>
+    <button class="para-nav-btn" id="para-next" ${currentParagraphIdx === paragraphChunks.length - 1 ? 'disabled' : ''}>Next →</button>
+    <button class="para-nav-btn show-all" id="para-showall">${paraNavShowAll ? 'Collapse' : 'Show All'}</button>`;
+  
+  const paper = elAnnotated.closest('.annotated-paper') || elAnnotated.parentNode;
+  paper.parentNode.insertBefore(nav, paper);
+  
+  document.getElementById('para-prev').addEventListener('click', () => {
+    if (currentParagraphIdx > 0) showParagraph(currentParagraphIdx - 1);
+  });
+  
+  document.getElementById('para-next').addEventListener('click', () => {
+    if (currentParagraphIdx < paragraphChunks.length - 1) showParagraph(currentParagraphIdx + 1);
+  });
+  
+  document.getElementById('para-showall').addEventListener('click', () => {
+    paraNavShowAll = !paraNavShowAll;
+    if (paraNavShowAll) {
+      elAnnotated.innerHTML = paragraphChunks.join('<br><br>');
+      attachAnnotationListeners(elAnnotated);
+    } else {
+      showParagraph(currentParagraphIdx);
+    }
+    buildParagraphNav();
+  });
+}
+
+function showParagraph(index) {
+  currentParagraphIdx = index;
+  paraNavShowAll = false;
+  elAnnotated.innerHTML = paragraphChunks[index];
+  attachAnnotationListeners(elAnnotated);
+  buildParagraphNav();
+  elAnnotated.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Clear Results ──────────────────────────────────────
+export function clearResultsAccordions() {
+  document.getElementById('acc-suggestions')?.remove();
+  document.getElementById('acc-studytips')?.remove();
+}
+
+export function resetParagraphState() {
+  paragraphChunks = [];
+  currentParagraphIdx = 0;
+  paraNavShowAll = false;
+}
+
+// ── Rewrite Stamp ──────────────────────────────────────
+function showRewriteStamp(reason) {
+  elRubric.innerHTML = '';
+  elAnnotated.innerHTML = '';
+  clearResultsAccordions();
+  document.getElementById('para-nav')?.remove();
+  
+  elStamp.textContent = 'REWRITE';
+  elStamp.className = 'score-stamp rewrite-stamp';
+  
+  document.getElementById('rewrite-info-btn')?.remove();
+  document.getElementById('rewrite-info-note')?.remove();
+  
+  const infoBtn = document.createElement('button');
+  infoBtn.id = 'rewrite-info-btn';
+  infoBtn.textContent = 'i';
+  infoBtn.setAttribute('aria-label', 'Why REWRITE?');
+  infoBtn.title = 'Tap to see why';
+  
+  const infoNote = document.createElement('div');
+  infoNote.id = 'rewrite-info-note';
+  infoNote.textContent = reason || 'Your essay does not address the given writing prompt.';
+  infoNote.hidden = true;
+  
+  infoBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    infoNote.hidden = !infoNote.hidden;
+  });
+  
+  const stampParent = elStamp.parentNode;
+  stampParent.appendChild(infoBtn);
+  stampParent.appendChild(infoNote);
+}
+
+// ── Suggestions Panel ──────────────────────────────────
+function renderSuggestions(suggestions) {
+  let container = document.getElementById('results-accordions');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'results-accordions';
+    const anchor = document.querySelector('.paper-scroll-wrap') || elAnnotated.parentNode;
+    anchor.parentNode.insertBefore(container, anchor.nextSibling);
+  }
+  
+  document.getElementById('acc-suggestions')?.remove();
+  if (!suggestions.length) return;
+  
+  const bodyHtml = `
+    <div class="sugg-list">
+      ${suggestions.map((s, i) => `
+        <div class="suggestion-item" style="animation-delay:${(i * 0.07).toFixed(2)}s">
+          <div class="suggestion-num">${i + 1}</div>
+          <div class="suggestion-text">${safe(s)}</div>
+        </div>`).join('')}
+    </div>`;
+  
+  container.appendChild(makeAccordion({
+    id: 'suggestions', title: "Examiner's Suggestions", bodyHtml,
+    startOpen: true, extraClass: 'sugg-acc', count: suggestions.length
+  }));
+}
+
+// ── Study Tips Panel ───────────────────────────────────
+function renderStudyTips(tips) {
+  let container = document.getElementById('results-accordions');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'results-accordions';
+    elResultsSec.appendChild(container);
+  }
+  
+  document.getElementById('acc-studytips')?.remove();
+  if (!tips.length) return;
+  
+  const bodyHtml = `
+    <div class="tips-body-grid">
+      ${tips.map((t, i) => `
+        <div class="study-tip-card" style="animation-delay:${(i * 0.08).toFixed(2)}s">
+          <div class="study-tip-title">${safe(t.title || '')}</div>
+          <div class="study-tip-text">${safe(t.tip || '')}</div>
+        </div>`).join('')}
+    </div>`;
+  
+  container.appendChild(makeAccordion({
+    id: 'studytips', title: 'Study Tips For You', bodyHtml,
+    startOpen: false, extraClass: 'tips-acc'
+  }));
+}
+
+// ── Main Render ────────────────────────────────────────
+export function renderResults(data, originalText) {
+  if (data.offTopic) {
+    showRewriteStamp(data.offTopicReason || '');
+    elLoading.classList.remove('active');
+    elEditorSec.style.display = 'none';
+    elResultsSec.classList.add('active');
+    return;
+  }
+  
+  document.getElementById('rewrite-info-btn')?.remove();
+  document.getElementById('rewrite-info-note')?.remove();
+  
+  const score = Math.min(100, Math.max(0, data.totalScore || 0));
+  elStamp.textContent = `${score}%`;
+  elStamp.className = `score-stamp${score < 55 ? ' fail' : score < 70 ? ' avg' : ''}`;
+  
+  elRubric.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  (data.rubric || []).forEach((item, i) => {
+    const pct = Math.round((item.score / item.outOf) * 100);
+    const col = pct >= 70 ? 'var(--green,#00a550)' : pct >= 50 ? 'var(--amber,#e67e00)' : 'var(--red,#ff2200)';
+    const row = document.createElement('div');
+    row.className = 'rubric-row';
+    row.style.animationDelay = `${i * 0.06}s`;
+    row.innerHTML = `
+      <div class="rubric-cat">${safe(item.category)}</div>
+      <div class="rubric-score" style="color:${col}">${item.score} / ${item.outOf}</div>
+      <p class="rubric-fb">${safe(item.feedback)}</p>
+      <div class="rubric-bar-track">
+        <div class="rubric-bar-fill" data-pct="${pct}" style="background:${col}"></div>
+      </div>`;
+    frag.appendChild(row);
+  });
+  elRubric.appendChild(frag);
+  
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    elRubric.querySelectorAll('.rubric-bar-fill').forEach(bar => bar.style.width = bar.dataset.pct + '%');
+  }));
+  
+  setCommentCounter(0);
+  resetCommentStore();
+  
+  const annotatedHtml = parseAnnotatedHtml(data.annotatedText || originalText);
+  paragraphChunks = annotatedHtml.split('<br><br>').filter(p => p.trim());
+  currentParagraphIdx = 0;
+  paraNavShowAll = false;
+  
+  document.getElementById('para-nav')?.remove();
+  
+  if (paragraphChunks.length > 1) {
+    elAnnotated.innerHTML = paragraphChunks[0];
+    attachAnnotationListeners(elAnnotated);
+    buildParagraphNav();
+  } else {
+    elAnnotated.innerHTML = annotatedHtml;
+    attachAnnotationListeners(elAnnotated);
+  }
+  
+  renderSuggestions(data.suggestions || []);
+  renderStudyTips(data.studyTips || []);
+  
+  elLoading.classList.remove('active');
+  elEditorSec.style.display = 'none';
+  elResultsSec.classList.add('active');
+}

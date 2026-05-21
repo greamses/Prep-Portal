@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Transversal Explorer — Prep Portal 2026</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 98L10 75V25L50 2L90 25V75L50 98Z' fill='%230a0a0a' fill-opacity='0.1' /%3E%3Cpath d='M50 50L10 27V73L50 96V50Z' fill='%230055ff' stroke='%230a0a0a' stroke-width='2.5' /%3E%3Cpath d='M50 50L90 27V73L50 96V50Z' fill='%23003db3' stroke='%230a0a0a' stroke-width='2.5' /%3E%3Cpath d='M50 50L90 27L50 4L10 27L50 50Z' fill='%23ffffff' stroke='%230a0a0a' stroke-width='2.5' /%3E%3Cpath d='M50 35L65 43V58L50 66L35 58V43L50 35Z' fill='%23ffe500' stroke='%230a0a0a' stroke-width='2' /%3E%3Ccircle cx='50' cy='50.5' r='4' fill='%230a0a0a' /%3E%3Cpath d='M30 15.5L70 38.5' stroke='%230a0a0a' stroke-width='1' opacity='0.3' /%3E%3Cpath d='M30 38.5L70 15.5' stroke='%230a0a0a' stroke-width='1' opacity='0.3' /%3E%3Cpath d='M10 27L50 50' stroke='%230a0a0a' stroke-width='1.5' stroke-dasharray='2 2' /%3E%3Cpath d='M90 27L50 50' stroke='%230a0a0a' stroke-width='1.5' stroke-dasharray='2 2' /%3E%3Cpath d='M50 4V50' stroke='%230a0a0a' stroke-width='1.5' stroke-dasharray='2 2' /%3E%3Crect x='48' y='75' width='4' height='15' fill='%23ffe500' stroke='%230a0a0a' stroke-width='1' /%3E%3Cpath d='M25 65L35 70' stroke='%230a0a0a' stroke-width='2' stroke-linecap='round' /%3E%3Cpath d='M75 65L65 70' stroke='%230a0a0a' stroke-width='2' stroke-linecap='round' /%3E%3C/svg%3E"
+    />
+    <meta name="theme-color" content="#000000" />
+    <link rel="stylesheet" href="/utils/components/nav.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="loader">
+      <div id="loader-wrapper">
+        <div class="logo-cluster"></div>
+        <!-- JS will inject the 3 images here -->
+      </div>
+      <div class="loader-word"><span>Transversals</span></div>
+      <div class="loader-bar"></div>
+    </div>
+
+    <nav class="site-nav" data-nav="main"></nav>
+
+    <header>
+      <div class="logo">Prep<em>Portal</em> 2026</div>
+      <div class="header-center">
+        <span class="badge" id="poly-badge">Angles Explorer</span>
+        <span class="header-label">Transversal Lines</span>
+      </div>
+    </header>
+
+    <div class="app">
+      <section class="canvas-section">
+        <div class="canvas-frame">
+          <svg
+            id="polygon-svg"
+            preserveAspectRatio="xMidYMid meet"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-label="Interactive transversal diagram"
+          >
+            <g id="transform-group"></g>
+          </svg>
+
+          <button class="fab" id="fab" aria-label="Open settings">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="square"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+              />
+            </svg>
+          </button>
+
+          <div class="zoom-controls">
+            <button class="zoom-btn" id="btn-zoom-in" aria-label="Zoom In">
+              +
+            </button>
+            <button class="zoom-btn" id="btn-zoom-out" aria-label="Zoom Out">
+              -
+            </button>
+            <button
+              class="zoom-btn"
+              id="btn-zoom-reset"
+              aria-label="Reset Zoom"
+            >
+              ⟲
+            </button>
+          </div>
+
+          <div class="anim-panel">
+            <div class="anim-modes">
+              <button class="anim-mode-btn active" data-mode="none">
+                Normal
+              </button>
+              <button class="anim-mode-btn" data-mode="vert_opp">
+                Vert. Opp
+              </button>
+              <button class="anim-mode-btn" data-mode="corresponding">
+                Corres
+              </button>
+              <button class="anim-mode-btn" data-mode="alt_int">Alt Int</button>
+              <button class="anim-mode-btn" data-mode="alt_ext">Alt Ext</button>
+              <button class="anim-mode-btn" data-mode="cons_int">
+                Cons. Int
+              </button>
+              <button class="anim-mode-btn" data-mode="cons_ext">
+                Cons. Ext
+              </button>
+            </div>
+            <div class="anim-slider-row">
+              <input
+                type="range"
+                id="sl-anim"
+                min="0"
+                max="1"
+                step="0.005"
+                value="0"
+                disabled
+                aria-label="Animation Progress"
+              />
+              <span id="dv-anim-val">0%</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-tag">Acute ∠ (α)</div>
+            <div class="stat-val" id="s-angle-alpha">60°</div>
+            <div class="stat-name">Yellow family</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-tag">Obtuse ∠ (β)</div>
+            <div class="stat-val" id="s-angle-beta">120°</div>
+            <div class="stat-name">Blue family</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-tag">Selected Mode</div>
+            <div
+              class="stat-val"
+              id="s-mode-name"
+              style="font-size: 0.95rem; white-space: normal"
+            >
+              Angles Explorer
+            </div>
+            <div class="stat-name">Visualization</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-tag">Relationship</div>
+            <div
+              class="stat-val"
+              id="s-relationship"
+              style="font-size: 0.85rem"
+            >
+              Supp: α + β = 180°
+            </div>
+            <div class="stat-name">Properties</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="info-section">
+        <div class="info-header">Angle Relationships</div>
+        <div class="formula-block">
+          <div class="formula-row">
+            <span class="formula-lhs">Opposite</span
+            ><span class="formula-eq" id="f-opp">∠1=∠4, ∠2=∠3 ...</span>
+          </div>
+          <div class="formula-row">
+            <span class="formula-lhs">Corr</span
+            ><span class="formula-eq" id="f-corr">∠1=∠5, ∠2=∠6 ...</span>
+          </div>
+          <div class="formula-row">
+            <span class="formula-lhs">Alt Int</span
+            ><span class="formula-eq" id="f-aint">∠3=∠6, ∠4=∠5</span>
+          </div>
+          <div class="formula-row">
+            <span class="formula-lhs">Alt Ext</span
+            ><span class="formula-eq" id="f-aext">∠1=∠8, ∠2=∠7</span>
+          </div>
+          <div class="formula-row">
+            <span class="formula-lhs">Cons. Int</span
+            ><span class="formula-eq" id="f-cint">∠3+∠5=180°, ∠4+∠6=180°</span>
+          </div>
+          <div class="formula-row">
+            <span class="formula-lhs">Cons. Ext</span
+            ><span class="formula-eq" id="f-cext">∠1+∠7=180°, ∠2+∠8=180°</span>
+          </div>
+        </div>
+        <div class="polygon-name" id="poly-name-panel">
+          Parallel Lines intersected by a Transversal
+        </div>
+      </aside>
+    </div>
+
+    <div
+      class="overlay"
+      id="overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Settings"
+    >
+      <div class="modal" id="modal">
+        <div class="modal-header">
+          <span class="modal-title">Settings</span
+          ><button class="modal-close" id="modal-close">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="ctrl-group">
+            <div class="ctrl-group-label">Geometry</div>
+            <div class="ctrl-row">
+              <div class="ctrl-label">Transversal Angle</div>
+              <div class="slider-wrap">
+                <input
+                  type="range"
+                  id="sl-angle"
+                  min="10"
+                  max="170"
+                  value="60"
+                  step="1"
+                /><span class="slider-val" id="dv-angle">60°</span>
+              </div>
+            </div>
+            <div class="ctrl-row">
+              <div class="ctrl-label">Distance Between Lines</div>
+              <div class="slider-wrap">
+                <input
+                  type="range"
+                  id="sl-dist"
+                  min="60"
+                  max="320"
+                  value="160"
+                  step="2"
+                /><span class="slider-val" id="dv-dist">160</span>
+              </div>
+            </div>
+            <div class="ctrl-row">
+              <div class="ctrl-label">Wedge Radius</div>
+              <div class="slider-wrap">
+                <input
+                  type="range"
+                  id="sl-radius"
+                  min="30"
+                  max="100"
+                  value="55"
+                  step="1"
+                /><span class="slider-val" id="dv-radius">55</span>
+              </div>
+            </div>
+          </div>
+          <div class="ctrl-group">
+            <div class="ctrl-group-label">Display Controls</div>
+            <div class="ctrl-row">
+              <div class="ctrl-label">
+                Angle Values <small>e.g. 60°, 120°</small>
+              </div>
+              <label class="toggle"
+                ><input type="checkbox" id="t-values" />
+                <div class="t-track"><div class="t-thumb"></div></div>
+              </label>
+            </div>
+            <div class="ctrl-row">
+              <div class="ctrl-label">
+                Angle Names <small>e.g. ∠1, ∠2</small>
+              </div>
+              <label class="toggle"
+                ><input type="checkbox" id="t-names" checked />
+                <div class="t-track"><div class="t-thumb"></div></div>
+              </label>
+            </div>
+            <div class="ctrl-row">
+              <div class="ctrl-label">Draggable Handles</div>
+              <label class="toggle"
+                ><input type="checkbox" id="t-vertices" checked />
+                <div class="t-track"><div class="t-thumb"></div></div>
+              </label>
+            </div>
+            <div class="ctrl-row">
+              <div class="ctrl-label">Show Center Anchor</div>
+              <label class="toggle"
+                ><input type="checkbox" id="t-center" checked />
+                <div class="t-track"><div class="t-thumb"></div></div>
+              </label>
+            </div>
+            <div class="ctrl-row">
+              <div class="ctrl-label">Grid Background</div>
+              <label class="toggle"
+                ><input type="checkbox" id="t-grid" checked />
+                <div class="t-track"><div class="t-thumb"></div></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./script.js"></script>
+    <script src="/utils/components/loader.js"></script>
+    <script type="module" src="/utils/components/nav-builder.js"></script>
+  </body>
+</html>

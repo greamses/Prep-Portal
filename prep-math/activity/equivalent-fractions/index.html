@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 98L10 75V25L50 2L90 25V75L50 98Z' fill='%230a0a0a' fill-opacity='0.1' /%3E%3Cpath d='M50 50L10 27V73L50 96V50Z' fill='%230055ff' stroke='%230a0a0a' stroke-width='2.5' /%3E%3Cpath d='M50 50L90 27V73L50 96V50Z' fill='%23003db3' stroke='%230a0a0a' stroke-width='2.5' /%3E%3Cpath d='M50 50L90 27L50 4L10 27L50 50Z' fill='%23ffffff' stroke='%230a0a0a' stroke-width='2.5' /%3E%3Cpath d='M50 35L65 43V58L50 66L35 58V43L50 35Z' fill='%23ffe500' stroke='%230a0a0a' stroke-width='2' /%3E%3Ccircle cx='50' cy='50.5' r='4' fill='%230a0a0a' /%3E%3Cpath d='M30 15.5L70 38.5' stroke='%230a0a0a' stroke-width='1' opacity='0.3' /%3E%3Cpath d='M30 38.5L70 15.5' stroke='%230a0a0a' stroke-width='1' opacity='0.3' /%3E%3Cpath d='M10 27L50 50' stroke='%230a0a0a' stroke-width='1.5' stroke-dasharray='2 2' /%3E%3Cpath d='M90 27L50 50' stroke='%230a0a0a' stroke-width='1.5' stroke-dasharray='2 2' /%3E%3Cpath d='M50 4V50' stroke='%230a0a0a' stroke-width='1.5' stroke-dasharray='2 2' /%3E%3Crect x='48' y='75' width='4' height='15' fill='%23ffe500' stroke='%230a0a0a' stroke-width='1' /%3E%3Cpath d='M25 65L35 70' stroke='%230a0a0a' stroke-width='2' stroke-linecap='round' /%3E%3Cpath d='M75 65L65 70' stroke='%230a0a0a' stroke-width='2' stroke-linecap='round' /%3E%3C/svg%3E"
+    />
+    <title>Prep Portal 2026 | Fraction Visualizer</title>
+    <meta name="theme-color" content="#000000" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/utils/components/nav.css" />
+    <link
+      rel="stylesheet"
+      href="/prep-math/activity/equivalent-fractions/modal.css"
+    />
+    <link
+      rel="stylesheet"
+      href="/prep-math/activity/equivalent-fractions/visualizer.css"
+    />
+  </head>
+
+  <body>
+    <div id="loader">
+      <div id="loader-wrapper">
+        <div class="logo-cluster"></div>
+      </div>
+      <div class="loader-word"><span>Fractions</span></div>
+      <div class="loader-bar"></div>
+    </div>
+
+    <nav class="site-nav" data-nav="main"></nav>
+
+    <!-- Main Content - Only Visualizations -->
+    <main class="fraction-page">
+      <div class="page-header">
+        <h1>Fraction Visualizer</h1>
+        <button class="settings-btn" onclick="openSettings()" title="Settings">
+          <svg
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            ></path>
+          </svg>
+          Settings
+        </button>
+      </div>
+
+      <!-- Mode Badge -->
+      <div class="mode-badge" id="mode-badge">Multiply</div>
+
+      <!-- Visualization Area -->
+      <div class="vis-area">
+        <div class="vis-container" id="left-vis">
+          <div class="vis-placeholder">Loading...</div>
+        </div>
+        <div class="vis-container" id="right-vis">
+          <div class="vis-placeholder">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Control Sliders -->
+      <div class="control-section">
+        <div class="control-item">
+          <span>Verify</span>
+          <input type="range" id="verify-slider" min="0" max="100" value="0" />
+        </div>
+        <div class="control-item">
+          <span>Opacity</span>
+          <input
+            type="range"
+            id="opacity-slider"
+            min="0"
+            max="100"
+            value="100"
+          />
+          <span id="val-opacity">100%</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="settings-modal-overlay" id="settings-modal">
+      <div class="settings-modal-content">
+        <div class="settings-modal-header">
+          <div class="settings-modal-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <h2>Fraction Settings</h2>
+          <button
+            class="settings-modal-close"
+            onclick="closeSettings()"
+            title="Close"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path d="M18 6L6 18" />
+              <path d="M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="settings-section">
+          <h3>Operation Mode</h3>
+          <div class="mode-selector">
+            <button
+              class="mode-btn active"
+              data-mode="multiply"
+              onclick="vizSetMode('multiply')"
+            >
+              Multiply
+            </button>
+            <button
+              class="mode-btn"
+              data-mode="divide"
+              onclick="vizSetMode('divide')"
+            >
+              Divide
+            </button>
+            <button
+              class="mode-btn"
+              data-mode="add"
+              onclick="vizSetMode('add')"
+            >
+              Add
+            </button>
+            <button
+              class="mode-btn"
+              data-mode="subtract"
+              onclick="vizSetMode('subtract')"
+            >
+              Subtract
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Fraction</h3>
+          <div class="frac-sliders-row">
+            <div class="frac-slider-item">
+              <label>Numerator</label>
+              <input
+                type="range"
+                class="slider-purple"
+                id="s-left-num"
+                min="1"
+                max="50"
+                value="2"
+              />
+              <span class="frac-slider-value" id="settings-left-num">2</span>
+            </div>
+            <div class="frac-slider-item">
+              <label>Denominator</label>
+              <input
+                type="range"
+                class="slider-purple"
+                id="s-left-den"
+                min="1"
+                max="20"
+                value="5"
+              />
+              <span class="frac-slider-value" id="settings-left-den">5</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Scalar Values</h3>
+          <div class="frac-sliders-row">
+            <div class="frac-slider-item">
+              <label>Top</label>
+              <input
+                type="range"
+                class="slider-green"
+                id="s-mid-top"
+                min="1"
+                max="10"
+                value="1"
+              />
+              <span class="frac-slider-value" id="settings-mid-top">1</span>
+            </div>
+            <div class="frac-slider-item">
+              <label>Bottom</label>
+              <input
+                type="range"
+                class="slider-green"
+                id="s-mid-bot"
+                min="1"
+                max="10"
+                value="1"
+              />
+              <span class="frac-slider-value" id="settings-mid-bot">1</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>Expression Preview</h3>
+          <div class="expression-preview">
+            <div class="expr-fraction">
+              <span class="expr-num" id="preview-left-num">2</span>
+              <span class="expr-line"></span>
+              <span class="expr-den" id="preview-left-den">5</span>
+            </div>
+            <span class="expr-op" id="preview-op">×</span>
+            <div class="expr-scalar">
+              <span class="scalar-top" id="preview-mid-top">1</span>
+              <span class="scalar-bot" id="preview-mid-bot">1</span>
+            </div>
+            <span class="expr-equals" id="preview-sign">=</span>
+            <div class="expr-fraction">
+              <span class="expr-num" id="result-num">2</span>
+              <span class="expr-line"></span>
+              <span class="expr-den" id="result-den">5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/utils/components/loader.js"></script>
+    <script src="./script.js"></script>
+    <script type="module" src="/utils/components/nav-builder.js"></script>
+  </body>
+</html>

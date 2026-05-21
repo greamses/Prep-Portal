@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D to 2D Net Mathematical Proofs</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 98L10 75V25L50 2L90 25V75L50 98Z' fill='%230a0a0a' fill-opacity='0.1' /%3E%3Cpath d='M50 50L10 27V73L50 96V50Z' fill='%230055ff' stroke='%230a0a0a' stroke-width='2.5' /%3E%3Cpath d='M50 50L90 27V73L50 96V50Z' fill='%23003db3' stroke='%230a0a0a' stroke-width='2.5' /%3E%3Cpath d='M50 50L90 27L50 4L10 27L50 50Z' fill='%23ffffff' stroke='%230a0a0a' stroke-width='2.5' /%3E%3Cpath d='M50 35L65 43V58L50 66L35 58V43L50 35Z' fill='%23ffe500' stroke='%230a0a0a' stroke-width='2' /%3E%3Ccircle cx='50' cy='50.5' r='4' fill='%230a0a0a' /%3E%3Cpath d='M30 15.5L70 38.5' stroke='%230a0a0a' stroke-width='1' opacity='0.3' /%3E%3Cpath d='M30 38.5L70 15.5' stroke='%230a0a0a' stroke-width='1' opacity='0.3' /%3E%3Cpath d='M10 27L50 50' stroke='%230a0a0a' stroke-width='1.5' stroke-dasharray='2 2' /%3E%3Cpath d='M90 27L50 50' stroke='%230a0a0a' stroke-width='1.5' stroke-dasharray='2 2' /%3E%3Cpath d='M50 4V50' stroke='%230a0a0a' stroke-width='1.5' stroke-dasharray='2 2' /%3E%3Crect x='48' y='75' width='4' height='15' fill='%23ffe500' stroke='%230a0a0a' stroke-width='1' /%3E%3Cpath d='M25 65L35 70' stroke='%230a0a0a' stroke-width='2' stroke-linecap='round' /%3E%3Cpath d='M75 65L65 70' stroke='%230a0a0a' stroke-width='2' stroke-linecap='round' /%3E%3C/svg%3E"
+    />
+    <meta name="theme-color" content="#000000" />
+    <link rel="stylesheet" href="/utils/components/nav.css" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
+
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #f4f4f0;
+        font-family: "Space Mono", monospace;
+        color: #000;
+      }
+
+      #canvas-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      /* Neo-Brutalist base */
+      .neo-box {
+        border: 4px solid #000;
+        box-shadow: 6px 6px 0px #000;
+        border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        position: absolute;
+        z-index: 10;
+      }
+
+      /* Explanation banner */
+      #explanation-overlay {
+        top: 90px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 25px;
+        text-align: center;
+        width: 85%;
+        max-width: 600px;
+        pointer-events: none;
+        background: #fff;
+        transition:
+          background-color 0.4s,
+          opacity 0.3s;
+      }
+
+      #explanation-overlay p {
+        margin: 0;
+        font-size: 1.15rem;
+        line-height: 1.4;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      /* Bottom slider bar */
+      #controls {
+        bottom: 5%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 85%;
+        max-width: 600px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 25px;
+        background: #a6e22e;
+      }
+
+      .slider-label {
+        font-size: 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+      }
+
+      input[type="range"] {
+        flex-grow: 1;
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 28px;
+        width: 28px;
+        background: #ff4911;
+        border: 3px solid #000;
+        cursor: pointer;
+        margin-top: -10px;
+        box-shadow: 4px 4px 0px #000;
+        border-radius: 50%;
+        transition: transform 0.1s;
+      }
+
+      input[type="range"]::-webkit-slider-thumb:active {
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0px #000;
+      }
+
+      input[type="range"]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 8px;
+        cursor: pointer;
+        background: #000;
+        border-radius: 4px;
+      }
+
+      /* Floating 3D labels */
+      #labels-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 5;
+        pointer-events: none;
+      }
+
+      .floating-label {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        background: #ffdf00;
+        padding: 4px 10px;
+        border: 3px solid #000;
+        box-shadow: 4px 4px 0px #000;
+        font-size: 0.85rem;
+        font-weight: 700;
+        white-space: nowrap;
+        transition: opacity 0.2s ease;
+        opacity: 0;
+        border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+      }
+
+      /* Top-right button cluster */
+      #top-buttons {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        z-index: 100;
+      }
+
+      /* Shared style for top buttons */
+      .top-btn {
+        background: #3b82f6;
+        color: white;
+        padding: 10px 16px;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition:
+          transform 0.1s,
+          box-shadow 0.1s;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        border: 4px solid #000;
+        box-shadow: 6px 6px 0px #000;
+        border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        white-space: nowrap;
+        /* needed so :active works on mobile */
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .top-btn:active {
+        transform: translate(3px, 3px);
+        box-shadow: 3px 3px 0px #000;
+      }
+
+      /* Rotation button — yellow when OFF, blue when ON */
+      #rotate-btn {
+        background: #3b82f6;
+      }
+
+      #rotate-btn.active {
+        background: #a6e22e;
+        color: #000;
+      }
+
+      /* Rotation icon — spins when active */
+      #rotate-btn .icon {
+        display: inline-flex;
+        transition: transform 0.3s;
+      }
+
+      #rotate-btn.active .icon {
+        animation: spin-slow 3s linear infinite;
+      }
+
+      @keyframes spin-slow {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Settings / modal backdrop */
+      #modal-backdrop,
+      #alert-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 101;
+      }
+
+      .modal-box {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #f4f4f0;
+        padding: 25px 35px;
+        width: 90%;
+        max-width: 400px;
+        z-index: 102;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .modal-box h2 {
+        margin: 0 0 15px 0;
+        text-transform: uppercase;
+        font-size: 1.5rem;
+        border-bottom: 3px solid #000;
+        padding-bottom: 10px;
+      }
+
+      .setting-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.95rem;
+      }
+
+      /* Custom dropdown */
+      .custom-dropdown {
+        position: relative;
+        width: 150px;
+        font-family: "Space Mono", monospace;
+      }
+
+      .dropdown-selected {
+        background: #fff;
+        border: 3px solid #000;
+        box-shadow: 4px 4px 0px #000;
+        padding: 8px 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        user-select: none;
+      }
+
+      .dropdown-selected:active {
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0px #000;
+      }
+
+      .dropdown-options {
+        display: none;
+        position: absolute;
+        top: 110%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 3px solid #000;
+        box-shadow: 4px 4px 0px #000;
+        border-radius: 10px;
+        z-index: 103;
+        overflow: hidden;
+      }
+
+      .dropdown-options.show {
+        display: block;
+      }
+
+      .dropdown-option {
+        padding: 10px 12px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border-bottom: 2px solid #000;
+      }
+
+      .dropdown-option:last-child {
+        border-bottom: none;
+      }
+      .dropdown-option:hover {
+        background: #a6e22e;
+      }
+
+      /* Custom toggle switch */
+      .neo-switch {
+        position: relative;
+        display: inline-block;
+        width: 54px;
+        height: 30px;
+      }
+
+      .neo-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .neo-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #fff;
+        border: 3px solid #000;
+        box-shadow: 3px 3px 0px #000;
+        transition: 0.2s;
+        border-radius: 30px;
+      }
+
+      .neo-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: #ff4911;
+        border: 2px solid #000;
+        transition: 0.2s;
+        border-radius: 50%;
+      }
+
+      input:checked + .neo-slider {
+        background-color: #a6e22e;
+      }
+      input:checked + .neo-slider:before {
+        transform: translateX(24px);
+        background-color: #fff;
+      }
+
+      .btn-action {
+        margin-top: 10px;
+        background: #ff007f;
+        color: white;
+        border: 3px solid #000;
+        box-shadow: 4px 4px 0px #000;
+        padding: 10px;
+        font-family: "Space Mono", monospace;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+        text-transform: uppercase;
+        text-align: center;
+      }
+
+      .btn-action:active {
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0px #000;
+      }
+
+      #custom-alert {
+        gap: 15px;
+        text-align: center;
+        align-items: center;
+      }
+
+      #custom-alert svg {
+        width: 50px;
+        height: 50px;
+        stroke: #3b82f6;
+      }
+
+      #custom-alert p {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 10px 0;
+      }
+
+      /* ---- Mobile ---- */
+      @media (max-width: 768px) {
+        #explanation-overlay {
+          top: 80px;
+          width: 90%;
+        }
+
+        #explanation-overlay p {
+          font-size: 0.9rem;
+        }
+
+        #controls {
+          padding: 10px 15px;
+          gap: 10px;
+          width: 90%;
+        }
+
+        .slider-label {
+          font-size: 0.8rem;
+        }
+
+        .floating-label {
+          font-size: 0.7rem;
+          padding: 2px 6px;
+          box-shadow: 2px 2px 0px #000;
+        }
+
+        .top-btn {
+          padding: 8px 10px;
+          font-size: 0.75rem;
+        }
+
+        #top-buttons {
+          gap: 7px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="loader">
+      <div id="loader-wrapper">
+        <div class="logo-cluster"></div>
+        <!-- JS will inject the 3 images here -->
+      </div>
+      <div class="loader-word"><span>Surface Area</span></div>
+      <div class="loader-bar"></div>
+    </div>
+
+    <nav class="site-nav" data-nav="main"></nav>
+
+    <div id="labels-container"></div>
+
+    <div id="explanation-overlay" class="neo-box">
+      <p id="text-content">Loading Mathematical Proof...</p>
+    </div>
+
+    <!-- Grouped top-right buttons -->
+    <div id="top-buttons">
+      <!-- Rotation toggle — ON by default -->
+      <button
+        id="rotate-btn"
+        class="top-btn active"
+        title="Toggle auto-rotation"
+      >
+        <span class="icon">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
+        </span>
+      </button>
+
+      <button id="settings-btn" class="top-btn" title="Open settings">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="3"></circle>
+          <path
+            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+          ></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Settings modal -->
+    <div id="modal-backdrop"></div>
+    <div id="settings-modal" class="neo-box modal-box">
+      <h2>Configuration</h2>
+
+      <div class="setting-row">
+        <label>Shape Net</label>
+        <div class="custom-dropdown" id="shape-dropdown">
+          <div class="dropdown-selected">
+            <span id="selected-shape-text">Sphere</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+          <div class="dropdown-options" id="shape-options">
+            <div class="dropdown-option" data-value="sphere">Sphere</div>
+            <div class="dropdown-option" data-value="cone">Cone</div>
+            <div class="dropdown-option" data-value="cylinder">Cylinder</div>
+            <div class="dropdown-option" data-value="cube">Cube</div>
+            <div class="dropdown-option" data-value="cuboid">Cuboid</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <label>Show Area Labels</label>
+        <label class="neo-switch">
+          <input type="checkbox" id="toggle-labels" checked />
+          <span class="neo-slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <label>Explanations</label>
+        <label class="neo-switch">
+          <input type="checkbox" id="toggle-explanation" checked />
+          <span class="neo-slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <label>Multicolor</label>
+        <label class="neo-switch">
+          <input type="checkbox" id="toggle-colors" checked />
+          <span class="neo-slider"></span>
+        </label>
+      </div>
+
+      <div class="btn-action" id="close-settings">Apply / Close</div>
+    </div>
+
+    <!-- Alert modal -->
+    <div id="alert-backdrop"></div>
+    <div id="custom-alert" class="neo-box modal-box">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <p id="custom-alert-text">Alert message</p>
+      <div class="btn-action" id="close-alert" style="width: 100px">OK</div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="controls" class="neo-box">
+      <span class="slider-label">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        3D
+      </span>
+      <input type="range" id="progress-slider" min="0" max="100" value="0" />
+      <span class="slider-label">
+        Net
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="3" y1="9" x2="21" y2="9"></line>
+          <line x1="9" y1="21" x2="9" y2="9"></line>
+        </svg>
+      </span>
+    </div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+          "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm"
+        }
+      }
+    </script>
+
+    <script src="/utils/components/loader.js"></script>
+    <script type="module" src="/utils/components/nav-builder.js"></script>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>

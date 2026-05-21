@@ -1,0 +1,558 @@
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('polygon-svg');
+const gTransform = document.getElementById('transform-group');
+
+let VW = 500, VH = 500, CX = 250, CY = 250;
+let isInitialized = false;
+
+const state = {
+  tAngle: 60,
+  distance: 160,
+  radius: 55,
+  
+  showNames: true,
+  showValues: false,
+  showVertices: true,
+  showCenter: true,
+  grid: true,
+  
+  animMode: 'none',
+  animProgress: 0,
+  activeWedge: null
+};
+
+let vX = 0, vY = 0, vScale = 1;
+let animReq = null;
+
+function updateView() {
+  gTransform.setAttribute('transform', `translate(${vX}, ${vY}) scale(${vScale})`);
+}
+
+function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
+function rad(deg) { return deg * Math.PI / 180; }
+function deg(r) { return r * 180 / Math.PI; }
+
+function el(tag, attrs = {}) {
+  const e = document.createElementNS(SVG_NS, tag);
+  for (const[k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
+
+function txt(content, attrs = {}) {
+  const t = el('text', attrs);
+  t.textContent = content;
+  return t;
+}
+
+function getSectorPath(cx, cy, startDeg, sweepDeg, r) {
+  if (sweepDeg <= 0.01) return "";
+  let sR = rad(startDeg), eR = rad(startDeg + sweepDeg);
+  let x1 = cx + r * Math.cos(sR), y1 = cy + r * Math.sin(sR);
+  let x2 = cx + r * Math.cos(eR), y2 = cy + r * Math.sin(eR);
+  let largeArc = sweepDeg > 180 ? 1 : 0;
+  return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+}
+
+// Maps OUT all valid bi-directional mappings based on mathematical properties
+function getModeConfig(mode, P1, P2, M) {
+  if (mode === 'vert_opp') return {
+    movers:[
+      { w: 1, type: 'rotate', cx: P1.x, cy: P1.y, target: 4, partner: 4 },
+      { w: 4, type: 'rotate', cx: P1.x, cy: P1.y, target: 1, partner: 1 },
+      { w: 2, type: 'rotate', cx: P1.x, cy: P1.y, target: 3, partner: 3 },
+      { w: 3, type: 'rotate', cx: P1.x, cy: P1.y, target: 2, partner: 2 },
+      { w: 5, type: 'rotate', cx: P2.x, cy: P2.y, target: 8, partner: 8 },
+      { w: 8, type: 'rotate', cx: P2.x, cy: P2.y, target: 5, partner: 5 },
+      { w: 6, type: 'rotate', cx: P2.x, cy: P2.y, target: 7, partner: 7 },
+      { w: 7, type: 'rotate', cx: P2.x, cy: P2.y, target: 6, partner: 6 }
+    ]
+  };
+  if (mode === 'corresponding') return {
+    movers:[
+      { w: 1, type: 'translate', dx: P2.x - P1.x, dy: P2.y - P1.y, target: 5, partner: 5 },
+      { w: 5, type: 'translate', dx: P1.x - P2.x, dy: P1.y - P2.y, target: 1, partner: 1 },
+      { w: 2, type: 'translate', dx: P2.x - P1.x, dy: P2.y - P1.y, target: 6, partner: 6 },
+      { w: 6, type: 'translate', dx: P1.x - P2.x, dy: P1.y - P2.y, target: 2, partner: 2 },
+      { w: 3, type: 'translate', dx: P2.x - P1.x, dy: P2.y - P1.y, target: 7, partner: 7 },
+      { w: 7, type: 'translate', dx: P1.x - P2.x, dy: P1.y - P2.y, target: 3, partner: 3 },
+      { w: 4, type: 'translate', dx: P2.x - P1.x, dy: P2.y - P1.y, target: 8, partner: 8 },
+      { w: 8, type: 'translate', dx: P1.x - P2.x, dy: P1.y - P2.y, target: 4, partner: 4 }
+    ]
+  };
+  if (mode === 'alt_int') return {
+    movers:[
+      { w: 3, type: 'rotate', cx: M.x, cy: M.y, target: 6, partner: 6 },
+      { w: 6, type: 'rotate', cx: M.x, cy: M.y, target: 3, partner: 3 },
+      { w: 4, type: 'rotate', cx: M.x, cy: M.y, target: 5, partner: 5 },
+      { w: 5, type: 'rotate', cx: M.x, cy: M.y, target: 4, partner: 4 }
+    ]
+  };
+  if (mode === 'alt_ext') return {
+    movers:[
+      { w: 1, type: 'rotate', cx: M.x, cy: M.y, target: 8, partner: 8 },
+      { w: 8, type: 'rotate', cx: M.x, cy: M.y, target: 1, partner: 1 },
+      { w: 2, type: 'rotate', cx: M.x, cy: M.y, target: 7, partner: 7 },
+      { w: 7, type: 'rotate', cx: M.x, cy: M.y, target: 2, partner: 2 }
+    ]
+  };
+  if (mode === 'cons_int') return {
+    supplementary: true,
+    movers:[
+      { w: 3, type: 'rotate', cx: M.x, cy: M.y, target: 6, partner: 5 }, // Rotates down to show it makes straight line with 5
+      { w: 5, type: 'rotate', cx: M.x, cy: M.y, target: 4, partner: 3 },
+      { w: 4, type: 'rotate', cx: M.x, cy: M.y, target: 5, partner: 6 },
+      { w: 6, type: 'rotate', cx: M.x, cy: M.y, target: 3, partner: 4 }
+    ]
+  };
+  if (mode === 'cons_ext') return {
+    supplementary: true,
+    movers:[
+      { w: 1, type: 'rotate', cx: M.x, cy: M.y, target: 8, partner: 7 }, // Rotates down to show it makes straight line with 7
+      { w: 7, type: 'rotate', cx: M.x, cy: M.y, target: 2, partner: 1 }, // Note: Partner of 7 is 1, forms line when 7 -> 2
+      { w: 2, type: 'rotate', cx: M.x, cy: M.y, target: 7, partner: 8 },
+      { w: 8, type: 'rotate', cx: M.x, cy: M.y, target: 1, partner: 2 }
+    ]
+  };
+  return null;
+}
+
+// Engine driver for the automatic ease-out slider playback
+function runAnim(targetVal) {
+  if (animReq) cancelAnimationFrame(animReq);
+  
+  let step = () => {
+    let diff = targetVal - state.animProgress;
+    if (Math.abs(diff) < 0.005) {
+      state.animProgress = targetVal;
+      document.getElementById('sl-anim').value = state.animProgress;
+      document.getElementById('dv-anim-val').textContent = Math.round(state.animProgress * 100) + '%';
+      render();
+      return;
+    }
+    
+    state.animProgress += diff * 0.12; 
+    document.getElementById('sl-anim').value = state.animProgress;
+    document.getElementById('dv-anim-val').textContent = Math.round(state.animProgress * 100) + '%';
+    render();
+    animReq = requestAnimationFrame(step);
+  };
+  
+  step();
+}
+
+function render() {
+  gTransform.innerHTML = '';
+  
+  let A = state.tAngle;
+  let d = state.distance;
+  let r = state.radius;
+  
+  let M = { x: CX, y: CY };
+  let tanA = Math.tan(rad(A));
+  let hOffset = Math.abs(tanA) > 0.0001 ? (d / 2) / tanA : 0;
+  
+  let P1 = { x: CX - hOffset, y: CY - d / 2 };
+  let P2 = { x: CX + hOffset, y: CY + d / 2 };
+  
+  if (state.grid) {
+    if (!document.getElementById('grid-def')) {
+      const defs = el('defs');
+      const pat = el('pattern', { id: 'grid-def', width: '30', height: '30', patternUnits: 'userSpaceOnUse' });
+      pat.appendChild(el('circle', { cx: '0', cy: '0', r: '1', fill: '#ccc' }));['30,0', '0,30', '30,30'].forEach(p => pat.appendChild(el('circle', { cx: p.split(',')[0], cy: p.split(',')[1], r: '1', fill: '#ccc' })));
+      defs.appendChild(pat);
+      svg.appendChild(defs);
+    }
+    gTransform.appendChild(el('rect', { x: '-50000', y: '-50000', width: '100000', height: '100000', fill: 'url(#grid-def)' }));
+  }
+  
+  const gBase = el('g');
+  
+  gBase.appendChild(el('line', { x1: -5000, y1: P1.y, x2: 5000, y2: P1.y, stroke: '#0a0a0a', 'stroke-width': '2.5' }));
+  gBase.appendChild(el('line', { x1: -5000, y1: P2.y, x2: 5000, y2: P2.y, stroke: '#0a0a0a', 'stroke-width': '2.5' }));
+  
+  let tx = Math.cos(rad(A)), ty = Math.sin(rad(A));
+  gBase.appendChild(el('line', {
+    x1: M.x - tx * 5000, y1: M.y - ty * 5000,
+    x2: M.x + tx * 5000, y2: M.y + ty * 5000,
+    stroke: '#0a0a0a', 'stroke-width': '2.5'
+  }));
+
+  gTransform.appendChild(gBase);
+
+  let wedges =[
+    { w: 1, cx: P1.x, cy: P1.y, start: 180, sweep: A, color: '#ffe500', textFill: '#0a0a0a' },
+    { w: 2, cx: P1.x, cy: P1.y, start: 180 + A, sweep: 180 - A, color: '#0055ff', textFill: '#ffffff' },
+    { w: 3, cx: P1.x, cy: P1.y, start: A, sweep: 180 - A, color: '#0055ff', textFill: '#ffffff' },
+    { w: 4, cx: P1.x, cy: P1.y, start: 0, sweep: A, color: '#ffe500', textFill: '#0a0a0a' },
+    { w: 5, cx: P2.x, cy: P2.y, start: 180, sweep: A, color: '#ffe500', textFill: '#0a0a0a' },
+    { w: 6, cx: P2.x, cy: P2.y, start: 180 + A, sweep: 180 - A, color: '#0055ff', textFill: '#ffffff' },
+    { w: 7, cx: P2.x, cy: P2.y, start: A, sweep: 180 - A, color: '#0055ff', textFill: '#ffffff' },
+    { w: 8, cx: P2.x, cy: P2.y, start: 0, sweep: A, color: '#ffe500', textFill: '#0a0a0a' }
+  ];
+
+  let modeCfg = getModeConfig(state.animMode, P1, P2, M);
+  let t = state.animProgress;
+
+  // Base Wedges Backgrounds
+  wedges.forEach(wdg => {
+    let isMover = modeCfg && modeCfg.movers.some(m => m.w === wdg.w);
+    let isActiveMover = state.activeWedge === wdg.w;
+    
+    let mActive = modeCfg && state.activeWedge ? modeCfg.movers.find(m => m.w === state.activeWedge) : null;
+    let targetForActive = mActive ? mActive.target : null;
+    let partnerForActive = mActive ? mActive.partner : targetForActive;
+    
+    let isTarget = wdg.w === targetForActive;
+    let isPartner = wdg.w === partnerForActive;
+
+    let opacity = 0.85;
+    let strokeDash = '';
+    let strokeColor = '#0a0a0a';
+    
+    if (modeCfg) {
+      if (state.activeWedge) {
+        if (isActiveMover) opacity = 0.85;
+        else if (modeCfg.supplementary && isPartner) opacity = 0.85; // Visually group supplementary partner
+        else if (isTarget) { opacity = 0.25; strokeDash = '4,4'; } // Make target bed visible
+        else { opacity = 0.04; strokeColor = 'rgba(10,10,10,0.2)'; }
+      } else {
+        if (isMover) opacity = 0.55; 
+        else { opacity = 0.04; strokeColor = 'rgba(10,10,10,0.2)'; }
+      }
+    }
+
+    let gWdg = el('g', {
+       class: isMover ? 'sector-wedge valid-mover' : 'sector-wedge',
+       'data-w': wdg.w
+    });
+
+    gWdg.appendChild(el('path', {
+      d: getSectorPath(wdg.cx, wdg.cy, wdg.start, wdg.sweep, r),
+      fill: wdg.color, stroke: strokeColor, 'stroke-width': '1.5',
+      'stroke-dasharray': strokeDash, opacity: opacity
+    }));
+
+    let labelStr = '';
+    if (state.showNames) labelStr += '∠' + wdg.w;
+    if (state.showNames && state.showValues) labelStr += ': ';
+    if (state.showValues) labelStr += Math.round(wdg.sweep) + '°';
+
+    if (labelStr && opacity > 0.1) {
+      let midA = rad(wdg.start + wdg.sweep / 2);
+      let lx = wdg.cx + (r * 0.65) * Math.cos(midA);
+      let ly = wdg.cy + (r * 0.65) * Math.sin(midA);
+      
+      gWdg.appendChild(txt(labelStr, {
+        x: lx, y: ly + 3,
+        'text-anchor': 'middle', 'dominant-baseline': 'middle',
+        'font-family': 'JetBrains Mono,monospace', 'font-size': '11',
+        'font-weight': '700', fill: wdg.textFill, opacity: opacity > 0.5 ? 1 : 0.7
+      }));
+    }
+    gTransform.appendChild(gWdg);
+  });
+
+  // Animated Overlays for selected active Wedge
+  if (modeCfg && t > 0 && state.activeWedge) {
+    let m = modeCfg.movers.find(m => m.w === state.activeWedge);
+    
+    if (m) {
+      let wdg = wedges.find(w => w.w === m.w);
+      let gAnim = el('g');
+
+      if (m.type === 'translate') {
+        gAnim.setAttribute('transform', `translate(${m.dx * t}, ${m.dy * t})`);
+      } else if (m.type === 'rotate') {
+        gAnim.setAttribute('transform', `rotate(${180 * t}, ${m.cx}, ${m.cy})`);
+      }
+
+      gAnim.appendChild(el('path', {
+        d: getSectorPath(wdg.cx, wdg.cy, wdg.start, wdg.sweep, r),
+        fill: wdg.color, stroke: '#0a0a0a', 'stroke-width': '1.5',
+        opacity: 0.95
+      }));
+
+      let labelStr = '';
+      if (state.showNames) labelStr += '∠' + wdg.w;
+      if (state.showNames && state.showValues) labelStr += ': ';
+      if (state.showValues) labelStr += Math.round(wdg.sweep) + '°';
+
+      if (labelStr) {
+        let midA = rad(wdg.start + wdg.sweep / 2);
+        let lx = wdg.cx + (r * 0.65) * Math.cos(midA);
+        let ly = wdg.cy + (r * 0.65) * Math.sin(midA);
+        
+        let txtEl = txt(labelStr, {
+          x: lx, y: ly + 3,
+          'text-anchor': 'middle', 'dominant-baseline': 'middle',
+          'font-family': 'JetBrains Mono,monospace', 'font-size': '11',
+          'font-weight': '700', fill: wdg.textFill
+        });
+        
+        // Counter-rotate the text label so it never flips upside down!
+        if (m.type === 'rotate') {
+           txtEl.setAttribute('transform', `rotate(${-180 * t}, ${lx}, ${ly + 3})`);
+        }
+        
+        gAnim.appendChild(txtEl);
+      }
+
+      gTransform.appendChild(gAnim);
+    }
+  }
+
+  // Draw OVERLAY details (Vertices and Center)
+  if (state.showCenter) {
+    gTransform.appendChild(el('circle', { cx: M.x, cy: M.y, r: '4', fill: '#0a0a0a' }));
+  }
+
+  if (state.showVertices) {
+    gTransform.appendChild(el('circle', {
+      cx: P1.x, cy: P1.y, r: '8', class: 'vert-handle', 'data-idx': '1', fill: '#fff'
+    }));
+    gTransform.appendChild(el('circle', {
+      cx: P2.x, cy: P2.y, r: '8', class: 'vert-handle', 'data-idx': '2', fill: '#fff'
+    }));
+  }
+
+  // Update DOM readouts
+  let acute = Math.min(A, 180 - A);
+  let obtuse = Math.max(A, 180 - A);
+  document.getElementById('s-angle-alpha').textContent = acute.toFixed(1) + '°';
+  document.getElementById('s-angle-beta').textContent = obtuse.toFixed(1) + '°';
+
+  const modeNames = {
+    none: 'Angles Explorer',
+    vert_opp: 'Vertically Opposite',
+    corresponding: 'Corresponding',
+    alt_int: 'Alternate Interior',
+    alt_ext: 'Alternate Exterior',
+    cons_int: 'Consecutive Interior',
+    cons_ext: 'Consecutive Exterior'
+  };
+  
+  document.getElementById('poly-badge').textContent = modeNames[state.animMode];
+  document.getElementById('s-mode-name').textContent = modeNames[state.animMode];
+
+  let relStr = 'Supp: α + β = 180°';
+  if (state.animMode !== 'none') {
+    if(!state.activeWedge) {
+       relStr = 'Tap a sector to animate!';
+    } else {
+       relStr = modeCfg.supplementary ? 'Supplementary (Sum = 180°)' : 'Equal pairs (α=α, β=β)';
+    }
+  }
+  document.getElementById('s-relationship').textContent = relStr;
+}
+
+const resizeObserver = new ResizeObserver(entries => {
+  for (let entry of entries) {
+    const { width, height } = entry.contentRect;
+    if (width > 0 && height > 0) {
+      if (Math.abs(VW - width) > 2 || Math.abs(VH - height) > 2) {
+        VW = width; VH = height; CX = VW / 2; CY = VH / 2;
+        svg.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
+        if (isInitialized) render();
+      }
+    }
+  }
+});
+resizeObserver.observe(document.querySelector('.canvas-frame'));
+
+function wire(id, key, transform, displayId, displayFmt) {
+  const elem = document.getElementById(id), dv = displayId ? document.getElementById(displayId) : null;
+  elem.addEventListener('input', () => {
+    state[key] = transform(elem.value);
+    if (dv) dv.textContent = displayFmt ? displayFmt(state[key]) : state[key];
+    render();
+  });
+}
+
+function wireToggle(id, key) {
+  document.getElementById(id).addEventListener('change', (e) => {
+    state[key] = e.target.checked; render();
+  });
+}
+
+wire('sl-angle', 'tAngle', parseInt, 'dv-angle', v => v + '°');
+wire('sl-dist', 'distance', parseInt, 'dv-dist', null);
+wire('sl-radius', 'radius', parseInt, 'dv-radius', null);
+
+wire('sl-anim', 'animProgress', parseFloat, 'dv-anim-val', v => {
+  if (animReq) cancelAnimationFrame(animReq); // halt automation if user grabs it
+  return Math.round(v * 100) + '%';
+});
+
+wireToggle('t-values', 'showValues');
+wireToggle('t-names', 'showNames');
+wireToggle('t-vertices', 'showVertices');
+wireToggle('t-center', 'showCenter');
+wireToggle('t-grid', 'grid');
+
+// Animation Mode Selector
+document.querySelectorAll('.anim-mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.anim-mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.animMode = btn.dataset.mode;
+    
+    // Purge old states and configurations
+    if (animReq) cancelAnimationFrame(animReq);
+    state.activeWedge = null;
+    state.animProgress = 0;
+    
+    let sl = document.getElementById('sl-anim');
+    sl.disabled = true; // Stays disabled until a sector is tapped
+    sl.value = 0;
+    
+    document.getElementById('dv-anim-val').textContent = '0%';
+    render();
+  });
+});
+
+function applyZoom(zoomFactor, svgMx = VW / 2, svgMy = VH / 2) {
+  let newScale = Math.max(0.2, Math.min(vScale * zoomFactor, 20));
+  vX = svgMx - (svgMx - vX) * (newScale / vScale);
+  vY = svgMy - (svgMy - vY) * (newScale / vScale);
+  vScale = newScale;
+  updateView();
+}
+
+document.getElementById('btn-zoom-in').onclick = () => applyZoom(1.25);
+document.getElementById('btn-zoom-out').onclick = () => applyZoom(0.8);
+document.getElementById('btn-zoom-reset').onclick = () => { vX = 0; vY = 0; vScale = 1; updateView(); };
+
+let isDragging = false;
+let startX, startY, startVx, startVy;
+let dragVertIdx = null, startVertPos = null;
+
+svg.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = svg.getBoundingClientRect();
+  applyZoom(e.deltaY < 0 ? 1.15 : 0.85, (e.clientX - rect.left) * (VW / rect.width), (e.clientY - rect.top) * (VW / rect.width));
+}, { passive: false });
+
+svg.addEventListener('pointerdown', e => {
+  if (e.target.closest('.anim-panel') || e.target.closest('.zoom-controls')) return;
+  
+  // -- NEW INTERACTION LAYER --
+  const wedgeNode = e.target.closest('.valid-mover');
+  if (wedgeNode) {
+    let wId = parseInt(wedgeNode.getAttribute('data-w'));
+    state.activeWedge = wId;
+    state.animProgress = 0;
+    document.getElementById('sl-anim').disabled = false;
+    runAnim(1); // Auto-fire the animation to the pair target!
+    e.stopPropagation();
+    return;
+  }
+  
+  const handle = e.target.closest('.vert-handle');
+  if (handle) {
+    dragVertIdx = parseInt(handle.dataset.idx);
+    
+    let A = state.tAngle, d = state.distance;
+    let tanA = Math.tan(rad(A));
+    let hOffset = Math.abs(tanA) > 0.0001 ? (d / 2) / tanA : 0;
+    
+    if (dragVertIdx === 1) startVertPos = { x: CX - hOffset, y: CY - d / 2 };
+    else startVertPos = { x: CX + hOffset, y: CY + d / 2 };
+
+    vertDragStart = { x: e.clientX, y: e.clientY };
+    svg.setPointerCapture(e.pointerId);
+    e.stopPropagation();
+    return;
+  }
+  
+  isDragging = true;
+  startX = e.clientX; startY = e.clientY;
+  startVx = vX; startVy = vY;
+  svg.setPointerCapture(e.pointerId);
+});
+
+svg.addEventListener('pointermove', e => {
+  const rect = svg.getBoundingClientRect();
+  const scaleRatio = VW / rect.width;
+  
+  if (dragVertIdx !== null) {
+    let dx = (e.clientX - vertDragStart.x) * scaleRatio / vScale;
+    let dy = (e.clientY - vertDragStart.y) * scaleRatio / vScale;
+    
+    if (dragVertIdx === 1) { // P1 (Top point) Only shifts X to manipulate angle
+      let newX = startVertPos.x + dx;
+      let newA = deg(Math.atan2(state.distance, 2 * CX - 2 * newX));
+      if (newA < 0) newA += 360;
+      if (newA > 180) newA -= 180;
+      
+      state.tAngle = clamp(newA, 10, 170);
+      document.getElementById('sl-angle').value = Math.round(state.tAngle);
+      document.getElementById('dv-angle').textContent = Math.round(state.tAngle) + '°';
+      
+    } else if (dragVertIdx === 2) { // P2 (Bottom point) Manipulates Angle AND Distance
+      let newX = startVertPos.x + dx;
+      let newY = startVertPos.y + dy;
+      
+      let newD = clamp(2 * (newY - CY), 60, 320);
+      state.distance = newD;
+      
+      let newA = deg(Math.atan2(newD, 2 * newX - 2 * CX));
+      if (newA < 0) newA += 360;
+      if (newA > 180) newA -= 180;
+      
+      state.tAngle = clamp(newA, 10, 170);
+      document.getElementById('sl-dist').value = Math.round(state.distance);
+      document.getElementById('dv-dist').textContent = Math.round(state.distance);
+      document.getElementById('sl-angle').value = Math.round(state.tAngle);
+      document.getElementById('dv-angle').textContent = Math.round(state.tAngle) + '°';
+    }
+    render();
+    return;
+  }
+  
+  if (!isDragging) return;
+  vX = startVx + (e.clientX - startX) * scaleRatio;
+  vY = startVy + (e.clientY - startY) * scaleRatio;
+  updateView();
+});
+
+svg.addEventListener('pointerup', e => {
+  dragVertIdx = null; isDragging = false;
+  svg.releasePointerCapture(e.pointerId);
+});
+svg.addEventListener('pointercancel', () => { dragVertIdx = null; isDragging = false; });
+
+let initialPinchDist = null, initialScale = 1;
+svg.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) {
+    isDragging = false; dragVertIdx = null;
+    initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    initialScale = vScale;
+  }
+}, { passive: false });
+
+svg.addEventListener('touchmove', e => {
+  if (e.touches.length === 2 && initialPinchDist) {
+    e.preventDefault();
+    const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+    const center = { x: (e.touches[0].clientX + e.touches[1].clientX) / 2, y: (e.touches[0].clientY + e.touches[1].clientY) / 2 };
+    const scaleFactor = dist / initialPinchDist;
+    const newScale = Math.max(0.2, Math.min(initialScale * scaleFactor, 20));
+    const rect = svg.getBoundingClientRect();
+    const svgMx = (center.x - rect.left) * (VW / rect.width);
+    const svgMy = (center.y - rect.top) * (VW / rect.width);
+    vX = svgMx - (svgMx - vX) * (newScale / vScale);
+    vY = svgMy - (svgMy - vY) * (newScale / vScale);
+    vScale = newScale; initialScale = newScale; initialPinchDist = dist;
+    updateView();
+  }
+}, { passive: false });
+svg.addEventListener('touchend', e => { if (e.touches.length < 2) initialPinchDist = null; });
+
+const overlay = document.getElementById('overlay'), fab = document.getElementById('fab'), close = document.getElementById('modal-close');
+fab.addEventListener('click', () => overlay.classList.add('open'));
+close.addEventListener('click', () => overlay.classList.remove('open'));
+overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') overlay.classList.remove('open'); });
+
+isInitialized = true;
+render();

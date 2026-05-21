@@ -1,0 +1,713 @@
+@import url("https://fonts.googleapis.com/css2?family=Unbounded:wght@700;900&family=JetBrains+Mono:wght@400;600&display=swap");
+
+/* ============================================
+   FONT FACE DECLARATIONS (Fallback strategy)
+   ============================================ */
+@font-face {
+  font-family: "Unbounded Fallback";
+  src: local("Arial Black"), local("Impact");
+  ascent-override: 110%;
+  descent-override: 30%;
+  line-gap-override: 0%;
+  size-adjust: 95%;
+}
+
+@font-face {
+  font-family: "JetBrains Mono Fallback";
+  src: local("Courier New"), local("Consolas");
+  ascent-override: 95%;
+  descent-override: 25%;
+  line-gap-override: 0%;
+  size-adjust: 100%;
+}
+
+/* ============================================
+   THEME VARIABLES & ROOT PARAMS
+   ============================================ */
+
+/* LIGHT THEME (default) */
+:root,
+[data-theme="light"] {
+  /* ── Core Palette ───────────────────────── */
+  --bg: #ffffff;
+  --app-bg: #f0ece3;
+  --ink: #0a0a0a;
+  --yellow: #ffe500;
+  --blue: #0055ff;
+  --red: #ff2200;
+  --green: #00a550;
+  --amber: #e67e00;
+  --muted: #555555;
+  --light-muted: #888888;
+  --off: #f7f4ee;
+  --paper: #fffef8;
+  --text-light: #ffffff;
+
+  /* ── Border ─────────────────────────────── */
+  --border-color: #0a0a0a;
+  --border-width: 2.5px;
+  --border-style: solid;
+  --border: var(--border-width) var(--border-style) var(--border-color);
+  --border-subtle: 1px solid rgba(10, 10, 10, 0.15);
+
+  /* ── Shadows ────────────────────────────── */
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --shadow-md: 5px 5px 0 var(--ink);
+  --shadow-lg: 6px 6px 0 var(--ink);
+  --shadow-xl: 9px 9px 0 var(--ink);
+  --shadow-cta: 6px 6px 0 rgba(255, 229, 0, 0.35);
+  --shadow-cta-hover: 8px 8px 0 rgba(255, 255, 255, 0.15);
+
+  /* ── Subject Badge BGs (light) ──────────── */
+  --badge-math-bg: var(--yellow);
+  --badge-chemistry-bg: #e8b3ff;
+  --badge-biology-bg: #b3f0b3;
+  --badge-physics-bg: #b3d9ff;
+  --badge-basicscience-bg: #ffd6b3;
+  --badge-basictech-bg: #b3f0e8;
+  --badge-cls-primary-bg: #c8f5c8;
+  --badge-cls-jss-bg: #c8deff;
+  --badge-cls-ss-bg: #fff3b3;
+
+  /* ── Subject Practice Card BGs (light) ─── */
+  --bg-math-card: #fffde7;
+  --bg-physics-card: #e3f2fd;
+  --bg-chemistry-card: #f3e5f5;
+  --bg-biology-card: #e8f5e9;
+
+  /* ── Exam Tip ────────────────────────────── */
+  --exam-tip-bg: #fffde7;
+
+  /* ── Card hover ──────────────────────────── */
+  --card-hover: #0a0a0a;
+
+  /* ── Transitions ────────────────────────── */
+  --transition-fast: 0.12s;
+  --transition-base: 0.15s;
+  --transition-smooth: 0.25s;
+  --transition-bounce: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-char: 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ── Z-Index Layers ─────────────────────── */
+  --z-nav: 200;
+  --z-mobile-nav: 199;
+  --z-overlay: 1;
+
+  /* ── Spacing ─────────────────────────────── */
+  --padding-xs: clamp(18px, 5vw, 56px);
+  --padding-sm: clamp(18px, 4vw, 52px);
+  --padding-md: clamp(22px, 4vw, 44px);
+  --padding-lg: clamp(28px, 5vw, 52px);
+  --padding-xl: clamp(56px, 9vw, 90px);
+
+  --gap-xs: 2px;
+  --gap-sm: 8px;
+  --gap-md: 12px;
+  --gap-lg: 16px;
+  --gap-xl: 24px;
+  --gap-2xl: 36px;
+
+  /* ── Border Radius ───────────────────────── */
+  --radius-none: 0;
+  --radius-sm: 12px;
+}
+
+/* ── DARK THEME ─────────────────────────────────────────── */
+[data-theme="dark"] {
+  /* ── Core Palette ───────────────────────── */
+  --bg: #0a0a0a;
+  --app-bg: #111111;
+  --ink: #f0f0f0;
+  --yellow: #ffea2e;
+  --blue: #4d8fff;
+  --red: #ff4444;
+  --green: #10b981;
+  --amber: #f59e0b;
+  --muted: #999999;
+  --light-muted: #666666;
+  --off: #1a1a1a;
+  --paper: #0f0f0f;
+  --text-light: #0a0a0a;
+
+  /* ── Border ─────────────────────────────── */
+  --border-color: #f0f0f0;
+  --border: var(--border-width) var(--border-style) var(--border-color);
+  --border-subtle: 1px solid rgba(240, 240, 240, 0.15);
+
+  /* ── Shadows ────────────────────────────── */
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --shadow-md: 5px 5px 0 var(--ink);
+  --shadow-lg: 6px 6px 0 var(--ink);
+  --shadow-xl: 9px 9px 0 var(--ink);
+  --shadow-cta: 6px 6px 0 rgba(255, 234, 46, 0.35);
+  --shadow-cta-hover: 8px 8px 0 rgba(255, 255, 255, 0.15);
+
+  /* ── Subject Badge BGs (dark — richer/deeper) */
+  --badge-math-bg: var(--yellow);
+  --badge-chemistry-bg: #5a1875;
+  --badge-biology-bg: #1a4d1a;
+  --badge-physics-bg: #1a3560;
+  --badge-basicscience-bg: #5c2a00;
+  --badge-basictech-bg: #0d3d35;
+  --badge-cls-primary-bg: #1a4d1a;
+  --badge-cls-jss-bg: #1a3560;
+  --badge-cls-ss-bg: #4d3a00;
+
+  /* ── Subject Practice Card BGs (dark) ──── */
+  --bg-math-card: #252200;
+  --bg-physics-card: #0a1929;
+  --bg-chemistry-card: #1a0a20;
+  --bg-biology-card: #0a1f0a;
+
+  /* ── Exam Tip ────────────────────────────── */
+  --exam-tip-bg: #252200;
+
+  /* ── Card hover ──────────────────────────── */
+  --card-hover: #f0f0f0;
+}
+
+/* ── SYSTEM DARK PREFERENCE (when no data-theme set) ────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0a0a;
+    --app-bg: #111111;
+    --ink: #f0f0f0;
+    --yellow: #ffea2e;
+    --blue: #4d8fff;
+    --red: #ff4444;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --muted: #999999;
+    --light-muted: #666666;
+    --off: #1a1a1a;
+    --paper: #0f0f0f;
+    --text-light: #0a0a0a;
+    --border-color: #f0f0f0;
+    --border: var(--border-width) var(--border-style) var(--border-color);
+    --border-subtle: 1px solid rgba(240, 240, 240, 0.15);
+    --shadow-sm: 3px 3px 0 var(--ink);
+    --shadow-md: 5px 5px 0 var(--ink);
+    --shadow-lg: 6px 6px 0 var(--ink);
+    --shadow-xl: 9px 9px 0 var(--ink);
+    --shadow-cta: 6px 6px 0 rgba(255, 234, 46, 0.35);
+    --shadow-cta-hover: 8px 8px 0 rgba(255, 255, 255, 0.15);
+    --badge-math-bg: var(--yellow);
+    --badge-chemistry-bg: #5a1875;
+    --badge-biology-bg: #1a4d1a;
+    --badge-physics-bg: #1a3560;
+    --badge-basicscience-bg: #5c2a00;
+    --badge-basictech-bg: #0d3d35;
+    --badge-cls-primary-bg: #1a4d1a;
+    --badge-cls-jss-bg: #1a3560;
+    --badge-cls-ss-bg: #4d3a00;
+    --bg-math-card: #252200;
+    --bg-physics-card: #0a1929;
+    --bg-chemistry-card: #1a0a20;
+    --bg-biology-card: #0a1f0a;
+    --exam-tip-bg: #252200;
+    --card-hover: #f0f0f0;
+  }
+}
+
+/* ============================================
+   TYPOGRAPHY SYSTEM
+   ============================================ */
+:root {
+  /* ── Base Font Size (1rem = 16px) ───────── */
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+
+  /* ── Font Families (Only two fonts used) ── */
+  --font-display:
+    "Unbounded", "Unbounded Fallback", system-ui, -apple-system,
+    BlinkMacSystemFont, sans-serif;
+  --font-mono:
+    "JetBrains Mono", "JetBrains Mono Fallback", "Courier New", "Consolas",
+    "Monaco", monospace;
+  --font-serif: var(--font-display); /* Uses same as display font */
+
+  /* ── Font Weights ───────────────────────── */
+  --weight-regular: 400;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-black: 900;
+
+  /* ── Letter Spacing ─────────────────────── */
+  --tracking-tight: -0.025em;
+  --tracking-normal: -0.01em;
+  --tracking-wide: 0.04em;
+  --tracking-wider: 0.07em;
+  --tracking-widest: 0.1em;
+  --tracking-ultra: 0.14em;
+  --tracking-mega: 0.16em;
+  --tracking-giga: 0.18em;
+  --tracking-terra: 0.2em;
+
+  /* ── Line Heights ───────────────────────── */
+  --leading-none: 1;
+  --leading-tight: 1.05;
+  --leading-snug: 1.3;
+  --leading-normal: 1.4;
+  --leading-relaxed: 1.7;
+  --leading-loose: 1.75;
+  --leading-extra-loose: 1.85;
+  --leading-ultra-loose: 1.9;
+
+  /* ── Fluid Type Scale (Mobile-first clamp values) ── */
+  /* Display / Hero */
+  --text-hero: clamp(3.25rem, 8vw + 1rem, 6.75rem); /* 52px → 108px */
+  --text-hero-bg: clamp(5rem, 15vw + 1rem, 13.75rem); /* 80px → 220px */
+
+  /* Headings */
+  --text-h1: clamp(3.25rem, 8vw + 1rem, 6.75rem); /* 52px → 108px */
+  --text-h2: clamp(1.625rem, 4vw + 0.5rem, 3.25rem); /* 26px → 52px */
+  --text-h2-section: clamp(
+    1.125rem,
+    2.5vw + 0.25rem,
+    1.625rem
+  ); /* 18px → 26px */
+  --text-h2-subject: clamp(1.9rem, 4vw, 3rem); /* 30.4px → 48px */
+  --text-h3: clamp(0.875rem, 1.5vw + 0.25rem, 1.125rem); /* 14px → 18px */
+  --text-h3-card: clamp(0.938rem, 1.8vw + 0.25rem, 1.188rem); /* 15px → 19px */
+
+  /* Body Text */
+  --text-body: clamp(0.688rem, 1.2vw + 0.25rem, 0.844rem); /* 11px → 13.5px */
+  --text-body-sm: 0.688rem; /* 11px */
+  --text-body-xs: 0.656rem; /* 10.5px */
+  --text-body-xxs: 0.594rem; /* 9.5px */
+
+  /* Mono / Code */
+  --text-mono-xs: 0.531rem; /* 8.5px */
+  --text-mono-sm: 0.594rem; /* 9.5px */
+  --text-mono-base: 0.625rem; /* 10px */
+  --text-mono-md: 0.688rem; /* 11px */
+  --text-mono-lg: 0.719rem; /* 11.5px */
+  --text-mono-xl: 0.813rem; /* 13px */
+
+  /* Special */
+  --text-brand-top: 1.375rem; /* 22px */
+  --text-brand-bottom: 0.5rem; /* 8px */
+  --text-ticker: 0.594rem; /* 9.5px */
+  --text-stat: clamp(1.25rem, 2.5vw + 0.25rem, 1.875rem); /* 20px → 30px */
+  --text-badge: 0.65rem; /* 10.4px */
+  --text-cta: 0.625rem; /* 10px */
+  --text-arrow: 1.25rem; /* 20px */
+
+  /* Mobile-specific adjustments */
+  --text-brand-top-mobile: 0.938rem; /* 15px */
+  --text-brand-bottom-mobile: 0.531rem; /* 8.5px */
+}
+
+/* ============================================
+   RESPONSIVE TYPOGRAPHY ADJUSTMENTS
+   ============================================ */
+@media screen and (max-width: 768px) {
+  :root {
+    /* Slightly reduce display sizes on mobile */
+    --text-hero: clamp(2.5rem, 10vw, 4rem); /* 40px → 64px */
+    --text-h1: clamp(2rem, 8vw, 3.5rem); /* 32px → 56px */
+    --text-h2: clamp(1.375rem, 5vw, 2rem); /* 22px → 32px */
+
+    /* Adjust line heights for mobile readability */
+    --leading-tight: 1.1;
+    --leading-snug: 1.35;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  :root {
+    /* Further reduce for small screens */
+    --text-hero: clamp(2rem, 12vw, 3rem); /* 32px → 48px */
+    --text-h1: clamp(1.75rem, 10vw, 2.5rem); /* 28px → 40px */
+    --text-body: clamp(0.75rem, 3vw, 0.875rem); /* 12px → 14px */
+  }
+}
+
+/* ============================================
+   SPACING & LAYOUT
+   ============================================ */
+:root {
+  --nav-height: 3.875rem; /* 62px */
+  --ticker-height: 2.125rem; /* 34px */
+
+  --card-min-height: 13.75rem; /* 220px */
+  --subject-card-min-height: 10rem; /* 160px */
+
+  --grid-gap-sm: 0;
+  --grid-gap-md: 1rem; /* 16px */
+  --grid-gap-lg: 2rem; /* 32px */
+
+  --grid-cols-category: repeat(auto-fit, minmax(20rem, 1fr)); /* 320px */
+  --grid-cols-subject: repeat(auto-fill, minmax(17.5rem, 1fr)); /* 280px */
+  --grid-cols-drill: repeat(auto-fill, minmax(18.75rem, 1fr)); /* 300px */
+  --grid-cols-info: repeat(3, 1fr);
+  --grid-cols-footer: 2fr 1fr 1fr 1fr;
+
+  --hero-gap: clamp(1.5rem, 6vw, 5rem); /* 24px → 80px */
+  --hero-max-width: 27.5rem; /* 440px */
+
+  --container-max-sm: 23.75rem; /* 380px */
+  --container-max-md: 31.25rem; /* 500px */
+  --container-max-lg: 40rem; /* 640px */
+
+  --section-padding-y: clamp(3.5rem, 10vw, 6.875rem); /* 56px → 110px */
+  --section-padding-bottom: clamp(3rem, 8vw, 5rem); /* 48px → 80px */
+}
+
+/* ============================================
+   ANIMATION DURATIONS & EASINGS
+   ============================================ */
+:root {
+  --duration-instant: 0.08s;
+  --duration-fast: 0.12s;
+  --duration-base: 0.15s;
+  --duration-smooth: 0.2s;
+  --duration-normal: 0.25s;
+  --duration-medium: 0.28s;
+  --duration-slow: 0.3s;
+  --duration-bounce: 0.5s;
+  --duration-char: 0.65s;
+
+  --ease-default: ease;
+  --ease-in-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ============================================
+   GLOBAL RESET & BASE STYLES
+   ============================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 100%; /* Respect browser default, then use rem */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-display);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-normal);
+  color: var(--ink);
+  background-color: var(--bg);
+  transition:
+    background-color var(--duration-normal) var(--ease-default),
+    color var(--duration-normal) var(--ease-default);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Typography Defaults ──────────────────── */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--text-h1);
+}
+h2 {
+  font-size: var(--text-h2);
+}
+h3 {
+  font-size: var(--text-h3);
+}
+
+p {
+  font-size: var(--text-body);
+  line-height: var(--leading-relaxed);
+  margin-bottom: 1rem;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-base);
+}
+
+small {
+  font-size: var(--text-body-sm);
+}
+
+/* ── Selection Style ──────────────────────── */
+::selection {
+  background-color: var(--yellow);
+  color: var(--bg);
+}
+
+/* ── Scrollbar Styling ────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--off);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink);
+}
+
+/* ── Focus Styles for Accessibility ───────── */
+:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* ── Reduced Motion ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* ── Font Family Utilities ────────────────── */
+.font-display {
+  font-family: var(--font-display);
+}
+.font-mono {
+  font-family: var(--font-mono);
+}
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+/* ── Font Weight Utilities ────────────────── */
+.weight-regular {
+  font-weight: var(--weight-regular);
+}
+.weight-semibold {
+  font-weight: var(--weight-semibold);
+}
+.weight-bold {
+  font-weight: var(--weight-bold);
+}
+.weight-black {
+  font-weight: var(--weight-black);
+}
+
+/* ── Text Size Utilities ──────────────────── */
+.text-hero {
+  font-size: var(--text-hero);
+}
+.text-h1 {
+  font-size: var(--text-h1);
+}
+.text-h2 {
+  font-size: var(--text-h2);
+}
+.text-h3 {
+  font-size: var(--text-h3);
+}
+.text-body {
+  font-size: var(--text-body);
+}
+.text-body-sm {
+  font-size: var(--text-body-sm);
+}
+.text-body-xs {
+  font-size: var(--text-body-xs);
+}
+.text-body-xxs {
+  font-size: var(--text-body-xxs);
+}
+.text-mono-xs {
+  font-size: var(--text-mono-xs);
+}
+.text-mono-sm {
+  font-size: var(--text-mono-sm);
+}
+.text-mono-base {
+  font-size: var(--text-mono-base);
+}
+.text-mono-md {
+  font-size: var(--text-mono-md);
+}
+.text-mono-lg {
+  font-size: var(--text-mono-lg);
+}
+.text-mono-xl {
+  font-size: var(--text-mono-xl);
+}
+
+/* ── Line Height Utilities ────────────────── */
+.leading-none {
+  line-height: var(--leading-none);
+}
+.leading-tight {
+  line-height: var(--leading-tight);
+}
+.leading-snug {
+  line-height: var(--leading-snug);
+}
+.leading-normal {
+  line-height: var(--leading-normal);
+}
+.leading-relaxed {
+  line-height: var(--leading-relaxed);
+}
+.leading-loose {
+  line-height: var(--leading-loose);
+}
+
+/* ── Letter Spacing Utilities ─────────────── */
+.tracking-tight {
+  letter-spacing: var(--tracking-tight);
+}
+.tracking-normal {
+  letter-spacing: var(--tracking-normal);
+}
+.tracking-wide {
+  letter-spacing: var(--tracking-wide);
+}
+.tracking-wider {
+  letter-spacing: var(--tracking-wider);
+}
+.tracking-widest {
+  letter-spacing: var(--tracking-widest);
+}
+.tracking-ultra {
+  letter-spacing: var(--tracking-ultra);
+}
+
+/* ── Text Alignment ───────────────────────── */
+.text-left {
+  text-align: left;
+}
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+
+/* ── Text Transform ───────────────────────── */
+.uppercase {
+  text-transform: uppercase;
+}
+.lowercase {
+  text-transform: lowercase;
+}
+.capitalize {
+  text-transform: capitalize;
+}
+
+/* ── Text Decoration ──────────────────────── */
+.underline {
+  text-decoration: underline;
+}
+.no-underline {
+  text-decoration: none;
+}
+
+/* ── Theme Toggle ─────────────────────────── */
+.theme-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  transition: transform var(--duration-base) var(--ease-default);
+  color: var(--ink);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+/* ── Visually Hidden (for accessibility) ──── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+  }
+
+  @page {
+    margin: 2cm;
+  }
+}
