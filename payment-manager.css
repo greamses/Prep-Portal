@@ -1,0 +1,168 @@
+.pm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.pm-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.pm-modal {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 3px solid #1a1a1a;
+  border-radius: 8px; /* Rounded corners for the modal */
+  box-shadow: 8px 8px 0 #1a1a1a; /* Adjusted shadow to match radius */
+  transform: translateY(20px);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pm-overlay.active .pm-modal {
+  transform: translateY(0);
+}
+
+.pm-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  border-top-left-radius: 5px; /* Match modal's top corners */
+  border-top-right-radius: 5px;
+  border-bottom: 3px solid #1a1a1a;
+  background: #ffe500;
+}
+
+.pm-eyebrow {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.pm-title {
+  font-family: "Unbounded", sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  margin: 0;
+}
+
+.pm-close-btn {
+  background: none;
+  border: none;
+  font-size: 32px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.pm-body {
+  padding: 24px;
+}
+
+.pm-plan-card {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px dashed #ddd;
+  border-radius: 5px; /* Rounded corners for the plan card */
+}
+
+.pm-plan-info h3 {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.pm-price {
+  margin-top: 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.pm-price strong {
+  font-size: 32px;
+  font-weight: 900;
+  color: #0055ff;
+}
+
+.pm-features {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.pm-main-btn {
+  width: 100%;
+  padding: 18px;
+  background: #ffe500;
+  border: 3px solid #1a1a1a;
+  box-shadow: 6px 6px 0 #1a1a1a;
+  font-family: "Unbounded", sans-serif;
+  font-weight: 900;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 5px; /* Rounded corners for the button */
+  transition: all 0.1s;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.pm-main-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: 3px 3px 0 #1a1a1a;
+}
+
+.pm-main-btn svg {
+  transition: transform 0.2s;
+}
+.pm-main-btn:hover svg {
+  transform: translateX(4px);
+}
+
+/* Navigation Profile Styles */
+.user-details {
+  display: flex;
+  flex-direction: column;
+  margin-left: 12px;
+}
+
+.user-plan-badge {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+  font-weight: 800;
+  color: #888;
+  text-transform: uppercase;
+  margin-top: -2px;
+  letter-spacing: 0.05em;
+}
+
+.user-plan-badge.premium {
+  color: #0055ff;
+}
+
+.pm-footer-text {
+  text-align: center;
+  font-size: 11px;
+  color: #666;
+  margin: 0;
+  font-family: "JetBrains Mono", monospace;
+}

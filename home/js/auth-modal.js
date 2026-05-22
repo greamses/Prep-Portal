@@ -9,8 +9,18 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import {
+  doc,
+  setDoc,
+  getDoc,
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { auth, googleProvider, db } from "../../firebase-init.js";
 
-import { auth, googleProvider } from "../../firebase-init.js";
+const DASHBOARD_PATH = "/dashboard.html";
+
+function goToDashboard() {
+  window.location.href = DASHBOARD_PATH;
+}
 
 // ============================================
 // INJECT AUTH MODAL
@@ -112,6 +122,111 @@ export function injectAuthModal() {
       <div class="auth-sep"></div>
 
       <div class="auth-field">
+        <label class="auth-label-main">Select Your Role</label>
+        <div class="role-selection">
+          <button type="button" class="role-card active" data-role="teacher">
+            <div class="role-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                <circle cx="12" cy="10" r="2"></circle>
+              </svg>
+            </div>
+            <div class="role-info">
+              <strong>Teacher</strong>
+              <small>Manage classrooms</small>
+            </div>
+            <div class="role-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+          </button>
+          <button type="button" class="role-card" data-role="parent">
+            <div class="role-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <div class="role-info">
+              <strong>Parent</strong>
+              <small>Monitor progress</small>
+            </div>
+            <div class="role-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Teacher Specific -->
+      <div class="role-fields" data-role-section="teacher">
+        <div class="auth-row">
+          <div class="auth-field">
+            <label>School Name</label>
+            <input type="text" id="signup-school" placeholder="e.g. Westside Academy" />
+          </div>
+          <div class="auth-field" style="max-width: 120px;">
+            <label>Class Size</label>
+            <input type="number" id="signup-students" placeholder="30" min="1" />
+          </div>
+        </div>
+        <div class="auth-row">
+          <div class="auth-field">
+            <label>Years of Experience</label>
+            <select id="signup-experience">
+              <option value="0-2">0 - 2 Years</option>
+              <option value="3-5">3 - 5 Years</option>
+              <option value="5-10">5 - 10 Years</option>
+              <option value="10+">10+ Years</option>
+            </select>
+          </div>
+          <div class="auth-field">
+            <label>Job Position</label>
+            <input type="text" id="signup-position" placeholder="e.g. Senior Math Lead" />
+          </div>
+        </div>
+        <div class="auth-field">
+          <label>Primary Level / Specialization</label>
+          <input type="text" id="signup-subject" placeholder="e.g. Grade 9 Mathematics" />
+        </div>
+      </div>
+
+      <!-- Parent Specific -->
+      <div class="role-fields" data-role-section="parent" style="display: none;">
+        <div class="auth-row">
+          <div class="auth-field">
+            <label>Your Relationship</label>
+            <select id="signup-relation">
+              <option value="Mother">Mother</option>
+              <option value="Father">Father</option>
+              <option value="Guardian">Guardian</option>
+            </select>
+          </div>
+          <div class="auth-field">
+            <label>Contact Phone</label>
+            <input type="tel" id="signup-parent-phone" placeholder="+234..." />
+          </div>
+        </div>
+        <div class="auth-field">
+          <label>Child's Full Name</label>
+          <input type="text" id="signup-child-name" placeholder="John Doe" />
+        </div>
+        <div class="auth-row">
+          <div class="auth-field">
+            <label>Grade Level</label>
+            <select id="signup-grade">
+              <option value="" disabled selected>Select Grade</option>
+              ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((g) => `<option value="grade-${g}">Grade ${g}</option>`).join("")}
+            </select>
+          </div>
+          <div class="auth-field">
+            <label>Learning Goal</label>
+            <select id="signup-goal">
+              <option value="Daily Practice" selected>Daily Practice</option>
+              <option value="Exam Preparation">Exam Preparation</option>
+              <option value="Remedial Help">Remedial Help</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-field">
         <label>Full Name</label>
         <input type="text" placeholder="Emmanuel Daniel" required />
       </div>
@@ -161,9 +276,31 @@ export function injectAuthModal() {
 
 function initializeAuthModal(authContainer) {
   const closeBtn = document.getElementById("auth-close-btn");
+  const modal = authContainer.querySelector(".auth-modal");
   const overlay = authContainer.querySelector(".auth-overlay");
   const tabs = authContainer.querySelectorAll(".auth-tab");
   const forms = authContainer.querySelectorAll(".auth-form");
+
+  // ============================================
+  // ROLE SELECTION LOGIC
+  // ============================================
+  let selectedRole = "teacher";
+  const roleCards = authContainer.querySelectorAll(".role-card");
+  const roleSections = authContainer.querySelectorAll(".role-fields");
+
+  roleCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      roleCards.forEach((c) => c.classList.remove("active"));
+      card.classList.add("active");
+      selectedRole = card.dataset.role;
+
+      // Toggle specific fields
+      roleSections.forEach((section) => {
+        section.style.display =
+          section.dataset.roleSection === selectedRole ? "flex" : "none";
+      });
+    });
+  });
 
   // ============================================
   // OPEN MODAL
@@ -189,6 +326,7 @@ function initializeAuthModal(authContainer) {
   // ============================================
 
   function switchTab(mode) {
+    modal?.classList.toggle("signup-mode", mode === "signup");
     tabs.forEach((tab) => {
       tab.classList.toggle("active", tab.dataset.authTab === mode);
     });
@@ -234,8 +372,10 @@ function initializeAuthModal(authContainer) {
     .getElementById("google-login")
     .addEventListener("click", async () => {
       try {
-        await signInWithPopup(auth, googleProvider);
+        const result = await signInWithPopup(auth, googleProvider);
+        await ensureUserDoc(result.user);
         closeModal();
+        goToDashboard();
       } catch (err) {
         console.error(err);
         alert(err.message);
@@ -250,8 +390,10 @@ function initializeAuthModal(authContainer) {
     .getElementById("google-signup")
     .addEventListener("click", async () => {
       try {
-        await signInWithPopup(auth, googleProvider);
+        const result = await signInWithPopup(auth, googleProvider);
+        await ensureUserDoc(result.user);
         closeModal();
+        goToDashboard();
       } catch (err) {
         console.error(err);
         alert(err.message);
@@ -270,7 +412,9 @@ function initializeAuthModal(authContainer) {
       const password = e.target.querySelector('input[type="password"]').value;
       try {
         await signInWithEmailAndPassword(auth, email, password);
+        // We don't overwrite role on login
         closeModal();
+        goToDashboard();
       } catch (err) {
         console.error(err);
         alert(err.message);
@@ -295,12 +439,67 @@ function initializeAuthModal(authContainer) {
           password,
         );
         await updateProfile(userCredential.user, { displayName: name });
+
+        const extraData = {};
+        if (selectedRole === "teacher") {
+          extraData.schoolName =
+            document.getElementById("signup-school")?.value || "";
+          extraData.totalStudents =
+            parseInt(document.getElementById("signup-students")?.value) || 0;
+          extraData.activeClass =
+            document.getElementById("signup-subject")?.value || "Mathematics";
+          extraData.experience =
+            document.getElementById("signup-experience")?.value || "";
+          extraData.position =
+            document.getElementById("signup-position")?.value || "";
+        } else if (selectedRole === "parent") {
+          extraData.childName =
+            document.getElementById("signup-child-name")?.value || "";
+          extraData.childGrade =
+            document.getElementById("signup-grade")?.value || "";
+          extraData.childGoal =
+            document.getElementById("signup-goal")?.value || "Daily Practice";
+          extraData.relationship =
+            document.getElementById("signup-relation")?.value || "";
+          extraData.phone =
+            document.getElementById("signup-parent-phone")?.value || "";
+        }
+
+        // Initialize Firestore Document with the selected role
+        const userData = {
+          name: name,
+          email: email,
+          role: selectedRole,
+          isPremium: false,
+          createdAt: new Date().toISOString(),
+          ...extraData,
+        };
+
+        await setDoc(doc(db, "users", userCredential.user.uid), userData);
+
         closeModal();
+        goToDashboard();
       } catch (err) {
         console.error(err);
         alert(err.message);
       }
     });
+
+  // Helper to ensure a doc exists (useful for Google signups)
+  async function ensureUserDoc(user) {
+    const userRef = doc(db, "users", user.uid);
+    const snap = await getDoc(userRef);
+
+    if (!snap.exists()) {
+      await setDoc(userRef, {
+        name: user.displayName || "New User",
+        email: user.email,
+        role: "student", // Default for Google Signups unless you add role selection there too
+        isPremium: false,
+        createdAt: new Date().toISOString(),
+      });
+    }
+  }
 }
 
 // ============================================

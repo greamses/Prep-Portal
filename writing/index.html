@@ -1,170 +1,339 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PrepBot Writing Evaluator</title>
-    
-    <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
-    <meta name="theme-color" content="#000000">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=DM+Serif+Display&family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <link rel="stylesheet" href="./style.css">
-</head>
 
-<body>
-    
+    <link rel="icon" type="image/svg+xml" href="../icon.svg" />
+    <meta name="theme-color" content="#000000" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=DM+Serif+Display&family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <link rel="stylesheet" href="/utils/components/nav.css" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+
+  <body>
+    <nav class="site-nav" data-nav="main"></nav>
+
     <div class="app">
-        
-        <!-- Header -->
-        <div class="header">
-            <div class="title">
-                PrepBot Writing
-            </div>
-            <button class="btn btn-outline" id="new-topic-btn">
-                Change Topic
-            </button>
+      <!-- Header -->
+      <div class="header">
+        <div class="title">PrepBot Writing</div>
+        <button class="btn btn-outline" id="new-topic-btn">Change Topic</button>
+      </div>
+
+      <!-- Topic -->
+      <div class="topic-box" id="topic-box">
+        <div class="topic-header">
+          <div class="topic-label">Write About This</div>
         </div>
-        
-        <!-- Topic -->
-        <div class="topic-box" id="topic-box">
-            <div class="topic-label">
-                Write About This
-            </div>
-            <div class="topic-text" id="topic-display">Loading topic...</div>
+        <div class="topic-body">
+          <div class="topic-text" id="topic-display">Loading topic...</div>
         </div>
-        
-        <!-- EDITOR -->
-        <div id="editor-section">
-            <textarea id="writing-area" placeholder="Write your essay or story here. Aim for clear grammar, rich vocabulary, and good structure!"></textarea>
-            <div class="footer-controls">
-                <div class="word-count">Words: <span id="word-count">0</span></div>
-                <button class="btn btn-primary" id="submit-btn" disabled>
-                    <i class="fas fa-spell-check"></i> Submit &amp; Grade
-                </button>
-            </div>
+      </div>
+
+      <!-- EDITOR -->
+      <div id="editor-section">
+        <textarea
+          id="writing-area"
+          placeholder="Write your essay or story here. Aim for clear grammar, rich vocabulary, and good structure!"
+        ></textarea>
+        <div class="footer-controls">
+          <div class="word-count">Words: <span id="word-count">0</span></div>
+          <button class="btn btn-primary" id="submit-btn" disabled>
+            <i class="fas fa-spell-check"></i> Submit &amp; Grade
+          </button>
         </div>
-        
-        <!-- RESULTS -->
-        <div id="results-section" class="results-section">
-            
-            <!-- Rubric -->
-            <details class="rubric-wrap">
-                <summary>
-                    View Grading Rubric
-                </summary>
-                <div class="rubric-content" id="rubric-content"></div>
-            </details>
-            
-            <!-- Mark Legend -->
-            <div class="legend">
-                <div class="legend-title">Red Pen Mark Guide</div>
-                <div class="legend-item">
-                    <span style="color:rgba(0,0,0,.4);text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px;font-size:13px;">word</span>
-                    <span style="color:var(--red);font-family:Caveat,cursive;font-size:15px;margin-left:-4px;">ℓ</span> Delete
-                </div>
-                <div class="legend-item">
-                    <span style="font-family:Caveat,cursive;color:var(--red);font-size:15px;">word</span>
-                    <span style="color:var(--red);font-size:12px;">∧</span> Insert
-                </div>
-                <div class="legend-item">
-                    <span style="border-bottom:2px solid var(--red);box-shadow:0 4px 0 var(--red),0 7px 0 var(--red);padding-bottom:2px;font-size:13px;">abc</span> Capitalize (≡)
-                </div>
-                <div class="legend-item">
-                    <span style="color:var(--red);font-family:Caveat,cursive;font-size:16px;font-weight:700;">/</span>Abc Lowercase
-                </div>
-                <div class="legend-item">
-                    <span style="color:var(--red);font-size:16px;">⌢</span> Transpose
-                </div>
-                <div class="legend-item">
-                    <span style="color:var(--red);font-size:18px;font-family:'Times New Roman',serif;">¶</span> New Para
-                </div>
-                <div class="legend-item">
-                    <span style="border:2.5px solid var(--red);border-radius:50%;padding:0 4px;font-size:12px;">abbr</span> Spell Out
-                </div>
-                <div class="legend-item">
-                    <span style="text-decoration:underline wavy var(--red);text-underline-offset:4px;font-size:13px;">word</span>
-                    <span style="color:var(--red);font-family:Caveat,cursive;font-size:12px;font-weight:700;">sp</span> Spelling
-                </div>
-                <div class="legend-item">
-                    <span style="color:var(--red);font-family:Caveat,cursive;font-size:15px;font-weight:700;">//</span> Run-on
-                </div>
-                <div class="legend-item">
-                    <span style="border-left:2.5px solid var(--red);border-right:2.5px solid var(--red);padding:0 3px;font-size:13px;">sent</span>
-                    <span style="color:var(--red);font-family:Caveat,cursive;font-size:12px;font-weight:700;">frag</span> Fragment
-                </div>
-                <div class="legend-item">
-                    <span style="box-shadow:0 0 0 2px var(--red);border-radius:2px;padding:0 3px;font-size:13px;">.</span>
-                    <span style="color:var(--red);font-family:Caveat,cursive;font-size:12px;font-weight:700;">?</span> Punctuation
-                </div>
-                <div class="legend-item">
-                    <span style="color:var(--blue);text-decoration:underline dashed var(--blue);text-underline-offset:3px;font-size:13px;">word</span>
-                    Word Sub
-                </div>
-                <div class="legend-item">
-                    <span style="text-decoration:underline wavy var(--amber);text-underline-offset:4px;font-size:13px;">sentence</span>
-                    Rewrite
-                </div>
-            </div>
-            
-            <!-- Annotated Paper -->
-            <div class="annotated-paper" id="annotated-paper">
-                <div class="score-stamp" id="score-stamp">0%</div>
-                <div id="annotated-text"></div>
-            </div>
-            
-            <div class="footer-controls">
-                <button class="btn btn-outline" id="retry    -btn" style="width:100%;justify-content:center;">
-                
-                </button>
-            </div>
-            
-        </div><!-- /results -->
-        
-        <!-- Loading -->
-        <div class="loading-overlay" id="loading-overlay">
-            <div class="spinner"></div>
-            <div class="loading-text">Grading…</div>
-            <p style="color:var(--muted);font-size:13px;margin-top:8px;text-align:center;">
-                Applying red pen marks &amp; scoring
-            </p>
+      </div>
+
+      <!-- RESULTS -->
+      <div id="results-section" class="results-section">
+        <!-- Rubric -->
+        <details class="rubric-wrap">
+          <summary>View Grading Rubric</summary>
+          <div class="rubric-content" id="rubric-content"></div>
+        </details>
+
+        <!-- Mark Legend -->
+        <div class="legend">
+          <div class="legend-title">Red Pen Mark Guide</div>
+          <div class="legend-item">
+            <span
+              style="
+                color: rgba(0, 0, 0, 0.4);
+                text-decoration: line-through;
+                text-decoration-color: var(--red);
+                text-decoration-thickness: 2px;
+                font-size: 13px;
+              "
+              >word</span
+            >
+            <span
+              style="
+                color: var(--red);
+                font-family: Caveat, cursive;
+                font-size: 15px;
+                margin-left: -4px;
+              "
+              >ℓ</span
+            >
+            Delete
+          </div>
+          <div class="legend-item">
+            <span
+              style="
+                font-family: Caveat, cursive;
+                color: var(--red);
+                font-size: 15px;
+              "
+              >word</span
+            >
+            <span style="color: var(--red); font-size: 12px">∧</span> Insert
+          </div>
+          <div class="legend-item">
+            <span
+              style="
+                border-bottom: 2px solid var(--red);
+                box-shadow:
+                  0 4px 0 var(--red),
+                  0 7px 0 var(--red);
+                padding-bottom: 2px;
+                font-size: 13px;
+              "
+              >abc</span
+            >
+            Capitalize (≡)
+          </div>
+          <div class="legend-item">
+            <span
+              style="
+                color: var(--red);
+                font-family: Caveat, cursive;
+                font-size: 16px;
+                font-weight: 700;
+              "
+              >/</span
+            >Abc Lowercase
+          </div>
+          <div class="legend-item">
+            <span style="color: var(--red); font-size: 16px">⌢</span> Transpose
+          </div>
+          <div class="legend-item">
+            <span
+              style="
+                color: var(--red);
+                font-size: 18px;
+                font-family: &quot;Times New Roman&quot;, serif;
+              "
+              >¶</span
+            >
+            New Para
+          </div>
+          <div class="legend-item">
+            <span
+              style="
+                border: 2.5px solid var(--red);
+                border-radius: 50%;
+                padding: 0 4px;
+                font-size: 12px;
+              "
+              >abbr</span
+            >
+            Spell Out
+          </div>
+          <div class="legend-item">
+            <span
+              style="
+                text-decoration: underline wavy var(--red);
+                text-underline-offset: 4px;
+                font-size: 13px;
+              "
+              >word</span
+            >
+            <span
+              style="
+                color: var(--red);
+                font-family: Caveat, cursive;
+                font-size: 12px;
+                font-weight: 700;
+              "
+              >sp</span
+            >
+            Spelling
+          </div>
+          <div class="legend-item">
+            <span
+              style="
+                color: var(--red);
+                font-family: Caveat, cursive;
+                font-size: 15px;
+                font-weight: 700;
+              "
+              >//</span
+            >
+            Run-on
+          </div>
+          <div class="legend-item">
+            <span
+              style="
+                border-left: 2.5px solid var(--red);
+                border-right: 2.5px solid var(--red);
+                padding: 0 3px;
+                font-size: 13px;
+              "
+              >sent</span
+            >
+            <span
+              style="
+                color: var(--red);
+                font-family: Caveat, cursive;
+                font-size: 12px;
+                font-weight: 700;
+              "
+              >frag</span
+            >
+            Fragment
+          </div>
+          <div class="legend-item">
+            <span
+              style="
+                box-shadow: 0 0 0 2px var(--red);
+                border-radius: 2px;
+                padding: 0 3px;
+                font-size: 13px;
+              "
+              >.</span
+            >
+            <span
+              style="
+                color: var(--red);
+                font-family: Caveat, cursive;
+                font-size: 12px;
+                font-weight: 700;
+              "
+              >?</span
+            >
+            Punctuation
+          </div>
+          <div class="legend-item">
+            <span
+              style="
+                color: var(--blue);
+                text-decoration: underline dashed var(--blue);
+                text-underline-offset: 3px;
+                font-size: 13px;
+              "
+              >word</span
+            >
+            Word Sub
+          </div>
+          <div class="legend-item">
+            <span
+              style="
+                text-decoration: underline wavy var(--amber);
+                text-underline-offset: 4px;
+                font-size: 13px;
+              "
+              >sentence</span
+            >
+            Rewrite
+          </div>
         </div>
-        
-    </div><!-- /app -->
-    
+
+        <!-- Annotated Paper -->
+        <div class="annotated-paper" id="annotated-paper">
+          <div class="score-stamp" id="score-stamp">0%</div>
+          <div id="annotated-text"></div>
+        </div>
+
+        <div class="footer-controls">
+          <button class="btn btn-outline" id="retry-btn" type="button">
+            Retry
+          </button>
+        </div>
+      </div>
+      <!-- /results -->
+
+      <!-- Loading -->
+      <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Grading…</div>
+        <p
+          style="
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 8px;
+            text-align: center;
+          "
+        >
+          Applying red pen marks &amp; scoring
+        </p>
+      </div>
+    </div>
+    <!-- /app -->
+
     <!-- Topic Modal -->
     <div id="topic-modal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" id="close-modal">&times;</button>
-            <h3 style="margin-top:0; font-family:'Syne', sans-serif; font-size:18px; text-transform:uppercase;">Select Writing Type</h3>
-            <p style="font-size:14px; color:var(--muted); margin-bottom:12px; line-height:1.5;">
-                Choose a genre below to have the AI instantly generate a fresh, unique writing prompt for you.
-            </p>
-            <div class="type-grid">
-                <button class="btn btn-outline type-btn" data-type="Narrative Story">
-                    Narrative
-                </button>
-                <button class="btn btn-outline type-btn" data-type="Argumentative Essay">
-                    Argumentative
-                </button>
-                <button class="btn btn-outline type-btn" data-type="Descriptive Essay">
-                    Descriptive
-                </button>
-                <button class="btn btn-outline type-btn" data-type="Expository Essay">
-                    Expository
-                </button>
-            </div>
+      <div class="modal-content">
+        <button class="modal-close" id="close-modal">&times;</button>
+        <h3
+          style="
+            margin-top: 0;
+            font-family: &quot;Syne&quot;, sans-serif;
+            font-size: 18px;
+            text-transform: uppercase;
+          "
+        >
+          Select Writing Type
+        </h3>
+        <p
+          style="
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 12px;
+            line-height: 1.5;
+          "
+        >
+          Choose a genre below to have the AI instantly generate a fresh, unique
+          writing prompt for you.
+        </p>
+        <div class="type-grid">
+          <button class="btn btn-outline type-btn" data-type="Narrative Story">
+            Narrative
+          </button>
+          <button
+            class="btn btn-outline type-btn"
+            data-type="Argumentative Essay"
+          >
+            Argumentative
+          </button>
+          <button
+            class="btn btn-outline type-btn"
+            data-type="Descriptive Essay"
+          >
+            Descriptive
+          </button>
+          <button class="btn btn-outline type-btn" data-type="Expository Essay">
+            Expository
+          </button>
         </div>
+      </div>
     </div>
-    
+
     <!-- Popover -->
     <div id="mark-popover"></div>
 
-<!-- ES6 Modules -->
-<script type="module" src="./js/main.js"></script>
-</body>
-
+    <!-- ES6 Modules -->
+    <script src="/utils/components/nav-builder.js" type="module"></script>
+    <script type="module" src="./js/main.js"></script>
+  </body>
 </html>

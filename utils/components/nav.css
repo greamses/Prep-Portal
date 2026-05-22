@@ -238,13 +238,6 @@ body {
   transform: translateY(-3px);
 }
 
-/* Active block (when containing an active link) */
-.nav-block.active {
-  background: var(--paper);
-  box-shadow: 3px 3px 0px var(--ink);
-  border: 2px solid var(--ink);
-}
-
 /* Colorful Theme Accents per block */
 .nav-block.theme-yellow .nav-header .nav-icon {
   background: var(--yellow);
@@ -277,12 +270,6 @@ body {
   white-space: nowrap;
 }
 
-.nav-block.active .nav-header {
-  color: var(--ink);
-  border-bottom-style: solid;
-  border-bottom-width: 3px;
-}
-
 .nav-header .nav-icon {
   border: 2px solid var(--ink);
   border-radius: 6px;
@@ -302,7 +289,7 @@ body {
   background: transparent;
   color: var(--ink);
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border-radius: 6px;
+  border-radius: 0;
   white-space: nowrap;
 }
 
@@ -348,17 +335,13 @@ body {
 
 /* Active leaf */
 .nav-leaf.active {
-  background: var(--yellow);
   border-color: var(--ink);
-  border-bottom-style: solid;
-  font-weight: 800;
-  box-shadow: 2px 2px 0px var(--ink);
+  border-bottom-style: dashed;
 }
 
 .nav-leaf.active .nav-leaf-arrow {
   opacity: 1;
   transform: translateX(0);
-  color: var(--ink);
 }
 
 /* =============================================

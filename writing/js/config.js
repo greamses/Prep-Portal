@@ -17,12 +17,21 @@ export const safe = (str) => {
 
 // ── API ─────────────────────────────────────────────────
 export const GEMINI_MODELS = [
-  { label: 'Gemini 3.1 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent' },
-  { label: 'Gemini 3.1 Pro', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent' },
-  { label: 'Gemini 3 Flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent' },
+  { label: 'Gemini 3 Flash Preview', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent' },
+  { label: 'Gemini Flash Latest', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent' },
+  { label: 'Gemini 3 Pro Preview', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent' },
+  { label: 'Gemini 2.0 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent' },
   { label: 'Gemini 2.5 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent' },
   { label: 'Gemini 2.5 Flash', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent' },
   { label: 'Gemini 2.5 Pro', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent' },
+];
+
+export const GROQ_MODELS = [
+  { label: 'Groq GPT-OSS 120B', model: 'openai/gpt-oss-120b' },
+  { label: 'Groq GPT-OSS 20B', model: 'openai/gpt-oss-20b' },
+  { label: 'Groq Llama 3.3 70B', model: 'llama-3.3-70b-versatile' },
+  { label: 'Groq Llama 3.1 8B', model: 'llama-3.1-8b-instant' },
+  { label: 'Groq Qwen3 32B', model: 'qwen/qwen3-32b' },
 ];
 
 export const QUOTA_CODES = new Set([429, 503, 529]);
@@ -31,6 +40,12 @@ export const QUOTA_CODES = new Set([429, 503, 529]);
 export const getGeminiKey = () => {
   const key = window.PrepPortalKeys?.gemini || null;
   if (!key) throw new Error('No Gemini key found. Please sign in and add your key in Account Settings.');
+  return key;
+};
+
+export const getGroqKey = () => {
+  const key = window.PrepPortalKeys?.groq || null;
+  if (!key) throw new Error('No Groq key found. Please add your Groq key in Account Settings.');
   return key;
 };
 

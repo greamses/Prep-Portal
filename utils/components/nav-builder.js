@@ -1,6 +1,10 @@
 import NAV_CONFIG from "./nav-config.js";
-import { auth } from "../../firebase-init.js";
+import { auth, db } from "../../firebase-init.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import {
+  doc,
+  onSnapshot,
+} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 const LOGO_PATH = "/logo/logo-light.svg";
 
@@ -132,22 +136,34 @@ function buildTree(items, level = 1) {
 function setActiveNav(siteNav) {
   const currentPath = window.location.pathname;
 
-  // Find all elements containing nav references inside this specific siteNav
   const allLinks = siteNav.querySelectorAll("[data-nav-href]");
+  let bestMatch = null;
+  let bestScore = -1;
 
   allLinks.forEach((link) => {
+    link.classList.remove("active");
+    link.closest(".nav-block")?.classList.remove("active");
+    link.closest(".nav-links > li")?.classList.remove("active");
+
     const href = link.getAttribute("data-nav-href");
     if (matchPath(currentPath, href)) {
-      link.classList.add("active");
+      const normalizedHref = href.replace(/\/$/, "");
+      const score = currentPath.replace(/\/$/, "") === normalizedHref
+        ? normalizedHref.length + 1000
+        : normalizedHref.length;
 
-      const block = link.closest(".nav-block");
-      if (block) block.classList.add("active");
-
-      // Set the active class on the parent top-level list item
-      const topLevelLi = link.closest(".nav-links > li");
-      if (topLevelLi) topLevelLi.classList.add("active");
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = link;
+      }
     }
   });
+
+  if (!bestMatch) return;
+
+  bestMatch.classList.add("active");
+  bestMatch.closest(".nav-block")?.classList.add("active");
+  bestMatch.closest(".nav-links > li")?.classList.add("active");
 }
 
 /* =============================================
@@ -256,12 +272,24 @@ function buildUserMenu() {
   avatar.id = "user-avatar";
   avatar.textContent = "U";
 
+  const details = document.createElement("div");
+  details.className = "user-details";
+
   const nameSpan = document.createElement("span");
   nameSpan.className = "user-name";
   nameSpan.id = "user-name";
+  nameSpan.textContent = "Guest";
+
+  const planBadge = document.createElement("span");
+  planBadge.className = "user-plan-badge";
+  planBadge.id = "user-plan-badge";
+  planBadge.textContent = "Free Plan";
+
+  details.appendChild(nameSpan);
+  details.appendChild(planBadge);
 
   profileDiv.appendChild(avatar);
-  profileDiv.appendChild(nameSpan);
+  profileDiv.appendChild(details);
 
   menuDiv.appendChild(profileDiv);
 
@@ -336,10 +364,44 @@ function attachEvents() {
   });
 }
 
+let subListener = null;
+
 function updateAuthUI(user) {
-  if (user && user.displayName) {
-    const avatar = document.getElementById("user-avatar");
-    if (avatar) avatar.textContent = user.displayName.charAt(0).toUpperCase();
+  const avatar = document.getElementById("user-avatar");
+  const nameSpan = document.getElementById("user-name");
+  const planBadge = document.getElementById("user-plan-badge");
+
+  // Cleanup previous listener
+  if (subListener) {
+    subListener();
+    subListener = null;
+  }
+
+  if (user) {
+    const initial = (user.displayName || user.email || "U")
+      .charAt(0)
+      .toUpperCase();
+    if (avatar) avatar.textContent = initial;
+    if (nameSpan)
+      nameSpan.textContent = user.displayName || user.email.split("@")[0];
+
+    // Real-time Subscription Listener
+    subListener = onSnapshot(doc(db, "users", user.uid), (snap) => {
+      if (snap.exists() && snap.data().isPremium) {
+        planBadge.textContent = snap.data().planName || "Pro Plan";
+        planBadge.classList.add("premium");
+      } else {
+        planBadge.textContent = "Free Plan";
+        planBadge.classList.remove("premium");
+      }
+    });
+  } else {
+    if (avatar) avatar.textContent = "U";
+    if (nameSpan) nameSpan.textContent = "Guest";
+    if (planBadge) {
+      planBadge.textContent = "Free Plan";
+      planBadge.classList.remove("premium");
+    }
   }
 }
 

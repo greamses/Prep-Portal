@@ -3,7 +3,7 @@
 ═══════════════════════════════════════════════════════ */
 
 import {
-  GEMINI_MODELS, QUOTA_CODES, getGeminiKey,
+  GEMINI_MODELS, GROQ_MODELS, QUOTA_CODES, getGeminiKey, getGroqKey,
   geminiModelIdx, setGeminiModelIdx,
   currentWritingType, setCurrentWritingType,
   currentTopic, setCurrentTopic,
@@ -47,6 +47,107 @@ async function geminiPost(body) {
   
   setGeminiModelIdx(0);
   throw new Error('API Error: All Gemini models are currently over quota. Please try again later.');
+}
+
+async function groqPost({ system, prompt, json = false, temperature = 0.2, maxTokens = 8192 }) {
+  const key = getGroqKey();
+  let lastError = null;
+
+  for (const model of GROQ_MODELS) {
+    try {
+      const body = {
+        model: model.model,
+        messages: [
+          ...(system ? [{ role: 'system', content: system }] : []),
+          { role: 'user', content: prompt }
+        ],
+        temperature,
+        max_tokens: maxTokens,
+      };
+
+      if (json) body.response_format = { type: 'json_object' };
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${key}`
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (QUOTA_CODES.has(res.status)) {
+        lastError = new Error(`${model.label} quota/overload (${res.status})`);
+        console.warn(`[Groq] ${lastError.message} — trying next model`);
+        continue;
+      }
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        lastError = new Error(`Groq API Error ${res.status} (${model.label}): ${errText}`);
+        console.warn(lastError.message);
+        continue;
+      }
+
+      const data = await res.json();
+      return {
+        label: model.label,
+        text: data.choices?.[0]?.message?.content || ''
+      };
+    } catch (err) {
+      lastError = err;
+      console.warn(`[Groq] ${model.label} failed:`, err);
+    }
+  }
+
+  throw lastError || new Error('Groq API Error: all fallback models failed.');
+}
+
+function canTryFallback(err) {
+  return /No Gemini key|API Error|over quota|quota|overload|400|403|404|429|503|529/i.test(err?.message || '');
+}
+
+async function generateTextWithFallback({ geminiBody, groqPrompt, temperature = 0.2, maxTokens = 8192, json = false }) {
+  try {
+    const { data, label } = await geminiPost(geminiBody);
+    return {
+      provider: 'gemini',
+      label,
+      text: data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    };
+  } catch (err) {
+    if (!canTryFallback(err)) throw err;
+    console.warn('[Writing] Gemini unavailable; trying Groq fallback:', err.message);
+    const result = await groqPost({
+      prompt: groqPrompt,
+      json,
+      temperature,
+      maxTokens,
+    });
+    return { provider: 'groq', ...result };
+  }
+}
+
+async function gradeWithFallback({ geminiBody, groqSystem, groqPrompt }) {
+  try {
+    const { data, label } = await geminiPost(geminiBody);
+    return {
+      provider: 'gemini',
+      label,
+      text: data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+    };
+  } catch (err) {
+    if (!canTryFallback(err)) throw err;
+    console.warn('[Writing] Gemini grading unavailable; trying Groq fallback:', err.message);
+    const result = await groqPost({
+      system: groqSystem,
+      prompt: groqPrompt,
+      json: true,
+      temperature: 0.1,
+      maxTokens: 12000,
+    });
+    return { provider: 'groq', ...result };
+  }
 }
 
 // ── Writing-Type Substitution Guidelines ────────────────
@@ -239,6 +340,45 @@ Preserve paragraph breaks as \\n\\n. Escape all JSON strings.`;
 }
 
 // ── Topic Generation ───────────────────────────────────
+const FALLBACK_TOPICS = {
+  narrative: [
+    "Write a story about a student who finds a forgotten letter inside an old textbook.",
+    "Write a story about the day a normal journey to school became unforgettable.",
+    "Write a story about someone who had to make a brave choice when nobody else would help.",
+    "Write a story that begins with: The classroom went completely silent."
+  ],
+  descriptive: [
+    "Describe a busy market just before a heavy rain begins.",
+    "Describe an abandoned building that seems to hold many memories.",
+    "Describe your school compound early in the morning before lessons begin.",
+    "Describe a festival scene using sounds, colours, smells, and movement."
+  ],
+  argumentative: [
+    "Should students be allowed to use mobile phones in school? Give reasons for your view.",
+    "Do exams truly measure intelligence? Write an essay arguing your position.",
+    "Should every secondary school student learn a practical skill before graduation?",
+    "Is social media more helpful than harmful to teenagers?"
+  ],
+  expository: [
+    "Explain how students can manage their time better during exam preparation.",
+    "Explain the importance of reading in improving writing skills.",
+    "Explain three ways young people can contribute positively to their community.",
+    "Explain how peer pressure can affect a student's choices."
+  ],
+  general: [
+    "Write about a challenge you faced and what it taught you.",
+    "Write about the kind of future you want and the habits that can help you reach it.",
+    "Write about a person who has influenced your education.",
+    "Write about an event that changed the way you see responsibility."
+  ]
+};
+
+function fallbackTopicFor(type) {
+  const key = String(type || 'general').toLowerCase().split(/\s+/)[0];
+  const topics = FALLBACK_TOPICS[key] || FALLBACK_TOPICS.general;
+  return topics[Math.floor(Math.random() * topics.length)];
+}
+
 export async function fetchGeneratedTopic(type, callbacks = {}) {
   const { onStart, onSuccess, onError } = callbacks;
   
@@ -246,16 +386,18 @@ export async function fetchGeneratedTopic(type, callbacks = {}) {
   onStart?.();
   
   try {
-    const { data } = await geminiPost({
-      contents: [{
-        parts: [{
-          text: `Generate ONE original, age-appropriate ${type} writing topic for a Nigerian secondary school student (SS1–SS2, age 13–15). Engaging, specific, achievable in 200–500 words. Return ONLY the topic text — no quotes, no label, no explanation.`
-        }]
-      }],
-      generationConfig: { temperature: 0.9, maxOutputTokens: 130 }
+    const prompt = `Generate ONE original, age-appropriate ${type} writing topic for a Nigerian secondary school student (SS1–SS2, age 13–15). Engaging, specific, achievable in 200–500 words. Return ONLY the topic text — no quotes, no label, no explanation.`;
+    const result = await generateTextWithFallback({
+      geminiBody: {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.9, maxOutputTokens: 130 }
+      },
+      groqPrompt: prompt,
+      temperature: 0.9,
+      maxTokens: 130,
     });
     
-    let text = (data.candidates?.[0]?.content?.parts?.[0]?.text || "").trim()
+    const text = (result.text || "").trim()
       .replace(/^["']+|["']+$/g, '');
     const topic = text || "Write about a memorable experience and what you learned from it.";
     setCurrentTopic(topic);
@@ -263,21 +405,27 @@ export async function fetchGeneratedTopic(type, callbacks = {}) {
     
   } catch (err) {
     console.error(err);
-    onError?.(err);
+    const topic = fallbackTopicFor(type);
+    setCurrentTopic(topic);
+    onSuccess?.(topic);
   }
 }
 
 // ── Essay Grading ──────────────────────────────────────
 export async function gradeEssay(userText) {
-  const { data } = await geminiPost({
-    systemInstruction: { parts: [{ text: getSystemPrompt() }] },
-    contents: [{
-      parts: [{ text: `WRITING TYPE: ${currentWritingType.toUpperCase()}\nTOPIC: ${currentTopic}\n\nSTUDENT ESSAY:\n${userText}` }]
-    }],
-    generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 20000 }
+  const system = getSystemPrompt();
+  const prompt = `WRITING TYPE: ${currentWritingType.toUpperCase()}\nTOPIC: ${currentTopic}\n\nSTUDENT ESSAY:\n${userText}`;
+  const { text } = await gradeWithFallback({
+    geminiBody: {
+      systemInstruction: { parts: [{ text: system }] },
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { responseMimeType: "application/json", temperature: 0.1, maxOutputTokens: 20000 }
+    },
+    groqSystem: system,
+    groqPrompt: prompt,
   });
   
-  let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  let raw = text || "";
   const jsonStart = raw.indexOf('{');
   const jsonEnd = raw.lastIndexOf('}');
   

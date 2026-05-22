@@ -206,12 +206,12 @@ const NAV_CONFIG = [
         children: [
           {
             text: "Animal Biology Articles",
-            href: "/prep-portal/blogs/science/animal-biology.html",
+            href: "/blogs/science/biology/animal/blog/blog.html",
             description: "Discover amazing creatures",
           },
           {
             text: "Plant Science Articles",
-            href: "#plants",
+            href: "/blogs/science/biology/plant/blog/blog.html",
             description: "Explore green wonders",
           },
           {
@@ -516,6 +516,11 @@ const NAV_CONFIG = [
         description: "Smart study helpers",
 
         children: [
+          {
+            text: "Writing Evaluator",
+            href: "/writing/index.html",
+            description: "Grade essays with red pen feedback",
+          },
           {
             text: "AI Flashcards",
             href: "#flashcards",
