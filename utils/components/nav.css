@@ -17,14 +17,14 @@
   background: var(--paper);
   padding: 0 1.5rem;
   height: 80px;
-  /* Brutalist thick border */
   border-bottom: 3px solid var(--ink);
   font-family: var(--font-mono);
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 body {
-  padding-top: 80px; /* Prevent content hiding under navbar */
+  padding-top: 80px;
 }
 
 /* =============================================
@@ -33,6 +33,7 @@ body {
 .nav-brand-wrap {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .nav-logo {
@@ -92,7 +93,7 @@ body {
   height: 100%;
 }
 
-/* MAIN LABEL (CLICKABLE ON MOBILE, HOVER ON DESKTOP) */
+/* MAIN LABEL */
 .nav-main-label {
   display: flex;
   align-items: center;
@@ -106,12 +107,30 @@ body {
   border: 2px solid transparent;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  white-space: nowrap;
 }
 
+/* Hover effect (visual only – panel opens on click) */
 .site-nav .nav-links > li:hover .nav-main-label {
   background: var(--yellow);
   border: 2px solid var(--ink);
   transform: translateY(-2px);
+}
+
+/* 🔥 OPEN STATE (panel visible) – same as hover but persistent */
+.site-nav .nav-links > li.open > .nav-main-label {
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0px var(--ink);
+  transform: translateY(-1px);
+}
+
+/* Active page state (different from open) */
+.site-nav .nav-links > li.active > .nav-main-label {
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0px var(--ink);
+  transform: translateY(-1px);
 }
 
 .nav-icon {
@@ -120,6 +139,7 @@ body {
   justify-content: center;
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
 }
 
 .nav-icon svg {
@@ -130,6 +150,7 @@ body {
 
 /* =============================================
    MEGA PANEL (FLOATING BRUTALIST BOX)
+   🔥 FIXED: Visible on click (not hover), no disappearing
    ============================================= */
 .mega-panel {
   position: fixed;
@@ -137,6 +158,7 @@ body {
   left: 50%;
   transform: translateX(-50%) translateY(15px);
   width: 100%;
+  max-width: 100vw;
   max-height: calc(100vh - 150px);
   background: var(--paper);
   border: 3px solid var(--ink);
@@ -147,15 +169,13 @@ body {
   pointer-events: none;
   transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 9998;
-
   overflow-y: auto;
+  overflow-x: auto;
+  box-sizing: border-box;
 }
 
-.mega-panel::before {
-  display: none;
-}
-
-.nav-links > li:hover .mega-panel {
+/* Panel visible only when parent li is open */
+.nav-links > li.open .mega-panel {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
@@ -168,6 +188,7 @@ body {
   justify-content: center;
   align-items: flex-start;
   min-height: fit-content;
+  box-sizing: border-box;
 }
 
 /* =============================================
@@ -178,6 +199,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  min-width: 0;
 }
 
 /* LEVEL 1 (Main Columns) */
@@ -187,6 +209,7 @@ body {
   gap: 1.5rem;
   width: 100%;
   justify-content: center;
+  min-width: 0;
 }
 
 /* LEVEL 2 (Sub Groups) */
@@ -205,12 +228,21 @@ body {
   background: var(--bg);
   border-radius: 12px;
   padding: 0.75rem;
+  border: 2px solid transparent; /* Added to keep dimensions stable */
   transition: transform 0.2s ease;
   min-width: 200px;
+  box-sizing: border-box;
 }
 
 .nav-block:hover {
   transform: translateY(-3px);
+}
+
+/* Active block (when containing an active link) */
+.nav-block.active {
+  background: var(--paper);
+  box-shadow: 3px 3px 0px var(--ink);
+  border: 2px solid var(--ink);
 }
 
 /* Colorful Theme Accents per block */
@@ -242,6 +274,13 @@ body {
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 2px dashed var(--ink);
+  white-space: nowrap;
+}
+
+.nav-block.active .nav-header {
+  color: var(--ink);
+  border-bottom-style: solid;
+  border-bottom-width: 3px;
 }
 
 .nav-header .nav-icon {
@@ -259,16 +298,18 @@ body {
   justify-content: space-between;
   text-decoration: none;
   padding: 0.3rem;
-  /* border-radius: 8px; */
   border-bottom: 2px dotted transparent;
   background: transparent;
   color: var(--ink);
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 6px;
+  white-space: nowrap;
 }
 
 .nav-leaf-text {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .nav-leaf-title {
@@ -291,6 +332,7 @@ body {
   width: 20px;
   height: 20px;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .nav-leaf:hover {
@@ -302,6 +344,21 @@ body {
 .nav-leaf:hover .nav-leaf-arrow {
   opacity: 1;
   transform: translateX(0);
+}
+
+/* Active leaf */
+.nav-leaf.active {
+  background: var(--yellow);
+  border-color: var(--ink);
+  border-bottom-style: solid;
+  font-weight: 800;
+  box-shadow: 2px 2px 0px var(--ink);
+}
+
+.nav-leaf.active .nav-leaf-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--ink);
 }
 
 /* =============================================
@@ -335,6 +392,7 @@ body {
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  flex-shrink: 0;
 }
 
 .user-menu {
@@ -364,6 +422,7 @@ body {
   font-weight: 800;
   font-family: var(--font-display);
   transition: transform 0.2s;
+  flex-shrink: 0;
 }
 
 .user-profile:hover .user-avatar {
@@ -373,7 +432,7 @@ body {
 .user-name {
   font-weight: 700;
   font-size: 0.9rem;
-  display: none; /* Hide on smaller screens */
+  display: none;
 }
 
 @media (min-width: 1024px) {
@@ -419,6 +478,7 @@ body {
   gap: 5px;
   cursor: pointer;
   transition: transform 0.1s;
+  flex-shrink: 0;
 }
 
 .nav-toggle:active {
@@ -444,7 +504,46 @@ body {
 }
 
 /* =============================================
-   MOBILE RESPONSIVE
+   🔥 INTERMEDIATE SCREENS (769px – 1100px)
+   ============================================= */
+@media (max-width: 1100px) and (min-width: 769px) {
+  .mega-panel {
+    width: 96vw;
+    max-width: 96vw;
+    left: 2vw;
+    transform: translateY(15px);
+    padding: 1.5rem;
+  }
+
+  .nav-links > li.open .mega-panel {
+    transform: translateY(0);
+  }
+
+  .mega-panel-content {
+    gap: 1.5rem;
+  }
+
+  .nav-level-1 {
+    gap: 1rem;
+  }
+
+  .nav-block {
+    min-width: 160px;
+    padding: 0.6rem;
+  }
+
+  .nav-level-2 {
+    min-width: 150px;
+  }
+
+  .mega-image {
+    width: 200px;
+    max-height: 350px;
+  }
+}
+
+/* =============================================
+   TABLET (max-width 900px) - Hide image
    ============================================= */
 @media (max-width: 900px) {
   .mega-image {
@@ -453,10 +552,30 @@ body {
 
   .mega-panel {
     width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+    left: 10px;
+    transform: translateY(15px);
     padding: 1.5rem;
+  }
+
+  .nav-links > li.open .mega-panel {
+    transform: translateY(0);
+  }
+
+  .nav-level-1 {
+    gap: 1rem;
+    justify-content: flex-start;
+  }
+
+  .nav-block {
+    min-width: 150px;
+    padding: 0.6rem;
   }
 }
 
+/* =============================================
+   MOBILE RESPONSIVE
+   ============================================= */
 @media (max-width: 768px) {
   .site-nav {
     padding: 0 1rem;
@@ -470,7 +589,6 @@ body {
     display: none;
   }
 
-  /* Mobile Dropdown Wrapper */
   .site-nav .nav-links {
     position: fixed;
     top: 80px;
@@ -478,18 +596,15 @@ body {
     width: 100%;
     flex-direction: column;
     align-items: flex-start;
-
     background: var(--bg);
     border-top: 3px solid var(--ink);
     border-bottom: 3px solid var(--ink);
-
     padding: 1rem;
     gap: 0.5rem;
-
     max-height: calc(100vh - 80px);
     overflow-y: auto;
-
     display: none;
+    box-sizing: border-box;
   }
 
   .site-nav .nav-links.open {
@@ -509,6 +624,7 @@ body {
     background: var(--paper);
     border: 2px solid var(--ink);
     border-radius: 10px;
+    box-sizing: border-box;
   }
 
   .nav-main-label::after {
@@ -522,7 +638,7 @@ body {
   }
 
   .site-nav .nav-links > li.open .nav-main-label::after {
-    content: "-";
+    content: "−";
   }
 
   /* Reset Mega Panel for Mobile Accordion */
@@ -537,10 +653,7 @@ body {
     background: transparent;
     display: none;
     overflow-y: visible;
-  }
-
-  .mega-panel::before {
-    display: none;
+    overflow-x: visible;
   }
 
   .nav-links > li.open .mega-panel {

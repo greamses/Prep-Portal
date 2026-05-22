@@ -25,7 +25,27 @@ function renderIcon(icon) {
 }
 
 /* =============================================
-   🔥 RECURSIVE TREE RENDERER
+   ROBUST PATH MATCHING HELPER
+============================================= */
+function matchPath(currentPath, href) {
+  if (!href || href === "#") return false;
+
+  // Normalize by removing trailing slashes for clean comparison
+  const normPath = currentPath.replace(/\/$/, "");
+  const normHref = href.replace(/\/$/, "");
+
+  if (normPath === normHref) return true;
+
+  // Match subpaths cleanly (e.g. /courses/math starts with /courses/)
+  if (normHref !== "" && normHref !== "/") {
+    return normPath.startsWith(normHref + "/");
+  }
+
+  return false;
+}
+
+/* =============================================
+   RECURSIVE TREE RENDERER
 ============================================= */
 function buildTree(items, level = 1) {
   const container = document.createElement("div");
@@ -45,7 +65,7 @@ function buildTree(items, level = 1) {
     block.classList.add(colorClasses[index % colorClasses.length]);
 
     /* =========================
-       HEADER (NON-CLICKABLE GROUP) - Only for parent items
+       HEADER (NON-CLICKABLE GROUP)
     ========================= */
     if (item.children && item.children.length > 0) {
       const header = document.createElement("div");
@@ -59,20 +79,18 @@ function buildTree(items, level = 1) {
       header.appendChild(title);
 
       block.appendChild(header);
-
-      // Add children recursively
       block.appendChild(buildTree(item.children, level + 1));
     }
 
     /* =========================
-       LEAF NODE (CLICKABLE ITEMS) - Only for items without children
+       LEAF NODE (CLICKABLE ITEMS)
     ========================= */
     if (!item.children || item.children.length === 0) {
       const link = document.createElement("a");
       link.href = item.href || "#";
       link.className = "nav-leaf";
+      link.setAttribute("data-nav-href", item.href || "#");
 
-      // Add icon to the leaf node if it exists
       const icon = renderIcon(item.icon);
       if (icon) {
         link.appendChild(icon);
@@ -94,7 +112,6 @@ function buildTree(items, level = 1) {
 
       link.appendChild(textWrap);
 
-      // Playful arrow icon on hover
       const arrow = document.createElement("span");
       arrow.className = "nav-leaf-arrow";
       arrow.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
@@ -110,6 +127,30 @@ function buildTree(items, level = 1) {
 }
 
 /* =============================================
+   🔥 ACTIVE NAV DETECTION (SCOPED)
+============================================= */
+function setActiveNav(siteNav) {
+  const currentPath = window.location.pathname;
+
+  // Find all elements containing nav references inside this specific siteNav
+  const allLinks = siteNav.querySelectorAll("[data-nav-href]");
+
+  allLinks.forEach((link) => {
+    const href = link.getAttribute("data-nav-href");
+    if (matchPath(currentPath, href)) {
+      link.classList.add("active");
+
+      const block = link.closest(".nav-block");
+      if (block) block.classList.add("active");
+
+      // Set the active class on the parent top-level list item
+      const topLevelLi = link.closest(".nav-links > li");
+      if (topLevelLi) topLevelLi.classList.add("active");
+    }
+  });
+}
+
+/* =============================================
    MEGA MENU BUILDER
 ============================================= */
 function buildMegaMenu() {
@@ -118,12 +159,18 @@ function buildMegaMenu() {
 
   NAV_CONFIG.forEach((item) => {
     const li = document.createElement("li");
+    const hasChildren = item.children && item.children.length > 0;
 
     /* =========================
-       MAIN LABEL
+       MAIN LABEL (DIV for dropdowns, A for single links)
     ========================= */
-    const label = document.createElement("div");
+    const label = document.createElement(hasChildren ? "div" : "a");
     label.className = "nav-main-label";
+
+    if (!hasChildren) {
+      label.href = item.href || "#";
+      label.setAttribute("data-nav-href", item.href || "#");
+    }
 
     const icon = renderIcon(item.icon);
     if (icon) label.appendChild(icon);
@@ -132,37 +179,37 @@ function buildMegaMenu() {
     text.textContent = item.text;
     label.appendChild(text);
 
-    // Mobile Accordion Toggle Logic
-    label.addEventListener("click", () => {
-      if (window.innerWidth <= 768) {
+    // Apply toggle logic ONLY if it's a dropdown container
+    if (hasChildren) {
+      label.addEventListener("click", (e) => {
+        e.stopPropagation();
         const isOpen = li.classList.contains("open");
-        // Close siblings
         Array.from(ul.children).forEach((child) =>
           child.classList.remove("open"),
         );
-        if (!isOpen) li.classList.add("open");
-      }
-    });
+        if (!isOpen) {
+          li.classList.add("open");
+        }
+      });
+    }
 
     li.appendChild(label);
 
     /* =========================
        MEGA PANEL
     ========================= */
-    if (item.children?.length) {
+    if (hasChildren) {
       const panel = document.createElement("div");
       panel.className = "mega-panel";
 
       const inner = document.createElement("div");
       inner.className = "mega-panel-content";
 
-      /* LEFT: TREE */
       const tree = document.createElement("div");
       tree.className = "mega-tree";
       tree.appendChild(buildTree(item.children, 1));
       inner.appendChild(tree);
 
-      /* RIGHT: IMAGE */
       if (item.image) {
         const imageWrap = document.createElement("div");
         imageWrap.className = "mega-image";
@@ -186,6 +233,10 @@ function buildMegaMenu() {
     ul.appendChild(li);
   });
 
+  document.addEventListener("click", () => {
+    ul.querySelectorAll("li.open").forEach((li) => li.classList.remove("open"));
+  });
+
   return ul;
 }
 
@@ -203,7 +254,7 @@ function buildUserMenu() {
   const avatar = document.createElement("div");
   avatar.className = "user-avatar";
   avatar.id = "user-avatar";
-  avatar.textContent = "U"; // Default initial
+  avatar.textContent = "U";
 
   const nameSpan = document.createElement("span");
   nameSpan.className = "user-name";
@@ -257,6 +308,9 @@ function buildNav(siteNav) {
 
   rightWrap.appendChild(toggle);
   siteNav.appendChild(rightWrap);
+
+  // Set active state specifically on this navigation instance
+  setActiveNav(siteNav);
 }
 
 /* =============================================
@@ -283,7 +337,6 @@ function attachEvents() {
 }
 
 function updateAuthUI(user) {
-  // Mock logic or map to your actual auth listener
   if (user && user.displayName) {
     const avatar = document.getElementById("user-avatar");
     if (avatar) avatar.textContent = user.displayName.charAt(0).toUpperCase();
