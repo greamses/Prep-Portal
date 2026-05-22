@@ -110,12 +110,13 @@
   gap: 0.5em;
   /* ensures padding + border stay inside the declared width */
   box-sizing: border-box;
-    min-height: clamp(48px, 10vw, 62px);
-    padding: 0 clamp(0.9rem, 2.5vw, 1.25rem);
-    border-radius: clamp(12px, 2vw, 18px);
-    text-decoration: none;
-    font-family: var(--font-display);
-    font-size: clamp(0.95rem, 2.5vw, 1.12rem);
+  min-height: clamp(48px, 10vw, 62px);
+  padding: 0 clamp(0.9rem, 2.5vw, 1.25rem);
+  border-radius: clamp(12px, 2vw, 18px);
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 2.5vw, 1.12rem);
+}
 
 .hero-btn svg {
   width: clamp(16px, 2.5vw, 20px);
