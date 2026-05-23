@@ -148,9 +148,10 @@ function setActiveNav(siteNav) {
     const href = link.getAttribute("data-nav-href");
     if (matchPath(currentPath, href)) {
       const normalizedHref = href.replace(/\/$/, "");
-      const score = currentPath.replace(/\/$/, "") === normalizedHref
-        ? normalizedHref.length + 1000
-        : normalizedHref.length;
+      const score =
+        currentPath.replace(/\/$/, "") === normalizedHref
+          ? normalizedHref.length + 1000
+          : normalizedHref.length;
 
       if (score > bestScore) {
         bestScore = score;
@@ -249,15 +250,11 @@ function buildMegaMenu() {
     ul.appendChild(li);
   });
 
-  document.addEventListener("click", () => {
-    ul.querySelectorAll("li.open").forEach((li) => li.classList.remove("open"));
-  });
-
   return ul;
 }
 
 /* =============================================
-   USER MENU
+   USER MENU (WITH DROPDOWN)
 ============================================= */
 function buildUserMenu() {
   const menuDiv = document.createElement("div");
@@ -292,6 +289,61 @@ function buildUserMenu() {
   profileDiv.appendChild(details);
 
   menuDiv.appendChild(profileDiv);
+
+  /* =============================================
+     USER DROPDOWN
+  ============================================= */
+  const dropdown = document.createElement("div");
+  dropdown.className = "user-dropdown";
+
+  // 1. Dashboard
+  const dashboardLink = document.createElement("a");
+  dashboardLink.href = "/dashboard";
+  dashboardLink.className = "dropdown-item auth-only";
+  dashboardLink.textContent = "Dashboard";
+  dropdown.appendChild(dashboardLink);
+
+  // 2. Subscription
+  const subscriptionLink = document.createElement("a");
+  subscriptionLink.href = "/subscription";
+  subscriptionLink.className = "dropdown-item auth-only";
+  subscriptionLink.textContent = "Subscription";
+  dropdown.appendChild(subscriptionLink);
+
+  // 3. Login / Sign In (for guests)
+  const loginLink = document.createElement("a");
+  loginLink.href = "/login";
+  loginLink.className = "dropdown-item guest-only";
+  loginLink.textContent = "Sign In";
+  dropdown.appendChild(loginLink);
+
+  // Divider line before Logout
+  const divider = document.createElement("div");
+  divider.className = "dropdown-divider auth-only";
+  dropdown.appendChild(divider);
+
+  // 4. Logout (with Firebase handler)
+  const logoutBtn = document.createElement("button");
+  logoutBtn.className = "dropdown-item logout-btn auth-only";
+  logoutBtn.textContent = "Logout";
+  logoutBtn.type = "button";
+  logoutBtn.addEventListener("click", async (e) => {
+    e.preventDefault();
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Sign-out error:", error);
+    }
+  });
+  dropdown.appendChild(logoutBtn);
+
+  menuDiv.appendChild(dropdown);
+
+  // Handle clicking the profile card to toggle dropdown
+  profileDiv.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menuDiv.classList.toggle("open");
+  });
 
   return menuDiv;
 }
@@ -362,6 +414,23 @@ function attachEvents() {
       nav.classList.remove("scrolled");
     }
   });
+
+  // Unified click listener to close all menus when clicking outside
+  document.addEventListener("click", (e) => {
+    // 1. Close mega menus
+    const openMegaMenus = document.querySelectorAll(".nav-links > li.open");
+    openMegaMenus.forEach((li) => {
+      if (!li.contains(e.target)) {
+        li.classList.remove("open");
+      }
+    });
+
+    // 2. Close user profile dropdown
+    const userMenu = document.getElementById("user-menu");
+    if (userMenu && !userMenu.contains(e.target)) {
+      userMenu.classList.remove("open");
+    }
+  });
 }
 
 let subListener = null;
@@ -370,6 +439,7 @@ function updateAuthUI(user) {
   const avatar = document.getElementById("user-avatar");
   const nameSpan = document.getElementById("user-name");
   const planBadge = document.getElementById("user-plan-badge");
+  const userMenu = document.getElementById("user-menu");
 
   // Cleanup previous listener
   if (subListener) {
@@ -378,6 +448,9 @@ function updateAuthUI(user) {
   }
 
   if (user) {
+    // Show logged-in items in dropdown
+    if (userMenu) userMenu.classList.remove("is-guest");
+
     const initial = (user.displayName || user.email || "U")
       .charAt(0)
       .toUpperCase();
@@ -396,6 +469,9 @@ function updateAuthUI(user) {
       }
     });
   } else {
+    // Show guest-friendly items in dropdown
+    if (userMenu) userMenu.classList.add("is-guest");
+
     if (avatar) avatar.textContent = "U";
     if (nameSpan) nameSpan.textContent = "Guest";
     if (planBadge) {
