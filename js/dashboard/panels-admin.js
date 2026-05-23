@@ -1,6 +1,6 @@
 import { I } from "./icons.js";
 import { initial, fmtDate, avatarColor, pct } from "./utils.js";
-import { perfBarHTML } from "./components.js";
+import { assignmentItemHTML, perfBarHTML } from "./components.js";
 import { MOCK } from "./mock-data.js";
 import { showClassModal } from "./dashboard-modals.js";
 

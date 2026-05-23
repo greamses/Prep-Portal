@@ -1,8 +1,9 @@
 import { I } from "./icons.js";
-import { pct, scoreColor, pillColor } from "./utils.js";
+import { pct, scoreColor, pillColor, fmtDate } from "./utils.js";
 import { assignmentItemHTML, perfBarHTML } from "./components.js";
 import { renderCalendar } from "./calendar.js";
 import { MOCK } from "./mock-data.js";
+import { fmtDate } from "./utils.js";
 import { doUpgrade } from "../auth-actions.js";
 
 export function buildStudentPanels(user, data, layout) {
