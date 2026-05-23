@@ -132,7 +132,7 @@ const NAV_CONFIG = [
         children: [
           {
             text: "ANMC",
-            href: "/prep-portal/exam-archive/competitions/exams/index.html",
+            href: "/exam-archive/competitions/exams/index.html",
             description: "National math contest",
           },
         ],

@@ -298,21 +298,21 @@ function buildUserMenu() {
 
   // 1. Dashboard
   const dashboardLink = document.createElement("a");
-  dashboardLink.href = "/dashboard";
+  dashboardLink.href = "/dashboard.html";
   dashboardLink.className = "dropdown-item auth-only";
   dashboardLink.textContent = "Dashboard";
   dropdown.appendChild(dashboardLink);
 
   // 2. Subscription
   const subscriptionLink = document.createElement("a");
-  subscriptionLink.href = "/subscription";
+  subscriptionLink.href = "/subscription.html";
   subscriptionLink.className = "dropdown-item auth-only";
   subscriptionLink.textContent = "Subscription";
   dropdown.appendChild(subscriptionLink);
 
   // 3. Login / Sign In (for guests)
   const loginLink = document.createElement("a");
-  loginLink.href = "/login";
+  loginLink.href = "/login/login.html";
   loginLink.className = "dropdown-item guest-only";
   loginLink.textContent = "Sign In";
   dropdown.appendChild(loginLink);
