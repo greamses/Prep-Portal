@@ -933,6 +933,11 @@ function applyZoom(zoomFactor, svgMx = VW / 2, svgMy = VH / 2) {
   updateView();
 }
 
+svg.addEventListener("dblclick", () => {
+  resetPolygon();
+  if (window.RobotTeacher) RobotTeacher.observe("reset_polygon");
+});
+
 document.getElementById("btn-zoom-in").onclick = () => {
   applyZoom(1.25);
   if (window.RobotTeacher) RobotTeacher.observe("zoom_in");
@@ -1369,6 +1374,7 @@ function attachNodeClickHandler(node, moduleId, lessonId, isUnlocked) {
     pathView.classList.add("hidden");
     editorView.classList.remove("hidden");
     btnBackMap.classList.remove("hidden");
+    document.querySelector(".site-nav").classList.add("hidden");
 
     // Show Robot
     const botWrap = document.getElementById("rt-guide-wrapper");
@@ -1393,14 +1399,10 @@ function attachNodeClickHandler(node, moduleId, lessonId, isUnlocked) {
 
 // Called when a lesson finishes (from RobotTeacher's return_to_map)
 function onLessonComplete(moduleId, lessonId) {
-  // Save completion
   const completedKey = `rt_completed_${moduleId}_${lessonId}`;
   localStorage.setItem(completedKey, "true");
-
-  // If this is lesson 5 (the chest), mark the module's chest as done
   if (lessonId === 5) {
     localStorage.setItem(`rt_completed_${moduleId}_chest`, "true");
-    // Also unlock the next module's header
     refreshAllModuleHeaders();
   }
 
@@ -1409,11 +1411,10 @@ function onLessonComplete(moduleId, lessonId) {
     editorView.classList.add("hidden");
     pathView.classList.remove("hidden");
     btnBackMap.classList.add("hidden");
+    document.querySelector(".site-nav").classList.remove("hidden");
 
     const botWrap = document.getElementById("rt-guide-wrapper");
     if (botWrap) botWrap.style.display = "none";
-
-    // Refresh map
     initMapNodes();
     refreshAllModuleHeaders();
   }, 1500);
@@ -1432,6 +1433,7 @@ if (btnStartLesson) {
     pathView.classList.add("hidden");
     editorView.classList.remove("hidden");
     btnBackMap.classList.remove("hidden");
+    document.querySelector(".site-nav").classList.add("hidden");
 
     const botWrap = document.getElementById("rt-guide-wrapper");
     if (botWrap) botWrap.style.display = "flex";
@@ -1450,6 +1452,7 @@ if (btnBackMap) {
     editorView.classList.add("hidden");
     pathView.classList.remove("hidden");
     btnBackMap.classList.add("hidden");
+    document.querySelector(".site-nav").classList.remove("hidden");
 
     const botWrap = document.getElementById("rt-guide-wrapper");
     if (botWrap) botWrap.style.display = "none";

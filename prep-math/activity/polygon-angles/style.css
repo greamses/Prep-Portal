@@ -35,6 +35,10 @@ body {
     color var(--transition-smooth) var(--ease-default);
 }
 
+.site-nav.hidden {
+  display: none;
+}
+
 /* ── HEADER ─────────────────────────────────────── */
 header {
   border-bottom: var(--border);
