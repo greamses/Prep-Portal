@@ -32,7 +32,26 @@ auth.onAuthStateChanged((user) => {
   init();
 });
 
+async function triggerSync() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const token = await user.getIdToken();
+  try {
+    await fetch("http://localhost:5000/api/sync-users", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (err) {
+    console.error("Auto-sync failed:", err);
+  }
+}
+
 function init() {
+  triggerSync(); // Sync invisible auth users on load
   const q = query(collection(db, "users"));
   onSnapshot(q, (snapshot) => {
     allUsers = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -110,25 +129,21 @@ function renderList(users) {
     .join("");
 
   // Events
-  listEl
-    .querySelectorAll(".role-select")
-    .forEach(
-      (el) =>
-        (el.onchange = (e) =>
-          updateDoc(doc(db, "users", e.target.dataset.id), {
-            role: e.target.value,
-          })),
-    );
+  listEl.querySelectorAll(".role-select").forEach(
+    (el) =>
+      (el.onchange = (e) =>
+        updateDoc(doc(db, "users", e.target.dataset.id), {
+          role: e.target.value,
+        })),
+  );
 
-  listEl
-    .querySelectorAll(".plan-toggle")
-    .forEach(
-      (el) =>
-        (el.onclick = (e) =>
-          updateDoc(doc(db, "users", el.dataset.id), {
-            isPremium: !el.classList.contains("is-premium"),
-          })),
-    );
+  listEl.querySelectorAll(".plan-toggle").forEach(
+    (el) =>
+      (el.onclick = (e) =>
+        updateDoc(doc(db, "users", el.dataset.id), {
+          isPremium: !el.classList.contains("is-premium"),
+        })),
+  );
 
   listEl
     .querySelectorAll(".btn-delete")

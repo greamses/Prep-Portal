@@ -42,6 +42,42 @@ const authenticate = async (req, res, next) => {
    DATA RETRIEVAL ENDPOINTS
 ============================================= */
 
+// Sync Auth users to Firestore (Admin only)
+app.post("/api/sync-users", authenticate, async (req, res) => {
+  try {
+    if (req.user.email !== "eemadanyel@gmail.com") {
+      return res.status(403).json({ error: "Forbidden: Admin access only" });
+    }
+
+    const listUsersResult = await auth.listUsers();
+    const usersToCreate = [];
+
+    for (const userRecord of listUsersResult.users) {
+      const userRef = db.collection("users").doc(userRecord.uid);
+      const doc = await userRef.get();
+
+      if (!doc.exists) {
+        usersToCreate.push(
+          userRef.set({
+            email: userRecord.email,
+            name: userRecord.displayName || userRecord.email.split("@")[0],
+            role: "student",
+            isPremium: false,
+            createdAt:
+              userRecord.metadata.creationTime || new Date().toISOString(),
+          }),
+        );
+      }
+    }
+
+    await Promise.all(usersToCreate);
+    res.json({ success: true, count: usersToCreate.length });
+  } catch (error) {
+    console.error("Sync error:", error);
+    res.status(500).json({ error: "Failed to sync users" });
+  }
+});
+
 // Protected Endpoint: Get all users (Admin only)
 app.get("/api/users", authenticate, async (req, res) => {
   try {
