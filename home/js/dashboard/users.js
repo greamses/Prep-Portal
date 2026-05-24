@@ -382,11 +382,13 @@ function renderStats(users) {
     teachers: users.filter((u) => u.role === "teacher").length,
     premium: users.filter((u) => u.isPremium).length,
   };
+
   statsEl.innerHTML = `
     <div class="stat-chip"><strong>${counts.total}</strong><span>Users</span></div>
     <div class="stat-chip"><strong>${counts.teachers}</strong><span>Teachers</span></div>
     <div class="stat-chip"><strong>${counts.premium}</strong><span>Premium</span></div>
-    <button id="sync-trigger-btn" class="sync-action-btn" title="Sync Users Database">
+
+    <button id="sync-trigger-btn" class="sync-action-btn" style="margin-left: auto;" title="Sync Users Database">
       ${SVGS.sync} <span>Sync Db</span>
     </button>
   `;
