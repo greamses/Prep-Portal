@@ -103,7 +103,7 @@ const statsEl = document.getElementById("admin-user-stats");
 const searchInput = document.getElementById("user-search");
 const nativeRoleFilter = document.getElementById("role-filter");
 
-// Module scope variables declared here to avoid ReferenceErrors
+// Module scope variables
 let planFilter, sortFilter, selectAllCheckbox, bulkActionBar, paginationEl;
 
 // Filter State Variables
@@ -148,7 +148,7 @@ async function triggerSync() {
     showToast("Database successfully synchronized", "success");
   } catch (err) {
     console.error("Auto-sync failed:", err);
-    showToast("Synchronization failed", "error");
+    // Silent handling so a local server disconnection does not interrupt UI flow
   } finally {
     if (syncBtn) syncBtn.classList.remove("loading");
   }
@@ -198,7 +198,7 @@ function makeBrutalDropdownHTML({
     .join("");
 
   return `
-    <div class="brutal-dropdown ${className || ""}" data-id="${id || ""}">
+    <div class="brutal-dropdown ${className || ""}" id="${id || ""}" data-id="${id || ""}">
       <button class="brutal-dropdown-trigger" type="button">
         <span>${triggerLabel}</span>
         ${SVGS.chevronDown}
@@ -401,10 +401,11 @@ function renderList(users) {
     return;
   }
 
+  // Propagation stops removed so custom elements can bubble click paths up to document listeners
   listEl.innerHTML = users
     .map(
       (u) => `
-    <div class="user-row brutal-row" data-id="${u.id}" style="grid-template-columns: 50px 2.5fr 180px 140px 140px 120px;">
+    <div class="user-row brutal-row" data-id="${u.id}" style="grid-template-columns: 50px 2.5fr 160px 140px 140px 120px;">
       <div class="cell-checkbox">
         <input type="checkbox" class="brutal-checkbox user-select-chk" data-id="${u.id}" ${selectedUsers.has(u.id) ? "checked" : ""}>
       </div>
@@ -463,6 +464,7 @@ function attachListEvents() {
     };
   });
 
+  // Listener correctly captures customs dispatched standard from .row-role-dropdown elements
   listEl.querySelectorAll(".row-role-dropdown").forEach((el) => {
     el.addEventListener("change", async (e) => {
       const userId = el.dataset.id;
@@ -560,9 +562,7 @@ function renderBulkBar() {
     </div>
   `;
 
-  const bulkRoleEl = bulkActionBar.querySelector(
-    '[data-id="bulk-role-select"]',
-  );
+  const bulkRoleEl = document.getElementById("bulk-role-select");
   if (bulkRoleEl) {
     bulkRoleEl.addEventListener("change", async (e) => {
       const roleValue = e.detail.value;
