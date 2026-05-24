@@ -181,6 +181,55 @@ function initializeAuthModal(authContainer) {
   const roleContainer = authContainer.querySelector("#role-fields-container");
   const roleButtons = authContainer.querySelectorAll(".role-toggle-btn");
 
+  // ============================================
+  // CUSTOM SELECT CONTROLLER
+  // ============================================
+
+  // Close custom dropdown lists on clicking outside
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".custom-select")) {
+      document.querySelectorAll(".custom-select.active").forEach((dropdown) => {
+        dropdown.classList.remove("active");
+      });
+    }
+  });
+
+  // Handle actions within custom select elements
+  authContainer.addEventListener("click", (e) => {
+    const trigger = e.target.closest(".custom-select-trigger");
+    if (trigger) {
+      e.preventDefault();
+      const selectParent = trigger.closest(".custom-select");
+
+      // Close any other open selectors
+      authContainer.querySelectorAll(".custom-select").forEach((el) => {
+        if (el !== selectParent) el.classList.remove("active");
+      });
+
+      selectParent.classList.toggle("active");
+      return;
+    }
+
+    const option = e.target.closest(".custom-select-option");
+    if (option) {
+      const selectParent = option.closest(".custom-select");
+      const hiddenInput = selectParent.querySelector("input[type='hidden']");
+      const value = option.dataset.value;
+      const text = option.textContent;
+
+      hiddenInput.value = value;
+      selectParent.querySelector(".custom-select-trigger span").textContent =
+        text;
+
+      selectParent.classList.add("has-value");
+      selectParent.classList.remove("active");
+
+      // Dispatch changes for reactive listeners
+      hiddenInput.dispatchEvent(new Event("change", { bubbles: true }));
+      hiddenInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  });
+
   function updateRoleFields(role) {
     selectedRole = role;
     roleButtons.forEach((btn) =>
@@ -205,10 +254,32 @@ function initializeAuthModal(authContainer) {
   });
   updateRoleFields("student");
 
+  // Custom-Select Validation checker
   function validateSignupFields(isGoogle = false) {
-    const roleInputs = roleContainer.querySelectorAll("input, select");
+    const roleInputs = roleContainer.querySelectorAll("input");
 
     for (const input of roleInputs) {
+      // Check hidden inputs for our custom-select objects
+      if (
+        input.type === "hidden" &&
+        input.hasAttribute("required") &&
+        !input.value
+      ) {
+        const customSelect = input.closest(".custom-select");
+        customSelect.classList.add("validation-error");
+
+        const trigger = customSelect.querySelector(".custom-select-trigger");
+        trigger.focus();
+
+        // Highlight active selector outline briefly on error
+        trigger.style.borderColor = "#ef4444";
+        setTimeout(() => {
+          trigger.style.borderColor = "";
+          customSelect.classList.remove("validation-error");
+        }, 2500);
+        return false;
+      }
+
       if (!input.checkValidity()) {
         input.reportValidity();
         return false;

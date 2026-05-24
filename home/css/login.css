@@ -28,7 +28,7 @@
 }
 
 /* =========================================
-   OVERLAY
+   OVERLAY & MODAL
 ========================================= */
 .auth-overlay {
   position: absolute;
@@ -38,9 +38,6 @@
   backdrop-filter: blur(6px);
 }
 
-/* =========================================
-   MODAL CARD
-========================================= */
 .auth-modal {
   position: relative;
   z-index: 3;
@@ -62,7 +59,7 @@
 }
 
 /* =========================================
-   CLOSE BUTTON
+   CLOSE BUTTON & BRAND & TABS
 ========================================= */
 .auth-close {
   position: absolute;
@@ -88,9 +85,6 @@
   height: 16px;
 }
 
-/* =========================================
-   BRAND & TABS
-========================================= */
 .auth-brand {
   display: flex;
   align-items: center;
@@ -195,7 +189,7 @@
 }
 
 /* =========================================
-   FIELDS
+   STANDARD TEXT INPUTS
 ========================================= */
 .auth-field {
   display: flex;
@@ -212,8 +206,7 @@
   letter-spacing: 0.01em;
 }
 
-.auth-field input,
-.auth-field select {
+.auth-field input {
   width: 100%;
   height: 48px;
   padding: 0 1rem;
@@ -224,29 +217,17 @@
   font-size: 0.9rem;
   color: var(--ink);
   outline: none;
-  appearance: none;
   transition:
     transform var(--duration-fast) var(--ease-default),
     border-color var(--duration-fast) var(--ease-default),
     box-shadow var(--duration-fast) var(--ease-default);
 }
 
-/* Customized Dropdown Indicator Style */
-.auth-field select {
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  background-size: 14px;
-  padding-right: 2.5rem;
-  cursor: pointer;
-}
-
 .auth-field input::placeholder {
   color: var(--text-tertiary);
 }
 
-.auth-field input:focus,
-.auth-field select:focus {
+.auth-field input:focus {
   transform: translate(-2px, -2px);
   border-color: var(--accent-secondary);
   box-shadow: 2px 2px 0 var(--accent-secondary);
@@ -260,7 +241,104 @@
 }
 
 /* =========================================
-   SVG ROLE TOGGLES
+   CUSTOM DROPDOWN COMPONENTS (Styled markup)
+========================================= */
+.custom-select {
+  position: relative;
+  width: 100%;
+}
+
+.custom-select-trigger {
+  width: 100%;
+  height: 48px;
+  padding: 0 1rem;
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  background: var(--bg);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--text-tertiary); /* Soft placeholder colors when empty */
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  outline: none;
+  transition:
+    transform var(--duration-fast) var(--ease-default),
+    border-color var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default);
+}
+
+.custom-select-trigger svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ink);
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.custom-select.active .custom-select-trigger {
+  transform: translate(-2px, -2px);
+  border-color: var(--accent-secondary);
+  box-shadow: 2px 2px 0 var(--accent-secondary);
+}
+
+.custom-select.active .custom-select-trigger svg {
+  transform: rotate(180deg);
+}
+
+/* Selected value state matches input ink color */
+.custom-select.has-value .custom-select-trigger {
+  color: var(--ink);
+}
+
+/* Custom list popup design */
+.custom-select-options {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--surface-primary);
+  border: 2.5px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition:
+    opacity var(--duration-fast) var(--ease-default),
+    transform var(--duration-fast) var(--ease-default),
+    visibility var(--duration-fast) var(--ease-default);
+}
+
+.custom-select.active .custom-select-options {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.custom-select-option {
+  padding: 10px 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-default);
+}
+
+.custom-select-option:hover {
+  background: var(--accent-primary);
+}
+
+.custom-select-option:not(:last-child) {
+  border-bottom: 1.5px solid var(--border-subtle);
+}
+
+/* =========================================
+   ROLE SIGN-UP CHUNKY TOGGLES
 ========================================= */
 .role-toggle-container {
   display: grid;
@@ -301,7 +379,7 @@
   transform: translate(-1px, -1px);
 }
 
-/* Clean transparent fields wrapper - border and backgrounds removed */
+/* Clean border-free dynamic block container */
 .role-fields {
   display: flex;
   flex-direction: column;
@@ -309,7 +387,7 @@
 }
 
 /* =========================================
-   OPTIONS & ACTION BUTTONS
+   SUBMITS & HELPERS
 ========================================= */
 .remember-box {
   display: flex;

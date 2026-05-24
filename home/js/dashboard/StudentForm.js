@@ -4,24 +4,41 @@ export function renderStudentFields() {
     <div class="auth-row">
       <div class="auth-field">
         <label>Current Class</label>
-        <select id="signup-class" required>
-          <option value="" disabled selected>Select Class</option>
-          <option value="jss1">JSS 1</option>
-          <option value="jss2">JSS 2</option>
-          <option value="jss3">JSS 3</option>
-          <option value="ss1">SS 1</option>
-          <option value="ss2">SS 2</option>
-          <option value="ss3">SS 3</option>
-        </select>
+        <div class="custom-select" data-id="signup-class">
+          <button type="button" class="custom-select-trigger">
+            <span>Select Class</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          <div class="custom-select-options">
+            <div class="custom-select-option" data-value="jss1">JSS 1</div>
+            <div class="custom-select-option" data-value="jss2">JSS 2</div>
+            <div class="custom-select-option" data-value="jss3">JSS 3</div>
+            <div class="custom-select-option" data-value="ss1">SS 1</div>
+            <div class="custom-select-option" data-value="ss2">SS 2</div>
+            <div class="custom-select-option" data-value="ss3">SS 3</div>
+          </div>
+          <input type="hidden" id="signup-class" required />
+        </div>
       </div>
       <div class="auth-field">
         <label>Primary Focus Subject</label>
-        <select id="signup-student-focus" required>
-          <option value="Mathematics" selected>Mathematics</option>
-          <option value="English Language">English Language</option>
-          <option value="Sciences">General Sciences</option>
-          <option value="All Subjects">All Subjects</option>
-        </select>
+        <div class="custom-select" data-id="signup-student-focus">
+          <button type="button" class="custom-select-trigger">
+            <span>Select Subject</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          <div class="custom-select-options">
+            <div class="custom-select-option" data-value="Mathematics">Mathematics</div>
+            <div class="custom-select-option" data-value="English Language">English Language</div>
+            <div class="custom-select-option" data-value="Sciences">General Sciences</div>
+            <div class="custom-select-option" data-value="All Subjects">All Subjects</div>
+          </div>
+          <input type="hidden" id="signup-student-focus" required />
+        </div>
       </div>
     </div>
     <div class="auth-field">

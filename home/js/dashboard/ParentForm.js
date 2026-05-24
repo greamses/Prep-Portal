@@ -1,43 +1,59 @@
-// ParentForm.js
-export function renderParentFields() {
+// TeacherForm.js
+export function renderTeacherFields() {
   return `
-    <div class="auth-row">
-      <div class="auth-field">
-        <label>Your Relationship</label>
-        <select id="signup-relation" required>
-          <option value="Mother">Mother</option>
-          <option value="Father">Father</option>
-          <option value="Guardian">Guardian</option>
-        </select>
-      </div>
-      <div class="auth-field">
-        <label>Child's Current Class</label>
-        <select id="signup-child-class" required>
-          <option value="" disabled selected>Select Class</option>
-          <option value="jss1">JSS 1</option>
-          <option value="jss2">JSS 2</option>
-          <option value="jss3">JSS 3</option>
-          <option value="ss1">SS 1</option>
-          <option value="ss2">SS 2</option>
-          <option value="ss3">SS 3</option>
-        </select>
-      </div>
+    <div class="auth-field">
+      <label>School Name</label>
+      <input type="text" id="signup-school" placeholder="e.g. Westside Academy" required />
     </div>
     <div class="auth-field">
       <label>Contact Phone</label>
-      <input type="tel" id="signup-parent-phone" placeholder="+234..." required />
+      <input type="tel" id="signup-teacher-phone" placeholder="+234..." required />
+    </div>
+    <div class="auth-row">
+      <div class="auth-field">
+        <label>Years of Experience</label>
+        <div class="custom-select" data-id="signup-experience">
+          <button type="button" class="custom-select-trigger">
+            <span>Select Experience</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          <div class="custom-select-options">
+            <div class="custom-select-option" data-value="0-2">0 - 2 Years</div>
+            <div class="custom-select-option" data-value="3-5">3 - 5 Years</div>
+            <div class="custom-select-option" data-value="5-10">5 - 10 Years</div>
+            <div class="custom-select-option" data-value="10+">10+ Years</div>
+          </div>
+          <input type="hidden" id="signup-experience" required />
+        </div>
+      </div>
+      <div class="auth-field">
+        <label>Primary Specialization</label>
+        <div class="custom-select" data-id="signup-subject">
+          <button type="button" class="custom-select-trigger">
+            <span>Select Specialization</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          <div class="custom-select-options">
+            <div class="custom-select-option" data-value="Mathematics">Mathematics</div>
+            <div class="custom-select-option" data-value="English Language">English Language</div>
+            <div class="custom-select-option" data-value="Sciences">Sciences (Physics/Chemistry)</div>
+            <div class="custom-select-option" data-value="General Studies">General Studies</div>
+          </div>
+          <input type="hidden" id="signup-subject" required />
+        </div>
+      </div>
     </div>
     <div class="auth-field">
-      <label>Child's Full Name</label>
-      <input type="text" id="signup-child-name" placeholder="John Doe" required />
+      <label>Class Size</label>
+      <input type="number" id="signup-students" placeholder="30" min="1" required />
     </div>
     <div class="auth-field">
-      <label>Learning Goal</label>
-      <select id="signup-goal" required>
-        <option value="Daily Practice" selected>Daily Practice</option>
-        <option value="Exam Preparation">Exam Prep (WAEC/NECO/JAMB)</option>
-        <option value="Remedial Help">Remedial Help</option>
-      </select>
+      <label>Job Position</label>
+      <input type="text" id="signup-position" placeholder="e.g. Senior Math Lead" required />
     </div>
   `;
 }
