@@ -483,6 +483,10 @@ body:has(.single-post-view.active) {
   overflow: hidden;
 }
 
+body:has(.single-post-view.active) nav {
+  display: none;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
