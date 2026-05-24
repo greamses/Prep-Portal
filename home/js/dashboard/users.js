@@ -10,6 +10,7 @@ import {
 import { initial, fmtDate, avatarColor } from "./utils.js";
 import { I } from "./icons.js";
 import "../../../utils/components/nav-builder.js";
+import { ROUTES, API_ENDPOINTS } from "/js/routing.js";
 
 const listEl = document.getElementById("users-list");
 const statsEl = document.getElementById("admin-user-stats");
@@ -21,12 +22,12 @@ let allUsers = [];
 // 1. Admin Guard
 auth.onAuthStateChanged((user) => {
   if (!user) {
-    window.location.replace("/");
+    window.location.replace(ROUTES.HOME);
     return;
   }
   // Hardcoded Admin Email or you can check Firestore user doc for role === 'admin'
   if (user.email !== "eemadanyel@gmail.com") {
-    window.location.replace("/dashboard.html");
+    window.location.replace(ROUTES.DASHBOARD);
     return;
   }
   init();
@@ -38,7 +39,7 @@ async function triggerSync() {
 
   const token = await user.getIdToken();
   try {
-    await fetch("http://localhost:5000/api/sync-users", {
+    await fetch(API_ENDPOINTS.SYNC_USERS, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,

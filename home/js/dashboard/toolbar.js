@@ -2,6 +2,7 @@ import { I } from "./icons.js";
 import { auth } from "../../../firebase-init.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { SUBSCRIPTION_PLANS } from "../../../payment-manager.js";
+import { ROUTES } from "/js/routing.js";
 import {
   showAssignmentModal,
   showClassModal,
@@ -11,7 +12,7 @@ import {
 function doLogout() {
   signOut(auth)
     .then(() => {
-      window.location.href = "/";
+      window.location.href = ROUTES.HOME;
     })
     .catch(console.error);
 }
@@ -29,20 +30,20 @@ export function buildToolbar(container, role, isPremium) {
   const byRole = {
     student: `
       ${!isPremium ? `<button class="dashboard-command cmd-yellow" type="button" data-action="upgrade">${I.star}<span>Go Premium</span></button>` : ""}
-      <a class="dashboard-command" href="/exam-archive/national/exams/index.html">${I.papers}<span>Math Past Papers</span></a>
-      <a class="dashboard-command" href="/prep-math/activity/equivalent-fractions/index.html">${I.activity}<span>Math Activities</span></a>
-      <a class="dashboard-command" href="/math-lab/index.html">${I.writing}<span>Math Lab</span></a>`,
+      <a class="dashboard-command" href="${ROUTES.EXAM_ARCHIVE}">${I.papers}<span>Math Past Papers</span></a>
+      <a class="dashboard-command" href="${ROUTES.EQUIVALENT_FRACTIONS}">${I.activity}<span>Math Activities</span></a>
+      <a class="dashboard-command" href="${ROUTES.MATH_LAB}">${I.writing}<span>Math Lab</span></a>`,
     teacher: `
       <button class="dashboard-command cmd-blue" type="button" data-action="new-assignment">${I.plus}<span>New Assignment</span></button>
       <button class="dashboard-command cmd-green" type="button" data-action="view-classes">${I.users}<span>My Classes</span></button>
-      <a class="dashboard-command" href="/teacher/reports/index.html">${I.chart}<span>Reports</span></a>`,
+      <a class="dashboard-command" href="${ROUTES.TEACHER_REPORTS}">${I.chart}<span>Reports</span></a>`,
     parent: `
       <button class="dashboard-command cmd-blue" type="button" data-action="link-child">${I.child}<span>Link Child</span></button>
-      <a class="dashboard-command" href="/reports/index.html">${I.chart}<span>Full Report</span></a>`,
+      <a class="dashboard-command" href="${ROUTES.PARENT_REPORTS}">${I.chart}<span>Full Report</span></a>`,
     admin: `
       <button class="dashboard-command cmd-blue" type="button" data-action="new-class">${I.plus}<span>New Class</span></button>
-      <a class="dashboard-command" href="/js/dashboard/index.html">${I.users}<span>Manage Users</span></a>
-      <a class="dashboard-command" href="/admin/settings/index.html">${I.settings}<span>Settings</span></a>`,
+      <a class="dashboard-command" href="${ROUTES.MANAGE_USERS}">${I.users}<span>Manage Users</span></a>
+      <a class="dashboard-command" href="${ROUTES.SETTINGS}">${I.settings}<span>Settings</span></a>`,
   };
 
   container.innerHTML = (byRole[role] || "") + logoutBtn;

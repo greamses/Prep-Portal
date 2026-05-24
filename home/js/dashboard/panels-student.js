@@ -4,6 +4,7 @@ import { assignmentItemHTML, perfBarHTML } from "./components.js";
 import { MOCK } from "./mock-data.js";
 import { renderCalendar } from "./calendar.js";
 import { doUpgrade } from "./toolbar.js";
+import { ROUTES } from "/js/routing.js";
 
 export function buildStudentPanels(user, data, layout) {
   const progress = pct(data.weeklyProgress, 72);
@@ -77,7 +78,7 @@ export function buildStudentPanels(user, data, layout) {
           <p class="db-kicker">From Your Teacher</p>
           <h2 class="db-panel-title">Active Tasks</h2>
         </div>
-        <a href="/assignments/index.html" class="db-icon-btn" title="View all assignments">${I.arrow}</a>
+        <a href="${ROUTES.ASSIGNMENTS}" class="db-icon-btn" title="View all assignments">${I.arrow}</a>
       </div>
       <div class="db-assign-list">
         ${tasks.length ? tasks.map((t) => assignmentItemHTML(t)).join("") : `<div class="db-empty">No active assignments.</div>`}
@@ -92,13 +93,13 @@ export function buildStudentPanels(user, data, layout) {
         </div>
       </div>
       <div class="db-action-grid">
-        <a href="/exam-archive/national/exams/index.html" class="db-action act-yellow">
+        <a href="${ROUTES.EXAM_ARCHIVE}" class="db-action act-yellow">
           ${I.papers}<span>Past Papers</span>
         </a>
-        <a href="/prep-math/activity/equivalent-fractions/index.html" class="db-action act-blue">
+        <a href="${ROUTES.EQUIVALENT_FRACTIONS}" class="db-action act-blue">
           ${I.activity}<span>Interactive Labs</span>
         </a>
-        <a href="/math-lab/index.html" class="db-action act-green">
+        <a href="${ROUTES.MATH_LAB}" class="db-action act-green">
           ${I.writing}<span>Scratchpad</span>
         </a>
         ${!data.isPremium ? `<button class="db-action act-red" type="button" data-action="upgrade">${I.star}<span>Go Premium</span></button>` : ""}

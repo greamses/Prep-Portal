@@ -11,6 +11,7 @@ import {
 
 import { setText, firstName, initial } from "./utils.js";
 import { ROLE_LABELS, ROLE_SUBTITLES } from "./constants.js";
+import { ROUTES } from "/js/routing.js";
 import { buildToolbar } from "./toolbar.js";
 import { buildStudentPanels } from "./panels-student.js";
 import { buildTeacherPanels } from "./panels-teacher.js";
@@ -31,7 +32,7 @@ const fields = {
 let unsubUser = null;
 let unsubRoleData = []; // Store multiple listeners for role-specific data
 
-const isDashboardPage = window.location.pathname.includes("dashboard");
+const isDashboardPage = window.location.pathname.includes(ROUTES.DASHBOARD);
 
 function updateHeader(user, data = {}) {
   const role = data.role || "student";
@@ -61,7 +62,7 @@ function handleUser(user) {
 
   if (!user) {
     if (isDashboardPage) {
-      window.location.replace("/");
+      window.location.replace(ROUTES.HOME);
     }
     return;
   }

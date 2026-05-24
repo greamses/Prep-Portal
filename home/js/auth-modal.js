@@ -22,12 +22,12 @@ import { renderStudentFields } from "/home/js/auth/StudentForm.js";
 import { renderParentFields } from "/home/js/auth/ParentForm.js";
 import { renderTeacherFields } from "/home/js/auth/TeacherForm.js";
 import { auth, googleProvider, db } from "../../firebase-init.js";
+import { ROUTES } from "/js/routing.js";
 
-const DASHBOARD_PATH = "/dashboard.html";
 const ADMIN_EMAIL = "eemadanyel@gmail.com";
 
 function goToDashboard() {
-  window.location.href = DASHBOARD_PATH;
+  window.location.href = ROUTES.DASHBOARD;
 }
 
 // ============================================

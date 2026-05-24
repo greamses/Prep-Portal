@@ -3,6 +3,7 @@ import { initial, fmtDate, avatarColor, pct } from "./utils.js";
 import { assignmentItemHTML, perfBarHTML } from "./components.js";
 import { MOCK } from "./mock-data.js";
 import { showClassModal } from "./dashboard-modals.js";
+import { ROUTES } from "/js/routing.js";
 
 export function buildAdminPanels(user, data, layout) {
   const totalUsers = Number(data.totalUsers) || 0;
@@ -49,7 +50,7 @@ export function buildAdminPanels(user, data, layout) {
           <p class="db-kicker">User Management</p>
           <h2 class="db-panel-title">Recent Registrations</h2>
         </div>
-        <a href="/js/dashboard/index.html" class="db-icon-btn" title="View all users">${I.arrow}</a>
+        <a href="${ROUTES.MANAGE_USERS}" class="db-icon-btn" title="View all users">${I.arrow}</a>
       </div>
       <ul class="db-roster">
         ${signups
