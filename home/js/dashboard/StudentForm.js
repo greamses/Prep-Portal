@@ -15,12 +15,6 @@ export function renderStudentFields() {
         </select>
       </div>
       <div class="auth-field">
-        <label>School Name</label>
-        <input type="text" id="signup-student-school" placeholder="e.g. Grace High School" required />
-      </div>
-    </div>
-    <div class="auth-row">
-      <div class="auth-field">
         <label>Primary Focus Subject</label>
         <select id="signup-student-focus" required>
           <option value="Mathematics" selected>Mathematics</option>
@@ -29,10 +23,14 @@ export function renderStudentFields() {
           <option value="All Subjects">All Subjects</option>
         </select>
       </div>
-      <div class="auth-field">
-        <label>Parent's Email / Phone</label>
-        <input type="text" id="signup-student-parent" placeholder="parent@mail.com" required />
-      </div>
+    </div>
+    <div class="auth-field">
+      <label>School Name</label>
+      <input type="text" id="signup-student-school" placeholder="e.g. Grace High School" required />
+    </div>
+    <div class="auth-field">
+      <label>Parent's Email / Phone</label>
+      <input type="text" id="signup-student-parent" placeholder="parent@mail.com" required />
     </div>
   `;
 }

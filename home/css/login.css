@@ -39,13 +39,13 @@
 }
 
 /* =========================================
-   MODAL CARD (Same width guaranteed)
+   MODAL CARD
 ========================================= */
 .auth-modal {
   position: relative;
   z-index: 3;
   width: 100%;
-  max-width: 460px; /* Precise shared width limit for both modes */
+  max-width: 460px; /* Aligned width constraint across all modal views */
   padding: clamp(1.5rem, 5vw, 2.2rem) clamp(1.2rem, 5vw, 1.8rem);
   background: var(--surface-primary);
   border: 2.5px solid var(--ink);
@@ -154,7 +154,7 @@
 }
 
 /* =========================================
-   FORMS
+   FORMS & LAYOUTS
 ========================================= */
 .auth-form {
   display: none;
@@ -195,7 +195,7 @@
 }
 
 /* =========================================
-   FIELDS & ROW LAYOUTS
+   FIELDS
 ========================================= */
 .auth-field {
   display: flex;
@@ -231,17 +231,13 @@
     box-shadow var(--duration-fast) var(--ease-default);
 }
 
+/* Customized Dropdown Indicator Style */
 .auth-field select {
-  background-image:
-    linear-gradient(45deg, transparent 50%, var(--ink) 50%),
-    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
-  background-position:
-    calc(100% - 18px) 21px,
-    calc(100% - 12px) 21px;
-  background-size:
-    6px 6px,
-    6px 6px;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+  padding-right: 2.5rem;
   cursor: pointer;
 }
 
@@ -264,7 +260,7 @@
 }
 
 /* =========================================
-   SVG ROLE TOGGLE CONTAINER (Text-Free)
+   SVG ROLE TOGGLES
 ========================================= */
 .role-toggle-container {
   display: grid;
@@ -305,26 +301,16 @@
   transform: translate(-1px, -1px);
 }
 
+/* Clean transparent fields wrapper - border and backgrounds removed */
 .role-fields {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  padding: 1rem;
-  border: 2px dashed var(--ink);
-  border-radius: 14px;
-  background: var(--surface-secondary);
 }
 
 /* =========================================
-   OPTIONS & BUTTONS
+   OPTIONS & ACTION BUTTONS
 ========================================= */
-.auth-options {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
 .remember-box {
   display: flex;
   align-items: center;
@@ -344,6 +330,13 @@
   accent-color: var(--accent-primary);
   cursor: pointer;
   flex-shrink: 0;
+}
+
+.auth-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
 }
 
 .auth-options a {
@@ -425,7 +418,7 @@
 }
 
 /* =========================================
-   RESPONSIVE LAYOUTS
+   RESPONSIVE DESIGN
 ========================================= */
 @media (max-width: 480px) {
   .auth-modal {

@@ -205,11 +205,9 @@ function initializeAuthModal(authContainer) {
   });
   updateRoleFields("student");
 
-  // Programmatic validator for Form-First signup
   function validateSignupFields(isGoogle = false) {
     const roleInputs = roleContainer.querySelectorAll("input, select");
 
-    // Always validate role-specific fields
     for (const input of roleInputs) {
       if (!input.checkValidity()) {
         input.reportValidity();
@@ -217,7 +215,6 @@ function initializeAuthModal(authContainer) {
       }
     }
 
-    // Email/Password sign up requires all general fields to be valid too
     if (!isGoogle) {
       const name = document.getElementById("signup-name");
       const email = document.getElementById("signup-email");
@@ -308,7 +305,6 @@ function initializeAuthModal(authContainer) {
     window.openAuthModal(trigger.dataset.authOpen || "login");
   });
 
-  // GOOGLE LOGIN (No pre-filled form fields required)
   document
     .getElementById("google-login")
     .addEventListener("click", async () => {
@@ -323,11 +319,10 @@ function initializeAuthModal(authContainer) {
       }
     });
 
-  // FORM-FIRST GOOGLE SIGNUP
   document
     .getElementById("google-signup")
     .addEventListener("click", async () => {
-      if (!validateSignupFields(true)) return; // Halts if dynamic role fields are missing/invalid
+      if (!validateSignupFields(true)) return;
 
       try {
         const result = await signInWithPopup(auth, googleProvider);
@@ -355,7 +350,6 @@ function initializeAuthModal(authContainer) {
       }
     });
 
-  // EMAIL LOGIN
   document
     .getElementById("login-form")
     .addEventListener("submit", async (e) => {
@@ -373,7 +367,6 @@ function initializeAuthModal(authContainer) {
       }
     });
 
-  // EMAIL SIGNUP
   document
     .getElementById("signup-form")
     .addEventListener("submit", async (e) => {
