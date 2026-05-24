@@ -1096,7 +1096,6 @@ body:has(.embed-overlay.active) {
   overflow-x: auto;
   border-collapse: collapse;
   margin: 1.25rem 0;
-  border: var(--border);
 }
 
 .single-post-body th,

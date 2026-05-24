@@ -394,7 +394,6 @@
   border-collapse: collapse;
   font-family: var(--font-mono);
   font-size: var(--text-mono-md);
-  border: 2px solid var(--ink);
 }
 
 .ln-table thead tr {
