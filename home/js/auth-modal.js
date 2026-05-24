@@ -27,11 +27,14 @@ function goToDashboard() {
 // ============================================
 
 export function injectAuthModal() {
-  const mountPoint = document.querySelector(".log-in");
+  if (document.querySelector(".auth-modal")) return;
+
+  let mountPoint = document.querySelector(".log-in");
 
   if (!mountPoint) {
-    console.warn('No ".log-in" container found for auth modal injection.');
-    return;
+    mountPoint = document.createElement("div");
+    mountPoint.className = "log-in";
+    document.body.appendChild(mountPoint);
   }
 
   mountPoint.innerHTML = `

@@ -1,4 +1,5 @@
 import NAV_CONFIG from "./nav-config.js";
+import "../../home/js/auth-modal.js";
 import { auth, db } from "../../firebase-init.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import {
@@ -311,11 +312,15 @@ function buildUserMenu() {
   dropdown.appendChild(subscriptionLink);
 
   // 3. Login / Sign In (for guests)
-  const loginLink = document.createElement("a");
-  loginLink.href = "/login/login.html";
-  loginLink.className = "dropdown-item guest-only";
-  loginLink.textContent = "Sign In";
-  dropdown.appendChild(loginLink);
+  const loginBtn = document.createElement("button");
+  loginBtn.type = "button";
+  loginBtn.className = "dropdown-item guest-only";
+  loginBtn.textContent = "Sign In";
+  loginBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    window.openAuthModal?.("login");
+  });
+  dropdown.appendChild(loginBtn);
 
   // Divider line before Logout
   const divider = document.createElement("div");
@@ -394,9 +399,23 @@ function buildNav(siteNav) {
 }
 
 /* =============================================
+   ENSURE AUTH STYLES
+============================================= */
+function ensureAuthStyles() {
+  if (document.getElementById("auth-modal-styles")) return;
+  const link = document.createElement("link");
+  link.id = "auth-modal-styles";
+  link.rel = "stylesheet";
+  link.href = "/home/css/login.css";
+  document.head.appendChild(link);
+}
+
+/* =============================================
    EVENTS
 ============================================= */
 function attachEvents() {
+  ensureAuthStyles();
+
   const toggle = document.getElementById("nav-toggle");
   const navLinks = document.querySelector(".nav-links");
 
