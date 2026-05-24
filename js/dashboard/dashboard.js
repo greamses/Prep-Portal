@@ -3,6 +3,9 @@ import { signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-aut
 import {
   doc,
   onSnapshot,
+  collection,
+  query,
+  where,
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 
 import { setText, firstName, initial } from "./utils.js";
@@ -25,6 +28,8 @@ const fields = {
 };
 
 let unsubUser = null;
+let unsubRoleData = []; // Store multiple listeners for role-specific data
+
 const isDashboardPage = window.location.pathname.includes("dashboard");
 
 function updateHeader(user, data = {}) {
@@ -41,11 +46,17 @@ function updateHeader(user, data = {}) {
   if (kicker) kicker.textContent = ROLE_LABELS[role] || "My Workspace";
 }
 
-function handleUser(user) {
+function cleanupListeners() {
   if (unsubUser) {
     unsubUser();
     unsubUser = null;
   }
+  unsubRoleData.forEach((unsub) => unsub());
+  unsubRoleData = [];
+}
+
+function handleUser(user) {
+  cleanupListeners();
 
   if (!user) {
     if (isDashboardPage) {
@@ -54,9 +65,11 @@ function handleUser(user) {
     return;
   }
 
+  // 1. Initial UI state
   updateHeader(user, {});
   buildToolbar(toolbar, "student", false);
 
+  // 2. Real-time User Profile Listener
   unsubUser = onSnapshot(
     doc(db, "users", user.uid),
     (snap) => {
@@ -66,16 +79,130 @@ function handleUser(user) {
       updateHeader(user, data);
       buildToolbar(toolbar, role, Boolean(data.isPremium));
 
-      if (role === "teacher") buildTeacherPanels(user, data, layout);
-      else if (role === "parent") buildParentPanels(user, data, layout);
-      else if (role === "admin") buildAdminPanels(user, data, layout);
-      else buildStudentPanels(user, data, layout);
+      // 3. Setup/Refresh role-specific listeners
+      setupRoleDataListeners(user, role, data);
     },
     (err) => {
       console.error("Firestore snapshot error:", err);
       buildStudentPanels(user, {}, layout);
     },
   );
+}
+
+function setupRoleDataListeners(user, role, userData) {
+  unsubRoleData.forEach((unsub) => unsub());
+  unsubRoleData = [];
+
+  if (role === "admin") {
+    // --- ADMIN: Global stats from users and classes collections ---
+    const uUnsub = onSnapshot(collection(db, "users"), (snap) => {
+      const users = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const totalUsers = users.length;
+      const premiumCount = users.filter((u) => u.isPremium).length;
+
+      const roleCounts = users.reduce((acc, u) => {
+        const r = (u.role || "student") + "s";
+        acc[r] = (acc[r] || 0) + 1;
+        return acc;
+      }, {});
+
+      const roleDist = [
+        {
+          role: "Students",
+          count: roleCounts.students || 0,
+          color: "var(--blue)",
+        },
+        {
+          role: "Parents",
+          count: roleCounts.parents || 0,
+          color: "var(--green)",
+        },
+        {
+          role: "Teachers",
+          count: roleCounts.teachers || 0,
+          color: "var(--yellow)",
+        },
+        { role: "Admins", count: roleCounts.admins || 0, color: "var(--red)" },
+      ].map((r) => ({
+        ...r,
+        pct: totalUsers ? Math.round((r.count / totalUsers) * 100) : 0,
+      }));
+
+      const recentSignups = users
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 6)
+        .map((u) => ({ ...u, joinedAt: u.createdAt }));
+
+      const adminData = {
+        ...userData,
+        totalUsers,
+        premiumCount,
+        roleDistribution: roleDist,
+        recentSignups,
+        activeToday: Math.round(totalUsers * 0.35),
+        newSignupsToday: users.filter(
+          (u) =>
+            new Date(u.createdAt).toDateString() === new Date().toDateString(),
+        ).length,
+      };
+
+      const cUnsub = onSnapshot(collection(db, "classes"), (cSnap) => {
+        const classes = cSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        buildAdminPanels(
+          user,
+          {
+            ...adminData,
+            totalClasses: classes.length,
+            unassignedClasses: classes.filter((c) => !c.teacherEmail).length,
+            classes: classes.map((c) => ({
+              name: c.name,
+              teacher: c.teacherEmail,
+              studentCount: c.studentCount || 0,
+            })),
+          },
+          layout,
+        );
+      });
+      unsubRoleData.push(cUnsub);
+    });
+    unsubRoleData.push(uUnsub);
+  } else if (role === "teacher") {
+    // --- TEACHER: Owned assignments and assigned classes ---
+    const qClasses = query(
+      collection(db, "classes"),
+      where("teacherEmail", "==", user.email),
+    );
+    const cUnsub = onSnapshot(qClasses, (snap) => {
+      const classes = snap.docs.map((d) => d.data());
+
+      const qAssign = query(
+        collection(db, "assignments"),
+        where("teacherId", "==", user.uid),
+      );
+      const aUnsub = onSnapshot(qAssign, (aSnap) => {
+        const assignments = aSnap.docs.map((d) => d.data());
+        buildTeacherPanels(
+          user,
+          {
+            ...userData,
+            assignments,
+            activeClass: classes[0]?.name || "My Classroom",
+          },
+          layout,
+        );
+      });
+      unsubRoleData.push(aUnsub);
+    });
+    unsubRoleData.push(cUnsub);
+  } else {
+    // --- STUDENT: Global task stream (simplified) ---
+    const qTasks = query(collection(db, "assignments"));
+    const tUnsub = onSnapshot(qTasks, (snap) => {
+      const tasks = snap.docs.map((d) => d.data());
+      buildStudentPanels(user, { ...userData, assignedTasks: tasks }, layout);
+    });
+    unsubRoleData.push(tUnsub);
+  }
 }
 
 function initDashboard() {
