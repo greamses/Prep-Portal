@@ -18,6 +18,9 @@ import {
   where,
   getDocs,
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { renderStudentFields } from "../../js/auth/StudentForm.js";
+import { renderParentFields } from "../../js/auth/ParentForm.js";
+import { renderTeacherFields } from "../../js/auth/TeacherForm.js";
 import { auth, googleProvider, db } from "../../firebase-init.js";
 
 const DASHBOARD_PATH = "/dashboard.html";
@@ -81,12 +84,12 @@ export function injectAuthModal() {
 
       <div class="auth-field">
         <label>Email Address</label>
-        <input type="email" placeholder="student@email.com" required />
+        <input type="email" id="login-email" placeholder="student@email.com" required />
       </div>
 
       <div class="auth-field">
         <label>Password</label>
-        <input type="password" placeholder="••••••••" required />
+        <input type="password" id="login-password" placeholder="••••••••" required />
       </div>
 
       <div class="auth-options">
@@ -130,123 +133,36 @@ export function injectAuthModal() {
       <div class="auth-sep"></div>
 
       <div class="auth-field">
-        <label class="auth-label-main">Select Your Role</label>
-        <div class="role-selection">
-          <button type="button" class="role-card active" data-role="teacher">
-            <div class="role-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                <circle cx="12" cy="10" r="2"></circle>
-              </svg>
-            </div>
-            <div class="role-info">
-              <strong>Teacher</strong>
-              <small>Manage classrooms</small>
-            </div>
-            <div class="role-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+        <label class="auth-label-main" style="text-align:center">I am registering as a...</label>
+        <div class="role-toggle-container">
+          <button type="button" class="role-toggle-btn active" data-role="student" title="Student">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12.5V16a6 6 0 0 0 12 0v-3.5"/></svg>
           </button>
-          <button type="button" class="role-card" data-role="parent">
-            <div class="role-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
-              </svg>
-            </div>
-            <div class="role-info">
-              <strong>Parent</strong>
-              <small>Monitor progress</small>
-            </div>
-            <div class="role-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+          <button type="button" class="role-toggle-btn" data-role="parent" title="Parent">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </button>
+          <button type="button" class="role-toggle-btn" data-role="teacher" title="Teacher">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
           </button>
         </div>
       </div>
 
-      <!-- Teacher Specific -->
-      <div class="role-fields" data-role-section="teacher">
-        <div class="auth-row">
-          <div class="auth-field">
-            <label>School Name</label>
-            <input type="text" id="signup-school" placeholder="e.g. Westside Academy" />
-          </div>
-          <div class="auth-field" style="max-width: 120px;">
-            <label>Class Size</label>
-            <input type="number" id="signup-students" placeholder="30" min="1" />
-          </div>
-        </div>
-        <div class="auth-row">
-          <div class="auth-field">
-            <label>Years of Experience</label>
-            <select id="signup-experience">
-              <option value="0-2">0 - 2 Years</option>
-              <option value="3-5">3 - 5 Years</option>
-              <option value="5-10">5 - 10 Years</option>
-              <option value="10+">10+ Years</option>
-            </select>
-          </div>
-          <div class="auth-field">
-            <label>Job Position</label>
-            <input type="text" id="signup-position" placeholder="e.g. Senior Math Lead" />
-          </div>
-        </div>
-        <div class="auth-field">
-          <label>Primary Level / Specialization</label>
-          <input type="text" id="signup-subject" placeholder="e.g. Grade 9 Mathematics" />
-        </div>
-      </div>
-
-      <!-- Parent Specific -->
-      <div class="role-fields" data-role-section="parent" style="display: none;">
-        <div class="auth-row">
-          <div class="auth-field">
-            <label>Your Relationship</label>
-            <select id="signup-relation">
-              <option value="Mother">Mother</option>
-              <option value="Father">Father</option>
-              <option value="Guardian">Guardian</option>
-            </select>
-          </div>
-          <div class="auth-field">
-            <label>Contact Phone</label>
-            <input type="tel" id="signup-parent-phone" placeholder="+234..." />
-          </div>
-        </div>
-        <div class="auth-field">
-          <label>Child's Full Name</label>
-          <input type="text" id="signup-child-name" placeholder="John Doe" />
-        </div>
-        <div class="auth-row">
-          <div class="auth-field">
-            <label>Grade Level</label>
-            <select id="signup-grade">
-              <option value="" disabled selected>Select Grade</option>
-              ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((g) => `<option value="grade-${g}">Grade ${g}</option>`).join("")}
-            </select>
-          </div>
-          <div class="auth-field">
-            <label>Learning Goal</label>
-            <select id="signup-goal">
-              <option value="Daily Practice" selected>Daily Practice</option>
-              <option value="Exam Preparation">Exam Preparation</option>
-              <option value="Remedial Help">Remedial Help</option>
-            </select>
-          </div>
-        </div>
-      </div>
+      <!-- Role Specific Fields -->
+      <div id="role-fields-container"></div>
 
       <div class="auth-field">
         <label>Full Name</label>
-        <input type="text" placeholder="Emmanuel Daniel" required />
+        <input type="text" id="signup-name" placeholder="Emmanuel Daniel" required />
       </div>
 
       <div class="auth-field">
         <label>Email Address</label>
-        <input type="email" placeholder="student@email.com" required />
+        <input type="email" id="signup-email" placeholder="student@email.com" required />
       </div>
 
       <div class="auth-field">
         <label>Password</label>
-        <input type="password" placeholder="Create a strong password" required />
+        <input type="password" id="signup-password" placeholder="Create a strong password" required />
       </div>
 
       <button type="submit" class="auth-submit">
@@ -292,23 +208,33 @@ function initializeAuthModal(authContainer) {
   // ============================================
   // ROLE SELECTION LOGIC
   // ============================================
-  let selectedRole = "teacher";
-  const roleCards = authContainer.querySelectorAll(".role-card");
-  const roleSections = authContainer.querySelectorAll(".role-fields");
+  let selectedRole = "student";
+  const roleContainer = authContainer.querySelector("#role-fields-container");
+  const roleButtons = authContainer.querySelectorAll(".role-toggle-btn");
 
-  roleCards.forEach((card) => {
-    card.addEventListener("click", () => {
-      roleCards.forEach((c) => c.classList.remove("active"));
-      card.classList.add("active");
-      selectedRole = card.dataset.role;
+  function updateRoleFields(role) {
+    selectedRole = role;
+    roleButtons.forEach((btn) =>
+      btn.classList.toggle("active", btn.dataset.role === role),
+    );
 
-      // Toggle specific fields
-      roleSections.forEach((section) => {
-        section.style.display =
-          section.dataset.roleSection === selectedRole ? "flex" : "none";
-      });
-    });
+    switch (role) {
+      case "student":
+        roleContainer.innerHTML = renderStudentFields();
+        break;
+      case "parent":
+        roleContainer.innerHTML = renderParentFields();
+        break;
+      case "teacher":
+        roleContainer.innerHTML = renderTeacherFields();
+        break;
+    }
+  }
+
+  roleButtons.forEach((btn) => {
+    btn.addEventListener("click", () => updateRoleFields(btn.dataset.role));
   });
+  updateRoleFields("student");
 
   // ============================================
   // OPEN MODAL
@@ -416,8 +342,8 @@ function initializeAuthModal(authContainer) {
     .getElementById("login-form")
     .addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = e.target.querySelector('input[type="email"]').value;
-      const password = e.target.querySelector('input[type="password"]').value;
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
       try {
         const result = await signInWithEmailAndPassword(auth, email, password);
         await ensureUserDoc(result.user);
@@ -437,9 +363,9 @@ function initializeAuthModal(authContainer) {
     .getElementById("signup-form")
     .addEventListener("submit", async (e) => {
       e.preventDefault();
-      const name = e.target.querySelector('input[type="text"]').value;
-      const email = e.target.querySelector('input[type="email"]').value;
-      const password = e.target.querySelector('input[type="password"]').value;
+      const name = document.getElementById("signup-name").value;
+      const email = document.getElementById("signup-email").value;
+      const password = document.getElementById("signup-password").value;
       try {
         const userCredential = await createUserWithEmailAndPassword(
           auth,
@@ -471,6 +397,9 @@ function initializeAuthModal(authContainer) {
             document.getElementById("signup-relation")?.value || "";
           extraData.phone =
             document.getElementById("signup-parent-phone")?.value || "";
+        } else if (selectedRole === "student") {
+          extraData.activeClass =
+            document.getElementById("signup-class")?.value || "";
         }
 
         // Initialize Firestore Document with the selected role

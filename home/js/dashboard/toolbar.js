@@ -1,7 +1,7 @@
 import { I } from "./icons.js";
-import { auth } from "../../firebase-init.js";
+import { auth } from "../../../firebase-init.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-import { SUBSCRIPTION_PLANS } from "../../payment-manager.js";
+import { SUBSCRIPTION_PLANS } from "../../../payment-manager.js";
 import {
   showAssignmentModal,
   showClassModal,

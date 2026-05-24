@@ -1,4 +1,4 @@
-import { auth, db } from "../../firebase-init.js";
+import { auth, db } from "../../../firebase-init.js";
 import {
   collection,
   query,
@@ -7,9 +7,9 @@ import {
   updateDoc,
   deleteDoc,
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
-import { initial, fmtDate, avatarColor } from "../../js/dashboard/utils.js";
-import { I } from "../../js/dashboard/icons.js";
-import "../../utils/components/nav-builder.js";
+import { initial, fmtDate, avatarColor } from "./utils.js";
+import { I } from "./icons.js";
+import "../../../utils/components/nav-builder.js";
 
 const listEl = document.getElementById("users-list");
 const statsEl = document.getElementById("admin-user-stats");
