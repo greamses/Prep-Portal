@@ -1,8 +1,3 @@
-// ============================================
-// AUTH MODAL INJECTABLE COMPONENT
-// auth-modal.js
-// ============================================
-
 import {
   signInWithPopup,
   signInWithEmailAndPassword,
@@ -30,10 +25,6 @@ function goToDashboard() {
   window.location.href = ROUTES.DASHBOARD;
 }
 
-// ============================================
-// INJECT AUTH MODAL
-// ============================================
-
 export function injectAuthModal() {
   if (document.querySelector(".auth-modal")) return;
 
@@ -46,14 +37,10 @@ export function injectAuthModal() {
   }
 
   mountPoint.innerHTML = `
-
   <div class="auth-overlay"></div>
-
   <div class="auth-modal">
-
     <button class="auth-close" id="auth-close-btn" aria-label="Close">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"
-        stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 6L6 18"/><path d="M6 6L18 18"/>
       </svg>
     </button>
@@ -63,7 +50,7 @@ export function injectAuthModal() {
         <img src="/logo/logo-light.svg" alt="Prep Portal Logo" />
       </div>
       <div class="auth-title">
-      <span class="brand-top">Prep</span><span class="brand-bottom">portal</span>
+        <span class="brand-top">Prep</span><span class="brand-bottom">portal</span>
       </div>
     </div>
 
@@ -74,12 +61,10 @@ export function injectAuthModal() {
 
     <!-- LOGIN -->
     <form class="auth-form active" id="login-form">
-
       <div class="auth-heading">
         <h3>Welcome back.</h3>
         <p>Continue your learning journey.</p>
       </div>
-
       <div class="auth-sep"></div>
 
       <div class="auth-field">
@@ -102,8 +87,7 @@ export function injectAuthModal() {
 
       <button type="submit" class="auth-submit">
         <span>Login to Dashboard</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"
-          stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M5 12H19"/><path d="M12 5L19 12L12 19"/>
         </svg>
       </button>
@@ -119,17 +103,14 @@ export function injectAuthModal() {
         </svg>
         <span>Continue with Google</span>
       </button>
-
     </form>
 
     <!-- SIGNUP -->
     <form class="auth-form" id="signup-form">
-
       <div class="auth-heading">
         <h3>Create account.</h3>
         <p>Start preparing smarter today.</p>
       </div>
-
       <div class="auth-sep"></div>
 
       <div class="auth-field">
@@ -147,8 +128,8 @@ export function injectAuthModal() {
         </div>
       </div>
 
-      <!-- Role Specific Fields -->
-      <div id="role-fields-container"></div>
+      <!-- Dynamic Role Specific Fields -->
+      <div id="role-fields-container" class="role-fields"></div>
 
       <div class="auth-field">
         <label>Full Name</label>
@@ -167,8 +148,7 @@ export function injectAuthModal() {
 
       <button type="submit" class="auth-submit">
         <span>Create Account</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"
-          stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M5 12H19"/><path d="M12 5L19 12L12 19"/>
         </svg>
       </button>
@@ -184,30 +164,19 @@ export function injectAuthModal() {
         </svg>
         <span>Sign up with Google</span>
       </button>
-
     </form>
-
   </div>
-
   `;
 
   initializeAuthModal(mountPoint);
 }
 
-// ============================================
-// INITIALIZE
-// ============================================
-
 function initializeAuthModal(authContainer) {
   const closeBtn = document.getElementById("auth-close-btn");
-  const modal = authContainer.querySelector(".auth-modal");
   const overlay = authContainer.querySelector(".auth-overlay");
   const tabs = authContainer.querySelectorAll(".auth-tab");
   const forms = authContainer.querySelectorAll(".auth-form");
 
-  // ============================================
-  // ROLE SELECTION LOGIC
-  // ============================================
   let selectedRole = "student";
   const roleContainer = authContainer.querySelector("#role-fields-container");
   const roleButtons = authContainer.querySelectorAll(".role-toggle-btn");
@@ -236,9 +205,71 @@ function initializeAuthModal(authContainer) {
   });
   updateRoleFields("student");
 
-  // ============================================
-  // OPEN MODAL
-  // ============================================
+  // Programmatic validator for Form-First signup
+  function validateSignupFields(isGoogle = false) {
+    const roleInputs = roleContainer.querySelectorAll("input, select");
+
+    // Always validate role-specific fields
+    for (const input of roleInputs) {
+      if (!input.checkValidity()) {
+        input.reportValidity();
+        return false;
+      }
+    }
+
+    // Email/Password sign up requires all general fields to be valid too
+    if (!isGoogle) {
+      const name = document.getElementById("signup-name");
+      const email = document.getElementById("signup-email");
+      const password = document.getElementById("signup-password");
+
+      for (const input of [name, email, password]) {
+        if (!input.checkValidity()) {
+          input.reportValidity();
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  function collectExtraData(role) {
+    const extraData = {};
+    if (role === "teacher") {
+      extraData.schoolName =
+        document.getElementById("signup-school")?.value || "";
+      extraData.phone =
+        document.getElementById("signup-teacher-phone")?.value || "";
+      extraData.experience =
+        document.getElementById("signup-experience")?.value || "";
+      extraData.totalStudents =
+        parseInt(document.getElementById("signup-students")?.value) || 0;
+      extraData.activeClass =
+        document.getElementById("signup-subject")?.value || "";
+      extraData.position =
+        document.getElementById("signup-position")?.value || "";
+    } else if (role === "parent") {
+      extraData.relationship =
+        document.getElementById("signup-relation")?.value || "";
+      extraData.phone =
+        document.getElementById("signup-parent-phone")?.value || "";
+      extraData.childName =
+        document.getElementById("signup-child-name")?.value || "";
+      extraData.childGrade =
+        document.getElementById("signup-child-class")?.value || "";
+      extraData.childGoal = document.getElementById("signup-goal")?.value || "";
+    } else if (role === "student") {
+      extraData.activeClass =
+        document.getElementById("signup-class")?.value || "";
+      extraData.schoolName =
+        document.getElementById("signup-student-school")?.value || "";
+      extraData.focusSubject =
+        document.getElementById("signup-student-focus")?.value || "";
+      extraData.parentContact =
+        document.getElementById("signup-student-parent")?.value || "";
+    }
+    return extraData;
+  }
 
   window.openAuthModal = (mode = "login") => {
     authContainer.classList.add("active");
@@ -246,21 +277,12 @@ function initializeAuthModal(authContainer) {
     document.body.style.overflow = "hidden";
   };
 
-  // ============================================
-  // CLOSE MODAL
-  // ============================================
-
   function closeModal() {
     authContainer.classList.remove("active");
     document.body.style.overflow = "";
   }
 
-  // ============================================
-  // SWITCH TAB
-  // ============================================
-
   function switchTab(mode) {
-    modal?.classList.toggle("signup-mode", mode === "signup");
     tabs.forEach((tab) => {
       tab.classList.toggle("active", tab.dataset.authTab === mode);
     });
@@ -269,27 +291,15 @@ function initializeAuthModal(authContainer) {
     });
   }
 
-  // ============================================
-  // TAB EVENTS
-  // ============================================
-
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => switchTab(tab.dataset.authTab));
   });
-
-  // ============================================
-  // CLOSE EVENTS
-  // ============================================
 
   closeBtn.addEventListener("click", closeModal);
   overlay.addEventListener("click", closeModal);
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeModal();
   });
-
-  // ============================================
-  // OPEN TRIGGERS
-  // ============================================
 
   document.addEventListener("click", (e) => {
     const trigger = e.target.closest("[data-auth-open]");
@@ -298,10 +308,7 @@ function initializeAuthModal(authContainer) {
     window.openAuthModal(trigger.dataset.authOpen || "login");
   });
 
-  // ============================================
-  // GOOGLE LOGIN
-  // ============================================
-
+  // GOOGLE LOGIN (No pre-filled form fields required)
   document
     .getElementById("google-login")
     .addEventListener("click", async () => {
@@ -316,16 +323,30 @@ function initializeAuthModal(authContainer) {
       }
     });
 
-  // ============================================
-  // GOOGLE SIGNUP
-  // ============================================
-
+  // FORM-FIRST GOOGLE SIGNUP
   document
     .getElementById("google-signup")
     .addEventListener("click", async () => {
+      if (!validateSignupFields(true)) return; // Halts if dynamic role fields are missing/invalid
+
       try {
         const result = await signInWithPopup(auth, googleProvider);
-        await ensureUserDoc(result.user);
+        const extraData = collectExtraData(selectedRole);
+
+        const userRef = doc(db, "users", result.user.uid);
+        const userData = {
+          name:
+            result.user.displayName ||
+            document.getElementById("signup-name").value ||
+            "New User",
+          email: result.user.email,
+          role: result.user.email === ADMIN_EMAIL ? "admin" : selectedRole,
+          isPremium: result.user.email === ADMIN_EMAIL,
+          createdAt: new Date().toISOString(),
+          ...extraData,
+        };
+
+        await setDoc(userRef, userData, { merge: true });
         closeModal();
         goToDashboard();
       } catch (err) {
@@ -334,10 +355,7 @@ function initializeAuthModal(authContainer) {
       }
     });
 
-  // ============================================
   // EMAIL LOGIN
-  // ============================================
-
   document
     .getElementById("login-form")
     .addEventListener("submit", async (e) => {
@@ -355,17 +373,17 @@ function initializeAuthModal(authContainer) {
       }
     });
 
-  // ============================================
   // EMAIL SIGNUP
-  // ============================================
-
   document
     .getElementById("signup-form")
     .addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (!validateSignupFields(false)) return;
+
       const name = document.getElementById("signup-name").value;
       const email = document.getElementById("signup-email").value;
       const password = document.getElementById("signup-password").value;
+
       try {
         const userCredential = await createUserWithEmailAndPassword(
           auth,
@@ -374,35 +392,7 @@ function initializeAuthModal(authContainer) {
         );
         await updateProfile(userCredential.user, { displayName: name });
 
-        const extraData = {};
-        if (selectedRole === "teacher") {
-          extraData.schoolName =
-            document.getElementById("signup-school")?.value || "";
-          extraData.totalStudents =
-            parseInt(document.getElementById("signup-students")?.value) || 0;
-          extraData.activeClass =
-            document.getElementById("signup-subject")?.value || "Mathematics";
-          extraData.experience =
-            document.getElementById("signup-experience")?.value || "";
-          extraData.position =
-            document.getElementById("signup-position")?.value || "";
-        } else if (selectedRole === "parent") {
-          extraData.childName =
-            document.getElementById("signup-child-name")?.value || "";
-          extraData.childGrade =
-            document.getElementById("signup-grade")?.value || "";
-          extraData.childGoal =
-            document.getElementById("signup-goal")?.value || "Daily Practice";
-          extraData.relationship =
-            document.getElementById("signup-relation")?.value || "";
-          extraData.phone =
-            document.getElementById("signup-parent-phone")?.value || "";
-        } else if (selectedRole === "student") {
-          extraData.activeClass =
-            document.getElementById("signup-class")?.value || "";
-        }
-
-        // Initialize Firestore Document with the selected role
+        const extraData = collectExtraData(selectedRole);
         const userData = {
           name: name,
           email: email,
@@ -413,7 +403,6 @@ function initializeAuthModal(authContainer) {
         };
 
         await setDoc(doc(db, "users", userCredential.user.uid), userData);
-
         closeModal();
         goToDashboard();
       } catch (err) {
@@ -422,13 +411,11 @@ function initializeAuthModal(authContainer) {
       }
     });
 
-  // Helper to ensure a doc exists (useful for Google signups)
   async function ensureUserDoc(user) {
     const userRef = doc(db, "users", user.uid);
     let snap = await getDoc(userRef);
 
     if (snap.exists()) {
-      // Ensure designated admin email is always promoted if currently a student/teacher
       if (user.email === ADMIN_EMAIL && snap.data().role !== "admin") {
         await setDoc(
           userRef,
@@ -439,19 +426,15 @@ function initializeAuthModal(authContainer) {
       return;
     }
 
-    // If UID doesn't exist, check if a document with this email already exists
-    // (Handles cases where a user switches login methods but accounts weren't linked in Auth)
     const q = query(collection(db, "users"), where("email", "==", user.email));
     const querySnapshot = await getDocs(q);
 
     if (!querySnapshot.empty) {
-      // Move existing data to the new UID to keep it consistent
       const existingData = querySnapshot.docs[0].data();
       await setDoc(userRef, existingData, { merge: true });
       return;
     }
 
-    // Truly new user
     await setDoc(userRef, {
       name: user.displayName || "New User",
       email: user.email,
@@ -461,9 +444,5 @@ function initializeAuthModal(authContainer) {
     });
   }
 }
-
-// ============================================
-// AUTO INIT
-// ============================================
 
 document.addEventListener("DOMContentLoaded", injectAuthModal);
