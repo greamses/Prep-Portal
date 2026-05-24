@@ -1,5 +1,4 @@
 import { I } from "./icons.js";
-import { auth } from "../../../firebase-init.js";
 import { auth } from "/firebase-init.js";
 import { SUBSCRIPTION_PLANS } from "/payment-manager.js";
 import { ROUTES } from "/home/js/routing.js";
