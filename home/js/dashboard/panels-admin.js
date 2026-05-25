@@ -27,8 +27,8 @@ export function buildAdminPanels(user, data, layout) {
     <div class="db-panel span-full" style="padding: 1rem; margin-bottom: 0.5rem;">
       <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
         <p class="db-kicker" style="margin: 0;">Auto Content Engines:</p>
-        <a href="/blogs/science/biology/animal/auto/" class="brutal-btn-flat" style="text-decoration: none; padding: 6px 12px; font-size: 13px;">Biology Auto</a>
-        <a href="/blogs/science/chemistry/auto/" class="brutal-btn-flat" style="text-decoration: none; padding: 6px 12px; font-size: 13px;">Chemistry Auto</a>
+        <a href="/blogs/science/biology/animal/auto/" class="brutal-btn-flat" style="text-decoration: none; padding: 6px 12px; font-size: 13px;">Animal Auto</a>
+        <a href="/blogs/science/biology/plants/auto/" class="brutal-btn-flat" style="text-decoration: none; padding: 6px 12px; font-size: 13px;">Plant Auto</a>
         <a href="/blogs/science/physics/auto/" class="brutal-btn-flat" style="text-decoration: none; padding: 6px 12px; font-size: 13px;">Physics Auto</a>
       </div>
     </div>

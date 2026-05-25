@@ -211,7 +211,7 @@ const NAV_CONFIG = [
           },
           {
             text: "Plant Science Articles",
-            href: "/blogs/science/biology/plant/blog/blog.html",
+            href: "/blogs/science/biology/plants/blog/blog.html",
             description: "Explore green wonders",
           },
           {
