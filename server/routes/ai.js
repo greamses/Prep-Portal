@@ -1,7 +1,7 @@
 /**
  * AI proxy routes — all AI keys are app-level env vars, never in the browser.
  *
- * POST /api/ai/chat    — PrepBot (tries Groq first, falls back to Claude)
+ * POST /api/ai/chat    — PrepBot (Groq → Claude → Gemini fallback chain)
  * POST /api/ai/claude  — Direct Claude access
  * POST /api/ai/gemini  — Proxy Gemini using app key
  * POST /api/ai/groq    — Proxy Groq using app key
@@ -14,13 +14,20 @@ const { authenticate } = require("../middleware/auth");
 const GEMINI_BASE_WHITELIST = "https://generativelanguage.googleapis.com/";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 
+const GEMINI_CHAT_MODELS = [
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent",
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+];
+
 module.exports = function () {
   const router = express.Router();
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   // ── POST /api/ai/chat — PrepBot ──────────────────────────────
-  // Tries app-level Groq first; falls back to Claude.
+  // Fallback chain: Groq → Claude → Gemini (each skipped if key absent).
   router.post("/chat", authenticate, async (req, res) => {
     try {
       const {
@@ -33,50 +40,91 @@ module.exports = function () {
 
       // ① Try Groq
       if (process.env.GROQ_API_KEY) {
-        const groqRes = await fetch(GROQ_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model,
-            messages: system
-              ? [{ role: "system", content: system }, ...messages]
-              : messages,
-            temperature,
-            max_tokens,
-          }),
-        });
-
-        if (groqRes.ok) {
-          const data = await groqRes.json();
-          return res.json({
-            provider: "groq",
-            text: data.choices?.[0]?.message?.content || "",
+        try {
+          const groqRes = await fetch(GROQ_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+            },
+            body: JSON.stringify({
+              model,
+              messages: system
+                ? [{ role: "system", content: system }, ...messages]
+                : messages,
+              temperature,
+              max_tokens,
+            }),
           });
+
+          if (groqRes.ok) {
+            const data = await groqRes.json();
+            const text = data.choices?.[0]?.message?.content;
+            if (text) {
+              return res.json({ provider: "groq", text });
+            }
+          }
+        } catch (_) {}
+        console.warn("[/api/ai/chat] Groq unavailable, trying Claude");
+      }
+
+      // ② Try Claude
+      if (process.env.ANTHROPIC_API_KEY) {
+        try {
+          const response = await anthropic.messages.create({
+            model: process.env.CLAUDE_MODEL || "claude-haiku-4-5-20251001",
+            max_tokens: max_tokens || 2000,
+            ...(system ? { system } : {}),
+            messages,
+          });
+          const text = response.content[0]?.text;
+          if (text) {
+            return res.json({ provider: "claude", text });
+          }
+        } catch (_) {}
+        console.warn("[/api/ai/chat] Claude unavailable, trying Gemini");
+      }
+
+      // ③ Try Gemini models in order
+      if (process.env.GEMINI_API_KEY) {
+        const geminiBody = {
+          ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+          contents: messages.map((m) => ({
+            role: m.role === "assistant" ? "model" : "user",
+            parts: [{ text: m.content }],
+          })),
+          generationConfig: { temperature, maxOutputTokens: max_tokens },
+        };
+
+        for (const modelUrl of GEMINI_CHAT_MODELS) {
+          try {
+            const gemRes = await fetch(
+              `${modelUrl}?key=${process.env.GEMINI_API_KEY}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(geminiBody),
+              }
+            );
+            if (!gemRes.ok) {
+              if ([404, 429, 503].includes(gemRes.status)) continue;
+              break;
+            }
+            const data = await gemRes.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              return res.json({ provider: "gemini", text });
+            }
+          } catch (_) {
+            continue;
+          }
         }
-        console.warn("[/api/ai/chat] Groq error, falling back to Claude");
+        console.warn("[/api/ai/chat] All Gemini models unavailable");
       }
-
-      // ② Fall back to Claude
-      if (!process.env.ANTHROPIC_API_KEY) {
-        return res.json({
-          provider: "unavailable",
-          text: "PrepBot is currently unavailable.",
-        });
-      }
-
-      const response = await anthropic.messages.create({
-        model: process.env.CLAUDE_MODEL || "claude-haiku-4-5-20251001",
-        max_tokens: max_tokens || 2000,
-        ...(system ? { system } : {}),
-        messages,
-      });
 
       res.json({
-        provider: "claude",
-        text: response.content[0]?.text || "",
+        provider: "unavailable",
+        text: "PrepBot is temporarily unavailable. Please try again in a moment.",
       });
     } catch (err) {
       console.error("[/api/ai/chat]", err.message);

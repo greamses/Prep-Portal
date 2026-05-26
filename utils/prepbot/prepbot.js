@@ -810,12 +810,22 @@ The two suggestions must be short (2-5 words), relevant, phrased as natural stud
       });
 
       if (!res.ok) {
+        if (res.status === 405) {
+          throw new Error("Backend server not reachable. Make sure the server is running on port 5000.");
+        }
         const errJson = await res.json().catch(() => ({}));
         throw new Error(errJson.error || `Server error ${res.status}`);
       }
 
       const data = await res.json();
       hideTyping();
+
+      // If all providers exhausted server-side, surface a clean message
+      if (data.provider === "unavailable") {
+        await appendMessage("bot", data.text || "PrepBot is temporarily unavailable.");
+        renderSuggestionChips(["Try Again"]);
+        return;
+      }
 
       const { cleanReply, chips } = parseSuggestions(data.text || "Connection error. Please try again.");
 
