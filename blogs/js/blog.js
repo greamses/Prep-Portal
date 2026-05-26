@@ -513,9 +513,9 @@ function renderPosts() {
 // ─── DYNAMIC FILTER DROPDOWNS ─────────────────────────────
 function buildSubjectDropdownItems() {
   let html =
-    '<div class="dropdown-item active" data-filter="all" role="option">All Subjects</div>';
+    '<div class="pp-select-item active" data-filter="all" role="option">All Subjects</div>';
   for (const [key, label] of Object.entries(SUBJECT_LABELS)) {
-    html += `<div class="dropdown-item" data-filter="${key}" role="option">${label}</div>`;
+    html += `<div class="pp-select-item" data-filter="${key}" role="option">${label}</div>`;
   }
   return html;
 }
@@ -536,10 +536,10 @@ function buildClassDropdownItems() {
     "ss-3",
   ];
   let html =
-    '<div class="dropdown-item active" data-filter="all">All Classes</div>';
+    '<div class="pp-select-item active" data-filter="all">All Classes</div>';
   for (const level of classLevels) {
     const label = getClassShort(level);
-    html += `<div class="dropdown-item" data-filter="${level}">${label}</div>`;
+    html += `<div class="pp-select-item" data-filter="${level}">${label}</div>`;
   }
   return html;
 }
@@ -561,10 +561,10 @@ function wireDropdown(dropdownId, btnId, textId, onSelect) {
       btn.setAttribute("aria-expanded", "false");
     }
   });
-  dropdown.querySelectorAll(".dropdown-item").forEach((item) => {
+  dropdown.querySelectorAll(".pp-select-item").forEach((item) => {
     item.addEventListener("click", () => {
       dropdown
-        .querySelectorAll(".dropdown-item")
+        .querySelectorAll(".pp-select-item")
         .forEach((i) => i.classList.remove("active"));
       item.classList.add("active");
       textEl.textContent = item.textContent.trim();
