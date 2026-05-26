@@ -2,7 +2,6 @@
    main.js — entry point
 ════════════════════════════════════════ */
 import { initGeminiKey, initYTKey, clearKeysOnUnload } from './js/keys.js';
-import { initTicker } from './js/ui-helpers.js';
 import { initSetupForm, rebuildSlots, checkReady } from './js/setup-form.js';
 import { initModal } from './js/modal.js';
 import { auth } from '/firebase-init.js';
@@ -15,7 +14,6 @@ window._getAuthToken = async () => {
   return user.getIdToken();
 };
 
-initTicker();
 initGeminiKey();
 initYTKey();
 clearKeysOnUnload();

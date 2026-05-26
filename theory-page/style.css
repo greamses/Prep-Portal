@@ -89,15 +89,6 @@ body {
   }
 }
 
-@keyframes tickerRoll {
-  from {
-    transform: translateX(0);
-  }
-  
-  to {
-    transform: translateX(-50%);
-  }
-}
 
 @keyframes spinDot {
   to {
@@ -138,39 +129,6 @@ body {
 }
 
 
-/* ════════════════════════════════════════════════════
-   TICKER
-════════════════════════════════════════════════════ */
-.ticker {
-  overflow: hidden;
-  background: var(--ink);
-  border-bottom: var(--border);
-  height: 38px;
-  display: flex;
-  align-items: center;
-}
-
-.ticker-track {
-  display: flex;
-  animation: tickerRoll 28s linear infinite;
-  white-space: nowrap;
-}
-
-.ticker-item {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: var(--weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-ultra);
-  color: var(--yellow);
-  padding: 0 28px;
-  flex-shrink: 0;
-}
-
-.ticker-dot {
-  margin-left: 20px;
-  color: rgba(255, 229, 0, .3);
-}
 
 /* ════════════════════════════════════════════════════
    PAGE HEADER
@@ -207,13 +165,15 @@ body {
 }
 
 .ph-left {
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 600px;
   animation: slideRight .55s var(--ease-bounce) .1s both;
 }
 
 .ph-right {
-  flex: 1;
-  max-width: 440px;
+  flex: 0 0 auto;
+  max-width: 380px;
   animation: fadeUp .55s var(--ease-bounce) .2s both;
 }
 
@@ -257,6 +217,7 @@ body {
   line-height: var(--leading-extra-loose);
   color: var(--muted);
   margin-bottom: 28px;
+  max-width: 48ch;
 }
 
 .ph-right p {
@@ -632,7 +593,7 @@ body {
   border-radius: var(--radius-sm, 12px);
   box-shadow: var(--shadow-md, 5px 5px 0 var(--ink));
   z-index: 200;
-  max-height: 320px;
+  max-height: 220px;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 0.35rem;
@@ -967,7 +928,6 @@ body {
   resize: none;
   line-height: var(--leading-relaxed);
   transition: background .15s, box-shadow .2s;
-  field-sizing: content;
 }
 
 .q-slot-ta:focus {
