@@ -134,6 +134,27 @@ module.exports = function () {
     }
   });
 
+  // ── GET /api/ai/youtube — proxy YouTube Data API ─────────────
+  router.get("/youtube", authenticate, async (req, res) => {
+    try {
+      if (!process.env.YOUTUBE_API_KEY) {
+        return res.status(503).json({ error: "YouTube is not configured on this server." });
+      }
+
+      const params = new URLSearchParams(req.query);
+      params.set("key", process.env.YOUTUBE_API_KEY);
+
+      const upstream = await fetch(
+        `https://www.googleapis.com/youtube/v3/search?${params}`
+      );
+      const data = await upstream.json();
+      res.status(upstream.status).json(data);
+    } catch (err) {
+      console.error("[/api/ai/youtube]", err.message);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // ── POST /api/ai/groq — proxy Groq with app key ──────────────
   router.post("/groq", authenticate, async (req, res) => {
     try {

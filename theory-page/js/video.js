@@ -344,15 +344,21 @@ Return ONLY valid JSON — no markdown:
   "manipulative": "<one sentence hands-on physical activity>"` : ''}
 }`;
   
+  let token;
+  try { token = await window._getAuthToken(); } catch { return null; }
+
   for (const modelUrl of _VIDEO_MODELS) {
     try {
-      const res = await fetch(`${modelUrl}?key=${encodeURIComponent(state.GEMINI_KEY)}`, {
+      const res = await fetch('/api/ai/gemini', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: prompt }] },
-          contents: [{ parts: [{ text: `Plan English-language video resources for: ${questionText}` }] }],
-          generationConfig: { responseMimeType: 'application/json', temperature: 0.3, maxOutputTokens: 800 },
+          modelUrl,
+          body: {
+            systemInstruction: { parts: [{ text: prompt }] },
+            contents: [{ parts: [{ text: `Plan English-language video resources for: ${questionText}` }] }],
+            generationConfig: { responseMimeType: 'application/json', temperature: 0.3, maxOutputTokens: 800 },
+          },
         }),
       });
       if (res.status === 429 || res.status === 503 || !res.ok) continue;
@@ -419,7 +425,7 @@ async function _fetchVideoResources(questionText, subject, level) {
 
   let videos = [];
 
-  if (state.YT_KEY_VERIFIED && state.YT_KEY) {
+  {
     for (let i = 0; i < searches.length; i++) {
       try {
         /* Pass keywords so _ytSearch can filter irrelevant results */
@@ -562,7 +568,7 @@ export async function handleVideoBtn(btn) {
   const questionText = qTextEl?.textContent?.trim() || btn.dataset.qtext || '';
   const isMath       = _isMathSubject(state.st.subject);
 
-  row.innerHTML = `<div class="pvr-loading"><span class="pvr-spinner"></span>${state.YT_KEY_VERIFIED ? 'Searching YouTube…' : 'Finding resources…'}</div>`;
+  row.innerHTML = `<div class="pvr-loading"><span class="pvr-spinner"></span>Finding resources…</div>`;
 
   try {
     const data = await _fetchVideoResources(questionText, state.st.subject, state.st.cls);
@@ -601,22 +607,22 @@ function _scoreTitle(title, keywords) {
 async function _ytSearch(query, keywords, isPrimary) {
   const duration = isPrimary ? 'any' : 'medium';
 
-  // UPDATED: Append English and use regionCode NG (Nigeria) to prioritize English content
-  const url = [
-    'https://www.googleapis.com/youtube/v3/search',
-    '?part=snippet',
-    '&type=video',
-    '&maxResults=5',
-    '&videoEmbeddable=true',
-    '&safeSearch=strict',
-    `&videoDuration=${duration}`,
-    '&relevanceLanguage=en', // Hint
-    '&regionCode=NG',        // Force Nigerian context (strictly English school system)
-    `&q=${encodeURIComponent(query + ' English')}`,
-    `&key=${encodeURIComponent(state.YT_KEY)}`,
-  ].join('');
+  const token = await window._getAuthToken();
+  const params = new URLSearchParams({
+    part: 'snippet',
+    type: 'video',
+    maxResults: '5',
+    videoEmbeddable: 'true',
+    safeSearch: 'strict',
+    videoDuration: duration,
+    relevanceLanguage: 'en',
+    regionCode: 'NG',
+    q: query + ' English',
+  });
 
-  const res  = await fetch(url);
+  const res = await fetch(`/api/ai/youtube?${params}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
   if (!res.ok) throw new Error(`YouTube API ${res.status}`);
   const data = await res.json();
   if (!data.items?.length) return null;
