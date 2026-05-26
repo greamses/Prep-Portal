@@ -4,43 +4,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Prep Portal 2026 | Auth</title>
-  
+  <title>Prep Portal 2026 | Account</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
-  
+
   <link rel="icon" type="image/svg+xml" href="../logo/logo-icon.svg">
-  
-  <!-- Remove the loader script if it's not needed, or ensure it doesn't conflict -->
   <script src="../../utils/loader/loader.js"></script>
-  
-  <!-- NO Firebase script tags here - they're imported via modules -->
-  
+
   <link rel="stylesheet" href="../../main.css" />
   <link rel="stylesheet" href="./auth.css">
 </head>
 
 <body>
-  
-  <!-- ═══════════════════════════════════════════
-     AUTH GATE
-═══════════════════════════════════════════ -->
-  <div id="loader">
-    <div id="loader-wrapper">
-      <div class="logo-cluster"></div>
-    </div>
-    <div class="loader-word"><span>Auth</span></div>
-    <div class="loader-bar"></div>
-  </div>
+
+  <!-- AUTH GATE -->
   <div id="auth-gate">
     <div class="gate-spinner"></div>
     <span class="gate-lbl">Checking authentication…</span>
   </div>
-  
-  <!-- ═══════════════════════════════════════════
-     NAVIGATION
-═══════════════════════════════════════════ -->
+
+  <!-- NAVIGATION -->
   <nav class="site-nav">
     <a href="../index.html" class="nav-logo">
       <img src="../../logo/logo-light.svg" alt="PrepPortal logo" />
@@ -57,200 +42,96 @@
       <span></span><span></span><span></span>
     </button>
   </nav>
-  
-  <!-- ═══════════════════════════════════════════
-     TICKER
-═══════════════════════════════════════════ -->
+
+  <!-- TICKER -->
   <div class="ticker" aria-hidden="true">
     <div class="ticker-track" id="ticker-track"></div>
   </div>
-  
-  <!-- ═══════════════════════════════════════════
-     PAGE HEADER
-═══════════════════════════════════════════ -->
+
+  <!-- PAGE HEADER -->
   <header class="pg-header">
     <div class="ph-left">
-      <p class="pg-eyebrow">Account &middot; Configuration</p>
-      <h1 class="pg-title">API<br><em>KEYS</em></h1>
+      <p class="pg-eyebrow">Account &middot; Settings</p>
+      <h1 class="pg-title">Your<br><em>ACCOUNT</em></h1>
     </div>
     <div class="ph-right">
       <p>
-        Prep Portal uses your own API keys — we never store them in plaintext.<br><br>
-        Keys are encrypted and saved to <strong>your Firebase account</strong>.
-        Once verified, every tool on the platform unlocks immediately.
+        Manage your profile and subscription.<br><br>
+        All AI features — PrepBot, Essay Grader, Theory Analyser —
+        are <strong>powered by the platform</strong>. No API keys needed.
       </p>
     </div>
   </header>
-  
-  <!-- ═══════════════════════════════════════════
-     STATUS BAR
-═══════════════════════════════════════════ -->
+
+  <!-- STATUS BAR -->
   <div id="status-bar" class="status-bar" role="status" aria-live="polite"></div>
-  
-  <!-- ═══════════════════════════════════════════
-     PAGE BODY
-═══════════════════════════════════════════ -->
+
+  <!-- PAGE BODY -->
   <main class="page-body" id="page-body">
-    
-    <div id="bypass-banner">
-      <div class="bypass-dot"></div>
-      <span class="bypass-txt">All API keys loaded — platform fully unlocked</span>
-      <button class="bypass-edit" onclick="window.enterEditMode()">Edit Keys</button>
-    </div>
-    
-    <p class="section-heading">Your API Keys</p>
-    
-    <div class="progress-bar-wrap">
-      <div class="progress-bar" id="progress-bar"></div>
-    </div>
-    <br>
-    
-    <div class="key-cards">
-      <!-- GEMINI -->
-      <div class="key-card" id="card-gemini">
+
+    <p class="section-heading">Profile</p>
+
+    <div class="key-cards" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))">
+
+      <!-- Profile card -->
+      <div class="key-card" id="profile-card">
         <div class="kc-head">
-          <div class="kc-icon" id="icon-gemini"></div>
+          <div class="kc-icon" id="user-avatar" style="width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:900;font-size:1.1rem;flex-shrink:0"></div>
           <div class="kc-meta">
-            <div class="kc-name">Google Gemini</div>
-            <div class="kc-desc">Theory Analyser · Algebra Lab </div>
+            <div class="kc-name" id="user-name">Loading…</div>
+            <div class="kc-desc" id="user-email"></div>
           </div>
-          <div class="kc-status idle" id="status-gemini">
-            <div class="kc-status-dot"></div><span id="status-gemini-txt">Not set</span>
+          <div class="kc-status idle" id="plan-badge">
+            <div class="kc-status-dot"></div>
+            <span id="plan-label">Free</span>
           </div>
         </div>
-        <div class="kc-body">
-          <div class="kc-input-row">
-            <input type="password" class="kc-input" id="input-gemini" placeholder="AIza…" autocomplete="off" spellcheck="false" aria-label="Gemini API key" />
-            <div class="kc-input-actions">
-              <button class="kc-btn-icon" onclick="window.toggleVisibility('gemini')"><svg id="eye-gemini" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg></button>
-              <button class="kc-btn-icon" onclick="window.pasteKey('gemini')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" />
-                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                </svg></button>
-              <button class="kc-btn-icon" onclick="window.clearKey('gemini')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg></button>
-            </div>
-          </div>
-          <div class="kc-feedback" id="feedback-gemini"></div>
-          <button class="kc-verify-btn" id="verify-btn-gemini" onclick="window.verifySingle('gemini')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>Verify Key</button>
+        <div class="kc-body" style="padding-top:1rem">
+          <button class="kc-verify-btn" id="signout-btn" style="background:var(--ink);color:var(--bg);border-color:var(--ink)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Sign Out
+          </button>
         </div>
       </div>
-      <!-- GROQ -->
-      <div class="key-card" id="card-groq">
+
+      <!-- AI Features card -->
+      <div class="key-card">
         <div class="kc-head">
-          <div class="kc-icon" id="icon-groq"></div>
+          <div class="kc-icon" style="font-size:1.5rem;display:flex;align-items:center">🤖</div>
           <div class="kc-meta">
-            <div class="kc-name">Groq</div>
-            <div class="kc-desc">PrepBot · Fast inference</div>
+            <div class="kc-name">AI Features</div>
+            <div class="kc-desc">PrepBot · Essay Grader · Theory</div>
           </div>
-          <div class="kc-status idle" id="status-groq">
-            <div class="kc-status-dot"></div><span id="status-groq-txt">Not set</span>
+          <div class="kc-status stored">
+            <div class="kc-status-dot"></div>
+            <span>Active</span>
           </div>
         </div>
-        <div class="kc-body">
-          <div class="kc-input-row">
-            <input type="password" class="kc-input" id="input-groq" placeholder="gsk_…" />
-            <div class="kc-input-actions">
-              <button class="kc-btn-icon" onclick="window.toggleVisibility('groq')"><svg id="eye-groq" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg></button>
-              <button class="kc-btn-icon" onclick="window.pasteKey('groq')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" />
-                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                </svg></button>
-              <button class="kc-btn-icon" onclick="window.clearKey('groq')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg></button>
-            </div>
-          </div>
-          <div class="kc-feedback" id="feedback-groq"></div>
-          <button class="kc-verify-btn" id="verify-btn-groq" onclick="window.verifySingle('groq')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>Verify Key</button>
+        <div class="kc-body" style="padding-top:1rem">
+          <p style="font-family:var(--font-mono);font-size:var(--text-mono-xs);color:var(--text-secondary);margin:0;line-height:1.6">
+            All AI is powered by the Prep Portal backend — powered by Claude and secured server-side. No setup required.
+          </p>
         </div>
       </div>
-      <!-- YOUTUBE -->
-      <div class="key-card" id="card-youtube">
-        <div class="kc-head">
-          <div class="kc-icon" id="icon-youtube"></div>
-          <div class="kc-meta">
-            <div class="kc-name">YouTube Data API v3</div>
-            <div class="kc-desc">Videos · Media Resources · </div>
-          </div>
-          <div class="kc-status idle" id="status-youtube">
-            <div class="kc-status-dot"></div><span id="status-youtube-txt">Not set</span>
-          </div>
-        </div>
-        <div class="kc-body">
-          <div class="kc-input-row">
-            <input type="password" class="kc-input" id="input-youtube" placeholder="AIza…" />
-            <div class="kc-input-actions">
-              <button class="kc-btn-icon" onclick="window.toggleVisibility('youtube')"><svg id="eye-youtube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg></button>
-              <button class="kc-btn-icon" onclick="window.pasteKey('youtube')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect x="9" y="9" width="13" height="13" rx="2" />
-                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                </svg></button>
-              <button class="kc-btn-icon" onclick="window.clearKey('youtube')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg></button>
-            </div>
-          </div>
-          <div class="kc-feedback" id="feedback-youtube"></div>
-          <button class="kc-verify-btn" id="verify-btn-youtube" onclick="window.verifySingle('youtube')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>Verify Key</button>
-        </div>
-      </div>
+
     </div>
-    
+
     <div class="cta-row">
-      <button class="btn-primary" id="save-all-btn" onclick="window.verifyAndSaveAll()" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
-          <polyline points="17 21 17 13 7 13 7 21" />
-          <polyline points="7 3 7 8 15 8" />
-        </svg>Verify All &amp; Save</button>
-      <button class="btn-ghost" onclick="window.history.back()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="19" y1="12" x2="5" y2="12" />
-          <polyline points="12 19 5 12 12 5" />
-        </svg>Back</button>
-      <p class="cta-note" id="cta-note">Enter at least one key to continue.</p>
-    </div>
-    
-    <div class="info-section">
-      <button class="info-toggle" id="info-toggle" onclick="window.toggleInfo()">
-        Where do I get these keys?
-        <svg class="info-arrow" id="info-arrow" viewBox="0 0 24 24">
-          <polyline points="6 9 12 15 18 9" />
+      <button class="btn-ghost" onclick="window.history.back()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
         </svg>
+        Back
       </button>
-      <div class="info-body" id="info-body">
-        <div class="info-row"><span class="info-api" style="color:#4285f4">Gemini</span>
-          <div>Visit <a class="info-link" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com/app/apikey</a> — sign in with Google, click <em>Create API key</em>. Free tier includes generous daily quota.</div>
-        </div>
-        <div class="info-row"><span class="info-api">Groq</span>
-          <div>Visit <a class="info-link" href="https://console.groq.com/keys" target="_blank" rel="noopener">console.groq.com/keys</a> — create a free account, go to API Keys, click <em>Create API Key</em>. Key starts with <code>gsk_</code>.</div>
-        </div>
-        <div class="info-row"><span class="info-api" style="color:#ff0000">YouTube</span>
-          <div>Visit <a class="info-link" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">console.cloud.google.com/apis/credentials</a> — create a project, enable <em>YouTube Data API v3</em>, then create an API key. Free quota: 10k units/day.</div>
-        </div>
-      </div>
     </div>
+
   </main>
-  
-  <!-- Load the auth module -->
+
   <script type="module" src="auth.js"></script>
 </body>
 
