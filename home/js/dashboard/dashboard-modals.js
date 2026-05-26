@@ -13,7 +13,7 @@ function ensureModalStyles() {
   const link = document.createElement("link");
   link.id = "db-modal-styles";
   link.rel = "stylesheet";
-  link.href = "/js/dashboard/dashboard-modals.css";
+  link.href = "/home/js/dashboard/dashboard-modals.css";
   document.head.appendChild(link);
 }
 
@@ -53,7 +53,9 @@ export function showAssignmentModal() {
     <div class="db-modal">
       <div class="db-modal-header">
         <h3>New Math Assignment</h3>
-        <button class="db-modal-close" id="close-modal">&times;</button>
+        <button class="db-modal-close" id="close-modal" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6L18 18"/></svg>
+        </button>
       </div>
       <form id="assignment-form" class="db-modal-form">
         <div class="db-modal-field">
@@ -120,7 +122,9 @@ export function showClassModal() {
     <div class="db-modal">
       <div class="db-modal-header">
         <h3>Create New Math Class</h3>
-        <button class="db-modal-close" id="close-modal">&times;</button>
+        <button class="db-modal-close" id="close-modal" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6L18 18"/></svg>
+        </button>
       </div>
       <form id="class-form" class="db-modal-form">
         <div class="db-modal-field">
@@ -177,7 +181,9 @@ export function showLinkChildModal() {
     <div class="db-modal">
       <div class="db-modal-header">
         <h3>Link Child Account</h3>
-        <button class="db-modal-close" id="close-modal">&times;</button>
+        <button class="db-modal-close" id="close-modal" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18"/><path d="M6 6L18 18"/></svg>
+        </button>
       </div>
       <form id="link-child-form" class="db-modal-form">
         <div class="db-modal-field">

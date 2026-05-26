@@ -45,6 +45,8 @@ export function injectAuthModal() {
       </svg>
     </button>
 
+    <div class="auth-scroll-body">
+
     <div class="auth-brand">
       <div class="auth-badge">
         <img src="/logo/logo-light.svg" alt="Prep Portal Logo" />
@@ -165,6 +167,8 @@ export function injectAuthModal() {
         <span>Sign up with Google</span>
       </button>
     </form>
+
+    </div>
   </div>
   `;
 

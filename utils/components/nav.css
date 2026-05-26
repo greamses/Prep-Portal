@@ -1,4 +1,5 @@
 @import url("/utils/components/theme.css");
+@import url("/utils/components/dropdown.css");
 
 /* =============================================
    MEGA NAVIGATION – NEO-BRUTALIST & KID FRIENDLY
@@ -429,8 +430,9 @@ body {
 
 .user-details {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
 }
 
 .user-name {
@@ -442,22 +444,23 @@ body {
 }
 
 .user-plan-badge {
-  font-size: 0.7rem;
-  font-weight: var(--weight-black);
-  font-family: var(--font-mono);
-  padding: 1px 6px;
-  border: 1.5px solid var(--ink);
-  border-radius: 6px;
-  background: var(--bg);
-  color: var(--text-secondary);
-  width: max-content;
-  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
-.user-plan-badge.premium {
-  background: var(--accent-primary);
-  color: var(--ink);
+.user-plan-badge svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
+
+.user-plan-badge.plan-free { color: #be185d; }
+.user-plan-badge.plan-pro { color: #d97706; }
+.user-plan-badge.plan-premium { color: var(--accent-secondary, #1d4ed8); }
+.user-plan-badge.premium { color: #d97706; }
 
 @media (min-width: 1024px) {
   .user-name {
@@ -465,70 +468,9 @@ body {
   }
 }
 
-/* ----- NEO-BRUTALIST USER DROPDOWN BOX ----- */
-.user-dropdown {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  background: var(--bg);
-  border: 3px solid var(--ink);
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
-  min-width: 180px;
-  padding: 0.5rem;
-  display: none;
-  flex-direction: column;
-  gap: 0.25rem;
-  z-index: 10000;
-  box-sizing: border-box;
-}
-
-.user-menu.open .user-dropdown {
+/* Profile dropdown open state — layout handled by dropdown.css */
+.user-menu.open .neo-dropdown {
   display: flex;
-}
-
-/* User Dropdown Items styling */
-.user-dropdown .dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  color: var(--ink);
-  font-family: var(--font-display);
-  font-weight: var(--weight-bold);
-  font-size: 0.85rem;
-  text-decoration: none;
-  background: transparent;
-  border: 2px solid transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: left;
-  width: 100%;
-  box-sizing: border-box;
-  transition: all var(--duration-fast) var(--ease-bounce);
-}
-
-.user-dropdown .dropdown-item:hover {
-  background: var(--accent-primary);
-  border: 2px solid var(--ink);
-  transform: translateY(-2px);
-}
-
-.user-dropdown .dropdown-item:active {
-  transform: translateY(1px);
-}
-
-/* Red-themed Logout button inside the dropdown */
-.user-dropdown .logout-btn:hover {
-  background: var(--accent-danger);
-  color: var(--text-on-accent);
-}
-
-/* Dashed divider matching global theme design rules */
-.user-dropdown .dropdown-divider {
-  border-top: 2px dashed var(--ink);
-  margin: 0.4rem 0.25rem;
-  height: 0;
 }
 
 /* Dynamic display states depending on Auth status */

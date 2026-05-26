@@ -109,7 +109,7 @@
 
   /* ── Border Radius ───────────────────────── */
   --radius-none: 0;
-  --radius-sm: 12px;
+  --radius-sm: min(12px, 30%);
 }
 
 /* ── DARK THEME ─────────────────────────────────────────── */
@@ -673,14 +673,14 @@ small {
   background-color: var(--surface-secondary);
   background-clip: padding-box;
   border: 3px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: var(--text-secondary);
   background-clip: padding-box;
   border: 3px solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {

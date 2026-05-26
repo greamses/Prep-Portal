@@ -141,26 +141,25 @@
   transform: translateX(4px);
 }
 
-/* Navigation Profile Styles */
-.user-details {
-  display: flex;
-  flex-direction: column;
-  margin-left: 12px;
-}
-
+/* Navigation Profile Styles — nav.css owns .user-details and .user-plan-badge */
 .user-plan-badge {
-  font-family: var(--font-mono);
-  font-size: var(--text-mono-xs);
-  font-weight: var(--weight-black);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  margin-top: -2px;
-  letter-spacing: var(--tracking-wide);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
-.user-plan-badge.premium {
-  color: var(--accent-secondary);
+.user-plan-badge svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
+
+.user-plan-badge.plan-free { color: #be185d; }
+.user-plan-badge.plan-pro { color: #d97706; }
+.user-plan-badge.plan-premium { color: var(--accent-secondary, #1d4ed8); }
+.user-plan-badge.premium { color: #d97706; }
 
 .pm-footer-text {
   text-align: center;

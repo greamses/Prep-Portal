@@ -80,7 +80,7 @@
   font-weight: var(--weight-black);
 }
 
-.dashboard-account span {
+.dashboard-account span:not([data-dashboard-plan]) {
   display: block;
   font-family: var(--font-mono);
   font-size: 0.65rem;
@@ -89,8 +89,32 @@
   text-transform: uppercase;
 }
 
-.dashboard-account strong {
+.dashboard-account > div:not(.dashboard-avatar) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.dashboard-account [data-dashboard-plan] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.dashboard-account [data-dashboard-plan] svg {
+  width: 22px;
+  height: 22px;
   display: block;
+}
+
+.dashboard-account [data-dashboard-plan].plan-badge--free { color: #be185d; }
+.dashboard-account [data-dashboard-plan].plan-badge--pro { color: #d97706; }
+.dashboard-account [data-dashboard-plan].plan-badge--premium { color: var(--accent-secondary, #1d4ed8); }
+
+.dashboard-account strong {
   font-family: var(--font-display);
   font-size: 0.88rem;
 }

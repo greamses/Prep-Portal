@@ -9,6 +9,8 @@ import {
 
 const LOGO_PATH = "/logo/logo-light.svg";
 
+import { planEmblem, SVG_ROSE } from "/utils/components/plan-emblems.js";
+
 /* =============================================
    ICON RENDERER
 ============================================= */
@@ -279,9 +281,9 @@ function buildUserMenu() {
   nameSpan.textContent = "Guest";
 
   const planBadge = document.createElement("span");
-  planBadge.className = "user-plan-badge";
+  planBadge.className = "user-plan-badge plan-free";
   planBadge.id = "user-plan-badge";
-  planBadge.textContent = "Free Plan";
+  planBadge.innerHTML = SVG_ROSE;
 
   details.appendChild(nameSpan);
   details.appendChild(planBadge);
@@ -295,26 +297,26 @@ function buildUserMenu() {
      USER DROPDOWN
   ============================================= */
   const dropdown = document.createElement("div");
-  dropdown.className = "user-dropdown";
+  dropdown.className = "neo-dropdown";
 
   // 1. Dashboard
   const dashboardLink = document.createElement("a");
   dashboardLink.href = "/dashboard.html";
-  dashboardLink.className = "dropdown-item auth-only";
+  dashboardLink.className = "neo-dropdown-item auth-only";
   dashboardLink.textContent = "Dashboard";
   dropdown.appendChild(dashboardLink);
 
   // 2. Subscription
   const subscriptionLink = document.createElement("a");
   subscriptionLink.href = "/subscription.html";
-  subscriptionLink.className = "dropdown-item auth-only";
+  subscriptionLink.className = "neo-dropdown-item auth-only";
   subscriptionLink.textContent = "Subscription";
   dropdown.appendChild(subscriptionLink);
 
   // 3. Login / Sign In (for guests)
   const loginBtn = document.createElement("button");
   loginBtn.type = "button";
-  loginBtn.className = "dropdown-item guest-only";
+  loginBtn.className = "neo-dropdown-item guest-only";
   loginBtn.textContent = "Sign In";
   loginBtn.addEventListener("click", (e) => {
     e.preventDefault();
@@ -324,12 +326,12 @@ function buildUserMenu() {
 
   // Divider line before Logout
   const divider = document.createElement("div");
-  divider.className = "dropdown-divider auth-only";
+  divider.className = "neo-dropdown-divider auth-only";
   dropdown.appendChild(divider);
 
   // 4. Logout (with Firebase handler)
   const logoutBtn = document.createElement("button");
-  logoutBtn.className = "dropdown-item logout-btn auth-only";
+  logoutBtn.className = "neo-dropdown-item neo-dropdown-item--danger auth-only";
   logoutBtn.textContent = "Logout";
   logoutBtn.type = "button";
   logoutBtn.addEventListener("click", async (e) => {
@@ -479,13 +481,12 @@ function updateAuthUI(user) {
 
     // Real-time Subscription Listener
     subListener = onSnapshot(doc(db, "users", user.uid), (snap) => {
-      if (snap.exists() && snap.data().isPremium) {
-        planBadge.textContent = snap.data().planName || "Pro Plan";
-        planBadge.classList.add("premium");
-      } else {
-        planBadge.textContent = "Free Plan";
-        planBadge.classList.remove("premium");
-      }
+      const d = snap.exists() ? snap.data() : {};
+      const isPremium = Boolean(d.isPremium);
+      const planName = d.planName || "";
+      planBadge.innerHTML = planEmblem(isPremium, planName);
+      const tier = !isPremium ? "plan-free" : (planName.toLowerCase().includes("monthly") ? "plan-premium" : "plan-pro");
+      planBadge.className = "user-plan-badge " + tier;
     });
   } else {
     // Show guest-friendly items in dropdown
@@ -494,8 +495,8 @@ function updateAuthUI(user) {
     if (avatar) avatar.textContent = "U";
     if (nameSpan) nameSpan.textContent = "Guest";
     if (planBadge) {
-      planBadge.textContent = "Free Plan";
-      planBadge.classList.remove("premium");
+      planBadge.innerHTML = SVG_ROSE;
+      planBadge.className = "user-plan-badge plan-free";
     }
   }
 }

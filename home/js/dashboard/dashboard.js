@@ -18,6 +18,8 @@ import { buildTeacherPanels } from "/home/js/dashboard/panels-teacher.js";
 import { buildParentPanels } from "/home/js/dashboard/panels-parent.js";
 import { buildAdminPanels } from "/home/js/dashboard/panels-admin.js";
 
+import { planEmblem } from "/utils/components/plan-emblems.js";
+
 const layout = document.getElementById("dashboard-layout");
 const toolbar = document.getElementById("dashboard-toolbar");
 const kicker = document.getElementById("dashboard-role-kicker");
@@ -39,10 +41,13 @@ function updateHeader(user, data = {}) {
   const name = firstName(user);
   setText(fields.name, name);
   setText(fields.avatar, initial(name));
-  setText(
-    fields.plan,
-    data.planName || (data.isPremium ? "Pro Plan" : "Free Plan"),
-  );
+  if (fields.plan) {
+    const isPremium = Boolean(data.isPremium);
+    const planName = data.planName || "";
+    fields.plan.innerHTML = planEmblem(isPremium, planName);
+    const tier = !isPremium ? "free" : (planName.toLowerCase().includes("monthly") ? "premium" : "pro");
+    fields.plan.className = "plan-badge--" + tier;
+  }
   setText(fields.status, ROLE_LABELS[role] || "Workspace");
   setText(fields.subtitle, ROLE_SUBTITLES[role] || ROLE_SUBTITLES.student);
   if (kicker) kicker.textContent = ROLE_LABELS[role] || "My Workspace";
