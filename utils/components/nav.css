@@ -614,7 +614,12 @@ body {
     display: flex;
   }
 
+  /* Show avatar icon between logo and hamburger — hide text details */
   .user-menu {
+    display: flex;
+  }
+
+  .user-details {
     display: none;
   }
 
@@ -675,21 +680,25 @@ body {
     position: static;
     width: 100%;
     max-width: none;
-    max-height: none;
+    max-height: 0;
     transform: none;
     border: none;
-    padding: 1rem 0 0.5rem 0;
+    padding: 0;
     background: transparent;
-    display: none;
-    overflow-y: visible;
-    overflow-x: visible;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.25s ease,
+                padding 0.3s ease;
   }
 
   .nav-links > li.open .mega-panel {
-    display: block;
+    max-height: 3000px;
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
+    padding: 1rem 0 0.5rem 0;
   }
 
   .mega-panel-content {
@@ -718,3 +727,36 @@ body {
     min-width: auto;
   }
 }
+
+/* =============================================
+   NAV ANIMATION KEYFRAMES
+   ============================================= */
+@keyframes navBlockIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes navLeafIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Stagger nav-blocks when mega panel opens */
+.nav-links > li.open .mega-panel .nav-block {
+  animation: navBlockIn 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+.nav-links > li.open .mega-panel .nav-level-1 > .nav-block:nth-child(1) { animation-delay: 0.06s; }
+.nav-links > li.open .mega-panel .nav-level-1 > .nav-block:nth-child(2) { animation-delay: 0.12s; }
+.nav-links > li.open .mega-panel .nav-level-1 > .nav-block:nth-child(3) { animation-delay: 0.18s; }
+.nav-links > li.open .mega-panel .nav-level-1 > .nav-block:nth-child(4) { animation-delay: 0.24s; }
+.nav-links > li.open .mega-panel .nav-level-1 > .nav-block:nth-child(5) { animation-delay: 0.30s; }
+
+/* Stagger nav-leaf items within each block */
+.nav-links > li.open .mega-panel .nav-block .nav-leaf {
+  animation: navLeafIn 0.2s ease both;
+}
+.nav-links > li.open .mega-panel .nav-block .nav-leaf:nth-child(1) { animation-delay: 0.12s; }
+.nav-links > li.open .mega-panel .nav-block .nav-leaf:nth-child(2) { animation-delay: 0.17s; }
+.nav-links > li.open .mega-panel .nav-block .nav-leaf:nth-child(3) { animation-delay: 0.22s; }
+.nav-links > li.open .mega-panel .nav-block .nav-leaf:nth-child(4) { animation-delay: 0.27s; }
+.nav-links > li.open .mega-panel .nav-block .nav-leaf:nth-child(5) { animation-delay: 0.32s; }
