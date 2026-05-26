@@ -1,147 +1,494 @@
 @import url("/utils/components/theme.css");
 
+/* ─── OVERLAY ──────────────────────────────────────────────── */
 .pm-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10, 10, 10, 0.85);
-  backdrop-filter: blur(4px);
+  background: rgba(10, 10, 10, 0.82);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 1.25rem;
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--duration-slow) var(--ease-default);
+  transition: opacity 0.2s ease;
+  overflow-y: auto;
 }
 
-.pm-overlay.active {
+.pm-overlay--active {
   opacity: 1;
   pointer-events: all;
 }
 
-.pm-modal {
+/* ─── SHEET ────────────────────────────────────────────────── */
+.pm-sheet {
   width: 100%;
-  max-width: 420px;
+  max-width: 980px;
   background: var(--bg);
   border: var(--border);
-  border-radius: 8px;
-  box-shadow: var(--shadow-lg);
-  transform: translateY(20px);
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: var(--radius-sm);
+  box-shadow: 8px 8px 0 var(--ink);
+  padding: 2.5rem 2.5rem 2rem;
+  position: relative;
+  transform: translateY(28px) scale(0.97);
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.pm-overlay.active .pm-modal {
-  transform: translateY(0);
+.pm-overlay--active .pm-sheet {
+  transform: translateY(0) scale(1);
 }
 
-.pm-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
-  border-bottom: var(--border);
-  background: var(--accent-primary);
-}
-
-.pm-eyebrow {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: var(--text-mono-xs);
-  font-weight: var(--weight-black);
-  letter-spacing: var(--tracking-wide);
-  color: var(--ink);
-  margin-bottom: 4px;
-}
-
-.pm-title {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: var(--weight-black);
-  margin: 0;
-}
-
-.pm-close-btn {
-  background: none;
-  border: none;
-  font-size: 32px;
-  cursor: pointer;
-  line-height: var(--leading-none);
-}
-
-.pm-body {
-  padding: 24px;
-}
-
-.pm-plan-card {
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 2px dashed var(--border-subtle);
-  border-radius: 5px;
-}
-
-.pm-plan-info h3 {
-  font-size: 18px;
-  font-weight: var(--weight-black);
-  margin-bottom: 8px;
-}
-
-.pm-price {
-  margin-top: 12px;
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.pm-price strong {
-  font-size: 32px;
-  font-weight: var(--weight-black);
-  color: var(--accent-secondary);
-}
-
-.pm-features {
-  list-style: none;
-  padding: 0;
-  margin: 16px 0;
-  font-size: 13px;
-  line-height: 1.8;
-}
-
-.pm-main-btn {
-  width: 100%;
-  padding: 18px;
-  background: var(--accent-primary);
+/* ─── CLOSE BUTTON ─────────────────────────────────────────── */
+.pm-close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 36px;
+  height: 36px;
+  background: var(--bg);
   border: var(--border);
-  box-shadow: var(--shadow-md);
-  font-family: var(--font-display);
-  font-weight: var(--weight-black);
-  font-size: 16px;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  border-radius: 5px;
-  transition: all var(--duration-fast) var(--ease-default);
-  margin-bottom: 16px;
-  text-transform: uppercase;
+  transition: all 0.15s;
   color: var(--ink);
 }
 
-.pm-main-btn:active {
-  transform: translate(3px, 3px);
+.pm-close svg {
+  width: 15px;
+  height: 15px;
+}
+
+.pm-close:hover {
+  background: var(--ink);
+  color: var(--bg);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ─── INTRO ────────────────────────────────────────────────── */
+.pm-intro {
+  margin-bottom: 2rem;
+}
+
+.pm-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  font-weight: var(--weight-black);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0 0 0.5rem;
+}
+
+.pm-headline {
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.1;
+  color: var(--ink);
+  margin: 0 0 1.5rem;
+}
+
+/* ─── BILLING TOGGLE ───────────────────────────────────────── */
+.pm-toggle {
+  display: inline-flex;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
 
-.pm-main-btn svg {
-  transition: transform var(--duration-smooth) var(--ease-default);
+.pm-toggle-btn {
+  padding: 0.5rem 1.2rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  font-weight: var(--weight-bold);
+  background: var(--bg);
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
 }
-.pm-main-btn:hover svg {
+
+.pm-toggle-btn + .pm-toggle-btn {
+  border-left: var(--border);
+}
+
+.pm-toggle-btn--active {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.pm-toggle-pill {
+  background: var(--accent-primary);
+  color: var(--ink);
+  font-size: 10px;
+  font-weight: var(--weight-black);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.pm-toggle-btn--active .pm-toggle-pill {
+  background: var(--accent-primary);
+  color: var(--ink);
+}
+
+/* ─── CARDS GRID ───────────────────────────────────────────── */
+.pm-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: start;
+}
+
+/* ─── SINGLE CARD ──────────────────────────────────────────── */
+.pm-card {
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.5rem;
+  background: var(--bg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.pm-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Popular card — blue accent border */
+.pm-card--popular {
+  border-color: var(--accent-secondary);
+  box-shadow: 4px 4px 0 var(--accent-secondary);
+}
+
+.pm-card--popular:hover {
+  box-shadow: 6px 6px 0 var(--accent-secondary);
+}
+
+/* Enterprise card — inverted (dark) */
+.pm-card--enterprise {
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: 4px 4px 0 var(--accent-primary);
+}
+
+.pm-card--enterprise:hover {
+  box-shadow: 6px 6px 0 var(--accent-primary);
+}
+
+/* Highlight pulse when opened targeting a specific plan */
+.pm-card--highlight {
+  will-change: transform;
+  animation: pm-pulse 0.5s ease-out forwards;
+}
+
+@keyframes pm-pulse {
+  0%   { transform: translate(0, 0) scale(1); }
+  40%  { transform: translate(-2px, -2px) scale(1.025); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* ─── BADGE ────────────────────────────────────────────────── */
+.pm-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-black);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 3px 8px;
+  border-radius: 3px;
+  margin-bottom: 0.875rem;
+  width: fit-content;
+  line-height: 1.6;
+}
+
+.pm-badge--ghost {
+  visibility: hidden;
+}
+
+.pm-badge--popular {
+  background: var(--accent-secondary);
+  color: #fff;
+}
+
+.pm-badge--enterprise {
+  background: var(--accent-primary);
+  color: var(--ink);
+}
+
+/* ─── CARD HEAD ────────────────────────────────────────────── */
+.pm-card-head {
+  margin-bottom: 1.25rem;
+}
+
+.pm-plan-name {
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: 1.25rem;
+  margin: 0 0 0.3rem;
+  color: inherit;
+}
+
+.pm-plan-tagline {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.pm-card--enterprise .pm-plan-tagline {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ─── PRICE BLOCK ──────────────────────────────────────────── */
+.pm-price-block {
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px dashed var(--border-subtle, rgba(0,0,0,0.12));
+}
+
+.pm-card--enterprise .pm-price-block {
+  border-bottom-color: rgba(255, 255, 255, 0.14);
+}
+
+.pm-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  flex-wrap: wrap;
+}
+
+.pm-currency {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: var(--weight-bold);
+  color: var(--text-secondary);
+  padding-bottom: 3px;
+}
+
+.pm-card--enterprise .pm-currency {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.pm-amount {
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+  line-height: 1;
+  color: var(--ink);
+}
+
+.pm-card--enterprise .pm-amount {
+  color: var(--bg);
+}
+
+.pm-saving {
+  align-self: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: var(--weight-black);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--accent-primary);
+  color: var(--ink);
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.pm-billing-note {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  color: var(--text-secondary);
+  margin: 0.35rem 0 0;
+}
+
+.pm-card--enterprise .pm-billing-note {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* ─── FEATURE LIST ─────────────────────────────────────────── */
+.pm-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.pm-features li {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  color: inherit;
+  line-height: 1.4;
+}
+
+.pm-features li svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  stroke: var(--accent-secondary);
+}
+
+.pm-card--enterprise .pm-features li svg {
+  stroke: var(--accent-primary);
+}
+
+/* ─── CTA BUTTON ───────────────────────────────────────────── */
+.pm-cta-btn {
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: var(--bg);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+  margin-top: auto;
+}
+
+.pm-card--popular .pm-cta-btn {
+  background: var(--accent-secondary);
+  color: #fff;
+  border-color: var(--accent-secondary);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.pm-card--enterprise .pm-cta-btn {
+  background: var(--accent-primary);
+  color: var(--ink);
+  border-color: var(--accent-primary);
+  box-shadow: 3px 3px 0 var(--bg);
+}
+
+.pm-cta-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.pm-cta-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
+}
+
+.pm-card--popular .pm-cta-btn:hover {
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.pm-card--enterprise .pm-cta-btn:hover {
+  box-shadow: 5px 5px 0 var(--bg);
+}
+
+.pm-cta-btn:hover svg {
   transform: translateX(4px);
 }
 
-/* Navigation Profile Styles — nav.css owns .user-details and .user-plan-badge */
+.pm-cta-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.pm-cta-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ─── SECURE FOOTER ────────────────────────────────────────── */
+.pm-secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-body-xs);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.pm-secure svg {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+/* ─── TOAST ────────────────────────────────────────────────── */
+.pm-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  font-weight: var(--weight-semibold);
+  padding: 0.65rem 1.4rem;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  z-index: 11000;
+  pointer-events: none;
+  box-shadow: var(--shadow-lg);
+  max-width: calc(100vw - 2rem);
+  text-align: center;
+  transition: transform 0.3s var(--ease-default, ease);
+  white-space: nowrap;
+}
+
+.pm-toast--show {
+  transform: translateX(-50%) translateY(0);
+}
+
+.pm-toast--success {
+  background: #15803d;
+  border-color: #22c55e;
+  color: #fff;
+}
+
+.pm-toast--error {
+  background: #b91c1c;
+  border-color: #ef4444;
+  color: #fff;
+}
+
+/* ─── PLAN BADGE (nav / dashboard) ────────────────────────── */
 .user-plan-badge {
   display: inline-flex;
   align-items: center;
@@ -156,15 +503,55 @@
   display: block;
 }
 
-.user-plan-badge.plan-free { color: #be185d; }
-.user-plan-badge.plan-pro { color: #d97706; }
+.user-plan-badge.plan-free    { color: #be185d; }
+.user-plan-badge.plan-pro     { color: #d97706; }
 .user-plan-badge.plan-premium { color: var(--accent-secondary, #1d4ed8); }
-.user-plan-badge.premium { color: #d97706; }
+.user-plan-badge.premium      { color: #d97706; }
 
-.pm-footer-text {
-  text-align: center;
-  font-size: var(--text-body-xs);
-  color: var(--text-secondary);
-  margin: 0;
-  font-family: var(--font-mono);
+/* ─── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 840px) {
+  .pm-sheet {
+    padding: 2rem 1.5rem 1.5rem;
+    box-shadow: 5px 5px 0 var(--ink);
+  }
+
+  .pm-cards {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .pm-card--enterprise {
+    order: 3;
+  }
+}
+
+@media (max-width: 520px) {
+  .pm-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .pm-sheet {
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    box-shadow: 0 -4px 0 var(--ink);
+    max-height: 92dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1.5rem 1.25rem 2rem;
+  }
+
+  .pm-cards {
+    max-width: 100%;
+  }
+
+  .pm-headline {
+    font-size: 1.625rem;
+  }
+
+  .pm-toggle-btn {
+    padding: 0.45rem 0.875rem;
+    font-size: var(--text-mono-xs);
+  }
 }

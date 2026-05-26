@@ -4,7 +4,12 @@
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\PC\\\\Desktop\\\\prep-portal\" -Recurse -File -ErrorAction SilentlyContinue)",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\PC\\\\Desktop\\\\prep-portal\" -Recurse -Directory)",
-      "Bash(Select-Object -First 20)"
+      "Bash(Select-Object -First 20)",
+      "Bash(find \"c:\\\\\\\\Users\\\\\\\\PC\\\\\\\\Desktop\\\\\\\\prep-portal\" -type f \\\\\\( -name \".env*\" -o -name \"*.config.*\" -o -name \"*secrets*\" \\\\\\))",
+      "Bash(find \"c:\\\\\\\\Users\\\\\\\\PC\\\\\\\\Desktop\\\\\\\\prep-portal\" -type f -name \"*.json\")",
+      "Bash(find \"c:\\\\\\\\Users\\\\\\\\PC\\\\\\\\Desktop\\\\\\\\prep-portal\" -type f \\\\\\( -name \"*pricing*\" -o -name \"*plan*\" -o -name \"*payment*\" -o -name \"*paystack*\" \\\\\\))",
+      "Bash(find \"c:\\\\\\\\Users\\\\\\\\PC\\\\\\\\Desktop\\\\\\\\prep-portal\" -type f -name \"*.html\")",
+      "Bash(xargs grep -l \"pricing\\\\|upgrade\\\\|premium\\\\|subscription\")"
     ]
   }
 }
