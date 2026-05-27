@@ -292,11 +292,37 @@
 }
 
 
+#gpBookClip {
+  flex-shrink: 0;
+  /* width + overflow:hidden set by JS on mobile for pan behaviour */
+}
+
 #gpBook {
   width:  min(920px, calc(100vw - 100px));
   height: min(620px, calc(100vh - 120px));
-  flex-shrink: 0;
-  transition: opacity 0.18s ease;
+  transition: opacity 0.18s ease, transform 0.35s ease;
+}
+
+/* ─── MOBILE: pan-and-flip single-page view ──────────────── */
+@media (max-width: 768px) {
+  /* Overlay buttons on the stage so the book uses full width */
+  .gp-stage {
+    position: relative;
+    gap: 0;
+    padding: 0;
+  }
+
+  .gp-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+  }
+
+  .gp-nav-btn--prev { left: 6px; }
+  .gp-nav-btn--next { right: 6px; }
 }
 
 #gpBook.gp-book--jumping {
