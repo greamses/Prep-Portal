@@ -414,9 +414,9 @@
   line-height: var(--leading-relaxed);
 }
 
-/* ─── PACKAGES GRID (2×2) ────────────────────────────────── */
+/* ─── PACKAGES GRID (3-col) ─────────────────────────────── */
 .sp-grid--packages {
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
 }
 
 /* ─── /HR LABEL ──────────────────────────────────────────── */

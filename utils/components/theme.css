@@ -257,33 +257,33 @@
   --leading-ultra-loose: 1.9;
 
   /* ── Fluid Type Scale (Mobile-first clamp values) ── */
-  --text-hero: clamp(3.25rem, 8vw + 1rem, 6.75rem);
-  --text-hero-bg: clamp(5rem, 15vw + 1rem, 13.75rem);
+  --text-hero: clamp(2.5rem, 6vw + 0.5rem, 4.5rem);
+  --text-hero-bg: clamp(4rem, 12vw + 0.5rem, 9rem);
   --text-h1: clamp(1.75rem, 2.5vw + 0.75rem, 2.5rem);
-  --text-h2: clamp(1.625rem, 4vw + 0.5rem, 3.25rem);
-  --text-h2-section: clamp(1.125rem, 2.5vw + 0.25rem, 1.625rem);
-  --text-h2-subject: clamp(1.9rem, 4vw, 3rem);
-  --text-h3: clamp(0.875rem, 1.5vw + 0.25rem, 1.125rem);
-  --text-h3-card: clamp(0.938rem, 1.8vw + 0.25rem, 1.188rem);
-  --text-body: clamp(0.688rem, 1.2vw + 0.25rem, 0.844rem);
-  --text-body-sm: 0.688rem;
-  --text-body-xs: 0.656rem;
-  --text-body-xxs: 0.594rem;
-  --text-mono-xs: 0.531rem;
-  --text-mono-sm: 0.594rem;
-  --text-mono-base: 0.625rem;
-  --text-mono-md: 0.688rem;
-  --text-mono-lg: 0.719rem;
-  --text-mono-xl: 0.813rem;
+  --text-h2: clamp(1.5rem, 3vw + 0.5rem, 2.5rem);
+  --text-h2-section: clamp(1.125rem, 2.5vw + 0.25rem, 1.5rem);
+  --text-h2-subject: clamp(1.75rem, 3.5vw, 2.5rem);
+  --text-h3: clamp(1rem, 1.5vw + 0.25rem, 1.25rem);
+  --text-h3-card: clamp(1rem, 1.8vw + 0.25rem, 1.25rem);
+  --text-body: clamp(0.9375rem, 1.2vw + 0.2rem, 1.0625rem);
+  --text-body-sm: 0.875rem;
+  --text-body-xs: 0.8125rem;
+  --text-body-xxs: 0.75rem;
+  --text-mono-xs: 0.75rem;
+  --text-mono-sm: 0.8125rem;
+  --text-mono-base: 0.875rem;
+  --text-mono-md: 0.9375rem;
+  --text-mono-lg: 1rem;
+  --text-mono-xl: 1.0625rem;
   --text-brand-top: 1.375rem;
   --text-brand-bottom: 0.5rem;
-  --text-ticker: 0.594rem;
+  --text-ticker: 0.75rem;
   --text-stat: clamp(1.25rem, 2.5vw + 0.25rem, 1.875rem);
-  --text-badge: 0.65rem;
-  --text-cta: 0.625rem;
+  --text-badge: 0.75rem;
+  --text-cta: 0.875rem;
   --text-arrow: 1.25rem;
-  --text-brand-top-mobile: 0.938rem;
-  --text-brand-bottom-mobile: 0.531rem;
+  --text-brand-top-mobile: 0.9375rem;
+  --text-brand-bottom-mobile: 0.75rem;
 }
 
 /* ============================================
@@ -291,7 +291,7 @@
    ============================================ */
 @media screen and (max-width: 768px) {
   :root {
-    --text-hero: clamp(2.5rem, 10vw, 4rem);
+    --text-hero: clamp(2rem, 8vw, 3.25rem);
     --text-h1: clamp(1.5rem, 5vw, 2rem);
     --text-h2: clamp(1.375rem, 5vw, 2rem);
     --leading-tight: 1.1;
@@ -301,9 +301,9 @@
 
 @media screen and (max-width: 480px) {
   :root {
-    --text-hero: clamp(2rem, 12vw, 3rem);
+    --text-hero: clamp(1.75rem, 10vw, 2.75rem);
     --text-h1: clamp(1.375rem, 7vw, 1.75rem);
-    --text-body: clamp(0.75rem, 3vw, 0.875rem);
+    --text-body: clamp(0.875rem, 3vw, 1rem);
   }
 }
 
