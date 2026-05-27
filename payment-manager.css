@@ -507,6 +507,403 @@
 .user-plan-badge.plan-premium { color: var(--accent-secondary, #1d4ed8); }
 .user-plan-badge.premium      { color: #d97706; }
 
+/* ─── SHEET NARROW (checkout / success) ───────────────────── */
+.pm-sheet--narrow {
+  max-width: 520px;
+}
+
+/* ─── BACK BUTTON ──────────────────────────────────────────── */
+.pm-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  font-weight: var(--weight-bold);
+  color: var(--text-secondary);
+  cursor: pointer;
+  margin-bottom: 1.75rem;
+  transition: color 0.15s, gap 0.15s;
+}
+
+.pm-back-btn svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.15s;
+}
+
+.pm-back-btn:hover {
+  color: var(--ink);
+  gap: 0.6rem;
+}
+
+.pm-back-btn:hover svg {
+  transform: translateX(-3px);
+}
+
+/* ─── CHECKOUT TOPBAR ──────────────────────────────────────── */
+.pm-checkout-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+}
+
+.pm-checkout-topbar .pm-back-btn {
+  margin-bottom: 0;
+}
+
+/* ─── BILLING CYCLE TAG ────────────────────────────────────── */
+.pm-billing-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.5rem 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1.5px solid;
+}
+
+.pm-billing-tag--monthly {
+  background: rgba(0,85,255,0.07);
+  border-color: var(--accent-secondary, #0055ff);
+  color: var(--accent-secondary, #0055ff);
+}
+
+.pm-billing-tag--yearly {
+  background: #fef9c3;
+  border-color: #ca8a04;
+  color: #713f12;
+}
+
+.pm-billing-tag-change {
+  background: none;
+  border: none;
+  padding: 0 0 0 0.3rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  font-weight: var(--weight-black);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  color: inherit;
+  opacity: 0.75;
+  transition: opacity 0.15s;
+  border-left: 1.5px solid currentColor;
+  margin-left: 0.25rem;
+}
+
+.pm-billing-tag-change:hover {
+  opacity: 1;
+}
+
+/* ─── CHECKOUT VIEW ────────────────────────────────────────── */
+.pm-checkout-header {
+  margin-bottom: 1.5rem;
+}
+
+.pm-checkout-plan-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.4rem 0 0.35rem;
+}
+
+.pm-checkout-plan-name {
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  color: var(--ink);
+  line-height: 1.1;
+}
+
+.pm-checkout-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px dashed var(--border-subtle, rgba(0,0,0,0.12));
+}
+
+.pm-checkout-features li {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.pm-checkout-features li svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  stroke: var(--accent-secondary);
+}
+
+
+/* ─── ORDER BREAKDOWN ──────────────────────────────────────── */
+.pm-breakdown {
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+
+.pm-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  color: var(--text-secondary);
+  border-bottom: var(--border);
+}
+
+.pm-breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.pm-breakdown-saving span.pm-saving {
+  background: var(--accent-primary);
+  color: var(--ink);
+}
+
+.pm-breakdown-total {
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: var(--weight-bold);
+}
+
+.pm-breakdown-total strong {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: var(--weight-black);
+  color: var(--bg);
+}
+
+/* ─── CHECKOUT EMAIL ROW ───────────────────────────────────── */
+.pm-checkout-email {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 1rem;
+  background: var(--surface, rgba(0,0,0,0.04));
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.25rem;
+}
+
+.pm-checkout-email-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.pm-checkout-email-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── PAY BUTTON ───────────────────────────────────────────── */
+.pm-pay-btn {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: 0.9375rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.18);
+  transition: transform 0.15s, box-shadow 0.15s;
+  margin-bottom: 1.25rem;
+}
+
+.pm-pay-btn--popular {
+  background: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.pm-pay-btn--enterprise {
+  background: var(--accent-primary);
+  color: var(--ink);
+  border-color: var(--accent-primary);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.pm-pay-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.pm-pay-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.pm-pay-btn--popular:hover,
+.pm-pay-btn--enterprise:hover {
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.pm-pay-btn:hover svg {
+  transform: translateX(4px);
+}
+
+.pm-pay-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+
+.pm-pay-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ─── SUCCESS VIEW ─────────────────────────────────────────── */
+.pm-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1rem 0 0.5rem;
+}
+
+.pm-success-icon {
+  width: 72px;
+  height: 72px;
+  color: #15803d;
+  margin-bottom: 1.5rem;
+}
+
+.pm-success-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Animate the circle and check on entry */
+.pm-success-circle {
+  stroke-dasharray: 157;
+  stroke-dashoffset: 157;
+  animation: pm-draw-circle 0.5s ease forwards;
+}
+
+.pm-success-check {
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+  animation: pm-draw-check 0.35s ease 0.45s forwards;
+}
+
+@keyframes pm-draw-circle {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes pm-draw-check {
+  to { stroke-dashoffset: 0; }
+}
+
+.pm-success-heading {
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  color: var(--ink);
+  margin: 0 0 0.5rem;
+  line-height: 1.1;
+}
+
+.pm-success-plan {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #15803d;
+  margin: 0 0 0.75rem;
+}
+
+.pm-success-sub {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  color: var(--text-secondary);
+  margin: 0 0 2rem;
+  max-width: 320px;
+  line-height: 1.6;
+}
+
+.pm-success-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  font-family: var(--font-display);
+  font-weight: var(--weight-black);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--ink);
+  color: var(--bg);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.18);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.pm-success-btn svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.15s;
+}
+
+.pm-success-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.18);
+}
+
+.pm-success-btn:hover svg {
+  transform: translateX(4px);
+}
+
 /* ─── RESPONSIVE ───────────────────────────────────────────── */
 @media (max-width: 840px) {
   .pm-sheet {

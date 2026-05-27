@@ -82,6 +82,7 @@
     window.addEventListener("load", () => {
       setTimeout(() => {
         loader.classList.add("done");
+        document.body.style.visibility = "visible";
         document.body.classList.add("portal-ready");
       }, 1800);
     });

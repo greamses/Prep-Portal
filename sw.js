@@ -41,6 +41,7 @@ self.addEventListener("activate", (event) => {
 // The fetch handler uses a Stale-While-Revalidate strategy for auto-updates
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  if (!event.request.url.startsWith(self.location.origin)) return;
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
