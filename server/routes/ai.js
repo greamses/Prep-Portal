@@ -10,20 +10,11 @@
 const express = require("express");
 const Anthropic = require("@anthropic-ai/sdk");
 const { authenticate } = require("../middleware/auth");
+const { GEMINI_MODELS, GROQ_DEFAULT_MODEL, CLAUDE_DEFAULT_MODEL } = require("../ai-models");
 
 const GEMINI_BASE_WHITELIST = "https://generativelanguage.googleapis.com/";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-
-const GEMINI_CHAT_MODELS = [
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent",
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-pro:generateContent",
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.0-flash:generateContent",
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite-preview-06-17:generateContent",
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent",
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-];
+const GEMINI_CHAT_MODELS = GEMINI_MODELS;
 
 module.exports = function () {
   const router = express.Router();
@@ -37,7 +28,7 @@ module.exports = function () {
       const {
         messages = [],
         system,
-        model = "llama-3.1-8b-instant",
+        model = GROQ_DEFAULT_MODEL,
         temperature = 0.3,
         max_tokens = 2000,
       } = req.body;
@@ -76,7 +67,7 @@ module.exports = function () {
       if (process.env.ANTHROPIC_API_KEY) {
         try {
           const response = await anthropic.messages.create({
-            model: process.env.CLAUDE_MODEL || "claude-haiku-4-5-20251001",
+            model: process.env.CLAUDE_MODEL || CLAUDE_DEFAULT_MODEL,
             max_tokens: max_tokens || 2000,
             ...(system ? { system } : {}),
             messages,
@@ -142,7 +133,7 @@ module.exports = function () {
       const { messages, system, model, max_tokens = 4096 } = req.body;
 
       const response = await anthropic.messages.create({
-        model: model || process.env.CLAUDE_MODEL || "claude-haiku-4-5-20251001",
+        model: model || process.env.CLAUDE_MODEL || CLAUDE_DEFAULT_MODEL,
         max_tokens,
         ...(system ? { system } : {}),
         messages,

@@ -1,15 +1,14 @@
 // robot-teacher.js v3.2.2 – Ask button toggles question mode (stays highlighted)
+import { GROQ_DEFAULT_MODEL } from '../../../utils/ai-models.js';
+import { auth, db } from '../../../firebase-init.js';
+import { doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 
 (function(global) {
   'use strict';
   if (global.RobotTeacher) return;
-  
+
   const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
-  const MODEL = 'llama-3.1-8b-instant';
-  const STORE_KEY_STEP = 'rt_tutorial_step_v5';
-  const STORE_KEY_STATE = 'rt_app_state_v2';
-  const STORE_KEY_MODULE = 'rt_current_module_v2';
-  const STORE_KEY_COMPLETED = 'rt_completed_steps_v1';
+  const MODEL = GROQ_DEFAULT_MODEL;
   
   const S = {
     grade: 'JSS2',
@@ -40,6 +39,54 @@
   let recognition = null,
     isListening = false;
   let isAskMode = false;
+
+  /* ── FIREBASE PROGRESS CACHE ──────────────────────────────────── */
+  let _progress = { completedSteps: {}, completedLessons: {}, currentModule: null, currentStep: 0, appState: null };
+  let _saveTimer = null;
+
+  function _progressRef() {
+    const user = auth.currentUser;
+    return user ? doc(db, 'users', user.uid, 'activity', 'polygon-angles') : null;
+  }
+
+  async function _loadProgress() {
+    const ref = _progressRef();
+    if (ref) {
+      try {
+        const snap = await getDoc(ref);
+        if (snap.exists()) _progress = { ..._progress, ...snap.data() };
+      } catch (e) {}
+    } else {
+      try {
+        _progress.completedSteps   = JSON.parse(localStorage.getItem('rt_completed_steps')   || '{}');
+        _progress.completedLessons = JSON.parse(localStorage.getItem('rt_completed_lessons') || '{}');
+        _progress.currentModule    = JSON.parse(localStorage.getItem('rt_current_module')    || 'null');
+        _progress.currentStep      = parseInt(localStorage.getItem('rt_current_step')        || '0', 10) || 0;
+        _progress.appState         = JSON.parse(localStorage.getItem('rt_app_state')         || 'null');
+      } catch (e) {}
+    }
+    completedStepIndices = _progress.completedSteps;
+  }
+
+  function _scheduleProgress() {
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(_flushProgress, 1500);
+  }
+
+  async function _flushProgress() {
+    const ref = _progressRef();
+    if (ref) {
+      try { await setDoc(ref, _progress, { merge: true }); } catch (e) {}
+    } else {
+      try {
+        localStorage.setItem('rt_completed_steps',   JSON.stringify(_progress.completedSteps));
+        localStorage.setItem('rt_completed_lessons', JSON.stringify(_progress.completedLessons));
+        localStorage.setItem('rt_current_module',    JSON.stringify(_progress.currentModule));
+        localStorage.setItem('rt_current_step',      String(_progress.currentStep));
+        if (_progress.appState) localStorage.setItem('rt_app_state', JSON.stringify(_progress.appState));
+      } catch (e) {}
+    }
+  }
   
   /* ── SVG ICONS ────────────────────────────────────────────────── */
   const SVG_MIC = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>`;
@@ -171,11 +218,12 @@
   }
   
   function loadCompletedSteps() {
-    try { completedStepIndices = JSON.parse(localStorage.getItem(STORE_KEY_COMPLETED) || '{}'); } catch (e) { completedStepIndices = {}; }
+    completedStepIndices = _progress.completedSteps;
   }
-  
+
   function saveCompletedSteps() {
-    try { localStorage.setItem(STORE_KEY_COMPLETED, JSON.stringify(completedStepIndices)); } catch (e) {}
+    _progress.completedSteps = completedStepIndices;
+    _scheduleProgress();
   }
   
   function isStepCompleted(index) {
@@ -567,14 +615,18 @@
   function saveAppState(state) {
     if (!state) return;
     lastAppState = state;
-    try { localStorage.setItem(STORE_KEY_STATE, JSON.stringify(state)); } catch (e) {}
+    _progress.appState = state;
+    _scheduleProgress();
   }
-  
-  function getAppState() { try { return JSON.parse(localStorage.getItem(STORE_KEY_STATE) || 'null'); } catch (e) { return null; } }
-  
-  function saveModuleState() { try { localStorage.setItem(STORE_KEY_MODULE, JSON.stringify({ moduleId: S.currentModuleId, lessonId: S.currentLessonId, stepIndex: currentStepIndex })); } catch (e) {} }
-  
-  function restoreModuleState() { try { return JSON.parse(localStorage.getItem(STORE_KEY_MODULE) || 'null'); } catch (e) { return null; } }
+
+  function getAppState() { return _progress.appState; }
+
+  function saveModuleState() {
+    _progress.currentModule = { moduleId: S.currentModuleId, lessonId: S.currentLessonId, stepIndex: currentStepIndex };
+    _scheduleProgress();
+  }
+
+  function restoreModuleState() { return _progress.currentModule; }
   
   function handleReturnToMap() {
     removeHighlight();
@@ -583,10 +635,11 @@
     const mId = S.currentModuleId,
       lId = S.currentLessonId;
     if (mId && lId) {
-      localStorage.setItem(`rt_completed_${mId}_${lId}`, 'true');
+      _progress.completedLessons[`${mId}_${lId}`] = true;
       clearCompletedForLesson();
-      localStorage.removeItem(STORE_KEY_MODULE);
-      localStorage.removeItem(STORE_KEY_STEP);
+      _progress.currentModule = null;
+      _progress.currentStep = 0;
+      _scheduleProgress();
     }
     if (S.onLessonComplete) S.onLessonComplete(mId, lId);
     S.tutorialSteps = [];
@@ -683,8 +736,7 @@
         }
       }
     }
-    const savedStep = localStorage.getItem(STORE_KEY_STEP);
-    if (savedStep !== null) { currentStepIndex = parseInt(savedStep, 10); if (isNaN(currentStepIndex)) currentStepIndex = 0; }
+    currentStepIndex = _progress.currentStep || 0;
     lastAppState = getAppState();
     if (currentStepIndex >= S.tutorialSteps.length && S.tutorialSteps.length > 0) {
       isTeachingMode = true;
@@ -753,7 +805,8 @@
       setStepVerified(true);
       markStepCompleted(currentStepIndex);
       saveModuleState();
-      localStorage.setItem(STORE_KEY_STEP, currentStepIndex);
+      _progress.currentStep = currentStepIndex;
+      _scheduleProgress();
       showBubble();
       await typeText(step.success || "Done! Tap Next to continue.");
       return;
@@ -962,7 +1015,7 @@
       onNavZoneClick('right');
     });
     $bubble.addEventListener('pointerdown', (e) => { e.stopPropagation(); });
-    loadCompletedSteps();
+    _loadProgress();
     setupDraggableBot();
     recognition = initSpeechRecognition();
     setTimeout(setupControlObservers, 300);

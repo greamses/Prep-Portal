@@ -341,7 +341,7 @@ import { auth } from "/firebase-init.js";
     <div id="chat-window" role="dialog">
       <div class="chat-header">
         <div class="chat-header-left">
-          <div class="chat-avatar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="chat-avatar"><img src="/logo/logo-light.svg" width="26" height="26" alt="PrepBot" style="display:block;"></div>
           <div class="chat-header-info"><h4>${BOT_NAME}</h4><div class="chat-status"><span class="chat-status-dot"></span><span>AI & Voice Synced</span></div></div>
         </div>
         <div class="chat-header-actions">

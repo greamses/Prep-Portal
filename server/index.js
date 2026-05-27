@@ -12,10 +12,12 @@
  *   4. npm start  (or: npm run dev  for auto-reload with nodemon)
  *
  * Endpoints:
- *   POST /api/ai/chat    — PrepBot (Groq first → Claude fallback)
- *   POST /api/ai/claude  — Direct Claude access
- *   POST /api/ai/gemini  — Gemini proxy (app key)
- *   POST /api/ai/groq    — Groq proxy   (app key)
+ *   POST /api/ai/chat         — PrepBot (Groq first → Claude fallback)
+ *   POST /api/ai/claude       — Direct Claude access
+ *   POST /api/ai/gemini       — Gemini proxy (app key)
+ *   POST /api/ai/groq         — Groq proxy   (app key)
+ *   POST /api/tts/synthesize  — Google Cloud TTS → base64 MP3
+ *   GET  /api/tts/voices      — List available TTS voices
  *   POST /api/admin/sync-users
  *   GET  /api/admin/users
  */
@@ -60,7 +62,8 @@ app.use(
 app.use(express.json({ limit: "4mb" }));
 
 // ── Routes ────────────────────────────────────────────────────────
-app.use("/api/ai", require("./routes/ai")());
+app.use("/api/ai",    require("./routes/ai")());
+app.use("/api/tts",   require("./routes/tts")());
 app.use("/api/admin", require("./routes/admin")(db, auth));
 
 // Health check

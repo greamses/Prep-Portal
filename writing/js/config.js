@@ -16,25 +16,7 @@ export const safe = (str) => {
 };
 
 // ── API ─────────────────────────────────────────────────
-export const GEMINI_MODELS = [
-  { label: 'Gemini 3 Flash Preview', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent' },
-  { label: 'Gemini Flash Latest', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent' },
-  { label: 'Gemini 3 Pro Preview', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent' },
-  { label: 'Gemini 2.0 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent' },
-  { label: 'Gemini 2.5 Flash-Lite', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent' },
-  { label: 'Gemini 2.5 Flash', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent' },
-  { label: 'Gemini 2.5 Pro', url: 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent' },
-];
-
-export const GROQ_MODELS = [
-  { label: 'Groq GPT-OSS 120B', model: 'openai/gpt-oss-120b' },
-  { label: 'Groq GPT-OSS 20B', model: 'openai/gpt-oss-20b' },
-  { label: 'Groq Llama 3.3 70B', model: 'llama-3.3-70b-versatile' },
-  { label: 'Groq Llama 3.1 8B', model: 'llama-3.1-8b-instant' },
-  { label: 'Groq Qwen3 32B', model: 'qwen/qwen3-32b' },
-];
-
-export const QUOTA_CODES = new Set([429, 503, 529]);
+export { GEMINI_MODELS_UI as GEMINI_MODELS, GROQ_MODELS, GEMINI_SKIP_STATUSES as QUOTA_CODES } from '../../utils/ai-models.js';
 
 // Key getter
 export const getGeminiKey = () => {

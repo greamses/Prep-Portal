@@ -8,51 +8,11 @@
  * middleware to securely append headers.
  */
 
+import { GROQ_MODELS, GEMINI_MODELS_UI } from '../../utils/ai-models.js';
+
 export const SHARED_MODELS = {
-  groq: [
-    {
-      label: "Llama 3.3 70B",
-      provider: "groq",
-      model: "llama-3.3-70b-versatile",
-      requiresProxy: true,
-    },
-    {
-      label: "Llama 3.1 8B",
-      provider: "groq",
-      model: "llama-3.1-8b-instant",
-      requiresProxy: true,
-    },
-    {
-      label: "Mixtral 8x7B",
-      provider: "groq",
-      model: "mixtral-8x7b-32768",
-      requiresProxy: true,
-    },
-    {
-      label: "Gemma 2 9B",
-      provider: "groq",
-      model: "gemma2-9b-it",
-      requiresProxy: true,
-    },
-  ],
-  gemini: [
-    {
-      label: "Gemini 3.1 Flash-Lite",
-      provider: "gemini",
-      url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent",
-    },
-    {
-      label: "Gemini 3.1 Pro",
-      provider: "gemini",
-      url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent",
-    },
-    {
-      label: "Gemini 2.5 Pro",
-      provider: "gemini",
-      url: "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent",
-    },
-    // Add other Gemini variants here...
-  ],
+  groq: GROQ_MODELS.map(m => ({ ...m, requiresProxy: true })),
+  gemini: GEMINI_MODELS_UI,
 };
 
 // ─── SUBJECT DATA REGISTRY ──────────────────────────────────
