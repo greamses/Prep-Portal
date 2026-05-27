@@ -305,9 +305,10 @@
 
 /* ─── MOBILE: pan-and-flip single-page view ──────────────── */
 @media (max-width: 768px) {
-  /* Overlay buttons on the stage so the book uses full width */
+  /* Stage clips the overflowing spread; buttons float above it */
   .gp-stage {
     position: relative;
+    overflow: hidden;
     gap: 0;
     padding: 0;
   }

@@ -32,13 +32,15 @@ function isMobileView() {
   return window.innerWidth < MOBILE_BREAK;
 }
 
-/* Pan the book to show one page at a time on mobile.
-   Even pages (0, 2, 4 …) sit on the right half of the spread;
-   odd pages (1, 3, 5 …) sit on the left half. */
+/* Pan the book to center one page at a time on mobile.
+   The book overflows the stage naturally; we shift it ±25% of its
+   own width so the active page lands at the viewport centre.
+   Even pages (0, 2, 4 …) are on the right half → shift left 25%.
+   Odd pages (1, 3, 5 …) are on the left half → shift right 25%. */
 function mobilePanToPage(page, animate) {
   const book = document.getElementById("gpBook");
   const showRight = page === 0 || page % 2 === 0;
-  const tx = showRight ? "-50%" : "0%";
+  const tx = showRight ? "-25%" : "25%";
 
   if (!animate) {
     book.style.transition = "none";
@@ -51,19 +53,14 @@ function mobilePanToPage(page, animate) {
   }
 }
 
-/* Set the clip-container width to half the book spread on mobile;
-   clear it on desktop. */
+/* On mobile: apply the pan offset so the active page is centred.
+   On desktop: clear any transform and let the book sit naturally. */
 function setupMobileClip() {
-  const clip = document.getElementById("gpBookClip");
   const book = document.getElementById("gpBook");
 
   if (isMobileView()) {
-    clip.style.width = book.offsetWidth / 2 + "px";
-    clip.style.overflow = "hidden";
     mobilePanToPage(state.mobileCurrentPage, false);
   } else {
-    clip.style.width = "";
-    clip.style.overflow = "";
     book.style.transition = "none";
     book.style.transform = "";
     requestAnimationFrame(() =>
