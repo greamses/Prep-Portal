@@ -9,6 +9,7 @@ import {
   GoogleAuthProvider,
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA2N3uI_XfSIVsto2Ku1g_qSezmD3qFmbk",
@@ -23,8 +24,9 @@ const firebaseConfig = {
 // Defensive initialization: reuse the existing app if it exists
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-const auth = getAuth(app);
-const db = getFirestore(app);
+const auth    = getAuth(app);
+const db      = getFirestore(app);
+const storage = getStorage(app);
 
 // Initialize the provider and configure it to always prompt for account selection
 const googleProvider = new GoogleAuthProvider();
@@ -34,4 +36,4 @@ googleProvider.setCustomParameters({
 
 console.log("Firebase initialized:", app.name);
 
-export { auth, db, googleProvider };
+export { auth, db, storage, googleProvider };

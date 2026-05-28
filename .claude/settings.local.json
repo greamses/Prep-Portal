@@ -9,7 +9,14 @@
       "Bash(find \"c:\\\\\\\\Users\\\\\\\\PC\\\\\\\\Desktop\\\\\\\\prep-portal\" -type f -name \"*.json\")",
       "Bash(find \"c:\\\\\\\\Users\\\\\\\\PC\\\\\\\\Desktop\\\\\\\\prep-portal\" -type f \\\\\\( -name \"*pricing*\" -o -name \"*plan*\" -o -name \"*payment*\" -o -name \"*paystack*\" \\\\\\))",
       "Bash(find \"c:\\\\\\\\Users\\\\\\\\PC\\\\\\\\Desktop\\\\\\\\prep-portal\" -type f -name \"*.html\")",
-      "Bash(xargs grep -l \"pricing\\\\|upgrade\\\\|premium\\\\|subscription\")"
+      "Bash(xargs grep -l \"pricing\\\\|upgrade\\\\|premium\\\\|subscription\")",
+      "Bash(New-Item -ItemType Directory -Force \"C:\\\\Users\\\\PC\\\\Desktop\\\\prep-portal\\\\home\\\\assets\")",
+      "Bash(Out-Null)",
+      "Bash(Write-Output \"created\")",
+      "Bash(npm run *)",
+      "Bash(Remove-Item *)",
+      "Bash(git pull *)",
+      "Bash(git add *)"
     ]
   }
 }

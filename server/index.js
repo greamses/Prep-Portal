@@ -40,7 +40,10 @@ if (process.env.FIREBASE_SERVICE_ACCOUNT) {
   credential = admin.credential.cert(serviceAccount);
 }
 
-admin.initializeApp({ credential });
+admin.initializeApp({
+  credential,
+  storageBucket: process.env.STORAGE_BUCKET || "prep-portal-2026.appspot.com",
+});
 
 const db = admin.firestore();
 const auth = admin.auth();
@@ -64,7 +67,8 @@ app.use(express.json({ limit: "4mb" }));
 // ── Routes ────────────────────────────────────────────────────────
 app.use("/api/ai",    require("./routes/ai")());
 app.use("/api/tts",   require("./routes/tts")());
-app.use("/api/admin", require("./routes/admin")(db, auth));
+app.use("/api/admin",   require("./routes/admin")(db, auth));
+app.use("/api/magazine", require("./routes/magazine")(db));
 
 // Health check
 app.get("/health", (_, res) => res.json({ status: "ok" }));
