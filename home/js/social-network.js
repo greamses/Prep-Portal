@@ -1,225 +1,1017 @@
+/* =========================================
+   COMMUNITY NETWORK MODULE
+   (80 nodes, hover scale 3×, avatar scaling fixed)
+   Hovered node becomes front‑most via z-index
+========================================= */
+
 // ─── DiceBear avatar URL ──────────────────────────────────────────────────────
 function avatarUrl(name, role) {
   const seed = encodeURIComponent(name.replace(/[^a-zA-Z0-9 ]/g, "").trim());
   const bg =
     role === "tutor" ? "bbf7d0" : role === "student" ? "bfdbfe" : "fde68a";
-  // avataaars + mood=happy ensures no angry expressions
-  return `https://api.dicebear.com/7.x/lorelei/svg?seed=${seed}&backgroundColor=${bg}&size=200`;
+  return `https://api.dicebear.com/9.x/lorelei/svg?seed=${seed}&backgroundColor=${bg}&radius=50&scale=110`;
 }
 
-// Skeleton bg colour — shown while avatar SVG loads, matches DiceBear bg
 const SKELETON_BG = { tutor: "#bbf7d0", student: "#bfdbfe", parent: "#fde68a" };
 
-// ─── City → lat/lon (Africa + global) ────────────────────────────────────────
+// ─── City → [lon, lat] Coordinates ───────────────────────────────────────────
 const CITY_COORDS = {
-  Lagos: [3.3792, 6.5244],
-  Abuja: [7.4004, 9.0579],
-  "Port Harcourt": [4.7774, 6.9984],
-  Kano: [8.5139, 12.0022],
-  Enugu: [7.4989, 6.4584],
-  Ibadan: [3.3804, 7.3775],
-  Owerri: [7.0333, 5.4833],
-  Kaduna: [7.6401, 10.5105],
-  "Benin City": [5.6254, 6.3197],
-  Jos: [8.9997, 9.8965],
-  Anambra: [6.2134, 7.632],
-  Aba: [7.3667, 5.0167],
-  Accra: [-0.1875, 5.6036],
   London: [-0.1276, 51.5074],
+  Accra: [-0.1875, 5.6036],
+  Lagos: [3.4064, 6.4654],
+  Abuja: [7.4951, 9.0579],
+  "Port Harcourt": [7.0061, 4.8156],
+  Enugu: [7.5086, 6.4584],
+  Paris: [2.3522, 48.8566],
+  Berlin: [13.405, 52.52],
+  "New York": [-74.006, 40.7128],
+  "São Paulo": [-46.6333, -23.5505],
+  Madrid: [-3.7038, 40.4168],
+  Johannesburg: [28.0473, -26.2041],
+  Nairobi: [36.8219, -1.2921],
+  Cairo: [31.2357, 30.0444],
+  "Cape Town": [18.4241, -33.9249],
+  "Addis Ababa": [38.7468, 9.024],
+  Dakar: [-17.4677, 14.7167],
+  "Dar es Salaam": [39.2083, -6.7924],
+  Algiers: [3.0588, 36.7538],
+  Tokyo: [139.6917, 35.6895],
+  Mumbai: [72.8777, 19.076],
+  Sydney: [151.2093, -33.8688],
+  Toronto: [-79.3832, 43.6532],
+  "Mexico City": [-99.1332, 19.4326],
+  Moscow: [37.6173, 55.7558],
+  Seoul: [126.978, 37.5665],
+  Beijing: [116.4074, 39.9042],
+  Rome: [12.4964, 41.9028],
+  Amsterdam: [4.8945, 52.3676],
 };
 
-// ─── People dataset (100 nodes) ───────────────────────────────────────────────
-const TUTORS = [
-  ["Ada Nwosu", "Mathematics · 4.9★"],
-  ["Dr. Ibrahim Sule", "Sciences · 4.8★"],
-  ["Miss Grace Eze", "English · 5.0★"],
-  ["Mr. Taiwo Adeleke", "Economics · 4.7★"],
-  ["Prof. Adeola Bello", "JAMB Prep · 5.0★"],
-  ["Mrs. Chioma Okafor", "Biology · 4.8★"],
-  ["Mr. Emeka Eze", "Physics · 4.9★"],
-  ["Dr. Fatima Musa", "Chemistry · 4.7★"],
-  ["Mr. Segun Adeyemi", "Literature · 4.8★"],
-  ["Mrs. Amaka Obi", "History · 4.6★"],
-  ["Mr. Yusuf Hassan", "Geography · 4.7★"],
-  ["Dr. Ngozi Chukwu", "Further Maths · 5.0★"],
-  ["Miss Temi Olawale", "Computer Sci · 4.8★"],
-  ["Mr. Bayo Salami", "Commerce · 4.6★"],
-  ["Mrs. Kemi Adesanya", "Government · 4.7★"],
+// ─── 80‑Person Roster ────────────────────────────────────────────────────────
+const PEOPLE_DATA = [
+  // Nigerian Tutors
+  {
+    id: "t1",
+    role: "tutor",
+    name: "Dr. Chidi Okafor",
+    detail: "Mathematics · 4.9★",
+    city: "Lagos",
+    size: 24,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "t2",
+    role: "tutor",
+    name: "Mrs. Amina Yusuf",
+    detail: "Sciences · 4.8★",
+    city: "Abuja",
+    size: 22,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "t3",
+    role: "tutor",
+    name: "Mr. Emeka Nwosu",
+    detail: "English · 5.0★",
+    city: "Port Harcourt",
+    size: 22,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "t4",
+    role: "tutor",
+    name: "Dr. Ngozi Eze",
+    detail: "Further Maths · 4.9★",
+    city: "Enugu",
+    size: 24,
+    parentId: null,
+    tutorId: null,
+  },
+
+  // New Ghanaian Tutors
+  {
+    id: "t5",
+    role: "tutor",
+    name: "Mr. Kwesi Adu",
+    detail: "Mathematics · 4.7★",
+    city: "Accra",
+    size: 22,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "t6",
+    role: "tutor",
+    name: "Mrs. Efua Mensah",
+    detail: "Sciences · 4.8★",
+    city: "Accra",
+    size: 22,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "t7",
+    role: "tutor",
+    name: "Dr. Yaw Asante",
+    detail: "English · 4.9★",
+    city: "Accra",
+    size: 24,
+    parentId: null,
+    tutorId: null,
+  },
+
+  // New South African Tutors
+  {
+    id: "t8",
+    role: "tutor",
+    name: "Ms. Thandiwe Dlamini",
+    detail: "Mathematics · 4.8★",
+    city: "Johannesburg",
+    size: 22,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "t9",
+    role: "tutor",
+    name: "Mr. Sipho Nkosi",
+    detail: "Sciences · 4.9★",
+    city: "Johannesburg",
+    size: 22,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "t10",
+    role: "tutor",
+    name: "Dr. Lerato Molefe",
+    detail: "English · 5.0★",
+    city: "Johannesburg",
+    size: 24,
+    parentId: null,
+    tutorId: null,
+  },
+
+  // New Egyptian Tutors
+  {
+    id: "t11",
+    role: "tutor",
+    name: "Mr. Ahmed El-Sayed",
+    detail: "Mathematics · 4.6★",
+    city: "Cairo",
+    size: 22,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "t12",
+    role: "tutor",
+    name: "Mrs. Fatma Ali",
+    detail: "Sciences · 4.7★",
+    city: "Cairo",
+    size: 22,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "t13",
+    role: "tutor",
+    name: "Dr. Mahmoud Hassan",
+    detail: "English · 4.8★",
+    city: "Cairo",
+    size: 24,
+    parentId: null,
+    tutorId: null,
+  },
+
+  // Nigerian Parents & Students
+  {
+    id: "p3",
+    role: "parent",
+    name: "Mrs. Nkechi Okonkwo",
+    detail: "2 children",
+    city: "Lagos",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s4",
+    role: "student",
+    name: "Chuka Okonkwo",
+    detail: "Lagos",
+    city: "Lagos",
+    size: 16,
+    parentId: "p3",
+    tutorId: "t1",
+  },
+  {
+    id: "s5",
+    role: "student",
+    name: "Adaeze Okonkwo",
+    detail: "Lagos",
+    city: "Lagos",
+    size: 16,
+    parentId: "p3",
+    tutorId: "t1",
+  },
+  {
+    id: "p4",
+    role: "parent",
+    name: "Mr. Ibrahim Bello",
+    detail: "2 children",
+    city: "Abuja",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s6",
+    role: "student",
+    name: "Fatima Bello",
+    detail: "Abuja",
+    city: "Abuja",
+    size: 16,
+    parentId: "p4",
+    tutorId: "t2",
+  },
+  {
+    id: "s7",
+    role: "student",
+    name: "Usman Bello",
+    detail: "Abuja",
+    city: "Abuja",
+    size: 16,
+    parentId: "p4",
+    tutorId: "t2",
+  },
+  {
+    id: "p5",
+    role: "parent",
+    name: "Chief Tamuno Briggs",
+    detail: "2 children",
+    city: "Port Harcourt",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s8",
+    role: "student",
+    name: "Tamunotonye Briggs",
+    detail: "Port Harcourt",
+    city: "Port Harcourt",
+    size: 16,
+    parentId: "p5",
+    tutorId: "t3",
+  },
+  {
+    id: "s9",
+    role: "student",
+    name: "Ibifiri Briggs",
+    detail: "Port Harcourt",
+    city: "Port Harcourt",
+    size: 16,
+    parentId: "p5",
+    tutorId: "t3",
+  },
+  {
+    id: "p6",
+    role: "parent",
+    name: "Mrs. Ifeoma Chukwu",
+    detail: "1 child",
+    city: "Enugu",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s10",
+    role: "student",
+    name: "Chidimma Chukwu",
+    detail: "Enugu",
+    city: "Enugu",
+    size: 18,
+    parentId: "p6",
+    tutorId: "t4",
+  },
+
+  // Ghanaian Students (linked to Ghanaian tutors)
+  {
+    id: "p7",
+    role: "parent",
+    name: "Mr. Kwame Boateng",
+    detail: "2 children",
+    city: "Accra",
+    size: 14,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s11",
+    role: "student",
+    name: "Akua Boateng",
+    detail: "Accra",
+    city: "Accra",
+    size: 16,
+    parentId: "p7",
+    tutorId: "t5",
+  },
+  {
+    id: "s12",
+    role: "student",
+    name: "Kofi Boateng",
+    detail: "Accra",
+    city: "Accra",
+    size: 16,
+    parentId: "p7",
+    tutorId: "t6",
+  },
+  {
+    id: "p21",
+    role: "parent",
+    name: "Mrs. Akosua Owusu",
+    detail: "1 child",
+    city: "Accra",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s30",
+    role: "student",
+    name: "Kwesi Owusu",
+    detail: "Accra",
+    city: "Accra",
+    size: 16,
+    parentId: "p21",
+    tutorId: "t7",
+  },
+
+  // Other African families
+  {
+    id: "p8",
+    role: "parent",
+    name: "Mrs. Amina Njeri",
+    detail: "2 children",
+    city: "Nairobi",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s14",
+    role: "student",
+    name: "Kamau Njeri",
+    detail: "Nairobi",
+    city: "Nairobi",
+    size: 16,
+    parentId: "p8",
+    tutorId: "t1",
+  },
+  {
+    id: "s15",
+    role: "student",
+    name: "Wanjiru Njeri",
+    detail: "Nairobi",
+    city: "Nairobi",
+    size: 16,
+    parentId: "p8",
+    tutorId: "t1",
+  },
+  {
+    id: "p15",
+    role: "parent",
+    name: "Mrs. Naledi Mbeki",
+    detail: "1 child",
+    city: "Johannesburg",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s22",
+    role: "student",
+    name: "Thabo Mbeki",
+    detail: "Johannesburg",
+    city: "Johannesburg",
+    size: 16,
+    parentId: "p15",
+    tutorId: "t8",
+  },
+  {
+    id: "p17",
+    role: "parent",
+    name: "Mrs. Zola Ndlovu",
+    detail: "1 child",
+    city: "Cape Town",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s25",
+    role: "student",
+    name: "Themba Ndlovu",
+    detail: "Cape Town",
+    city: "Cape Town",
+    size: 16,
+    parentId: "p17",
+    tutorId: "t9",
+  },
+  {
+    id: "p16",
+    role: "parent",
+    name: "Mr. Ahmed Hassan",
+    detail: "2 children",
+    city: "Cairo",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s23",
+    role: "student",
+    name: "Fatima Hassan",
+    detail: "Cairo",
+    city: "Cairo",
+    size: 16,
+    parentId: "p16",
+    tutorId: "t10",
+  },
+  {
+    id: "s24",
+    role: "student",
+    name: "Omar Hassan",
+    detail: "Cairo",
+    city: "Cairo",
+    size: 16,
+    parentId: "p16",
+    tutorId: "t11",
+  },
+  {
+    id: "p18",
+    role: "parent",
+    name: "Mr. Kebede Tadesse",
+    detail: "2 children",
+    city: "Addis Ababa",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s26",
+    role: "student",
+    name: "Meron Tadesse",
+    detail: "Addis Ababa",
+    city: "Addis Ababa",
+    size: 16,
+    parentId: "p18",
+    tutorId: "t3",
+  },
+  {
+    id: "s27",
+    role: "student",
+    name: "Samrawit Tadesse",
+    detail: "Addis Ababa",
+    city: "Addis Ababa",
+    size: 16,
+    parentId: "p18",
+    tutorId: "t3",
+  },
+  {
+    id: "p19",
+    role: "parent",
+    name: "Mme. Awa Diop",
+    detail: "1 child",
+    city: "Dakar",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s28",
+    role: "student",
+    name: "Moussa Diop",
+    detail: "Dakar",
+    city: "Dakar",
+    size: 16,
+    parentId: "p19",
+    tutorId: "t4",
+  },
+  {
+    id: "p20",
+    role: "parent",
+    name: "Mr. James Otieno",
+    detail: "1 child",
+    city: "Nairobi",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s29",
+    role: "student",
+    name: "Amani Otieno",
+    detail: "Nairobi",
+    city: "Nairobi",
+    size: 16,
+    parentId: "p20",
+    tutorId: "t1",
+  },
+  {
+    id: "p22",
+    role: "parent",
+    name: "Mr. Juma Mushi",
+    detail: "1 child",
+    city: "Dar es Salaam",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s31",
+    role: "student",
+    name: "Zawadi Mushi",
+    detail: "Dar es Salaam",
+    city: "Dar es Salaam",
+    size: 16,
+    parentId: "p22",
+    tutorId: "t3",
+  },
+  {
+    id: "p23",
+    role: "parent",
+    name: "Mr. Karim Benali",
+    detail: "1 child",
+    city: "Algiers",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s32",
+    role: "student",
+    name: "Amira Benali",
+    detail: "Algiers",
+    city: "Algiers",
+    size: 16,
+    parentId: "p23",
+    tutorId: "t4",
+  },
+
+  // International Families
+  {
+    id: "p1",
+    role: "parent",
+    name: "Mrs. Sarah Johnson",
+    detail: "2 children",
+    city: "London",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s1",
+    role: "student",
+    name: "Emily Johnson",
+    detail: "London",
+    city: "London",
+    size: 16,
+    parentId: "p1",
+    tutorId: "t1",
+  },
+  {
+    id: "s2",
+    role: "student",
+    name: "Oliver Johnson",
+    detail: "London",
+    city: "London",
+    size: 16,
+    parentId: "p1",
+    tutorId: "t1",
+  },
+  {
+    id: "p2",
+    role: "parent",
+    name: "Mr. Michael Brown",
+    detail: "1 child",
+    city: "London",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s3",
+    role: "student",
+    name: "Liam Brown",
+    detail: "London",
+    city: "London",
+    size: 16,
+    parentId: "p2",
+    tutorId: "t2",
+  },
+  {
+    id: "p9",
+    role: "parent",
+    name: "Mme. Claire Dubois",
+    detail: "1 child",
+    city: "Paris",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s16",
+    role: "student",
+    name: "Léa Dubois",
+    detail: "Paris",
+    city: "Paris",
+    size: 18,
+    parentId: "p9",
+    tutorId: "t2",
+  },
+  {
+    id: "p10",
+    role: "parent",
+    name: "Herr. Klaus Müller",
+    detail: "1 child",
+    city: "Berlin",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s17",
+    role: "student",
+    name: "Lukas Müller",
+    detail: "Berlin",
+    city: "Berlin",
+    size: 16,
+    parentId: "p10",
+    tutorId: "t3",
+  },
+  {
+    id: "p11",
+    role: "parent",
+    name: "Mrs. Jennifer Smith",
+    detail: "1 child",
+    city: "New York",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s18",
+    role: "student",
+    name: "Emma Smith",
+    detail: "New York",
+    city: "New York",
+    size: 16,
+    parentId: "p11",
+    tutorId: "t1",
+  },
+  {
+    id: "p12",
+    role: "parent",
+    name: "Sr. Carlos Silva",
+    detail: "1 child",
+    city: "São Paulo",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s19",
+    role: "student",
+    name: "Lucas Silva",
+    detail: "São Paulo",
+    city: "São Paulo",
+    size: 16,
+    parentId: "p12",
+    tutorId: "t2",
+  },
+  {
+    id: "p14",
+    role: "parent",
+    name: "Sra. María García",
+    detail: "1 child",
+    city: "Madrid",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s21",
+    role: "student",
+    name: "Juan García",
+    detail: "Madrid",
+    city: "Madrid",
+    size: 16,
+    parentId: "p14",
+    tutorId: "t4",
+  },
+  {
+    id: "p24",
+    role: "parent",
+    name: "Mrs. Yuki Tanaka",
+    detail: "1 child",
+    city: "Tokyo",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s33",
+    role: "student",
+    name: "Hiroshi Tanaka",
+    detail: "Tokyo",
+    city: "Tokyo",
+    size: 16,
+    parentId: "p24",
+    tutorId: "t1",
+  },
+  {
+    id: "p25",
+    role: "parent",
+    name: "Mr. Arjun Patel",
+    detail: "1 child",
+    city: "Mumbai",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s34",
+    role: "student",
+    name: "Priya Patel",
+    detail: "Mumbai",
+    city: "Mumbai",
+    size: 16,
+    parentId: "p25",
+    tutorId: "t2",
+  },
+  {
+    id: "p26",
+    role: "parent",
+    name: "Mrs. Olivia Brown",
+    detail: "1 child",
+    city: "Sydney",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s35",
+    role: "student",
+    name: "Jack Brown",
+    detail: "Sydney",
+    city: "Sydney",
+    size: 16,
+    parentId: "p26",
+    tutorId: "t3",
+  },
+  {
+    id: "p27",
+    role: "parent",
+    name: "Mr. David Lee",
+    detail: "1 child",
+    city: "Toronto",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s36",
+    role: "student",
+    name: "Sophia Lee",
+    detail: "Toronto",
+    city: "Toronto",
+    size: 16,
+    parentId: "p27",
+    tutorId: "t4",
+  },
+  {
+    id: "p28",
+    role: "parent",
+    name: "Sra. Elena Gómez",
+    detail: "1 child",
+    city: "Mexico City",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s37",
+    role: "student",
+    name: "Carlos Gómez",
+    detail: "Mexico City",
+    city: "Mexico City",
+    size: 16,
+    parentId: "p28",
+    tutorId: "t1",
+  },
+  {
+    id: "p29",
+    role: "parent",
+    name: "Mrs. Irina Petrova",
+    detail: "1 child",
+    city: "Moscow",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s38",
+    role: "student",
+    name: "Dmitri Petrov",
+    detail: "Moscow",
+    city: "Moscow",
+    size: 16,
+    parentId: "p29",
+    tutorId: "t2",
+  },
+  {
+    id: "p30",
+    role: "parent",
+    name: "Mr. Min‑jun Kim",
+    detail: "1 child",
+    city: "Seoul",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s39",
+    role: "student",
+    name: "Soo‑jin Kim",
+    detail: "Seoul",
+    city: "Seoul",
+    size: 16,
+    parentId: "p30",
+    tutorId: "t3",
+  },
+  {
+    id: "p31",
+    role: "parent",
+    name: "Mrs. Li Wei",
+    detail: "1 child",
+    city: "Beijing",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s40",
+    role: "student",
+    name: "Xiaoming Li",
+    detail: "Beijing",
+    city: "Beijing",
+    size: 16,
+    parentId: "p31",
+    tutorId: "t4",
+  },
+  {
+    id: "p32",
+    role: "parent",
+    name: "Sig. Marco Rossi",
+    detail: "1 child",
+    city: "Rome",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s41",
+    role: "student",
+    name: "Giulia Rossi",
+    detail: "Rome",
+    city: "Rome",
+    size: 16,
+    parentId: "p32",
+    tutorId: "t1",
+  },
+  {
+    id: "p33",
+    role: "parent",
+    name: "Mvr. Sophie de Jong",
+    detail: "1 child",
+    city: "Amsterdam",
+    size: 12,
+    parentId: null,
+    tutorId: null,
+  },
+  {
+    id: "s42",
+    role: "student",
+    name: "Daan de Jong",
+    detail: "Amsterdam",
+    city: "Amsterdam",
+    size: 16,
+    parentId: "p33",
+    tutorId: "t2",
+  },
 ];
 
-const STUDENTS = [
-  ["Chidi Kalu", "WAEC · SS3 · Lagos"],
-  ["Amina Yusuf", "Cambridge · Yr11 · Abuja"],
-  ["Tunde Okonkwo", "JAMB · SS3 · Port Harcourt"],
-  ["Fatima Abdullahi", "WAEC · SS2 · Kano"],
-  ["Emeka Obi", "WAEC · SS3 · Enugu"],
-  ["Kemi Johnson", "NECO · SS2 · Ibadan"],
-  ["Ngozi Eze", "JAMB · SS3 · Owerri"],
-  ["Abubakar Musa", "WAEC · SS3 · Kaduna"],
-  ["Chidinma Okafor", "Cambridge · Yr10 · Lagos"],
-  ["Seun Adeyemi", "NECO · SS3 · Lagos"],
-  ["Halima Ibrahim", "JAMB · SS3 · Abuja"],
-  ["Obinna Chukwu", "WAEC · SS2 · Enugu"],
-  ["Tobi Salami", "NECO · SS3 · Ibadan"],
-  ["Zara Mohammed", "Cambridge · Yr11 · Abuja"],
-  ["Ifeoma Nwosu", "JAMB · SS3 · Owerri"],
-  ["Samuel Osei", "WAEC · SS3 · Accra"],
-  ["Ayasha Williams", "A-Level · Yr13 · London"],
-  ["Kofi Mensah", "WAEC · SS3 · Accra"],
-  ["Aisha Garba", "JAMB · SS3 · Kano"],
-  ["Taiwo Oluwaseun", "NECO · SS2 · Lagos"],
-  ["Chukwuemeka Nnaji", "WAEC · SS3 · Anambra"],
-  ["Blessing Otuboh", "JAMB · SS3 · Benin City"],
-  ["Rashida Usman", "NECO · SS3 · Abuja"],
-  ["Victor Okonkwo", "WAEC · SS3 · Port Harcourt"],
-  ["Adaeze Okeke", "Cambridge · Yr12 · Lagos"],
-  ["Musa Tanko", "JAMB · SS3 · Jos"],
-  ["Yetunde Adedeji", "WAEC · SS2 · Ibadan"],
-  ["Ifeanyi Ejike", "NECO · SS3 · Enugu"],
-  ["Nkechi Alozie", "JAMB · SS3 · Aba"],
-  ["Emmanuel Bello", "WAEC · SS3 · Abuja"],
-  ["Sophia Okoye", "WAEC · SS3 · Lagos"],
-  ["Daniel Madu", "NECO · SS2 · Enugu"],
-  ["Amara Chibueze", "JAMB · SS3 · Owerri"],
-  ["Ibrahim Yahaya", "WAEC · SS3 · Kano"],
-  ["Priscilla Eze", "Cambridge · Yr11 · Abuja"],
-  ["Ahmed Lawal", "JAMB · SS3 · Kaduna"],
-  ["Obiageli Nze", "WAEC · SS2 · Anambra"],
-  ["Oluwafemi Adesanya", "NECO · SS3 · Lagos"],
-  ["Hauwa Bello", "JAMB · SS3 · Abuja"],
-  ["Michael Ugwu", "WAEC · SS3 · Enugu"],
-  ["Chiamaka Osei", "Cambridge · Yr10 · Accra"],
-  ["Kabir Shuaibu", "NECO · SS3 · Kano"],
-  ["Adunola Fasanya", "WAEC · SS2 · Lagos"],
-  ["Chizaram Ndukwe", "JAMB · SS3 · Owerri"],
-  ["Leke Afolabi", "NECO · SS2 · Ibadan"],
-  ["Precious Okwu", "WAEC · SS3 · Port Harcourt"],
-  ["Sulaiman Aliyu", "JAMB · SS3 · Abuja"],
-  ["Joy Okafor", "NECO · SS3 · Lagos"],
-  ["Ikenna Obiora", "WAEC · SS2 · Enugu"],
-  ["Funmi Adeniyi", "Cambridge · Yr11 · Ibadan"],
-  ["Abdulrahman Musa", "JAMB · SS3 · Kano"],
-  ["Chioma Ezeh", "WAEC · SS3 · Owerri"],
-  ["Bola Oluwaseun", "NECO · SS2 · Lagos"],
-  ["Gbenga Adeleke", "JAMB · SS3 · Ibadan"],
-  ["Rita Egwu", "WAEC · SS3 · Benin City"],
-];
+// ─── Shared projection ──────────────────────────────────────────────────────
+let _sharedProjection = null;
+let _mapW = 0,
+  _mapH = 0;
 
-const PARENTS = [
-  ["Mrs. Ngozi Okon", "2 children enrolled"],
-  ["Mr. Abiodun Alade", "1 child enrolled"],
-  ["Mrs. Hauwa Bello", "2 children enrolled"],
-  ["Chief Nwosu", "3 children enrolled"],
-  ["Mrs. Adaeze Okafor", "2 children enrolled"],
-  ["Mr. Emeka Chukwu", "1 child enrolled"],
-  ["Mrs. Ramatu Ibrahim", "2 children enrolled"],
-  ["Dr. Segun Adeyemi Sr.", "1 child enrolled"],
-  ["Mrs. Bisi Salami", "2 children enrolled"],
-  ["Mr. Chidi Madu", "1 child enrolled"],
-  ["Mrs. Yetunde Johnson", "2 children enrolled"],
-  ["Mr. Musa Tanko Sr.", "1 child enrolled"],
-  ["Mrs. Funke Adesanya", "3 children enrolled"],
-  ["Mr. Ikenna Obi Sr.", "1 child enrolled"],
-  ["Mrs. Chidinma Eze", "2 children enrolled"],
-  ["Mr. Aminu Lawal", "2 children enrolled"],
-  ["Mrs. Ngozi Obiora", "1 child enrolled"],
-  ["Dr. Taiwo Adeleke Sr.", "2 children enrolled"],
-  ["Mrs. Kemi Olawole", "1 child enrolled"],
-  ["Mr. Biodun Fasanya", "2 children enrolled"],
-  ["Mrs. Ifeoma Ndukwe", "1 child enrolled"],
-  ["Mr. Samuel Osei Sr.", "1 child enrolled"],
-  ["Mrs. Grace Mensah", "2 children enrolled"],
-  ["Mr. Kabiru Shuaibu Sr.", "1 child enrolled"],
-  ["Mrs. Ezeoke", "2 children enrolled"],
-  ["Mr. Chukwudi Ugwu", "1 child enrolled"],
-  ["Mrs. Aminat Aliyu", "2 children enrolled"],
-  ["Mr. Femi Adeniyi", "1 child enrolled"],
-  ["Mrs. Rita Egwu Sr.", "1 child enrolled"],
-  ["Mr. Gbenga Oluwaseun", "2 children enrolled"],
-];
+function projectCity(lon, lat) {
+  if (!_sharedProjection) return [Math.random() * 600, Math.random() * 400];
+  const [x, y] = _sharedProjection([lon, lat]);
+  return [x, y];
+}
 
 function buildPeopleList() {
-  const sizes = { tutor: 88, student: 66, parent: 56 };
   const borderColors = {
     tutor: "#16a34a",
     student: "#2563eb",
     parent: "#d97706",
   };
-  const people = [];
+  const tempPeople = PEOPLE_DATA.map((p) => ({
+    id: p.id,
+    role: p.role,
+    name: p.name,
+    detail: p.detail,
+    size: p.size,
+    borderColor: borderColors[p.role],
+    bgColor: SKELETON_BG[p.role],
+    avatarUrl: avatarUrl(p.name, p.role),
+    city: p.city,
+  }));
 
-  TUTORS.forEach(([name, detail], i) =>
-    people.push({
-      id: `t${i + 1}`,
-      role: "tutor",
-      name,
-      detail,
-      size: sizes.tutor,
-      borderColor: borderColors.tutor,
-      bgColor: SKELETON_BG.tutor,
-      avatar: undefined,
-      avatarUrl: avatarUrl(name, "tutor"),
-    }),
-  );
-
-  STUDENTS.forEach(([name, detail], i) => {
-    people.push({
-      id: `s${i + 1}`,
-      role: "student",
-      name,
-      detail,
-      size: sizes.student,
-      borderColor: borderColors.student,
-      bgColor: SKELETON_BG.student,
-      avatar: undefined,
-      avatarUrl: avatarUrl(name, "student"),
-    });
+  const peopleByCity = {};
+  tempPeople.forEach((p) => {
+    if (!peopleByCity[p.city]) peopleByCity[p.city] = [];
+    peopleByCity[p.city].push(p);
   });
 
-  PARENTS.forEach(([name, detail], i) =>
-    people.push({
-      id: `p${i + 1}`,
-      role: "parent",
-      name,
-      detail,
-      size: sizes.parent,
-      borderColor: borderColors.parent,
-      bgColor: SKELETON_BG.parent,
-      avatar: undefined,
-      avatarUrl: avatarUrl(name, "parent"),
-    }),
-  );
-
-  return people;
+  Object.entries(peopleByCity).forEach(([cityName, list]) => {
+    const coords = CITY_COORDS[cityName];
+    if (!coords) {
+      list.forEach((p) => {
+        const fallbackLon = 3.5 + Math.random() * 8.5;
+        const fallbackLat = 5.5 + Math.random() * 7.5;
+        const [projX, projY] = projectCity(fallbackLon, fallbackLat);
+        p.position = { x: projX, y: projY };
+      });
+      return;
+    }
+    const [projX, projY] = projectCity(coords[0], coords[1]);
+    list.forEach((p, index) => {
+      if (index === 0) {
+        p.position = { x: projX, y: projY };
+      } else {
+        const theta = index * 137.5 * (Math.PI / 180);
+        const radius = 6 * Math.sqrt(index);
+        p.position = {
+          x: projX + radius * Math.cos(theta),
+          y: projY + radius * Math.sin(theta),
+        };
+      }
+    });
+  });
+  return tempPeople;
 }
 
-// ─── Generate links ───────────────────────────────────────────────────────────
 function generateLinks(people) {
   const links = [];
-  const tIds = people.filter((p) => p.role === "tutor").map((p) => p.id);
-  const sIds = people.filter((p) => p.role === "student").map((p) => p.id);
-  const pIds = people.filter((p) => p.role === "parent").map((p) => p.id);
-
-  sIds.forEach((sid, i) => {
-    links.push({ source: sid, target: tIds[i % tIds.length], type: "study" });
-    if (i % 3 === 0) {
-      const t2 = tIds[(i + 7) % tIds.length];
-      if (t2 !== tIds[i % tIds.length])
-        links.push({ source: sid, target: t2, type: "study" });
+  PEOPLE_DATA.forEach((p) => {
+    if (p.role === "student") {
+      if (p.parentId)
+        links.push({ source: p.id, target: p.parentId, type: "family" });
+      if (p.tutorId)
+        links.push({ source: p.id, target: p.tutorId, type: "study" });
     }
   });
-  sIds.forEach((sid, i) => {
-    links.push({
-      source: sid,
-      target: pIds[Math.floor((i * pIds.length) / sIds.length)],
-      type: "family",
+  const studentsByCity = {};
+  people
+    .filter((p) => p.role === "student")
+    .forEach((s) => {
+      if (!studentsByCity[s.city]) studentsByCity[s.city] = [];
+      studentsByCity[s.city].push(s);
     });
+  Object.values(studentsByCity).forEach((students) => {
+    for (let i = 0; i < students.length - 1; i++) {
+      links.push({
+        source: students[i].id,
+        target: students[i + 1].id,
+        type: "peer",
+      });
+    }
   });
-  for (let i = 0; i < sIds.length - 2; i += 4) {
-    links.push({ source: sIds[i], target: sIds[i + 1], type: "peer" });
-    links.push({ source: sIds[i + 1], target: sIds[i + 2], type: "peer" });
-  }
-  for (let i = 0; i < tIds.length - 1; i += 2) {
-    links.push({ source: tIds[i], target: tIds[i + 1], type: "colleague" });
+  const tutors = people.filter((p) => p.role === "tutor");
+  for (let i = 0; i < tutors.length - 1; i++) {
+    links.push({
+      source: tutors[i].id,
+      target: tutors[i + 1].id,
+      type: "colleague",
+    });
   }
   return links;
 }
@@ -231,9 +1023,9 @@ const EDGE_COLORS = {
   colleague: "#4ade80",
 };
 
-// ─── Cytoscape elements ───────────────────────────────────────────────────────
 function buildElements(people, links) {
   const nodes = people.map((p) => {
+    const avatarLoaded = p.role === "tutor";
     const node = {
       data: {
         id: p.id,
@@ -243,8 +1035,8 @@ function buildElements(people, links) {
         borderColor: p.borderColor,
         size: p.size,
         bgColor: p.bgColor,
-        avatar: p.avatar,
-        avatarLoaded: false,
+        avatar: p.avatarUrl,
+        avatarLoaded,
       },
     };
     if (p.position) node.position = p.position;
@@ -262,7 +1054,6 @@ function buildElements(people, links) {
   return [...nodes, ...edges];
 }
 
-// ─── Cytoscape stylesheet ─────────────────────────────────────────────────────
 function buildStyle() {
   return [
     {
@@ -271,107 +1062,86 @@ function buildStyle() {
         shape: "ellipse",
         width: "data(size)",
         height: "data(size)",
-        // Skeleton colour shows immediately; avatar fills it when loaded
         "background-color": "data(bgColor)",
-        "background-image": "data(avatar)",
-        "background-fit": "cover",
+        "background-image": "none",
+        "background-width": "100%",
+        "background-height": "100%",
         "background-clip": "node",
         "background-image-crossorigin": "anonymous",
-        // Remove all label rendering
         label: "",
-        "border-width": 2.5,
+        "border-width": 0.5,
         "border-color": "data(borderColor)",
-        "transition-property": "opacity, border-width",
-        "transition-duration": "200ms",
+        "transition-property": "width, height, border-width, opacity",
+        "transition-duration": "180ms",
       },
     },
-    { selector: 'node[role = "tutor"]', style: { "border-width": 3.5 } },
+    { selector: 'node[role = "tutor"]', style: { "border-width": 0.8 } },
     {
       selector: "edge",
       style: {
         width: 1,
         "line-color": "data(color)",
-        opacity: 0.28,
+        opacity: 0.35,
         "curve-style": "bezier",
         "target-arrow-shape": "none",
         "transition-property": "opacity, width",
         "transition-duration": "180ms",
       },
     },
-    { selector: "node.sn-hi", style: { "border-width": 7, opacity: 1 } },
+    {
+      selector: "node.sn-hi",
+      style: {
+        "border-width": 1.5,
+        opacity: 1,
+        "background-image": "data(avatar)",
+        "background-width": "100%",
+        "background-height": "100%",
+        "background-clip": "node",
+        "z-index": 100,
+      },
+    },
     { selector: "node.sn-dim", style: { opacity: 0.07 } },
-    { selector: "edge.sn-hi", style: { opacity: 0.9, width: 2.5 } },
+    { selector: "edge.sn-hi", style: { opacity: 0.9, width: 1.5 } },
     { selector: "edge.sn-dim", style: { opacity: 0.02 } },
   ];
 }
 
-// ─── Progressive avatar loading: skeleton → face ─────────────────────────────
-function loadAvatarsProgressively(cy, people) {
-  const BATCH = 8;
-  let idx = 0;
-
-  function loadBatch() {
-    const slice = people.slice(idx, idx + BATCH);
-    if (!slice.length) return;
-
-    slice.forEach((p) => {
-      const img = new window.Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        const node = cy.$(`#${p.id}`);
-        if (node.length) node.data({ avatar: p.avatarUrl, avatarLoaded: true });
-        if (REAL_IMAGES_MODE && _avatarCallbacks[p.id]) {
-          _avatarCallbacks[p.id]();
-          delete _avatarCallbacks[p.id];
-        }
-      };
-      img.src = p.avatarUrl;
-    });
-
-    idx += BATCH;
-    if (idx < people.length) setTimeout(loadBatch, 200);
-  }
-
-  loadBatch();
+// ─── Hover scaling (3×) ─────────────────────────────────────────────────────
+function scaleUp(node) {
+  const origW = node.data("size");
+  const origH = node.data("size");
+  node.stop(true, true);
+  node.animate(
+    {
+      style: { width: origW * 3.0, height: origH * 3.0 },
+    },
+    { duration: 200 },
+  );
 }
 
-// ─── Avatar-load callbacks (name reveal when avatar image is ready) ───────────
-const _avatarCallbacks = {};
-
-// Set to true only when real human photos (PNG/JPEG) replace the DiceBear avatar fillers
-const REAL_IMAGES_MODE = true;
-
-// ─── Shared projection (set by drawWorldMap, reused for node positions) ──────
-let _sharedProjection = null;
-let _mapW = 0,
-  _mapH = 0;
-
-function projectCity(lon, lat) {
-  if (!_sharedProjection) return [Math.random() * 600, Math.random() * 400];
-  const [x, y] = _sharedProjection([lon, lat]);
-  return [x, y];
+function scaleDown(node) {
+  const origW = node.data("size");
+  const origH = node.data("size");
+  node.stop(true, true);
+  node.animate(
+    {
+      style: { width: origW, height: origH },
+    },
+    { duration: 200 },
+  );
 }
 
+// ─── Tutor pulse ────────────────────────────────────────────────────────────
 function startPulse(cy) {
   cy.nodes('[role = "tutor"]').forEach((node, i) => {
     function beat() {
       node
         .animate(
-          {
-            style: {
-              "border-width": 9,
-              "border-color": node.data("borderColor"),
-            },
-          },
+          { style: { "border-width": 1.6 } },
           { duration: 700, easing: "ease-in-out-sine" },
         )
         .animate(
-          {
-            style: {
-              "border-width": 3.5,
-              "border-color": node.data("borderColor"),
-            },
-          },
+          { style: { "border-width": 0.8 } },
           {
             duration: 700,
             easing: "ease-in-out-sine",
@@ -383,15 +1153,14 @@ function startPulse(cy) {
   });
 }
 
-// ─── World map background (D3 + topojson) ────────────────────────────────────
+// ─── World map background ────────────────────────────────────────────────────
 async function drawWorldMap(container) {
   if (!window.d3 || !window.topojson) return { projection: null, w: 0, h: 0 };
-  const d3 = window.d3;
-  const topojson = window.topojson;
-
+  const d3 = window.d3,
+    topojson = window.topojson;
   const rect = container.getBoundingClientRect();
-  const w = rect.width || 960;
-  const h = rect.height || 520;
+  const w = rect.width || 960,
+    h = rect.height || 520;
   const isDark = document.documentElement.dataset.theme === "dark";
 
   let world;
@@ -408,26 +1177,26 @@ async function drawWorldMap(container) {
 
   const svg = d3
     .create("svg")
+    .attr("class", "world-map-bg")
     .attr("width", "100%")
     .attr("height", "100%")
     .attr("viewBox", `0 0 ${w} ${h}`)
     .attr("preserveAspectRatio", "xMidYMid slice")
     .style("position", "absolute")
     .style("inset", "0")
-    .style("pointer-events", "none");
+    .style("pointer-events", "none")
+    .style("transform-origin", "0 0");
 
   svg
     .append("rect")
     .attr("width", w)
     .attr("height", h)
     .attr("fill", isDark ? "#0d1b2a" : "#d6eaf8");
-
   svg
     .append("path")
     .datum({ type: "Sphere" })
     .attr("d", path)
     .attr("fill", isDark ? "#0d1b2a" : "#d6eaf8");
-
   svg
     .append("path")
     .datum(d3.geoGraticule()())
@@ -435,7 +1204,6 @@ async function drawWorldMap(container) {
     .attr("fill", "none")
     .attr("stroke", isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)")
     .attr("stroke-width", 0.5);
-
   svg
     .append("path")
     .datum(topojson.feature(world, world.objects.countries))
@@ -443,7 +1211,6 @@ async function drawWorldMap(container) {
     .attr("fill", isDark ? "#16291a" : "#c5dbb8")
     .attr("stroke", isDark ? "#1e3820" : "#9abf8a")
     .attr("stroke-width", 0.4);
-
   svg
     .append("path")
     .datum(topojson.mesh(world, world.objects.countries, (a, b) => a !== b))
@@ -460,15 +1227,9 @@ async function drawWorldMap(container) {
 function showTooltip(tooltip, node, containerRect) {
   const pos = node.renderedPosition();
   const data = node.data();
-  const nameEl = tooltip.querySelector(".nt-name");
-
-  tooltip.querySelector(".nt-avatar").style.backgroundImage = data.avatarLoaded
-    ? `url("${data.avatar}")`
-    : "";
-  tooltip.querySelector(".nt-avatar").style.backgroundColor = data.avatarLoaded
-    ? ""
-    : data.bgColor;
-
+  tooltip.querySelector(".nt-avatar").style.backgroundImage =
+    `url("${data.avatar}")`;
+  tooltip.querySelector(".nt-avatar").style.backgroundColor = data.bgColor;
   const roleEl = tooltip.querySelector(".nt-role");
   roleEl.textContent = data.role.charAt(0).toUpperCase() + data.role.slice(1);
   roleEl.className = `nt-role nt-role--${data.role}`;
@@ -476,13 +1237,13 @@ function showTooltip(tooltip, node, containerRect) {
   tooltip.hidden = false;
   positionTooltip(tooltip, pos, containerRect);
 
+  const nameEl = tooltip.querySelector(".nt-name");
   if (data.avatarLoaded) {
     nameEl.classList.remove("nt-name--skeleton");
     nameEl.textContent = data.name;
   } else {
-    // Show name immediately even if avatar is still loading
-    nameEl.classList.remove("nt-name--skeleton");
-    nameEl.textContent = data.name;
+    nameEl.classList.add("nt-name--skeleton");
+    nameEl.textContent = "";
   }
 }
 
@@ -506,11 +1267,9 @@ export function initSocialNetwork({
 }) {
   const container = document.getElementById(containerId);
   if (!container || !window.cytoscape) return null;
-
   const tooltip = document.getElementById(tooltipId);
+  let activeTooltipNode = null;
 
-  // World map SVG goes into DOM first so Cytoscape canvas layers on top.
-  // After it resolves we have _sharedProjection, so student positions are accurate.
   drawWorldMap(container)
     .then(({ projection, w, h }) => {
       if (projection) {
@@ -519,7 +1278,6 @@ export function initSocialNetwork({
         _mapH = h;
       }
 
-      // Build people list AFTER projection is set so student coords project correctly
       const resolvedPeople = people ?? buildPeopleList();
       const resolvedLinks = links ?? generateLinks(resolvedPeople);
 
@@ -528,6 +1286,7 @@ export function initSocialNetwork({
         elements: buildElements(resolvedPeople, resolvedLinks),
         style: buildStyle(),
         layout: { name: "preset" },
+        autoungrabify: true,
         userZoomingEnabled: true,
         userPanningEnabled: true,
         boxSelectionEnabled: false,
@@ -535,11 +1294,23 @@ export function initSocialNetwork({
         maxZoom: 3.5,
       });
 
+      const svgEl = container.querySelector(".world-map-bg");
+      if (svgEl) {
+        const syncViewport = () => {
+          const pan = cy.pan();
+          const zoom = cy.zoom();
+          svgEl.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`;
+        };
+        cy.on("viewport", syncViewport);
+        syncViewport();
+      }
+
       cy.one("layoutstop", () => {
+        cy.fit(undefined, 30);
         startPulse(cy);
-        loadAvatarsProgressively(cy, resolvedPeople);
       });
 
+      // Hover: highlight neighborhood, scale up, and the .sn-hi class (z-index:100) makes the node front-most
       cy.on("mouseover", "node", (e) => {
         const node = e.target;
         const nbhd = node.closedNeighborhood();
@@ -548,41 +1319,47 @@ export function initSocialNetwork({
           nbhd.nodes().addClass("sn-hi");
           nbhd.edges().addClass("sn-hi");
         });
-        if (tooltip)
-          showTooltip(tooltip, node, container.getBoundingClientRect());
-      });
-
-      cy.on("mousemove", "node", (e) => {
-        if (tooltip && !tooltip.hidden)
-          positionTooltip(
-            tooltip,
-            e.target.renderedPosition(),
-            container.getBoundingClientRect(),
-          );
+        scaleUp(node);
       });
 
       cy.on("mouseout", "node", (e) => {
+        const node = e.target;
         cy.batch(() => cy.elements().removeClass("sn-dim sn-hi"));
-        if (tooltip) tooltip.hidden = true;
-        delete _avatarCallbacks[e.target.id()];
+        scaleDown(node);
       });
 
-      cy.on("tap", "node", (e) =>
+      // Click for tooltip
+      cy.on("tap", "node", (e) => {
+        const node = e.target;
+        if (tooltip) {
+          if (activeTooltipNode && activeTooltipNode.id() === node.id()) {
+            tooltip.hidden = true;
+            activeTooltipNode = null;
+          } else {
+            showTooltip(tooltip, node, container.getBoundingClientRect());
+            activeTooltipNode = node;
+          }
+        }
+        e.preventDefault();
+      });
+
+      cy.on("tap", (e) => {
+        if (e.target === cy) {
+          if (tooltip) tooltip.hidden = true;
+          activeTooltipNode = null;
+          cy.animate(
+            { fit: { eles: cy.nodes(), padding: 30 } },
+            { duration: 400, easing: "ease-out-expo" },
+          );
+        }
+      });
+
+      cy.on("dbltap", "node", (e) => {
         cy.animate(
           { zoom: 2.2, center: { eles: e.target } },
           { duration: 400, easing: "ease-out-expo" },
-        ),
-      );
-
-      cy.on("tap", (e) => {
-        if (e.target === cy)
-          cy.animate(
-            { fit: { eles: cy.nodes(), padding: 60 } },
-            { duration: 400, easing: "ease-out-expo" },
-          );
+        );
       });
     })
-    .catch(() => {
-      /* world map failed — network still renders */
-    });
+    .catch(() => {});
 }

@@ -16,7 +16,10 @@
       "Bash(npm run *)",
       "Bash(Remove-Item *)",
       "Bash(git pull *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git push *)"
     ]
   }
 }
