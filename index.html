@@ -685,25 +685,48 @@
       <div class="network-header">
         <p class="section-eyebrow">Our community</p>
         <h2 class="section-headline">Real people.<br />Real results.</h2>
-        <p class="network-sub">Tutors, students, and families connected across Nigeria.</p>
+        <p class="network-sub">
+          Tutors, students, and families connected across Nigeria.
+        </p>
       </div>
 
       <div class="network-legend">
-        <span class="nl-item"><span class="nl-dot nl-dot--tutor"></span>Tutors</span>
-        <span class="nl-item"><span class="nl-dot nl-dot--student"></span>Students</span>
-        <span class="nl-item"><span class="nl-dot nl-dot--parent"></span>Parents</span>
+        <span class="nl-item"
+          ><span class="nl-dot nl-dot--tutor"></span>Tutors</span
+        >
+        <span class="nl-item"
+          ><span class="nl-dot nl-dot--student"></span>Students</span
+        >
+        <span class="nl-item"
+          ><span class="nl-dot nl-dot--parent"></span>Parents</span
+        >
       </div>
 
       <div class="network-edge-legend">
-        <span class="nel-item"><span class="nel-line nel-line--study"></span>Studying</span>
-        <span class="nel-item"><span class="nel-line nel-line--family"></span>Family</span>
-        <span class="nel-item"><span class="nel-line nel-line--peer"></span>Study group</span>
-        <span class="nel-item"><span class="nel-line nel-line--colleague"></span>Colleagues</span>
+        <span class="nel-item"
+          ><span class="nel-line nel-line--study"></span>Studying</span
+        >
+        <span class="nel-item"
+          ><span class="nel-line nel-line--family"></span>Family</span
+        >
+        <span class="nel-item"
+          ><span class="nel-line nel-line--peer"></span>Study group</span
+        >
+        <span class="nel-item"
+          ><span class="nel-line nel-line--colleague"></span>Colleagues</span
+        >
       </div>
 
-      <div id="community-network" class="network-canvas" aria-label="Prep Portal community network"></div>
+      <div
+        id="community-network"
+        class="network-canvas"
+        aria-label="Prep Portal community network"
+      ></div>
 
-      <p class="network-hint">Click a node to zoom &nbsp;·&nbsp; Click canvas to reset &nbsp;·&nbsp; Scroll to zoom</p>
+      <p class="network-hint">
+        Click a node to zoom &nbsp;·&nbsp; Click canvas to reset &nbsp;·&nbsp;
+        Scroll to zoom
+      </p>
     </section>
 
     <!-- Tooltip lives outside the section so it can escape overflow:hidden -->
@@ -1239,9 +1262,9 @@
     </script>
 
     <!-- Community network -->
-    <script type="module">
-      import { initSocialNetwork } from '/home/js/social-network.js';
-      initSocialNetwork({ containerId: 'community-network', tooltipId: 'network-tooltip' });
+    <script type="module" src="/home/js/social-network.js">
+      // import { initSocialNetwork } from '/home/js/social-network.js';
+      // initSocialNetwork({ containerId: 'community-network', tooltipId: 'network-tooltip' });
     </script>
   </body>
 </html>
