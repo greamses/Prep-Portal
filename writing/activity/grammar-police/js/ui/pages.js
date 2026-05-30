@@ -145,11 +145,10 @@ function videoCard(unit) {
   const topic = `${unit.title} (${unit.focus})`.replace(/"/g, "&quot;");
   return `
     <div class="gp-tvid" data-col-span data-gp-topic-video data-topic="${topic}">
-      <p class="gp-tvid__label">Learning Video</p>
       <div class="gp-tvid__stage">
+        <span class="gp-tvid__label">Learning Video</span>
         <button type="button" class="gp-tvid__btn" data-gp-vid-play>Watch a lesson video</button>
       </div>
-      <p class="gp-tvid__hint">Found for you with AI - tap to load.</p>
     </div>`;
 }
 

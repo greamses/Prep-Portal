@@ -162,6 +162,83 @@ async function runGemini(prompt) {
   return null;
 }
 
+// ── Learning-video search (public, server-side keys) ───────────────────────────
+// Kid-friendly English channels for grammar/punctuation.
+const VIDEO_CHANNELS = [
+  { name: "Grammar Songs by Melissa", handle: "grammarsongsmelissa" },
+  { name: "Scratch Garden", handle: "scratchgarden" },
+  { name: "English Tree TV", handle: "englishteetv" },
+  { name: "BBC Bitesize", handle: "bbcbitesize" },
+  { name: "Khan Academy", handle: "khanacademy" },
+  { name: "TED-Ed", handle: "teded" },
+];
+
+function scoreVideoTitle(title, keywords) {
+  const t = (title || "").toLowerCase();
+  if (["hindi", "urdu", "tamil", "telugu", "cbse", "ncert"].some((w) => t.includes(w))) return -100;
+  if (!keywords?.length) return 1;
+  return keywords.filter((k) => t.includes(String(k).toLowerCase())).length;
+}
+
+async function ytSearchServer(query, keywords) {
+  if (!process.env.YOUTUBE_API_KEY) return null;
+  const params = new URLSearchParams({
+    part: "snippet", type: "video", maxResults: "5", videoEmbeddable: "true",
+    safeSearch: "strict", relevanceLanguage: "en", regionCode: "NG",
+    q: `${query} English`, key: process.env.YOUTUBE_API_KEY,
+  });
+  const r = await fetch(`https://www.googleapis.com/youtube/v3/search?${params}`);
+  if (!r.ok) return null;
+  const data = await r.json();
+  if (!data.items?.length) return null;
+  const best = data.items
+    .map((it) => ({ it, s: scoreVideoTitle(it.snippet.title, keywords) }))
+    .sort((a, b) => b.s - a.s)[0];
+  if (!best || best.s < 1) return null;
+  const it = best.it;
+  return {
+    videoId: it.id.videoId,
+    title: it.snippet.title,
+    channel: it.snippet.channelTitle,
+    thumb: it.snippet.thumbnails?.medium?.url || it.snippet.thumbnails?.default?.url || "",
+  };
+}
+
+async function planVideoSearch(topic) {
+  if (!process.env.GEMINI_API_KEY) return null;
+  const chList = VIDEO_CHANNELS.slice(0, 4).map((c, i) => `Channel ${i + 1}: ${c.name}`).join("\n");
+  const prompt = `You are an educational video expert for Nigerian primary/JSS English students.
+TOPIC: "${topic}"
+CRITICAL: All content must be in ENGLISH. Never suggest Hindi/Urdu/other-language content.
+TASK 1 - the single precise grammar/punctuation concept.
+TASK 2 - 4 to 6 MUST-MATCH keywords.
+TASK 3 - one search query per channel; append "English lesson for kids".
+Channels:
+${chList}
+Return ONLY valid JSON, no markdown:
+{"topicLabel":"<concept>","mustMatchTerms":["<kw1>","<kw2>","<kw3>","<kw4>"],"searches":[{"query":"<Channel> <concept> English lesson for kids","channel":"<Channel>"},{"query":"...","channel":"..."},{"query":"...","channel":"..."},{"query":"...","channel":"..."}]}`;
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { responseMimeType: "application/json", temperature: 0.3, maxOutputTokens: 600 },
+  };
+  for (const modelUrl of GEMINI_MODELS) {
+    try {
+      const r = await fetch(`${modelUrl}?key=${process.env.GEMINI_API_KEY}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) { if ([404, 429, 503].includes(r.status)) continue; break; }
+      const data = await r.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      const s = text.indexOf("{"), e = text.lastIndexOf("}");
+      if (s < 0 || e < 0) continue;
+      return JSON.parse(text.slice(s, e + 1).replace(CONTROL_CHARS, " "));
+    } catch { continue; }
+  }
+  return null;
+}
+
 module.exports = function () {
   const router = express.Router();
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -171,6 +248,39 @@ module.exports = function () {
     // Content is static per deploy; let the browser cache it for an hour.
     res.set("Cache-Control", "public, max-age=3600");
     res.json(BOOK);
+  });
+
+  // ── GET /api/grammar/video?topic=… — public learning-video search ──────────
+  // Uses the server-side GEMINI_API_KEY + YOUTUBE_API_KEY (no sign-in needed).
+  router.get("/video", async (req, res) => {
+    const topic = (req.query.topic || "").toString().trim().slice(0, 200);
+    if (!topic) return res.status(400).json({ error: "No topic." });
+    res.set("Cache-Control", "public, max-age=86400");
+    try {
+      const plan = await planVideoSearch(topic);
+      const terms = plan?.mustMatchTerms?.length
+        ? plan.mustMatchTerms
+        : topic.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter((w) => w.length > 3);
+      const searches = plan?.searches?.length
+        ? plan.searches
+        : VIDEO_CHANNELS.slice(0, 4).map((c) => ({ query: `${c.name} ${topic} English lesson for kids`, channel: c.name }));
+      for (const s of searches) {
+        const v = await ytSearchServer(s.query, terms);
+        if (v) {
+          return res.json({
+            video: { ...v, embedUrl: `https://www.youtube-nocookie.com/embed/${v.videoId}?rel=0&modestbranding=1` },
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("[/api/grammar/video]", err.message);
+    }
+    // Fallback: a channel search link (no API key / no match).
+    const c = VIDEO_CHANNELS[0];
+    return res.json({
+      channel: c.name,
+      search: `https://www.youtube.com/@${c.handle}/search?query=${encodeURIComponent(topic + " English lesson")}`,
+    });
   });
 
   // â”€â”€ POST /api/grammar/check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
