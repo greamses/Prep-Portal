@@ -358,8 +358,9 @@ function checkSection({ check, reset, progId, progText, scoreId, unit }) {
 }
 
 function makeDividerPage() {
-  // Section divider mirrors the front cover, in a teal shade.
-  return htmlPage(`<div class="pc gp-cover gp-cover--teal">${dividerInner()}</div>`, "hard");
+  // Section divider mirrors the front cover (teal shade) but is a SOFT page —
+  // a hard page mid-book breaks the spread and makes pages split when flipping.
+  return htmlPage(`<div class="pc gp-cover gp-cover--teal">${dividerInner()}</div>`);
 }
 
 function makeCheckerPage(book) {
