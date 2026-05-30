@@ -1,4 +1,4 @@
-const CACHE_NAME = "prepportal-v2";
+const CACHE_NAME = "prepportal-v3";
 const PRECACHE_URLS = [
   "/",
   "/index.html",
@@ -38,37 +38,46 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// The fetch handler uses a Stale-While-Revalidate strategy for auto-updates
+// App code (HTML/JS/CSS) must never be served stale — a mismatched mix of old
+// and new files crashes the app. Use NETWORK-FIRST for those (cache is only an
+// offline fallback). Other assets (images, fonts, etc.) use Stale-While-
+// Revalidate for speed.
+function isAppCode(request) {
+  if (request.mode === "navigate") return true;
+  return /\.(?:js|mjs|css)(?:\?|$)/i.test(new URL(request.url).pathname);
+}
+
 self.addEventListener("fetch", (event) => {
-  if (event.request.method !== "GET") return;
-  if (!event.request.url.startsWith(self.location.origin)) return;
+  const { request } = event;
+  if (request.method !== "GET") return;
+  if (!request.url.startsWith(self.location.origin)) return;
 
+  const cacheFresh = (response) => {
+    if (response && response.status === 200 && response.type === "basic") {
+      const clone = response.clone();
+      caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+    }
+    return response;
+  };
+
+  if (isAppCode(request)) {
+    // Network-first: always try the network, fall back to cache when offline.
+    event.respondWith(
+      fetch(request)
+        .then(cacheFresh)
+        .catch(() =>
+          caches
+            .match(request)
+            .then((cached) => cached || (request.mode === "navigate" ? caches.match("/index.html") : undefined)),
+        ),
+    );
+    return;
+  }
+
+  // Stale-While-Revalidate for everything else.
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      // Set up the network fetch request to run in the background
-      const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          // If the network response is valid, overwrite the old cache with the fresh file
-          if (
-            networkResponse &&
-            networkResponse.status === 200 &&
-            networkResponse.type === "basic"
-          ) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          // Fallback logic if the network is completely down/offline
-          if (event.request.mode === "navigate") {
-            return caches.match("/index.html");
-          }
-        });
-
-      // Serve the cached response immediately if it exists, otherwise wait for the network
+    caches.match(request).then((cachedResponse) => {
+      const fetchPromise = fetch(request).then(cacheFresh).catch(() => undefined);
       return cachedResponse || fetchPromise;
     }),
   );

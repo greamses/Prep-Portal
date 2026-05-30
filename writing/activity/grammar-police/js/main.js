@@ -20,13 +20,27 @@ async function ensureBook() {
 }
 
 // (Re)build the book + flip engine. Idempotent — destroys any prior instance.
+// Preserves the reader's current page across a rebuild (e.g. resize / F11).
 function mountBook() {
-  if (state.pageFlip) { try { state.pageFlip.destroy(); } catch {} state.pageFlip = null; }
+  let restorePage = 0;
+  if (state.pageFlip) {
+    try { restorePage = state.pageFlip.getCurrentPageIndex(); } catch {}
+    try { state.pageFlip.destroy(); } catch {}
+    state.pageFlip = null;
+  }
+  // StPageFlip's destroy() tears down the #gpBook element it mounted on, so give
+  // it a fresh, empty container every rebuild (otherwise getElementById is null).
+  const clip = document.getElementById("gpBookClip");
+  if (clip) clip.innerHTML = '<div id="gpBook"></div>';
   state.bookBuilt = false;
   buildBookPages();
   initPageFlip(syncUI);
   if (!eventsWired) { wireBookEvents(); eventsWired = true; }
   initChecker();
+  if (restorePage > 0) {
+    const last = state.pageFlip.getPageCount() - 1;
+    try { state.pageFlip.turnToPage(Math.min(restorePage, last)); } catch {}
+  }
   syncUI();
 }
 
@@ -60,7 +74,7 @@ function syncUI() {
 
 // ── Navigation ────────────────────────────────────────────────
 function jumpToPage(targetPage) {
-  if (targetPage == null) return;
+  if (targetPage == null || !state.pageFlip) return;
   const book = document.getElementById("gpBook");
   book.classList.add("gp-book--jumping");
   setTimeout(() => {
@@ -72,8 +86,8 @@ function jumpToPage(targetPage) {
 
 // ── Event Wiring (delegated on persistent elements; runs once) ─────────────
 function wireBookEvents() {
-  document.getElementById("gpPrev").addEventListener("click", () => state.pageFlip.flipPrev());
-  document.getElementById("gpNext").addEventListener("click", () => state.pageFlip.flipNext());
+  document.getElementById("gpPrev").addEventListener("click", () => state.pageFlip?.flipPrev());
+  document.getElementById("gpNext").addEventListener("click", () => state.pageFlip?.flipNext());
 
   const book = document.getElementById("gpBook");
   book.addEventListener("click", (e) => {
@@ -95,8 +109,8 @@ function wireBookEvents() {
     const tag = document.activeElement?.tagName;
     if (tag === "TEXTAREA" || tag === "INPUT") { if (e.key === "Escape") document.activeElement.blur(); return; }
     if (e.key === "Escape") closeModal();
-    if (e.key === "ArrowLeft") state.pageFlip.flipPrev();
-    if (e.key === "ArrowRight") state.pageFlip.flipNext();
+    if (e.key === "ArrowLeft") state.pageFlip?.flipPrev();
+    if (e.key === "ArrowRight") state.pageFlip?.flipNext();
   });
 }
 
@@ -115,13 +129,23 @@ document.addEventListener("DOMContentLoaded", () => {
   // Pages are sized to the viewport, so a real resize rebuilds the book to keep
   // it ~96% of the new viewport height (debounced; skipped while hidden).
   let resizeTimer, lastW = window.innerWidth, lastH = window.innerHeight;
+  const rebuildForViewport = (force = false) => {
+    if (!state.bookBuilt || document.getElementById("gpModal").hidden) return;
+    if (!force && Math.abs(window.innerWidth - lastW) < 60 && Math.abs(window.innerHeight - lastH) < 60) return;
+    lastW = window.innerWidth; lastH = window.innerHeight;
+    // Wait for layout to settle before rebuilding so StPageFlip ("stretch")
+    // reads the final container size — otherwise it can mount at 0 and vanish
+    // (e.g. toggling browser fullscreen with F11).
+    requestAnimationFrame(() => requestAnimationFrame(mountBook));
+  };
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      if (!state.bookBuilt || document.getElementById("gpModal").hidden) return;
-      if (Math.abs(window.innerWidth - lastW) < 60 && Math.abs(window.innerHeight - lastH) < 60) return;
-      lastW = window.innerWidth; lastH = window.innerHeight;
-      mountBook();
-    }, 300);
+    resizeTimer = setTimeout(() => rebuildForViewport(false), 300);
+  });
+  // F11 / native fullscreen changes the viewport without always firing a timely
+  // resize; rebuild explicitly once the new dimensions are in.
+  document.addEventListener("fullscreenchange", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => rebuildForViewport(true), 250);
   });
 });

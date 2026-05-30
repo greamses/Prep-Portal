@@ -16,13 +16,88 @@ import { renderParas, updateProgress } from "./grammar.js";
 import { buildSentences, buildToken, updatePPProgress } from "./punctuation.js";
 import { photo } from "../data/assets.js";
 import { wireTopicVideo, stopAllVideos } from "./video.js";
-import { frontCoverInner, backCoverInner } from "./cover.js";
+import { frontCoverInner, backCoverInner, dividerInner } from "./cover.js";
+import { makeCrosswordPage, makeRebusPage } from "./puzzles.js";
 
 let PAGE = { w: 600, h: 860 };
 function computePageSize() {
   const h = Math.round(window.innerHeight * 0.96);
   PAGE = { w: Math.round(h * 0.7), h };
   return PAGE;
+}
+
+// ── Content pagination ───────────────────────────────────────────────────────
+// Pages have a fixed size, so long content is flowed across as many pages as it
+// needs (filling each before the next) instead of being clipped or overlapping.
+// We measure at the REAL rendered page size in an offscreen host, then hand the
+// same nodes (with their listeners) to StPageFlip.
+let MEASURE = { w: 420, h: 820 };
+function computeMeasureSize() {
+  const maxH = Math.round(window.innerHeight * 0.96);
+  const maxW = Math.round(maxH * 0.74);
+  const clip = document.getElementById("gpBookClip");
+  const clipW = clip ? clip.clientWidth : maxW * 2;
+  // Landscape shows two pages side by side (each maxW); portrait is one page.
+  const perPage = clipW >= maxW * 2 ? maxW : Math.min(maxW, clipW || maxW);
+  MEASURE = { w: perPage, h: maxH };
+  return MEASURE;
+}
+function getMeasureHost() {
+  let host = document.getElementById("gpMeasureHost");
+  if (!host) {
+    host = document.createElement("div");
+    host.id = "gpMeasureHost";
+    document.body.appendChild(host);
+  }
+  host.setAttribute("style", "position:fixed;left:-100000px;top:0;visibility:hidden;pointer-events:none;");
+  host.innerHTML = "";
+  return host;
+}
+function htmlToBlocks(html) {
+  const tmp = document.createElement("div");
+  tmp.innerHTML = (html || "").trim();
+  return Array.from(tmp.children);
+}
+
+// Flow `blocks` into a sequence of pages. `makeShell()` returns { page, mount }
+// where `mount` is the multi-column flow container the blocks go into. Returns
+// the array of page elements (detached, ready to append to the book).
+function paginate(blocks, makeShell) {
+  const host = getMeasureHost();
+  const sizePage = (p) => { p.style.width = MEASURE.w + "px"; p.style.height = MEASURE.h + "px"; };
+  // Force deterministic top-to-bottom fill while measuring (a spilled 3rd column
+  // widens scrollWidth past the 2-column box → overflow detected).
+  const startShell = () => {
+    const s = makeShell();
+    sizePage(s.page);
+    s.mount.style.columnFill = "auto";
+    host.appendChild(s.page);
+    return s;
+  };
+  const overflowed = (mount) => mount.scrollWidth > mount.clientWidth + 2;
+
+  const out = [];
+  let shell = startShell();
+  for (const block of blocks) {
+    if (!block) continue;
+    shell.mount.appendChild(block);
+    if (overflowed(shell.mount) && shell.mount.childElementCount > 1) {
+      shell.mount.removeChild(block);
+      out.push(shell);
+      shell = startShell();
+      shell.mount.appendChild(block);
+    }
+  }
+  out.push(shell);
+
+  // Detach + clear measurement-only styling (render uses balanced columns).
+  out.forEach((s) => {
+    host.removeChild(s.page);
+    s.page.style.width = "";
+    s.page.style.height = "";
+    s.mount.style.columnFill = "";
+  });
+  return out;
 }
 
 // ── DOM helpers ──────────────────────────────────────────────────────────────
@@ -50,21 +125,18 @@ const studyTipMini = (t) => asideMini("tip", "Study Tip", `<p>${t}</p>`, "pencil
 const vocabMini = (items = []) =>
   asideMini("vocab", "Key Vocabulary", `<dl class="gp-vocab">${items.map((v) => `<div><dt>${v.term}</dt><dd>${v.def}</dd></div>`).join("")}</dl>`, "books");
 const hotMini = (items = []) =>
-  asideMini("hot", "H.O.T. Problems", `<ol>${items.map((q) => `<li>${q}</li>`).join("")}</ol>`, "rocket");
-// H.O.T. as an absolute note pinned bottom-right of the page (not in the flow).
-const hotNote = (items = []) =>
-  !items.length ? "" : `
-  <aside class="gp-hotnote">
-    <p class="gp-hotnote__title">H.O.T. Problems</p>
-    <ol>${items.map((q) => `<li>${q}</li>`).join("")}</ol>
-  </aside>`;
+  !items.length ? "" : asideMini("hot", "H.O.T. Problems", `<ol>${items.map((q) => `<li>${q}</li>`).join("")}</ol>`, "rocket");
 const realWorldMini = (unit) => {
   const rw = unit.realWorld || {};
+  // The photo IS the card: no box/border, text written straight on the image.
   return `
-    <aside class="gp-mini gp-mini--rw">
-      <p class="gp-mini__title">Real-World Link</p>
-      <div class="gp-rw__photo">${photo(rw.image, rw.title || "", { w: 420, seed: unit.id })}<span class="gp-rw__cap">${rw.title || ""}</span></div>
-      <div class="gp-mini__body"><p>${rw.text || ""}</p></div>
+    <aside class="gp-rwlink">
+      ${photo(rw.image, rw.title || "", { w: 420, seed: unit.id })}
+      <span class="gp-rwlink__label">Real-World Link</span>
+      <div class="gp-rwlink__copy">
+        ${rw.title ? `<strong class="gp-rwlink__cap">${rw.title}</strong>` : ""}
+        <p>${rw.text || ""}</p>
+      </div>
     </aside>`;
 };
 
@@ -72,7 +144,7 @@ const realWorldMini = (unit) => {
 function videoCard(unit) {
   const topic = `${unit.title} (${unit.focus})`.replace(/"/g, "&quot;");
   return `
-    <div class="gp-tvid" data-gp-topic-video data-topic="${topic}">
+    <div class="gp-tvid" data-col-span data-gp-topic-video data-topic="${topic}">
       <p class="gp-tvid__label">Learning Video</p>
       <div class="gp-tvid__stage">
         <button type="button" class="gp-tvid__btn" data-gp-vid-play>Watch a lesson video</button>
@@ -133,95 +205,144 @@ function makeHowToPage() {
   );
 }
 
-// ── Chapter opener (banner + video + tiny corner asides) ─────────────────────
-function makeOpenerPage(unit) {
-  return htmlPage(
-    `<div class="pc gp-opener gp-c-${unit.color}">
-      ${sideTab(`Unit ${unit.number}`, unit.color)}
-      <header class="gp-banner gp-banner--${unit.color}">
-        <span class="gp-banner__tech" aria-hidden="true"></span>
-        <span class="gp-banner__chapter">Unit ${unit.number} &middot; ${unit.kind === "grammar" ? "Grammar Police" : "Punctuation Patrol"}</span>
-        <h2 class="gp-banner__title gp-3d gp-3d--${unit.color}">${unit.title}</h2>
-        <span class="gp-banner__focus">${unit.focus}</span>
-      </header>
-      ${videoCard(unit)}
-      <div class="gp-opener__corners">${mainIdeaMini(unit.mainIdea)}${vocabMini(unit.keyVocab)}</div>
-    </div>`
-  );
+// Two short intro paragraphs shown after Key Vocabulary on the opener.
+function overviewParas(unit) {
+  const terms = (unit.keyVocab || []).map((v) => v.term).filter(Boolean);
+  const list = terms.length ? terms.slice(0, 4).join(", ") : "these words";
+  if (unit.kind === "grammar") {
+    return [
+      `The words in this unit&mdash;${list}&mdash;sound alike or look alike, which is exactly why they trip writers up. The fix is never about spelling; it is about knowing the small job each word does inside a sentence.`,
+      `Watch the lesson video, read the examples slowly, and try the Detective's Trick before every answer. Then move on to the practice passage, where you will choose the right word in real sentences and check your score.`,
+    ];
+  }
+  return [
+    `Punctuation marks are small but powerful: they tell the reader when to stop, when to ask a question, when to list, and what belongs to whom. This unit focuses on ${unit.focus || "using them correctly"}.`,
+    `Study where each mark goes and why it belongs there. Then drag the marks into the exercise sentences and press Check&mdash;every page shows how many you have placed and how many are correct.`,
+  ];
 }
 
-// ── Lesson pages: left = explanation (2 CSS columns), right = trick/test +
-//    Study Tip / Real-World / H.O.T. corner asides ───────────────────────────
-function makeLessonLeft(unit) {
-  return htmlPage(
-    `<div class="pc gp-lesson gp-c-${unit.color}">
-      <div class="gp-lesson__head"><span class="gp-lesson__tab gp-tab--${unit.color}">Lesson ${unit.number}</span><span class="gp-lesson__focus">${unit.focus}</span></div>
-      <div class="gp-cols2">${unit.lesson.leftHTML}${unit.teach || ""}</div>
-    </div>`
-  );
+// ── Chapter opener — banner + video span both columns (video is exempt from
+//    the column flow); Main Idea + Key Vocabulary flow in the two columns. ────
+function makeOpenerPage(unit) {
+  const banner = `
+    <header class="gp-banner gp-banner--${unit.color}" data-col-span>
+      <span class="gp-banner__tech" aria-hidden="true"></span>
+      <span class="gp-banner__chapter">Unit ${unit.number} &middot; ${unit.kind === "grammar" ? "Grammar Police" : "Punctuation Patrol"}</span>
+      <h2 class="gp-banner__title gp-3d gp-3d--${unit.color}">${unit.title}</h2>
+      <span class="gp-banner__focus">${unit.focus}</span>
+    </header>`;
+  const blocks = [
+    htmlToBlocks(banner)[0],
+    htmlToBlocks(videoCard(unit))[0],
+    htmlToBlocks(mainIdeaMini(unit.mainIdea))[0],
+    htmlToBlocks(vocabMini(unit.keyVocab))[0],
+    // Two paragraphs of intro text, right after Key Vocabulary.
+    ...overviewParas(unit).map((p) => htmlToBlocks(`<p class="gp-overview">${p}</p>`)[0]),
+  ].filter(Boolean);
+
+  const makeShell = () => {
+    const page = makePage();
+    const pc = document.createElement("div");
+    pc.className = `pc gp-opener gp-c-${unit.color}`;
+    pc.innerHTML = sideTab(`Unit ${unit.number}`, unit.color);
+    const cols = document.createElement("div");
+    cols.className = "gp-cols2";
+    pc.appendChild(cols);
+    page.appendChild(pc);
+    return { page, mount: cols };
+  };
+
+  return paginate(blocks, makeShell).map((s) => s.page);
 }
-function makeLessonRight(unit) {
-  // Study Tip + Real-World flow inside the two columns; H.O.T. is an absolute
-  // note pinned to the bottom-right of the page.
-  return htmlPage(
-    `<div class="pc gp-lesson gp-lesson--right gp-c-${unit.color}">
-      <div class="gp-lesson__head"><span class="gp-lesson__focus">${unit.title}</span><span class="gp-lesson__tab gp-tab--${unit.color}">Trick &amp; Test</span></div>
-      <div class="gp-cols2">${unit.lesson.rightHTML}${studyTipMini(unit.studyTip)}${realWorldMini(unit)}</div>
-      ${hotNote(unit.hot || [])}
-    </div>`
-  );
+
+// ── Lesson pages: explanation + trick/test + Study Tip / Real-World / H.O.T.
+//    all flowed across two columns and as many pages as needed (usually 1-2). ─
+function makeLessonPages(unit) {
+  const blocks = [
+    ...htmlToBlocks(unit.lesson.leftHTML),
+    ...htmlToBlocks(unit.teach || ""),
+    ...htmlToBlocks(unit.lesson.rightHTML),
+    htmlToBlocks(studyTipMini(unit.studyTip))[0],
+    htmlToBlocks(realWorldMini(unit))[0],
+    ...htmlToBlocks(hotMini(unit.hot || [])),
+  ].filter(Boolean);
+
+  const makeShell = () => {
+    const page = makePage();
+    const pc = document.createElement("div");
+    pc.className = `pc gp-lesson gp-c-${unit.color}`;
+    pc.innerHTML = `<div class="gp-lesson__head"><span class="gp-lesson__tab gp-tab--${unit.color}">Lesson ${unit.number}</span><span class="gp-lesson__focus">${unit.focus}</span></div>`;
+    const cols = document.createElement("div");
+    cols.className = "gp-cols2";
+    pc.appendChild(cols);
+    page.appendChild(pc);
+    return { page, mount: cols };
+  };
+
+  return paginate(blocks, makeShell).map((s) => s.page);
 }
 
 // ── Practice (grammar: choose word; punctuation: drag mark) ──────────────────
-function makeGrammarPractice(unit, idx, side) {
+// All items flow across two columns; extra pages are only created when they
+// don't fit. The Check/Reset + progress block flows as the LAST item inside the
+// columns. The drag pool repeats on every page (punctuation only).
+function makeGrammarPracticePages(unit, idx) {
   const passage = unit.passage;
-  const page = makePage();
-  page.dataset.passage = idx;
-  const half = Math.ceil(passage.paragraphs.length / 2);
-  const slice = side === "left" ? passage.paragraphs.slice(0, half) : passage.paragraphs.slice(half);
-  const pc = document.createElement("div");
-  pc.className = `pc pc--passage gp-c-${unit.color}`;
-  if (side === "left") {
+  const itemsHost = document.createElement("div");
+  renderParas(passage.paragraphs, idx, itemsHost);
+  const blocks = Array.from(itemsHost.children);
+  blocks.push(checkSection({ check: `data-gp-check="${idx}"`, reset: `data-gp-reset="${idx}"`, progId: `prog-${idx}`, progText: `prog-text-${idx}`, scoreId: `score-${idx}`, unit: "filled" }));
+
+  const makeShell = () => {
+    const page = makePage();
+    page.dataset.passage = idx;
+    const pc = document.createElement("div");
+    pc.className = `pc pc--passage gp-c-${unit.color}`;
     pc.innerHTML = `<div class="pc-passage-header"><span class="pc-passage-label">Passage ${idx + 1}</span><strong class="pc-passage-title">${passage.title}</strong><span class="pc-focus-badge">${passage.focus}</span></div>`;
-  }
-  const body = document.createElement("div");
-  body.className = "pc-passage-body";
-  renderParas(slice, idx, body);
-  pc.appendChild(body);
-  if (side === "right") {
-    pc.appendChild(checkSection({ check: `data-gp-check="${idx}"`, reset: `data-gp-reset="${idx}"`, progId: `prog-${idx}`, progText: `prog-text-${idx}`, scoreId: `score-${idx}`, unit: "filled" }));
-  }
-  page.appendChild(pc);
-  return page;
+    const body = document.createElement("div");
+    body.className = "pc-passage-body";
+    pc.appendChild(body);
+    page.appendChild(pc);
+    return { page, mount: body };
+  };
+
+  const shells = paginate(blocks, makeShell);
+  shells.forEach((s, i) => { if (i > 0) s.page.querySelector(".pc-passage-header")?.remove(); });
+  return shells.map((s) => s.page);
 }
-function makePunctPractice(unit, idx, side) {
+
+function makePunctPracticePages(unit, idx) {
   const ex = unit.exercise;
-  const page = makePage();
-  const half = Math.ceil(ex.items.length / 2);
-  const start = side === "left" ? 0 : half;
-  const end = side === "left" ? half : ex.items.length;
-  const pc = document.createElement("div");
-  pc.className = `pc pc--practice gp-c-${unit.color}`;
-  if (side === "left") {
+  const itemsHost = document.createElement("div");
+  buildSentences(ex.items, 0, ex.items.length, idx, itemsHost);
+  const blocks = Array.from(itemsHost.children);
+  blocks.push(checkSection({ check: `data-pp-check="${idx}"`, reset: `data-pp-reset="${idx}"`, progId: `ppProg-${idx}`, progText: `ppProgText-${idx}`, scoreId: `ppScore-${idx}`, unit: "placed" }));
+
+  const poolStrip = () => {
+    const pool = document.createElement("div");
+    pool.className = "pp-pool-strip";
+    pool.innerHTML = `<span class="pp-pool-label">Drag:</span><span class="pp-pool-tokens"></span>`;
+    const tokens = pool.querySelector(".pp-pool-tokens");
+    ex.pool.forEach((c) => tokens.appendChild(buildToken(c)));
+    return pool;
+  };
+
+  const makeShell = () => {
+    const page = makePage();
+    const pc = document.createElement("div");
+    pc.className = `pc pc--practice gp-c-${unit.color}`;
     pc.innerHTML = `<div class="pc-practice-header"><span class="pc-practice-label">Exercise ${idx + 1}</span><strong class="pc-practice-title">${ex.title}</strong><span class="pc-focus-badge">${ex.focus}</span></div>`;
-  }
-  const items = document.createElement("div");
-  items.className = "pp-items";
-  buildSentences(ex.items, start, end, idx, items);
-  pc.appendChild(items);
+    const items = document.createElement("div");
+    items.className = "pp-items";
+    pc.appendChild(items);
+    pc.appendChild(poolStrip());          // drag pool on every page
+    page.appendChild(pc);
+    return { page, mount: items };
+  };
 
-  // Drag pool on EVERY page that shows sentences (so marks are always to hand).
-  const pool = document.createElement("div");
-  pool.className = "pp-pool-strip";
-  pool.innerHTML = `<span class="pp-pool-label">Drag:</span><span class="pp-pool-tokens"></span>`;
-  ex.pool.forEach((c) => pool.querySelector(".pp-pool-tokens").appendChild(buildToken(c)));
-  pc.appendChild(pool);
-
-  if (side === "right") {
-    pc.appendChild(checkSection({ check: `data-pp-check="${idx}"`, reset: `data-pp-reset="${idx}"`, progId: `ppProg-${idx}`, progText: `ppProgText-${idx}`, scoreId: `ppScore-${idx}`, unit: "placed" }));
-  }
-  page.appendChild(pc);
-  return page;
+  const shells = paginate(blocks, makeShell);
+  shells.forEach((s, i) => { if (i > 0) s.page.querySelector(".pc-practice-header")?.remove(); });
+  return shells.map((s) => s.page);
 }
 
 function checkSection({ check, reset, progId, progText, scoreId, unit }) {
@@ -230,22 +351,16 @@ function checkSection({ check, reset, progId, progText, scoreId, unit }) {
   d.innerHTML = `
     <div class="pc-progress"><div class="pc-progress-track"><div class="pc-progress-fill" id="${progId}"></div></div><span class="pc-progress-text" id="${progText}">0 / 0 ${unit}</span></div>
     <div class="pc-check-actions">
-      <button class="pc-btn pc-btn--ghost" ${reset}>Reset</button>
-      <button class="pc-btn pc-btn--check" ${check}><i data-lucide="check" style="width:13px;height:13px;display:block;flex-shrink:0"></i>Check</button>
+      <button class="pc-btn pc-btn--ghost pc-btn--icon" ${reset} aria-label="Reset" title="Reset"><i data-lucide="rotate-ccw" style="width:15px;height:15px;display:block"></i></button>
+      <button class="pc-btn pc-btn--check pc-btn--icon" ${check} aria-label="Check" title="Check"><i data-lucide="check" style="width:15px;height:15px;display:block"></i></button>
     </div>
     <div class="pc-score" id="${scoreId}"></div>`;
   return d;
 }
 
 function makeDividerPage() {
-  return htmlPage(
-    `<div class="pc gp-divider">
-      <div class="gp-divider__rings" aria-hidden="true"></div>
-      <span class="gp-divider__kicker">Section Two</span>
-      <h2 class="gp-divider__title gp-3d gp-3d--teal">Punctuation<br>Patrol</h2>
-      <p class="gp-divider__sub">Now drag the marks into place - full stops, question marks, commas and apostrophes.</p>
-    </div>`
-  );
+  // Section divider mirrors the front cover, in a teal shade.
+  return htmlPage(`<div class="pc gp-cover gp-cover--teal">${dividerInner()}</div>`, "hard");
 }
 
 function makeCheckerPage(book) {
@@ -270,7 +385,8 @@ function makeCheckerPage(book) {
 }
 
 function makeBackCoverPage() {
-  return htmlPage(`<div class="pc gp-back" data-density="hard">${backCoverInner(state.book)}</div>`, "hard");
+  // Back cover mirrors the front cover, in a purple shade.
+  return htmlPage(`<div class="pc gp-cover gp-cover--purple" data-density="hard">${backCoverInner(state.book)}</div>`, "hard");
 }
 
 // ── Book assembly ────────────────────────────────────────────────────────────
@@ -279,6 +395,7 @@ export function buildBookPages() {
   const bookEl = document.getElementById("gpBook");
   bookEl.innerHTML = "";
   computePageSize();
+  computeMeasureSize();
   state.UNIT_START_PAGE = [];
 
   const pages = [];
@@ -289,18 +406,21 @@ export function buildBookPages() {
 
   let passageIdx = 0, exerIdx = 0, dividerDone = false;
   book.units.forEach((unit, ui) => {
-    if (unit.kind === "punctuation" && !dividerDone) { pages.push(makeDividerPage()); dividerDone = true; }
+    if (unit.kind === "punctuation" && !dividerDone) {
+      // Brain-break puzzles, then the section divider.
+      pages.push(makeCrosswordPage());
+      pages.push(makeRebusPage());
+      pages.push(makeDividerPage());
+      dividerDone = true;
+    }
     state.UNIT_START_PAGE[ui] = pages.length;
-    pages.push(makeOpenerPage(unit));
-    pages.push(makeLessonLeft(unit));
-    pages.push(makeLessonRight(unit));
+    makeOpenerPage(unit).forEach((p) => pages.push(p));
+    makeLessonPages(unit).forEach((p) => pages.push(p));
     if (unit.kind === "grammar") {
-      pages.push(makeGrammarPractice(unit, passageIdx, "left"));
-      pages.push(makeGrammarPractice(unit, passageIdx, "right"));
+      makeGrammarPracticePages(unit, passageIdx).forEach((p) => pages.push(p));
       passageIdx++;
     } else {
-      pages.push(makePunctPractice(unit, exerIdx, "left"));
-      pages.push(makePunctPractice(unit, exerIdx, "right"));
+      makePunctPracticePages(unit, exerIdx).forEach((p) => pages.push(p));
       exerIdx++;
     }
   });

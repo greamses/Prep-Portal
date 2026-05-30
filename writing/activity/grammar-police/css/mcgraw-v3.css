@@ -203,14 +203,54 @@
 .gp-cols2 {
   flex: 1; min-height: 0; overflow: hidden;
   column-count: 2; column-gap: 1.1rem;
-  column-fill: auto; /* fill column 1 top-to-bottom, then column 2 */
+  column-fill: auto; /* fill column 1 top-to-bottom, THEN column 2 */
   column-rule: 1.5px dotted #d9d2c2;
 }
 .gp-cols2 > * { break-inside: avoid; margin-bottom: 0.55rem !important; }
 .gp-cols2 > *:first-child { margin-top: 0 !important; }
 
+/* Full-width elements inside the two-column flow (video + banner): they span
+   both columns instead of sitting in one. Everything else stays columned. */
+.gp-cols2 > [data-col-span] { column-span: all; }
+.gp-cols2 > .gp-banner { margin-bottom: 0.7rem !important; }
+
+/* Opener now uses the shared two-column flow */
+.pc.gp-opener { display: flex; flex-direction: column; }
+
 .gp-aside-row { display: flex; gap: 0.55rem; margin-top: 0.6rem; flex-shrink: 0; align-items: stretch; }
 .gp-aside-row .gp-mini { flex: 1; display: flex; flex-direction: column; }
+
+/* ── Real-World Link: photo as the background, text written on the image ──── */
+.gp-rwlink {
+  position: relative; overflow: hidden;
+  break-inside: avoid; margin-bottom: 0.55rem !important;
+  min-height: 8rem;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: 0.5rem; color: #fff;
+}
+.gp-rwlink img {
+  position: absolute; inset: 0; z-index: 0;
+  width: 100%; height: 100%; object-fit: cover;
+}
+.gp-rwlink::after {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, rgba(0,0,0,0.4), rgba(0,0,0,0.05) 38%, rgba(0,0,0,0.85));
+}
+.gp-rwlink > *:not(img) { position: relative; z-index: 2; }
+.gp-rwlink__label {
+  align-self: flex-start;
+  font-family: var(--gp-sans); font-size: 0.5rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  background: rgba(0,0,0,0.5); padding: 0.16rem 0.42rem;
+}
+.gp-rwlink__cap {
+  display: block; font-family: var(--gp-sans); font-size: 0.66rem; font-weight: 900;
+  line-height: 1.1; margin-bottom: 0.15rem; text-shadow: 0 1px 4px rgba(0,0,0,0.75);
+}
+.gp-rwlink__copy p {
+  font-family: var(--gp-body); font-size: 0.55rem; line-height: 1.4; margin: 0;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
 
 /* Real-World mini (has a photo) */
 .gp-mini--rw { --gp-c: #128a4b; --gp-c-soft: rgba(18,138,75,0.07); }
@@ -232,7 +272,7 @@
 .pc--practice .pp-items {
   flex: 1; min-height: 0;
   display: block;          /* override book CSS flex so CSS columns work */
-  column-count: 2; column-gap: 1.1rem; column-fill: balance;
+  column-count: 2; column-gap: 1.1rem; column-fill: auto; /* fill col 1 first */
   column-rule: 1.5px dotted #d9d2c2;
 }
 .pc-passage-body > .book-para,
@@ -243,7 +283,20 @@
 .pc-btn { width: auto !important; flex: 0 0 auto; }
 .pc-check-actions { justify-content: flex-start; flex-wrap: wrap; }
 .pp-pool-strip { width: fit-content; max-width: 100%; flex-shrink: 0; }
-.pc-check-section { flex-shrink: 0; }
+
+/* Check / Reset + progress now flow as the last block INSIDE the columns */
+.pp-items > .pc-check-section,
+.pc-passage-body > .pc-check-section {
+  break-inside: avoid;
+  margin-top: 0.45rem; padding-top: 0.45rem;
+  border-top: 1.5px dotted #d9d2c2;
+}
+/* Icon-only Check / Reset buttons */
+.pc-btn--icon {
+  width: auto !important;
+  padding: 0.36rem 0.42rem;
+  display: inline-flex; align-items: center; justify-content: center;
+}
 
 /* H.O.T. Problems — absolute note pinned bottom-right of the lesson page */
 .pc.gp-lesson--right { position: relative; }
