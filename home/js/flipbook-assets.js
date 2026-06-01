@@ -147,35 +147,58 @@ function makeStudent(i, seed) {
 const roster = (seed, count) =>
   Array.from({ length: count }, (_, i) => makeStudent(i, seed));
 
-// The three graduating sets — shared identities, fresh faces each year.
+// Short lines from the class's Honour Roll (A-grade) students.
+const HONOUR_QUOTES = [
+  "Hard work beats talent when talent won&rsquo;t work &mdash; and I worked!",
+  "Front-row seat, top of the class, worth every early morning.",
+  "Thank you to every teacher who refused to let me coast.",
+  "Turns out the library really is the best seat in the whole school.",
+  "Distinctions don&rsquo;t happen by accident. See you at the very top!",
+  "Proof that a quiet kid from the back row can finish first.",
+  "Every late night with my books paid off in the end.",
+  "I came to learn and stayed to lead. Onward and upward!",
+];
+
+// Pick the class's Honour Roll: the first `count` students (0–3), each with a
+// portrait, name and a short quote. Some classes have none.
+function honourRoll(students, count, seed) {
+  return students.slice(0, count).map((s, j) => ({
+    name: s.name,
+    portrait: s.portrait,
+    quote: HONOUR_QUOTES[(seed + j) % HONOUR_QUOTES.length],
+  }));
+}
+
+// The three graduating sets — shared identities, fresh faces each year. The
+// Honour-Roll count (0–3) varies by year+set, so some dividers carry none.
 function setsFor(seed) {
+  const sun = roster(seed + 1, 18);
+  const tra = roster(seed + 2, 12);
+  const lum = roster(seed + 3, 12);
   return [
     {
       stage: "Early Years",
       name: "The Sunbeams",
       note: "Our littlest graduands — first big steps and the brightest of smiles.",
-      summary:
-        "We came in shy and tiny, and somewhere between nap time, story corner and a hundred new friends, we grew brave. This was our very first big adventure — thank you for holding our little hands all the way.",
       photo: pic("photo-1456513080510-7bf3a84b82f8", "yb-sun", "Early years class", 1200),
-      students: roster(seed + 1, 18),
+      students: sun,
+      honours: honourRoll(sun, seed % 4, seed),
     },
     {
       stage: "Primary",
       name: "The Trailblazers",
       note: "Six years of curiosity, courage and quiet, daily discovery.",
-      summary:
-        "Six years flew by in a blur of spelling tests, science fairs and best friends made for life. We arrived as little kids and we&rsquo;re leaving as a team that knows it can do hard things. Onward, together!",
       photo: pic("photo-1427504494785-3a9ca7044f45", "yb-trail", "Primary class", 1200),
-      students: roster(seed + 2, 12),
+      students: tra,
+      honours: honourRoll(tra, (seed + 1) % 4, seed + 1),
     },
     {
       stage: "Senior School",
       name: "The Luminaries",
       note: "Ready, at last, to carry their light beyond our gates.",
-      summary:
-        "From nervous juniors to the seniors who led the way, we studied late, laughed harder, and slowly figured out who we wanted to be. We&rsquo;re ready now — and we&rsquo;ll carry this place with us wherever we go.",
       photo: pic("photo-1523240795612-9a054b0db644", "yb-lum", "Senior class", 1200),
-      students: roster(seed + 3, 12),
+      students: lum,
+      honours: honourRoll(lum, (seed + 2) % 4, seed + 2),
     },
   ];
 }

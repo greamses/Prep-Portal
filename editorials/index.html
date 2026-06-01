@@ -51,6 +51,24 @@
     <!-- NAVIGATION -->
     <nav class="site-nav" data-nav="main"></nav>
 
+    <!-- Torn-paper edge filters for the yearbook cards (turbulence + displacement) -->
+    <svg width="0" height="0" class="yb-torn-defs" aria-hidden="true" focusable="false">
+      <defs>
+        <filter id="yb-torn-a" x="-8%" y="-8%" width="116%" height="116%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.014 0.022" numOctaves="4" seed="4" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="13" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+        <filter id="yb-torn-b" x="-8%" y="-8%" width="116%" height="116%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.018 0.019" numOctaves="4" seed="12" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="15" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+        <filter id="yb-torn-c" x="-8%" y="-8%" width="116%" height="116%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.026" numOctaves="5" seed="23" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="12" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+    </svg>
+
     <!-- ═══ EDITORIALS ═══ -->
     <main class="magazine-section">
       <!-- Masthead -->

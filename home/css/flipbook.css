@@ -1113,8 +1113,9 @@
   gap: 3cqh 4.5cqw;
 }
 
-/* Book-2 card — photo on top, torn-paper edge (clip-path set per-card inline),
-   name beneath, short triple shadow, accents alternating pink / lemon */
+/* Book-2 card — a torn-paper photo scrap: cream paper with a REAL ragged edge
+   (SVG turbulence/displacement filter), a sharp photo on top, name beneath,
+   a slight scrapbook tilt and a soft, natural paper shadow. */
 .yb-card--beneath {
   display: block;
   height: 100%;
@@ -1124,24 +1125,40 @@
   overflow: visible;
   --c1: var(--yb-accent);
   --c2: var(--yb-accent-2);
-  /* Triple shadow lives on the OUTER figure (no clip-path here) so the torn
-     clip on the inner body doesn't cut the drop-shadows away. Kept short so it
-     doesn't reach the neighbouring cards. */
+  /* Soft paper shadow on the OUTER figure so it follows the torn silhouette of
+     the (separately filtered) paper layer below. */
   filter:
-    drop-shadow(2px 2px 0 var(--c1))
-    drop-shadow(4px 4px 0 var(--c2))
-    drop-shadow(6px 6px 0 rgba(20, 19, 15, 0.82));
+    drop-shadow(0 1.5px 1px rgba(20, 19, 15, 0.2))
+    drop-shadow(0 5px 9px rgba(20, 19, 15, 0.24));
 }
 .yb-card--beneath:nth-child(even) {
   --c1: var(--yb-accent-2);
   --c2: var(--yb-accent);
 }
 .yb-card--beneath .yb-card__body {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100%;
+  background: transparent;
+  padding: 1.6cqh 1.6cqw 1.4cqh;
+}
+/* Torn cream paper behind the photo + name; the ragged edge is a real SVG
+   filter, varied across three seeds so no two scraps tear alike. */
+.yb-card--beneath .yb-card__body::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   background: var(--fb-paper);
-  /* clip-path (torn-paper polygon) is set inline per card in flipbook.js */
+  filter: url(#yb-torn-a);
+}
+.yb-card--beneath:nth-child(3n + 2) .yb-card__body::before { filter: url(#yb-torn-b); }
+.yb-card--beneath:nth-child(3n) .yb-card__body::before { filter: url(#yb-torn-c); }
+.yb-card--beneath .yb-card__photo,
+.yb-card--beneath .yb-card__detail {
+  position: relative;
+  z-index: 1;
 }
 .yb-card--beneath .yb-card__photo {
   flex: 1;
@@ -1192,18 +1209,35 @@
 .yb-note--c4 { background: #c8f0c0; }
 .yb-note--c5 { background: #ffd7a3; }
 
-/* The pinned sticky note sits low on the divider, taped on at a slight angle */
+/* Honour-Roll sticky notes — scattered low on the divider (position + tilt set
+   inline per note), taped on at a slight angle */
 .yb-divider__sticky {
   position: absolute;
-  left: 50%;
-  bottom: 6cqh;
   z-index: 2;
-  width: 58cqw;
-  transform: translateX(-50%) rotate(-3deg);
+  width: 42cqw;
 }
 .yb-divider__sticky .yb-note__msg {
-  font-size: 2.7cqw;
-  line-height: 1.22;
+  font-size: 2.5cqw;
+  line-height: 1.2;
+}
+/* Round student photo floated so the quote wraps perfectly around it */
+.yb-note__photo {
+  float: left;
+  width: 13cqw;
+  height: 13cqw;
+  border-radius: 50%;
+  object-fit: cover;
+  shape-outside: circle(50%);
+  shape-margin: 1.1cqw;
+  margin: 0.2cqh 1.4cqw 0.3cqh 0;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.yb-divider__sticky .yb-note__by {
+  clear: left;
+  text-align: left;
+  margin-top: 0.7cqh;
+  font-size: 1.95cqw;
 }
 .yb-divider__sticky::before {
   content: "";
