@@ -7,3 +7,9 @@ node_modules/
 serviceAccountKey.json
 googleCloudKey.json
 .vercel
+
+# Local Claude Code settings — machine-specific, not for the repo
+.claude/settings.local.json
+
+# Removed legacy template — kept deleted and ignored
+writing/activity/flip-template.html
